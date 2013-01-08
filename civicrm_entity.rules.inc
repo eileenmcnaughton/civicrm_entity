@@ -1,0 +1,352 @@
+<?php
+/**
+* @file
+* Implement Drupal Rules integration for CiviCRM
+*
+*/
+
+
+/**
+ *
+ * @package CRM
+ * @copyright CiviCRM LLC (c) 2004-2012
+ * $Id$
+ *
+ */
+/**
+ * Implementation of hook_rules_data_type_info().
+ */
+function civicrm_entity_rules_data_info() {
+  if (! civicrm_initialize(TRUE)) {
+    return;
+  }
+
+  $info = array();
+  $entities = _civicrm_entity_enabled_entities();
+
+  foreach ($entities as $drupal_entity => $civicrm_entity) {
+    $info[$drupal_entity] = array(
+      'label' => t('CiviCRM' . $civicrm_entity),
+      //parent => 'civicrm_entity',
+      'wrap' => TRUE,
+      'group' => 'CiviCRM',
+      // 'ui class' => 'RulesDataUIEntityExportable',
+      'module' => 'civicrm'
+    );
+    $info[$drupal_entity]['property_info'] = _civicrm_entity_getproperties($civicrm_entity);
+    // I don't think these are being 'kept'
+    $fields = civicrm_api($civicrm_entity, 'getfields', array(
+      'version' => 3,
+      'action' => 'create'
+    ));
+    foreach ($fields['values'] as $fieldname => $field_specs) {
+      //type is empty for custom fields - we should sort that out but skipping for now
+      if (! empty($field_specs['type']) && $field_specs['type'] == 1) {
+        if (CRM_Utils_Array::value('FKClassName', $field_specs) == 'CRM_Contact_DAO_Contact') {
+          $info[$drupal_entity]['property_info'][$fieldname] = array(
+            'label' => $field_specs['title'],
+            'type' => 'civicrm_contact'
+          );
+        }
+        $info[$drupal_entity]['property_info'][$fieldname] = array(
+          'label' => $field_specs['title'],
+          'type' => 'integer'
+        );
+        if (! empty($field_specs['options'])) {
+          $info[$drupal_entity]['property_info'][$fieldname]['type'] = 'list<integer>';
+          $info[$drupal_entity]['property_info'][$fieldname]['options list'] = '_civicrm_entity_rules_attach_options';
+          $info[$drupal_entity]['property_info'][$fieldname]['options data'] = $field_specs['options'];
+        }
+      }
+    }
+  }
+
+  return $info;
+}
+
+
+/**
+ * Implementation of hook_rules_event_info().
+ */
+function civicrm_entity_rules_event_info() {
+  $events = array();
+  $valid_objects = _civicrm_entity_enabled_entities();
+  // array('Event' => 'civicrm_event');
+  if (is_array($valid_objects)) {
+    foreach ($valid_objects as $entity => $civicrm_entity) {
+      $entity_name = 'CiviCRM ' . ucwords(str_replace('_', ' ', $civicrm_entity));
+
+      //todo consider building the entity name into the argument rather than calling the same argument for each
+      $events[$entity . '_create'] = array(
+        'label' => t("!entity has been created", array(
+          '!entity' => $entity_name
+        )),
+        'group' => 'CiviCRM ' . $entity,
+        'module' => 'civicrm',
+        'access_callback' => '_civicrm_entity_rules_access',
+        'variables' => civicrm_entity_rules_events_variables(t('Created !entity', array(
+          '!entity' => $entity_name
+        )), $entity, $civicrm_entity)
+      );
+      $events[$entity . '_edit'] = array(
+        'group' => 'CiviCRM ' . $entity,
+        'label' => t("!entity has been updated", array(
+          '!entity' => $entity_name
+        )),
+        'variables' => civicrm_entity_rules_events_variables(t('Updated !entity', array(
+          '!entity' => $entity_name
+        )), $entity)
+      );
+      $events[$entity . '_view'] = array(
+        'group' => 'CiviCRM ' . $entity,
+        'label' => t("!entity has been viewed", array(
+          '!entity' => $entity_name
+        )),
+        'variables' => civicrm_entity_rules_events_variables(t('Viewed !entity', array(
+          '!entity' => $entity_name
+        )), $entity)
+      );
+      $events[$entity . '_delete'] = array(
+        'group' => 'CiviCRM ' . $entity_name,
+        'label' => t("!entity has been deleted", array(
+          '!entity' => $entity_name
+        )),
+        'variables' => civicrm_entity_rules_events_variables(t('Deleted !entity', array(
+          '!entity' => $entity_name
+        )), $entity)
+      );
+    }
+  }
+  return $events;
+}
+
+/*
+ * Implement hookrules_condition_info
+ */
+function civicrm_entity_rules_condition_info() {
+  return array(
+    'civicrm_entity_has_user' => array(
+      'label' => t('Drupal User Account exists (not yet implemented'),
+      'parameter' => array(
+        'civicrm_contact' => array(
+          'label' => t('CiviCRM Contact'),
+          'type' => 'civicrm_contact'
+        )
+      ),
+      'provides' => array(
+        'civicrm_user' => array(
+          'label' => t('Drupal User'),
+          'type' => 'user'
+        )
+      ),
+      'group' => t('CiviCRM')
+    )
+  );
+}
+
+/*
+ * Implement hookrules_action_info
+ *
+ * http://drupalcontrib.org/api/drupal/contributions!rules!rules.api.php/function/hook_rules_action_info/7
+*/
+function civicrm_entity_rules_action_info() {
+  return array(
+    'civicrm_entity_rules_action_load_user' => array(
+      'label' => t('Load Drupal User Account'),
+      'parameter' => array(
+        'civicrm_contact' => array(
+          'label' => t('CiviCRM Contact'),
+          'type' => 'civicrm_contact'
+        )
+      ),
+      'provides' => array(
+        'civicrm_user' => array(
+          'label' => t('Loaded Drupal User'),
+          'type' => 'user'
+        )
+      ),
+      'group' => t('CiviCRM'),
+      'base' => 'civicrm_entity_rules_action_load_user'
+    ),
+    'civicrm_entity_rules_action_create_user' => array(
+      'label' => t('Create Linked Drupal User Account'),
+      'parameter' => array(
+        'civicrm_contact' => array(
+          'label' => t('CiviCRM Contact'),
+          'type' => 'civicrm_contact'
+        )
+      ),
+      'provides' => array(
+        'civicrm_user' => array(
+          'label' => t('Created Drupal User'),
+          'type' => 'user'
+        )
+      ),
+      'group' => t('CiviCRM'),
+      'base' => 'civicrm_entity_rules_action_create_user'
+    ),
+    'civicrm_entity_rules_action_load_create_user' => array(
+      'label' => t('Create or Load Linked Drupal User Account'),
+      'parameter' => array(
+        'civicrm_contact' => array(
+          'label' => t('CiviCRM Contact'),
+          'type' => 'civicrm_contact'
+        )
+      ),
+      'provides' => array(
+        'civicrm_user' => array(
+          'label' => t('Created/ Loaded Drupal User'),
+          'type' => 'user'
+        )
+      ),
+      'group' => t('CiviCRM'),
+      'base' => 'civicrm_entity_rules_action_load_create_user'
+    )
+  );
+}
+function civicrm_entity_rules_events_variables($label, $type, $civicrm_entity = NULL) {
+  $vars = array();
+  /*
+   * this was adding other entities to args - but seems to expect them rather than chain them
+  if ($civicrm_entity && civicrm_initialize(True)){
+    $fields = civicrm_api($civicrm_entity, 'getfields', array('version' => 3));
+    $fields = $fields['values'];
+    // only doing for contacts right now
+    foreach ($fields as $field => $field_specs){
+      if (CRM_Utils_Array::value('FKClassName', $field_specs) =='CRM_Contact_DAO_Contact'){
+        $vars[$field . '_contact'] = array(
+          'type' => 'civicrm_contact',
+          'label' => $field_specs['title'] . " Contact",
+        );
+      }
+    }
+    if ($civicrm_entity == 'contact'){
+      $vars['civi_user'] = array(
+        'type' => 'user',
+        'label' => $field_specs['title'] . " User",
+      );
+    }
+  }
+*/
+  $default = array(
+    $type => array(
+      'type' => $type,
+      'label' => $label,
+      'description' => "CiviCRM Entity - $label"
+    )
+  );
+
+  return $default;
+}
+
+/**
+ * Implementation of hook_rules_action_info().
+ */
+function civicrm_entity_action_info() {
+  return array(
+    'create_civicrm_entity' => array(
+      'label' => t('Create CiviCRM Entity'),
+      'arguments' => array(
+        'type' => array(
+          'type' => 'value',
+          'label' => t('Entity Type.')
+        )
+      ),
+      'module' => 'civicrm'
+    )
+  );
+}
+
+/*
+ *
+ */
+function civicrm_entity_has_user($info) {
+  //not yet implemented
+}
+
+/*
+ * Given a contact object return the drupal user
+ *
+ * @param StdClass $entity Contact Std Object
+ * @return StdClass $user Drupal User Object
+*/
+function civicrm_entity_rules_action_load_user($entity) {
+  $contact = civicrm_api('uf_match', 'getsingle', array(
+    'version' => 3,
+    'contact_id' => $entity->id
+  ));
+  if (empty($contact['is_error'])) {
+    return array(
+      'civicrm_user' => user_load($contact['uf_id'])
+    );
+  }
+}
+
+/*
+ *Given a contact object return the drupal user
+ *
+ * @param StdClass $entity Contact Std Object
+ * @return StdClass $user Drupal User Object
+*/
+function civicrm_entity_rules_action_create_user(array $contact) {
+
+  //we'll use the civicrm sync mechanism to see if Civi can match the contact to an existing user
+  // don't think this is a great approach but will use for now -
+  // could just create the user but no great support for that yet.
+  //@todo what happens if they don't have an email?
+  if (empty($contact['display_name']) || empty($contact['email'])) {
+    $contact = civicrm_api('contact', 'getsingle', array(
+      'version' => 3,
+      'id' => $contact['id'],
+      'sequential' => 1,
+      'return' => 'email,display_name'
+    ));
+  }
+  $params = array(
+    'name' => $contact['display_name'],
+    'mail' => $contact['email'],
+    'email' => $contact['email']
+  );
+  $errors = array();
+  $config = CRM_Core_Config::singleton();
+  $config->userSystem->checkUserNameEmailExists($params, $errors);
+
+  if (! empty($errors)) {
+    print_r($errors);
+    throw new Exception("undiagnosed error - need to find out how this could occur");
+  }
+
+  $params['cms_name'] = $params['name'] = $user['name'] = $contact['display_name'];
+  $params['cms_pass'] = $user['pass'] = substr(str_shuffle("abcefghijklmnopqrstuvwxyz"), 0, 8);
+  $user['uid'] = $config->userSystem->createUser($params, 'email');
+  $user['mail'] = $params['mail'];
+
+  $user_object = (object) $user;
+  //civi doesn't do this when created off Civi Form
+  CRM_Core_BAO_UFMatch::synchronizeUFMatch($user_object, $user_object->uid, $contact['email']);
+  return array(
+    'civicrm_user' => $user_object
+  );
+}
+
+
+/*
+ * Load or create user as appropriate
+*/
+function civicrm_entity_rules_action_load_create_user($entity) {
+  if ($user = civicrm_entity_rules_action_load_user($entity)) {
+    print_r($user);
+    return $user;
+  }
+
+  return civicrm_entity_rules_action_create_user((array) $entity);
+}
+/*
+ * @todo Add some access params!
+ */
+function _civicrm_entity_rules_access() {
+  return TRUE;
+}
+function _civicrm_entity_rules_attach_options($fieldname, $info, $arg3) {
+  return $info['property defaults']['options list'];
+}

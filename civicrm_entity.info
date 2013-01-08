@@ -1,0 +1,7 @@
+name = CiviCRM Entities
+description = "Declare CiviCRM entities as Drupal entities"
+dependencies[] = civicrm
+dependencies[] = entity
+package = CiviCRM
+core = 7.x
+version = 4.2.alpha
