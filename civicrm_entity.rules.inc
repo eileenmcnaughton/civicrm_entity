@@ -241,14 +241,14 @@ function civicrm_entity_rules_events_variables($label, $type, $civicrm_entity = 
 
 /**
  * Implementation of hook_rules_action_info().
- */
+
 function civicrm_entity_action_info() {
   return array(
     'create_civicrm_entity' => array(
       'label' => t('Create CiviCRM Entity'),
       'arguments' => array(
         'type' => array(
-          'type' => 'value',
+          'type' => 'civicrm_entity',
           'label' => t('Entity Type.')
         )
       ),
@@ -256,7 +256,7 @@ function civicrm_entity_action_info() {
     )
   );
 }
-
+ */
 /*
  *
  */
@@ -335,7 +335,6 @@ function civicrm_entity_rules_action_create_user(array $contact) {
 */
 function civicrm_entity_rules_action_load_create_user($entity) {
   if ($user = civicrm_entity_rules_action_load_user($entity)) {
-    print_r($user);
     return $user;
   }
 
