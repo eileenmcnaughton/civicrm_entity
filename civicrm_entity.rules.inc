@@ -312,8 +312,7 @@ function civicrm_entity_rules_action_create_user(array $contact) {
   $config->userSystem->checkUserNameEmailExists($params, $errors);
 
   if (! empty($errors)) {
-    print_r($errors);
-    throw new Exception("undiagnosed error - need to find out how this could occur");
+    throw new Exception(" could not create user record " . $errors['email']);
   }
 
   $params['cms_name'] = $params['name'] = $user['name'] = $contact['display_name'];
@@ -323,7 +322,7 @@ function civicrm_entity_rules_action_create_user(array $contact) {
 
   $user_object = (object) $user;
   //civi doesn't do this when created off Civi Form
-  CRM_Core_BAO_UFMatch::synchronizeUFMatch($user_object, $user_object->uid, $contact['email']);
+  CRM_Core_BAO_UFMatch::synchronizeUFMatch($user_object, $user_object->uid, $contact['email'], 'drupal');
   return array(
     'civicrm_user' => $user_object
   );
