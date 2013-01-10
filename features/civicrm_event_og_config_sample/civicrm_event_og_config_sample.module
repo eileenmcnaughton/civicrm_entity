@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the CiviCRM Event OG Config (sample) feature.
+ */
+
+include_once 'civicrm_event_og_config_sample.features.inc';
