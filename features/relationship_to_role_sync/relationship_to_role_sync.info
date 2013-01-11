@@ -1,0 +1,14 @@
+name = relationship to role sync
+description = Creates Drupal Roles off CiviCRM relationships
+core = 7.x
+package = CiviCRM
+version = 7.x-1.0-alpha1
+project = relationship_to_role_sync
+dependencies[] = civicrm
+dependencies[] = civicrm_entity
+dependencies[] = entity
+dependencies[] = features
+dependencies[] = rules
+features[features_api][] = api:1
+features[rules_config][] = rules_relationship_created
+features[user_role][] = Case Managers

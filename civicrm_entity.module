@@ -12,7 +12,12 @@
  * $Id$
  *
  */
-
+/*
+ * Implements hook_menu
+ *
+ * It may be that civicrm drupals entities could be 'fieldable' - refer to drupal fields
+ * with the linkages held in drupal? This code is not doing much right now
+ */
 function civicrm_entity_menu(){
   $items['admin/structure/types/manage/civicrm_relationship_type'] = array(
     'title' => 'CiviCRM Relationship Type Settings',
@@ -40,14 +45,14 @@ function civicrm_entity_enable() {
 }
 
 /*
- * Implemenation of views_data_alte()
+ * Implemenation of views_data_alter()
 */
 function civicrm_entity_views_data_alter($data) {
 // here for debug really
 }
 
 /**
- * Implements hook_schema().
+ * Implements hook_schema_alter().
  *
  * Note we are just doing this in a very simple form relationship type which is not defined
  * by views at this stage. We have the problem that the CiviCRM views
@@ -56,7 +61,38 @@ function civicrm_entity_views_data_alter($data) {
  *
  */
 
-
+function civicrm_entity_schema_alter(&$schema) {
+  $schema['civicrm_relationship_type'] = array(
+    'description' => 'The base table for CiviCRM Relationship Types',
+    'fields' => array(
+      'id' => array(
+        'description' => 'The Relationship type id.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'label_a_b' => array(
+        'description' => 'Relationship Label',
+        'type' => 'text',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'is_active' => array(
+        'description' => 'Relationship Type is enabled',
+        'type' => 'integer',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+}
+/*
+ * This approach may not be required as using the schema_alter hook (as opposed to
+ * schema_hook) seems to get around a bunch of the reasons I used a separate schema
+ */
 function civicrm_entity_get_schema($table) {
   $schema['civicrm_relationship_type'] = array(
     'description' => 'The base table for ' . $table,
@@ -89,6 +125,8 @@ function civicrm_entity_get_schema($table) {
 
 /*
  * Here we declare Selected CiviCRM entities to Drupal
+ *
+ * This is necessary for entity module to pick them up
  *
  */
 function civicrm_entity_entity_info() {
@@ -128,7 +166,7 @@ function civicrm_entity_entity_info() {
   }
 
   $info['civicrm_relationship_type']['views controller class'] = 'CiviCRMEntityDefaultViewsController';
-  $info['civicrm_relationship_type']['civicrm base table'] = 'civicrm_relationship_type';
+  $info['civicrm_relationship_type']['base table'] = 'civicrm_relationship_type';
   /*
   $info['civicrm_entity'] = array(
     'description' => 'CiviCRM Entity',
@@ -167,6 +205,8 @@ function civicrm_entity_entity_info() {
  * Some trickiness here as declaring the 'schema' via our
  * special civi schema function seems to cause fields to be declared twice if we
  * us property_info rather than property_info_alter
+ *
+ * At the moment civicrm_relationship_type is the only entity being managed through 'our' schema
  */
 function civicrm_entity_entity_property_info_alter(&$info) {
   if (! civicrm_initialize(TRUE)) {
@@ -215,11 +255,6 @@ function _civicrm_entity_labels($entity) {
 }
 
 /*
- * We reformat the enabled entities for the data info which is looking for
- *   array('Event' => 'civicrm_event');
- */
-
-/*
  * Calculate fields for entities
 */
 
@@ -241,7 +276,8 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
     $types = array(
       1 => 'integer',
       2 => 'text',
-      32 => 'text'
+      32 => 'text',
+      16 => 'integer',
     );
     if (! empty($field_specs['type']) && array_key_exists($field_specs['type'], $types)) {
       $info[$fieldname] = array(
@@ -249,7 +285,9 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
         'type' => $types[$field_specs['type']],
         'sanitize' => 'check_plain'
       );
-
+      if($field_specs['type'] == 16){
+        $info[$fieldname]['size'] = 'tiny';
+      }
       /* this is a semi-reliable way of distinguishing 'real' fields from pseudofields
       // and custom fields and impacts on views (which is only implemented in a very minor way
       // at this stage because it is 'blocked' by the default views install
@@ -361,6 +399,9 @@ class CivicrmEntityController extends EntityAPIController {
    */
   public function load($ids = array(), $conditions = array()) {
     $entities = array();
+    if(!civicrm_initialize(TRUE)){
+      return;
+    }
   // not sure about revisioning out at this stage - I don't know if it could have any later use
     // Revisions are not statically cached, and require a different query to
     // other conditions, so separate the revision id into its own variable.
@@ -371,7 +412,6 @@ class CivicrmEntityController extends EntityAPIController {
     else {
       $revision_id = FALSE;
     }
-
     /*
      * this seems 'harmless' - but not necessarily relevant?
      * ie. deals with caching on the drupal side
@@ -396,14 +436,13 @@ class CivicrmEntityController extends EntityAPIController {
      * OK - here is where we will actually 'Do' something that is Civi-Specific
      * In drupal land $ids = FALSE would load all - let's only do specifix
      */
-
     // Load any remaining entities from the database. This is the case if $ids
     // is set to FALSE (so we load all entities), if there are any ids left to
     // load, if loading a revision, or if $conditions was passed without $ids.
     if ($ids === FALSE || $ids || $revision_id || ($conditions && !$passed_ids)) {
       // Build the query.
       foreach ($ids as $id){
-        $civiEntity = civicrm_api('contact', 'getsingle', array('version' => 3, 'id' => $id));
+        $civiEntity = civicrm_api($this->entityInfo['description'], 'getsingle', array('version' => 3, 'id' => $id));
         $queried_entities[$civiEntity['id']] = (object) $civiEntity;
       }
     }
@@ -433,7 +472,6 @@ class CivicrmEntityController extends EntityAPIController {
       }
       $entities = $passed_ids;
     }
-
     return $entities;
   }
 
@@ -488,8 +526,8 @@ class CiviCRMEntityDefaultViewsController extends EntityDefaultViewsController {
   public function views_data() {
     $data = array();
     $this->relationships = array();
-    if (!empty($this->info['civicrm base table'])) {
-      $table = $this->info['civicrm base table'];
+    if (!empty($this->info['base table'])) {
+      $table = $this->info['base table'];
       // Define the base group of this table. Fields that don't
       // have a group defined will go into this field by default.
       $data[$table]['table']['group']  = drupal_ucfirst($this->info['label']);
@@ -516,10 +554,10 @@ class CiviCRMEntityDefaultViewsController extends EntityDefaultViewsController {
    */
   protected function schema_fields() {
     // so we are not using the 'normal' schema function here due to the problems discussed in the readme
-    if(empty($this->info['civicrm base table'])){
+    if(empty($this->info['base table'])){
       return array();
     }
-    $schema = civicrm_entity_get_schema($this->info['civicrm base table']);
+    $schema = civicrm_entity_get_schema($this->info['base table']);
     $properties = entity_get_property_info($this->type) + array('properties' => array());
     $data = array();
     // we will take out the reliance on other schema related checks here
