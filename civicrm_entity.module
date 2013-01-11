@@ -281,7 +281,7 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
     );
     if (! empty($field_specs['type']) && array_key_exists($field_specs['type'], $types)) {
       $info[$fieldname] = array(
-        'label' => $field_specs['title'],
+        'label' => empty($field_specs['title'])? 'title not defined see CRM-11547': $field_specs['title'],
         'type' => $types[$field_specs['type']],
         'sanitize' => 'check_plain'
       );
