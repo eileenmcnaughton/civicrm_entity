@@ -1,16 +1,35 @@
 civicrm_entity
 ==============
 
-This module is intended to expose CiviCRM as an entity within Drupal.
+This module is intended to expose CiviCRM as an entity within Drupal to allow 
+rules integration, entity references, attachment views.
 
 =========================================================================
 Schema declaration
 =========================================================================
 This is being attempted WITHOUT declaring using the _schema hook because hook_schema
-appears to only support the tables being in the same database. Note that it IS possible
-to declare datetime fields in the hook_schema using the 'mysql_type' parameter
-=========================================================================
+appears to only support the tables being in the same database. 
 
+Note that it IS possible
+to declare datetime fields in the hook_schema using the 'mysql_type' parameter
+http://drupal.org/node/159605
+Enum fields don't seem to be possible
+
+I have over-riden classes & used a 'copy' of the drupal schema stuff with a civicrm schema
+function but have limited to civicrm_relationship_type for now as this isn't 
+declared within the civicrm_views module - whose implementation somewhat clashes
+
+=========================================================================
+Rules Integration
+==========================================================================
+
+=========================================================================
+Views clash
+=========================================================================
+The civicrm_views module uses the views_data hook rather than views_data_alter() which
+appears to clash
+
+The entity module 
 Focus so far has been on Rules - to the extent it is now possible to take action on 
 a drupal user based on a civicrm action
 
