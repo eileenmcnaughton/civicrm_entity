@@ -19,6 +19,69 @@
 function civicrm_entity_enable() {
   db_query("UPDATE {system} SET weight = 110 WHERE name = 'civicrm_entity'");
 }
+
+/**
+ * Implements hook_entity_info().
+ *
+ * Note we are just doing this for relationship type which is not defined
+ * by views at this stage. We have the problem that the CiviCRM views
+ * integration uses the _data hook & would need to use _data_alter hook
+ * to be compatible with entity views integration
+ */
+function civicrm_entity_entity_info() {
+  return array(
+    'civicrm_relationship_type' => array(
+      'label' => t('CiviCRM Relationship Type'),
+      'base table' => 'civicrm_relationship_type',
+      // Entity API needs to know about your module for the views integration to work
+      'module' => 'civicrm_entity',
+      'views controller class' => 'CiviCRMEntityDefaultViewsController',
+      ),
+    );
+
+}
+/**
+ * Implements hook_schema().
+ *
+ * Note we are just doing this for relationship type which is not defined
+ * by views at this stage. We have the problem that the CiviCRM views
+ * integration uses the _data hook & would need to use _data_alter hook
+ * to be compatible with entity views integration
+ *
+ */
+
+
+function civicrm_entity_get_schema($table) {
+dpm($table);
+  $schema['civicrm_relationship_type'] = array(
+    'description' => 'The base table for nodes.',
+    'fields' => array(
+      'id' => array(
+        'description' => 'The primary identifier for a node.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'label_a_b' => array(
+        'description' => 'The current {node_revision}.vid version identifier.',
+        'type' => 'text',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'is_reserved' => array(
+        'description' => 'The current {node_revision}.vid version identifier.',
+        'type' => 'integer',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+  return empty($schema[$table])? array() : $schema[$table];
+}
+
 /*
  * Here we declare Selected CiviCRM entities to Drupal
  */
@@ -102,7 +165,8 @@ function _civicrm_entity_enabled_entities() {
     'civicrm_event' => 'event',
     'civicrm_contact' => 'contact',
     'civicrm_participant' => 'participant',
-    'civicrm_relationship' => 'relationship'
+    'civicrm_relationship' => 'relationship',
+    'civicrm_relationship_type' => 'relationship_type',
   );
 }
 
