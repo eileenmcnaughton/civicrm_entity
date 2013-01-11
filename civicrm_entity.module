@@ -49,6 +49,7 @@ function civicrm_entity_enable() {
 */
 function civicrm_entity_views_data_alter($data) {
 // here for debug really
+//dpm($data);
 }
 
 /**
@@ -62,6 +63,10 @@ function civicrm_entity_views_data_alter($data) {
  */
 
 function civicrm_entity_schema_alter(&$schema) {
+  $schemaEntities = array('civicrm_relationship_type' => 'relationship_type');
+  foreach ($schemaEntities as $drupal_entity => $civicrm_entity){
+    $schema = $schema + civicrm_entity_get_schema($drupal_entity);
+  }
   $schema['civicrm_relationship_type'] = array(
     'description' => 'The base table for CiviCRM Relationship Types',
     'fields' => array(
@@ -94,33 +99,46 @@ function civicrm_entity_schema_alter(&$schema) {
  * schema_hook) seems to get around a bunch of the reasons I used a separate schema
  */
 function civicrm_entity_get_schema($table) {
-  $schema['civicrm_relationship_type'] = array(
+  if(!civicrm_initialize(TRUE)){
+    return;
+  }
+
+  $schema[$table] = array(
     'description' => 'The base table for ' . $table,
-    'fields' => array(
-      'id' => array(
-        'description' => 'The Relationship type id.',
-        'type' => 'serial',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ),
-      'label_a_b' => array(
-        'description' => 'Relationship Label',
-        'type' => 'text',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'is_active' => array(
-        'description' => 'Relationship Type is enabled',
-        'type' => 'integer',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-    ),
     'primary key' => array('id'),
+    'fields' => array(
+     ),
   );
+  $civicrm_entity = substr($table, 8);
+
+  $fields = civicrm_api($civicrm_entity, 'getfields', array('version' => 3));
+  $fields= $fields['values'];
+  foreach ($fields as $fieldname => $field_spec){
+    if(empty($field_spec['name'])){
+      continue;
+    }
+    $unique_name = empty($field_spec['uniqueName'])? $fieldname : $field_spec['uniqueName'];
+    $schema[$table]['fields'][$unique_name] = array(
+      'real_field' => $field_spec['name'],
+      'description' => $field_spec['title'],
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+    );
+  }
   return empty($schema[$table]) ? array() : $schema[$table];
+}
+
+function civicrm_entity_get_field_type($field_spec){
+  if($field_spec['name'] == 'id'){
+    return array('type' => 'serial');
+  }
+
+  switch ($field_spec['type']){
+    case CRM_Utils_Type::T_INT :
+      return array('type' => 'integer');
+    case CRM_Utils_Type::T_TEXT :
+      return array('type' => 'text');
+  }
 }
 
 /*
