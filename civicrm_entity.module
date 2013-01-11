@@ -23,7 +23,7 @@ function civicrm_entity_enable() {
 /**
  * Implements hook_schema().
  *
- * Note we are just doing this for relationship type which is not defined
+ * Note we are just doing this in a very simple form relationship type which is not defined
  * by views at this stage. We have the problem that the CiviCRM views
  * integration uses the _data hook & would need to use _data_alter hook
  * to be compatible with entity views integration
@@ -32,25 +32,24 @@ function civicrm_entity_enable() {
 
 
 function civicrm_entity_get_schema($table) {
-dpm($table);
   $schema['civicrm_relationship_type'] = array(
-    'description' => 'The base table for nodes.',
+    'description' => 'The base table for ' . $table,
     'fields' => array(
       'id' => array(
-        'description' => 'The primary identifier for a node.',
+        'description' => 'The Relationship type id.',
         'type' => 'serial',
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
       'label_a_b' => array(
-        'description' => 'The current {node_revision}.vid version identifier.',
+        'description' => 'Relationship Label',
         'type' => 'text',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => '',
       ),
-      'is_reserved' => array(
-        'description' => 'The current {node_revision}.vid version identifier.',
+      'is_active' => array(
+        'description' => 'Relationship Type is enabled',
         'type' => 'integer',
         'unsigned' => TRUE,
         'not null' => TRUE,
@@ -149,6 +148,23 @@ function _civicrm_entity_enabled_entities() {
     'civicrm_relationship_type' => 'relationship_type',
   );
 }
+/*
+ * OK v basic version of what the 'label' should be for each of these tables
+ * we can & probably should create a call back function
+ *
+ * http://api.drupal.org/api/drupal/modules!system!system.api.php/function/hook_entity_info/7
+ */
+function _civicrm_entity_labels($entity) {
+
+  $labels = array(
+    'civicrm_event' => 'title',
+    'civicrm_contact' => 'display_name',
+    'civicrm_participant' => 'source',
+    'civicrm_relationship' => 'description',
+    'civicrm_relationship_type' => 'label_a_b',
+  );
+  return $labels[$entity];
+}
 
 /*
  * We reformat the enabled entities for the data info which is looking for
@@ -211,8 +227,9 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
   return $info;
 }
 function civicrm_entity_($entity) {
+  dpm($entity, 'path');
   return array(
-    'path' => 'civicrm-entity/' . $entity->id
+    'path' => "civicrm-entity-$entity/" . $entity->id
   );
 }
 
