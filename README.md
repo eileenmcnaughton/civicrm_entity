@@ -3,6 +3,14 @@ civicrm_entity
 
 This module is intended to expose CiviCRM as an entity within Drupal.
 
+=========================================================================
+Schema declaration
+=========================================================================
+This is being attempted WITHOUT declaring using the _schema hook because hook_schema
+appears to only support the tables being in the same database. Note that it IS possible
+to declare datetime fields in the hook_schema using the 'mysql_type' parameter
+=========================================================================
+
 Focus so far has been on Rules - to the extent it is now possible to take action on 
 a drupal user based on a civicrm action
 
