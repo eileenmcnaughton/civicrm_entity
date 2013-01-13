@@ -44,12 +44,12 @@ function civicrm_entity_rules_data_info() {
       if (! empty($field_specs['type']) && $field_specs['type'] == 1) {
         if (CRM_Utils_Array::value('FKClassName', $field_specs) == 'CRM_Contact_DAO_Contact') {
           $info[$drupal_entity]['property_info'][$fieldname] = array(
-            'label' => $field_specs['title'],
+            'label' => empty($field_specs['title']) ? 'label not defined in CiviCRM schema' : $field_specs['title'],
             'type' => 'civicrm_contact'
           );
         }
         $info[$drupal_entity]['property_info'][$fieldname] = array(
-          'label' => $field_specs['title'],
+          'label' => empty($field_specs['title']) ? 'label not defined in CiviCRM schema' : $field_specs['title'],
           'type' => 'integer'
         );
         if (! empty($field_specs['options'])) {

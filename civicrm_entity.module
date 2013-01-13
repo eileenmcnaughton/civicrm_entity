@@ -63,11 +63,13 @@ function civicrm_entity_views_data_alter($data) {
  */
 
 function civicrm_entity_schema_alter(&$schema) {
-  $schemaEntities = array('civicrm_relationship_type' => 'relationship_type');
+  $schemaEntities = _civicrm_entity_enabled_entities();;
   foreach ($schemaEntities as $drupal_entity => $civicrm_entity){
-    $schema = $schema + civicrm_entity_get_schema($drupal_entity);
+    $schema[$drupal_entity] = civicrm_entity_get_schema($drupal_entity);
   }
-  $schema['civicrm_relationship_type'] = array(
+
+
+ /* $schema['civicrm_relationship_type'] = array(
     'description' => 'The base table for CiviCRM Relationship Types',
     'fields' => array(
       'id' => array(
@@ -93,6 +95,7 @@ function civicrm_entity_schema_alter(&$schema) {
     ),
     'primary key' => array('id'),
   );
+  */
 }
 /*
  * This approach may not be required as using the schema_alter hook (as opposed to
@@ -102,7 +105,7 @@ function civicrm_entity_get_schema($table) {
   if(!civicrm_initialize(TRUE)){
     return;
   }
-
+  $schema = array();
   $schema[$table] = array(
     'description' => 'The base table for ' . $table,
     'primary key' => array('id'),
@@ -120,12 +123,13 @@ function civicrm_entity_get_schema($table) {
     $unique_name = empty($field_spec['uniqueName'])? $fieldname : $field_spec['uniqueName'];
     $schema[$table]['fields'][$unique_name] = array(
       'real_field' => $field_spec['name'],
-      'description' => $field_spec['title'],
+      'description' => empty($field_spec['title'])? 'No description in CiviCRM Schema for field': $field_spec['title'],
       'unsigned' => TRUE,
       'not null' => TRUE,
-    );
+    ) + civicrm_entity_get_field_type($field_spec);
   }
   return empty($schema[$table]) ? array() : $schema[$table];
+
 }
 
 function civicrm_entity_get_field_type($field_spec){
@@ -135,10 +139,48 @@ function civicrm_entity_get_field_type($field_spec){
 
   switch ($field_spec['type']){
     case CRM_Utils_Type::T_INT :
-      return array('type' => 'integer');
+    case CRM_Utils_Type::T_BOOL :
+    case CRM_Utils_Type::T_BOOLEAN :
+      return array(
+        'type' => 'integer'
+      );
+    case CRM_Utils_Type::T_MONEY :
+    case CRM_Utils_Type::T_FLOAT :
+      return array(
+        'type' => 'float'
+      );
     case CRM_Utils_Type::T_TEXT :
-      return array('type' => 'text');
+    case CRM_Utils_Type::T_STRING :
+    case CRM_Utils_Type::T_LONGTEXT :
+    case CRM_Utils_Type::T_CCNUM :
+    case CRM_Utils_Type::T_EMAIL :
+    case CRM_Utils_Type::T_URL :
+      return array(
+        'type' => 'text'
+      );
+    case CRM_Utils_Type::T_DATE :
+    case CRM_Utils_Type::T_TIME :
+      return array(
+        'type' => 'varchar',
+        'mysql_type' => 'datetime',
+      );
+    case CRM_Utils_Type::T_ENUM :
+      return array(
+        'type' => 'varchar',
+        'mysql_type' => 'enum',
+      );
+    case CRM_Utils_Type::T_BLOB :
+    case CRM_Utils_Type::T_MEDIUMBLOB :
+      return array(
+        'type' => 'blob',
+      );
+    case CRM_Utils_Type::T_TIMESTAMP :
+      return array(
+        'type' => 'varchar',
+        'mysql_type' => 'timestamp',
+      );
   }
+  return array('type' => $field_spec['type']);
 }
 
 /*
@@ -181,39 +223,10 @@ function civicrm_entity_entity_info() {
       )
     )
     ;
+    $info[$drupal_entity]['base table'] = $drupal_entity;
   }
-
+  //ok - so we are not doing this for the ones declared in views until more testing has been done
   $info['civicrm_relationship_type']['views controller class'] = 'CiviCRMEntityDefaultViewsController';
-  $info['civicrm_relationship_type']['base table'] = 'civicrm_relationship_type';
-  /*
-  $info['civicrm_entity'] = array(
-    'description' => 'CiviCRM Entity',
-    'optional' => TRUE,
-    'label' => "CiviCRM Entity",
-    'controller class' => 'civicrmEntityController',
-    'views controller class' => 'CiviCRMEntityDefaultViewsController',
-    'fieldable' => FALSE,
-    'bundles' => array(
-      'randomField' => array(
-        'properties' => array(
-          'label' => 'field',
-          'type' => 'text',
-          'description' => 'desc'
-        )
-      )
-    ),
-    'view modes' => array(
-      'full' => array(
-        'label' => t('Default'),
-        'custom settings' => FALSE
-      )
-    ),
-    'entity keys' => array(
-      'id' => 'id',
-      'name' => 'ID'
-    )
-  );
-  */
   return $info;
 }
 
@@ -267,7 +280,7 @@ function _civicrm_entity_labels($entity) {
     'civicrm_contact' => 'display_name',
     'civicrm_participant' => 'source',
     'civicrm_relationship' => 'description',
-    'civicrm_relationship_type' => 'label_a_b',
+    'civicrm_relationship_type' => 'description',
   );
   return $labels[$entity];
 }
@@ -320,7 +333,7 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
       // at the moment we are being cautious
       if (CRM_Utils_Array::value('FKClassName', $field_specs) == 'CRM_Contact_DAO_Contact') {
         $info[$fieldname . '_contact'] = array(
-          'label' => $field_specs['title'],
+          'label' => empty($field_specs['title']) ? 'Title not defined in schema' : $field_specs['title'],
           'type' => 'civicrm_contact',
           'property_info' => array(
             'field' => $fieldname,

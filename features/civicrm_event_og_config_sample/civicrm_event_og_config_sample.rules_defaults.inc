@@ -12,7 +12,8 @@ function civicrm_event_og_config_sample_default_rules_configuration() {
   $items['rules_add_participant_to_og_event'] = entity_import('rules_config', '{ "rules_add_participant_to_og_event" : {
       "LABEL" : "add participant to og event",
       "PLUGIN" : "reaction rule",
-      "REQUIRES" : [ "rules", "civicrm_entity", "og", "civicrm" ],
+      "TAGS" : [ "CiviCRM" ],
+      "REQUIRES" : [ "rules", "og", "civicrm" ],
       "ON" : [ "civicrm_participant_create" ],
       "DO" : [
         { "entity_query" : {
@@ -38,6 +39,7 @@ function civicrm_event_og_config_sample_default_rules_configuration() {
   $items['rules_create_event_og'] = entity_import('rules_config', '{ "rules_create_event_og" : {
       "LABEL" : "create-event-og",
       "PLUGIN" : "reaction rule",
+      "TAGS" : [ "CiviCRM" ],
       "REQUIRES" : [ "rules", "civicrm" ],
       "ON" : [ "civicrm_event_create" ],
       "IF" : [

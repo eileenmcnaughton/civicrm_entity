@@ -1,7 +1,7 @@
 name = CiviCRM Event OG Config (sample)
 description = Sample CiviCRM Events / OG Integration. Note it is set to create ogs for events of type conference and add participants to it as members
 core = 7.x
-package = Features
+package = CiviCRM
 version = 7.x-1.0-alpha1
 project = civicrm_event_og_config_sample
 dependencies[] = civicrm
