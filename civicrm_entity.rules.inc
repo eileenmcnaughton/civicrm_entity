@@ -81,7 +81,7 @@ function civicrm_entity_rules_event_info() {
         'label' => t("!entity has been created", array(
           '!entity' => $entity_name
         )),
-        'group' => 'CiviCRM ' . $entity,
+        'group' => $entity_name,
         'module' => 'civicrm',
         'access_callback' => '_civicrm_entity_rules_access',
         'variables' => civicrm_entity_rules_events_variables(t('Created !entity', array(
@@ -89,7 +89,7 @@ function civicrm_entity_rules_event_info() {
         )), $entity, $civicrm_entity)
       );
       $events[$entity . '_edit'] = array(
-        'group' => 'CiviCRM ' . $entity,
+        'group' => $entity_name,
         'label' => t("!entity has been updated", array(
           '!entity' => $entity_name
         )),
@@ -98,7 +98,7 @@ function civicrm_entity_rules_event_info() {
         )), $entity)
       );
       $events[$entity . '_view'] = array(
-        'group' => 'CiviCRM ' . $entity,
+        'group' => $entity_name,
         'label' => t("!entity has been viewed", array(
           '!entity' => $entity_name
         )),
@@ -107,7 +107,7 @@ function civicrm_entity_rules_event_info() {
         )), $entity)
       );
       $events[$entity . '_delete'] = array(
-        'group' => 'CiviCRM ' . $entity_name,
+        'group' => $entity_name,
         'label' => t("!entity has been deleted", array(
           '!entity' => $entity_name
         )),
