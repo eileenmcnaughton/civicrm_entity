@@ -13,7 +13,7 @@ function civicrm_event_og_config_sample_default_rules_configuration() {
       "LABEL" : "add participant to og event",
       "PLUGIN" : "reaction rule",
       "TAGS" : [ "CiviCRM" ],
-      "REQUIRES" : [ "rules", "og", "civicrm" ],
+      "REQUIRES" : [ "rules", "civicrm", "og" ],
       "ON" : [ "civicrm_participant_create" ],
       "DO" : [
         { "entity_query" : {
@@ -31,7 +31,7 @@ function civicrm_event_og_config_sample_default_rules_configuration() {
             "PROVIDE" : { "civicrm_user" : { "civicrm_user" : "Created\\/ Loaded Drupal User" } }
           }
         },
-        { "og_subcribe_user" : { "user" : [ "civicrm-user" ], "group" : [ "event-og:0" ] } },
+        { "og_subcribe_user" : { "user" : [ "civicrm-user" ], "group" : [ "event-og:0:group" ] } },
         { "drupal_message" : { "message" : "[loaded-user:name] : [loaded-user:uid] has been added to the OG for this Event [event-og:0:nid]\\r\\n\\r\\n" } }
       ]
     }

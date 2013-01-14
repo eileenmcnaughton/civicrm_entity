@@ -148,7 +148,7 @@ function civicrm_event_og_config_sample_field_default_fields() {
   // Translatables
   // Included for use with string extractors like potx.
   t('Body');
-  t('eventid');
+  t('CiviCRM Event ID');
 
   return $fields;
 }
