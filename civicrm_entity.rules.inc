@@ -90,6 +90,8 @@ function civicrm_entity_rules_event_info() {
       );
       $events[$entity . '_edit'] = array(
         'group' => $entity_name,
+        'module' => 'civicrm',
+        'access_callback' => '_civicrm_entity_rules_access',
         'label' => t("!entity has been updated", array(
           '!entity' => $entity_name
         )),
@@ -99,6 +101,8 @@ function civicrm_entity_rules_event_info() {
       );
       $events[$entity . '_view'] = array(
         'group' => $entity_name,
+        'module' => 'civicrm',
+        'access_callback' => '_civicrm_entity_rules_access',
         'label' => t("!entity has been viewed", array(
           '!entity' => $entity_name
         )),
@@ -108,6 +112,8 @@ function civicrm_entity_rules_event_info() {
       );
       $events[$entity . '_delete'] = array(
         'group' => $entity_name,
+        'module' => 'civicrm',
+        'access_callback' => '_civicrm_entity_rules_access',
         'label' => t("!entity has been deleted", array(
           '!entity' => $entity_name
         )),
@@ -127,6 +133,8 @@ function civicrm_entity_rules_condition_info() {
   return array(
     'civicrm_entity_has_user' => array(
       'label' => t('Drupal User Account exists (not yet implemented'),
+      'module' => 'civicrm',
+      'access_callback' => '_civicrm_entity_rules_access',
       'parameter' => array(
         'civicrm_contact' => array(
           'label' => t('CiviCRM Contact'),
@@ -153,6 +161,8 @@ function civicrm_entity_rules_action_info() {
   return array(
     'civicrm_entity_rules_action_load_user' => array(
       'label' => t('Load Drupal User Account'),
+      'module' => 'civicrm',
+      'access_callback' => '_civicrm_entity_rules_access',
       'parameter' => array(
         'civicrm_contact' => array(
           'label' => t('CiviCRM Contact'),
@@ -166,10 +176,13 @@ function civicrm_entity_rules_action_info() {
         )
       ),
       'group' => t('CiviCRM'),
+      'access callback' => 'payment_rules_access',
       'base' => 'civicrm_entity_rules_action_load_user'
     ),
     'civicrm_entity_rules_action_create_user' => array(
       'label' => t('Create Linked Drupal User Account'),
+      'module' => 'civicrm',
+      'access_callback' => '_civicrm_entity_rules_access',
       'parameter' => array(
         'civicrm_contact' => array(
           'label' => t('CiviCRM Contact'),
@@ -187,6 +200,8 @@ function civicrm_entity_rules_action_info() {
     ),
     'civicrm_entity_rules_action_load_create_user' => array(
       'label' => t('Create or Load Linked Drupal User Account'),
+      'module' => 'civicrm',
+      'access_callback' => '_civicrm_entity_rules_access',
       'parameter' => array(
         'civicrm_contact' => array(
           'label' => t('CiviCRM Contact'),
@@ -195,7 +210,7 @@ function civicrm_entity_rules_action_info() {
       ),
       'provides' => array(
         'civicrm_user' => array(
-          'label' => t('Created/ Loaded Drupal User'),
+          'label' => t('Created or Loaded Drupal User'),
           'type' => 'user'
         )
       ),
@@ -204,6 +219,18 @@ function civicrm_entity_rules_action_info() {
     )
   );
 }
+
+/*
+ * User access function
+ *
+ * @param String $type
+ * @param String $name
+ */
+function civicrm_entity_rules_access($type, $name) {
+  return user_access('civicrm_entity.rules.administer');
+}
+
+
 function civicrm_entity_rules_events_variables($label, $type, $civicrm_entity = NULL) {
   $vars = array();
   /*
