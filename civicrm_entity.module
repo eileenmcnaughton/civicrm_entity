@@ -24,7 +24,7 @@ function civicrm_entity_menu(){
     'description' => 'Configure the settings for the CiviCRM Relationship Type.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('civicrm_entity_settings'),
-    'access arguments' => array('administer Relationship Type'),
+    'access arguments' => array('administer CiviCRM'),
     'weight' => -10,
   );
   $items['admin/civicrm_entity/settings'] = array(
@@ -47,7 +47,7 @@ function civicrm_entity_enable() {
 function civicrm_entity_permission() {
   return array(
     'civicrm_entity.rules.administer' => array(
-      'title' => t('Administer CiviCRM rule configurations -give with care'),
+      'title' => t('Administer CiviCRM rule configurations'),
       'restrict access' => TRUE,
     ),
   );
