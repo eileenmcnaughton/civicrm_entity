@@ -49,10 +49,21 @@ function civicrm_entity_permission() {
     'civicrm_entity.rules.administer' => array(
       'title' => t('Administer CiviCRM rule configurations -give with care'),
       'restrict access' => TRUE,
-    )
+    ),
   );
 }
 
+function civicrm_entity_access($op, $entity, $account, $entity_type){
+  if($op == 'view' && $entity_type == 'civicrm_event'){
+    return user_access('view event info');
+  }
+  elseif($op == 'view' && $entity_type == 'civicrm_participant'){
+    return user_access('view event participants');
+  }
+  else{
+    return user_access('administer CiviCRM');
+  }
+}
 
 /*
  * Implemenation of views_data_alter()
@@ -212,6 +223,7 @@ function civicrm_entity_entity_info() {
       'metadata controller class' => 'CivicrmEntityMetadataController',
       'views controller class' => 'CiviCRMEntityDefaultViewsController',
       'fieldable' => FALSE,
+      'access callback' => 'civicrm_entity_access',
       'bundles' => array(
         $drupal_entity => array(
           'label' => t("CiviCRM $drupal_entity"),
@@ -484,7 +496,8 @@ class CivicrmEntityController extends EntityAPIController {
       // Build the query.
       foreach ($ids as $id){
         $civiEntity = civicrm_api($this->entityInfo['description'], 'getsingle', array('version' => 3, 'id' => $id));
-        $queried_entities[$civiEntity['id']] = (object) $civiEntity;
+        // @todo improve this casting
+        $queried_entities[$civiEntity['id']] = new civicrmEntity($civiEntity , 'civicrm_event');
       }
     }
 
