@@ -23,7 +23,7 @@ function relationship_to_role_sync_default_rules_configuration() {
         { "data_is" : { "data" : [ "civicrm-relationship:is-active" ], "value" : "1" } }
       ],
       "DO" : [
-        { "civicrm_entity_rules_action_load_create_user" : {
+        { "civicrm_entity_action_load_create_user" : {
             "USING" : { "civicrm_contact" : [ "civicrm-relationship:contact-id-a-contact" ] },
             "PROVIDE" : { "civicrm_user" : { "civicrm_user" : "Created\\/ Loaded Drupal User" } }
           }

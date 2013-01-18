@@ -159,7 +159,7 @@ function civicrm_entity_rules_condition_info() {
 */
 function civicrm_entity_rules_action_info() {
   return array(
-    'civicrm_entity_rules_action_load_user' => array(
+    'civicrm_entity_action_load_user' => array(
       'label' => t('Load Drupal User Account'),
       'module' => 'civicrm',
       'access_callback' => '_civicrm_entity_rules_access',
@@ -177,9 +177,9 @@ function civicrm_entity_rules_action_info() {
       ),
       'group' => t('CiviCRM'),
       'access callback' => 'payment_rules_access',
-      'base' => 'civicrm_entity_rules_action_load_user'
+      'base' => 'civicrm_entity_action_load_user'
     ),
-    'civicrm_entity_rules_action_create_user' => array(
+    'civicrm_entity_action_create_user' => array(
       'label' => t('Create Linked Drupal User Account'),
       'module' => 'civicrm',
       'access_callback' => '_civicrm_entity_rules_access',
@@ -196,9 +196,9 @@ function civicrm_entity_rules_action_info() {
         )
       ),
       'group' => t('CiviCRM'),
-      'base' => 'civicrm_entity_rules_action_create_user'
+      'base' => 'civicrm_entity_action_create_user'
     ),
-    'civicrm_entity_rules_action_load_create_user' => array(
+    'civicrm_entity_action_load_create_user' => array(
       'label' => t('Create or Load Linked Drupal User Account'),
       'module' => 'civicrm',
       'access_callback' => '_civicrm_entity_rules_access',
@@ -215,7 +215,7 @@ function civicrm_entity_rules_action_info() {
         )
       ),
       'group' => t('CiviCRM'),
-      'base' => 'civicrm_entity_rules_action_load_create_user'
+      'base' => 'civicrm_entity_action_load_create_user'
     )
   );
 }
@@ -291,81 +291,7 @@ function civicrm_entity_has_user($info) {
   //not yet implemented
 }
 
-/*
- * Given a contact object return the drupal user
- *
- * @param StdClass $entity Contact Std Object
- * @return StdClass $user Drupal User Object
-*/
-function civicrm_entity_rules_action_load_user($entity) {
-  $contact = civicrm_api('uf_match', 'getsingle', array(
-    'version' => 3,
-    'contact_id' => $entity->id
-  ));
-  if (empty($contact['is_error'])) {
-    return array(
-      'civicrm_user' => user_load($contact['uf_id'])
-    );
-  }
-}
 
-/*
- *Given a contact object return the drupal user
- *
- * @param StdClass $entity Contact Std Object
- * @return StdClass $user Drupal User Object
-*/
-function civicrm_entity_rules_action_create_user(array $contact) {
-
-  //we'll use the civicrm sync mechanism to see if Civi can match the contact to an existing user
-  // don't think this is a great approach but will use for now -
-  // could just create the user but no great support for that yet.
-  //@todo what happens if they don't have an email?
-  if (empty($contact['display_name']) || empty($contact['email'])) {
-    $contact = civicrm_api('contact', 'getsingle', array(
-      'version' => 3,
-      'id' => $contact['id'],
-      'sequential' => 1,
-      'return' => 'email,display_name'
-    ));
-  }
-  $params = array(
-    'name' => $contact['display_name'],
-    'mail' => $contact['email'],
-    'email' => $contact['email']
-  );
-  $errors = array();
-  $config = CRM_Core_Config::singleton();
-  $config->userSystem->checkUserNameEmailExists($params, $errors);
-
-  if (! empty($errors)) {
-    throw new Exception(" could not create user record " . $errors['email']);
-  }
-
-  $params['cms_name'] = $params['name'] = $user['name'] = $contact['display_name'];
-  $params['cms_pass'] = $user['pass'] = substr(str_shuffle("abcefghijklmnopqrstuvwxyz"), 0, 8);
-  $user['uid'] = $config->userSystem->createUser($params, 'email');
-  $user['mail'] = $params['mail'];
-
-  $user_object = (object) $user;
-  //civi doesn't do this when created off Civi Form
-  CRM_Core_BAO_UFMatch::synchronizeUFMatch($user_object, $user_object->uid, $contact['email'], 'drupal');
-  return array(
-    'civicrm_user' => $user_object
-  );
-}
-
-
-/*
- * Load or create user as appropriate
-*/
-function civicrm_entity_rules_action_load_create_user($entity) {
-  if ($user = civicrm_entity_rules_action_load_user($entity)) {
-    return $user;
-  }
-
-  return civicrm_entity_rules_action_create_user((array) $entity);
-}
 /*
  * @todo Add some access params!
  */
