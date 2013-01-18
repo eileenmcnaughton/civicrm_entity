@@ -449,7 +449,7 @@ function civicrm_entity_action_create_user(array $contact) {
     throw new Exception(" could not create user record " . $errors['email']);
   }
 
-  $params['cms_name'] = $params['name'] = $user['name'] = $contact['display_name'];
+  $params['cms_name'] = $params['name'] = $user['name'] = !empty($contact['display_name'])? $contact['display_name'] : $params['mail'];
   $params['cms_pass'] = $user['pass'] = substr(str_shuffle("abcefghijklmnopqrstuvwxyz"), 0, 8);
   $user['uid'] = $config->userSystem->createUser($params, 'email');
   $user['mail'] = $params['mail'];
