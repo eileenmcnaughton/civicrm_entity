@@ -407,7 +407,9 @@ function civicrm_entity_metadata_civicrm_entity_get_properties($data, $options, 
 function civicrm_entity_action_load_user($entity) {
   $contact = civicrm_api('uf_match', 'getsingle', array(
     'version' => 3,
-    'contact_id' => $entity->id
+    'contact_id' => $entity->id,
+    'return' => 'uf_id',
+    'domain_id' => civicrm_api('domain', 'getvalue', array('version' => 3, 'return' => 'id', 'current_domain' => TRUE)),
   ));
   if (empty($contact['is_error'])) {
     return array(
@@ -446,7 +448,8 @@ function civicrm_entity_action_create_user(array $contact) {
   $config->userSystem->checkUserNameEmailExists($params, $errors);
 
   if (! empty($errors)) {
-    throw new Exception(" could not create user record " . $errors['email']);
+    drupal_set_message(" could not create user record " . $errors['email']);
+    return FALSE;
   }
 
   $params['cms_name'] = $params['name'] = $user['name'] = !empty($contact['display_name'])? $contact['display_name'] : $params['mail'];
