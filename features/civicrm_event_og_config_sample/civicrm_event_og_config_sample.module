@@ -14,7 +14,7 @@ function civicrm_event_og_config_sample_variable_info($options) {
     return;
   }
   // This is the very minimum we need, some descriptive name.
-  $options = civicrm_api('event', 'getoptions', array('version' => 3, 'field' => 'event_type_id'));
+  $options = array();#civicrm_api('event', 'getoptions', array('version' => 3, 'field' => 'event_type_id'));
   $variable['civicrm_event_og_config_sample_types'] = array(
     'title' => t('Event types for which OGs should be created', array(), $options),
     'type' => 'options',
