@@ -13,13 +13,13 @@ function civicrm_event_og_config_sample_default_rules_configuration() {
       "LABEL" : "add participant to og event",
       "PLUGIN" : "reaction rule",
       "TAGS" : [ "CiviCRM" ],
-      "REQUIRES" : [ "rules", "og", "civicrm" ],
+      "REQUIRES" : [ "rules", "civicrm", "og" ],
       "ON" : [ "civicrm_participant_create" ],
       "DO" : [
         { "entity_query" : {
             "USING" : {
               "type" : "node",
-              "property" : "field_eventid",
+              "property" : "field_civicrm_event",
               "value" : [ "civicrm-participant:event-id" ],
               "limit" : "1"
             },
@@ -31,8 +31,9 @@ function civicrm_event_og_config_sample_default_rules_configuration() {
             "PROVIDE" : { "civicrm_user" : { "civicrm_user" : "Created\\/ Loaded Drupal User" } }
           }
         },
-        { "og_subcribe_user" : { "user" : [ "civicrm-user" ], "group" : [ "event-og:0:group" ] } },
-        { "drupal_message" : { "message" : "[loaded-user:name] : [loaded-user:uid] has been added to the OG for this Event [event-og:0:nid]\\r\\n\\r\\n" } }
+        { "drupal_message" : { "message" : "[civicrm-user:name] : [civicrm-user:uid] has been added to the OG for this Event [event-og:0:nid] event id is [civicrm-participant:event-id]\\r\\n\\r\\n" } },
+        { "og_subcribe_user" : { "user" : [ "civicrm-user" ], "group" : [ "event-og:0" ] } },
+        { "user_unblock" : { "account" : [ "civicrm-user" ] } }
       ]
     }
   }');
@@ -43,7 +44,12 @@ function civicrm_event_og_config_sample_default_rules_configuration() {
       "REQUIRES" : [ "rules", "civicrm" ],
       "ON" : [ "civicrm_event_create" ],
       "IF" : [
-        { "data_is" : { "data" : [ "civicrm-event:event-type-id" ], "value" : "1" } }
+        { "data_is" : {
+            "data" : [ "civicrm-event:event-type-id" ],
+            "op" : "IN",
+            "value" : { "value" : { "6" : "6" } }
+          }
+        }
       ],
       "DO" : [
         { "entity_create" : {
@@ -57,8 +63,8 @@ function civicrm_event_og_config_sample_default_rules_configuration() {
           }
         },
         { "data_set" : {
-            "data" : [ "entity-created:field-eventid" ],
-            "value" : [ "civicrm-event:id" ]
+            "data" : [ "entity-created:field_civicrm_event" ],
+            "value" : [ "civicrm-event" ]
           }
         }
       ]
