@@ -17,6 +17,7 @@ dependencies[] = rules
 features[features_api][] = api:1
 features[field][] = node-og_event-body
 features[field][] = node-og_event-field_civicrm_event
+features[field][] = node-og_event-group_group
 features[node][] = og_event
 features[rules_config][] = rules_add_participant_to_og_event
 features[rules_config][] = rules_create_event_og
