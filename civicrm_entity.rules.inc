@@ -131,8 +131,8 @@ function civicrm_entity_rules_event_info() {
  */
 function civicrm_entity_rules_condition_info() {
   return array(
-    'civicrm_entity_has_user' => array(
-      'label' => t('Drupal User Account exists (not yet implemented'),
+    'civicrm_entity_user_exists' => array(
+      'label' => t('Drupal User Account exists for Contact'),
       'module' => 'civicrm',
       'access_callback' => '_civicrm_entity_rules_access',
       'parameter' => array(
@@ -148,7 +148,43 @@ function civicrm_entity_rules_condition_info() {
         )
       ),
       'group' => t('CiviCRM')
-    )
+    ),
+    'civicrm_entity_user_creatable' => array(
+      'label' => t('Drupal User Account can be (is) created for user'),
+      'module' => 'civicrm',
+      'access_callback' => '_civicrm_entity_rules_access',
+      'parameter' => array(
+        'civicrm_contact' => array(
+          'label' => t('CiviCRM Contact'),
+          'type' => 'civicrm_contact'
+        )
+      ),
+      'provides' => array(
+        'civicrm_user' => array(
+          'label' => t('Drupal User'),
+          'type' => 'user'
+        )
+      ),
+      'group' => t('CiviCRM')
+    ),
+    'civicrm_entity_user_exists_or_creatable' => array(
+      'label' => t('Drupal User Account exists or can be created for user'),
+      'module' => 'civicrm',
+      'access_callback' => '_civicrm_entity_rules_access',
+      'parameter' => array(
+        'civicrm_contact' => array(
+          'label' => t('CiviCRM Contact'),
+          'type' => 'civicrm_contact'
+        )
+      ),
+      'provides' => array(
+        'civicrm_user' => array(
+          'label' => t('Drupal User'),
+          'type' => 'user'
+        )
+      ),
+      'group' => t('CiviCRM')
+    ),
   );
 }
 
@@ -265,32 +301,6 @@ function civicrm_entity_rules_events_variables($label, $type, $civicrm_entity = 
 
   return $default;
 }
-
-/**
- * Implementation of hook_rules_action_info().
-
-function civicrm_entity_action_info() {
-  return array(
-    'create_civicrm_entity' => array(
-      'label' => t('Create CiviCRM Entity'),
-      'arguments' => array(
-        'type' => array(
-          'type' => 'civicrm_entity',
-          'label' => t('Entity Type.')
-        )
-      ),
-      'module' => 'civicrm'
-    )
-  );
-}
- */
-/*
- *
- */
-function civicrm_entity_has_user($info) {
-  //not yet implemented
-}
-
 
 /*
  * @todo Add some access params!

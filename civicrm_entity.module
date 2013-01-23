@@ -70,7 +70,6 @@ function civicrm_entity_access($op, $entity, $account, $entity_type){
 */
 function civicrm_entity_views_data_alter($data) {
 // here for debug really
-//dpm($data);
 }
 
 /**
@@ -398,7 +397,35 @@ function civicrm_entity_metadata_civicrm_entity_get_properties($data, $options, 
   return (object) $contact['values'][0];
 }
 
-/*
+/**
+ * Condition Drupal User Account exists for contact
+ * @param array $contact contact array
+ * @return object user object if success. False on Fail
+ */
+function civicrm_entity_user_exists($contact) {
+  return civicrm_entity_action_load_user($contact);
+}
+/**
+ * Condition Drupal User Account can be created for contact (creates contact)
+ * @param array $info contact array
+ * @return object user object if success. False on Fail
+ */
+function civicrm_entity_user_creatable($contact){
+  return civicrm_entity_action_create_user($contact);
+}
+
+/**
+ * Condition Drupal User Account can be created or exists for contact (creates contact
+ * if appropriate)
+ *
+ * @param array $contact contact array
+ * @return object user object if success. False on Fail
+ */
+function civicrm_entity_user_exists_or_creatable($contact){
+  return civicrm_entity_action_load_create_user($contact);
+}
+
+/**
  * Given a contact object return the drupal user
 *
 * @param StdClass $entity Contact Std Object
@@ -473,7 +500,6 @@ function civicrm_entity_action_load_create_user($entity) {
   if ($user = civicrm_entity_action_load_user($entity)) {
     return $user;
   }
-
   return civicrm_entity_action_create_user((array) $entity);
 }
 
