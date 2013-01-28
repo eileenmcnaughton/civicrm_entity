@@ -502,9 +502,9 @@ function civicrm_entity_action_create_user(array $contact, $is_active, $notify) 
 */
 function civicrm_entity_action_load_create_user($entity, $is_active, $notify) {
   if ($user = civicrm_entity_action_load_user($entity)) {
-    if($is_active && !$user->is_active){
-      $user->status = $is_active;
-      $user->save;
+    if($is_active && !$user['civicrm_user']->status){
+      $user['civicrm_user']->status = $is_active;
+      $user['civicrm_user']->save;
     }
     return $user;
   }
