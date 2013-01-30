@@ -286,6 +286,7 @@ function _civicrm_entity_enabled_entities() {
     'civicrm_participant' => 'participant',
     'civicrm_relationship' => 'relationship',
     'civicrm_relationship_type' => 'relationship_type',
+    'civicrm_activity' => 'activity',
   );
 }
 /*
@@ -302,6 +303,7 @@ function _civicrm_entity_labels($entity) {
     'civicrm_participant' => 'source',
     'civicrm_relationship' => 'description',
     'civicrm_relationship_type' => 'description',
+    'civicrm_activity' => 'subject',
   );
   return $labels[$entity];
 }
