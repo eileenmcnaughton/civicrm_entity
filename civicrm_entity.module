@@ -453,7 +453,7 @@ function civicrm_entity_action_load_user($entity) {
 * @param StdClass $entity Contact Std Object
 * @return StdClass $user Drupal User Object
 */
-function civicrm_entity_action_create_user(array $contact) {
+function civicrm_entity_action_create_user(array $contact, $is_active, $notify) {
 
   //we'll use the civicrm sync mechanism to see if Civi can match the contact to an existing user
   // don't think this is a great approach but will use for now -
@@ -483,6 +483,10 @@ function civicrm_entity_action_create_user(array $contact) {
 
   $params['cms_name'] = $params['name'] = $user['name'] = !empty($contact['display_name'])? $contact['display_name'] : $params['mail'];
   $params['cms_pass'] = $user['pass'] = substr(str_shuffle("abcefghijklmnopqrstuvwxyz"), 0, 8);
+  $params['status'] = $is_active;
+  if ($notify){
+    $params['notify'] = TRUE;
+  }
   $user['uid'] = $config->userSystem->createUser($params, 'email');
   $user['mail'] = $params['mail'];
 
@@ -498,11 +502,15 @@ function civicrm_entity_action_create_user(array $contact) {
 /*
  * Load or create user as appropriate
 */
-function civicrm_entity_action_load_create_user($entity) {
+function civicrm_entity_action_load_create_user($entity, $is_active, $notify) {
   if ($user = civicrm_entity_action_load_user($entity)) {
+    if($is_active && !$user['civicrm_user']->status){
+      $user['civicrm_user']->status = $is_active;
+      $user['civicrm_user']->save;
+    }
     return $user;
   }
-  return civicrm_entity_action_create_user((array) $entity);
+  return civicrm_entity_action_create_user((array) $entity, $is_active, $notify);
 }
 
 /**

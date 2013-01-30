@@ -27,13 +27,16 @@ function civicrm_event_og_config_sample_default_rules_configuration() {
           }
         },
         { "civicrm_entity_action_load_create_user" : {
-            "USING" : { "civicrm_contact" : [ "civicrm-participant:contact-id-contact" ] },
+            "USING" : {
+              "civicrm_contact" : [ "civicrm-participant:contact-id-contact" ],
+              "is_active" : 1,
+              "notify" : 1
+            },
             "PROVIDE" : { "civicrm_user" : { "civicrm_user" : "Created\\/ Loaded Drupal User" } }
           }
         },
-        { "drupal_message" : { "message" : "[civicrm-user:name] : [civicrm-user:uid] has been added to the OG for this Event [event-og:0:nid] event id is [civicrm-participant:event-id]\\r\\n\\r\\n" } },
         { "og_subcribe_user" : { "user" : [ "civicrm-user" ], "group" : [ "event-og:0" ] } },
-        { "user_unblock" : { "account" : [ "civicrm-user" ] } }
+        { "drupal_message" : { "message" : "[civicrm-user:name] : [civicrm-user:uid] has been added to the OG for this Event [event-og:0:nid] event id is [civicrm-participant:event-id]\\r\\n\\r\\n" } }
       ]
     }
   }');

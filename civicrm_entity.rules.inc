@@ -203,7 +203,7 @@ function civicrm_entity_rules_action_info() {
         'civicrm_contact' => array(
           'label' => t('CiviCRM Contact'),
           'type' => 'civicrm_contact'
-        )
+        ),
       ),
       'provides' => array(
         'civicrm_user' => array(
@@ -223,7 +223,17 @@ function civicrm_entity_rules_action_info() {
         'civicrm_contact' => array(
           'label' => t('CiviCRM Contact'),
           'type' => 'civicrm_contact'
-        )
+        ),
+        'is_active' => array(
+          'label' => t('Activate Account'),
+          'type' => 'boolean',
+          'default' => 1,
+        ),
+        'notify' => array(
+          'label' => t('Send account notification email'),
+          'type' => 'boolean',
+          'default' => 1,
+        ),
       ),
       'provides' => array(
         'civicrm_user' => array(
@@ -242,7 +252,17 @@ function civicrm_entity_rules_action_info() {
         'civicrm_contact' => array(
           'label' => t('CiviCRM Contact'),
           'type' => 'civicrm_contact'
-        )
+        ),
+        'is_active' => array(
+          'label' => t('Activate Account'),
+          'type' => 'boolean',
+          'default' => 1,
+        ),
+        'notify' => array(
+          'label' => t('Send account notification email'),
+          'type' => 'boolean',
+          'default' => 1,
+        ),
       ),
       'provides' => array(
         'civicrm_user' => array(
