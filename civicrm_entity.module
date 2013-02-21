@@ -288,6 +288,7 @@ function _civicrm_entity_enabled_entities() {
     'civicrm_relationship_type' => 'relationship_type',
     'civicrm_activity' => 'activity',
     'civicrm_entity_tag' => 'entity_tag',
+    'civicrm_membership' => 'membership',
   );
 }
 
@@ -312,7 +313,8 @@ function _civicrm_entity_labels($entity) {
     'civicrm_relationship' => 'description',
     'civicrm_relationship_type' => 'description',
     'civicrm_activity' => 'subject',
-    'civicrm_entity_tag' => 'tag_id'// OK I'm just putting in something that won't error for now
+    'civicrm_entity_tag' => 'tag_id', // OK I'm just putting in something that won't error for now
+    'civicrm_membership' => 'id', // ditto
   );
   return $labels[$entity];
 }
