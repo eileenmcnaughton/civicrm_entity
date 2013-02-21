@@ -290,6 +290,13 @@ function _civicrm_entity_enabled_entities() {
     'civicrm_entity_tag' => 'entity_tag',
   );
 }
+
+function _civicrm_entity_chained_fks(){
+  return array(
+      'CRM_Contact_DAO_Contact' => 'contact',
+      'CRM_Event_DAO_Event' => 'event',
+    );
+}
 /*
  * OK v basic version of what the 'label' should be for each of these tables
  * we can & probably should create a call back function
@@ -356,16 +363,20 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
       // we will add contact as a related entity for FK references to contact
       // this could be expanded to all FKs e.g event_id in Participant Could load the event
       // at the moment we are being cautious
-      if (CRM_Utils_Array::value('FKClassName', $field_specs) == 'CRM_Contact_DAO_Contact') {
-        $info[$fieldname . '_contact'] = array(
-          'label' => empty($field_specs['title']) ? 'Title not defined in schema' : $field_specs['title'],
-          'type' => 'civicrm_contact',
-          'property_info' => array(
-            'field' => $fieldname,
-            'entity' => 'contact'
-          ),
-          'getter callback' => 'civicrm_entity_metadata_civicrm_entity_get_properties'
-        );
+      if (CRM_Utils_Array::value('FKClassName', $field_specs) ){
+        $fks = _civicrm_entity_chained_fks();
+        if(array_key_exists($field_specs['FKClassName'], $fks)){
+          $fksEntity = $fks[$field_specs['FKClassName']];
+          $info[$fieldname . '_' . $fksEntity] = array(
+            'label' => empty($field_specs['title']) ? 'Title not defined in schema' : $field_specs['title'],
+            'type' => 'civicrm_' . $fksEntity,
+            'property_info' => array(
+              'field' => $fieldname,
+              'entity' => $fksEntity
+            ),
+            'getter callback' => 'civicrm_entity_metadata_civicrm_entity_get_properties'
+          );
+        }
       }
 
       if (! empty($field_specs['options'])) {
@@ -393,12 +404,12 @@ function civicrm_entity_($entity) {
  * couldn't see how it was loaded so maybe the name has some magic?
  */
 function civicrm_entity_metadata_civicrm_entity_get_properties($data, $options, $name, $type, $info) {
-  $contact = civicrm_api($info['property_info']['entity'], 'get', array(
+  $entity = civicrm_api($info['property_info']['entity'], 'get', array(
     'version' => 3,
     'id' => $data->$info['property_info']['field'],
     'sequential' => 1
   ));
-  return (object) $contact['values'][0];
+  return (object) $entity['values'][0];
 }
 
 /**

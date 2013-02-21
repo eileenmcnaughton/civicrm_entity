@@ -40,13 +40,17 @@ function civicrm_entity_rules_data_info() {
       'action' => 'create'
     ));
     foreach ($fields['values'] as $fieldname => $field_specs) {
-      //type is empty for custom fields - we should sort that out but skipping for now
       if (! empty($field_specs['type']) && $field_specs['type'] == 1) {
-        if (CRM_Utils_Array::value('FKClassName', $field_specs) == 'CRM_Contact_DAO_Contact') {
-          $info[$drupal_entity]['property_info'][$fieldname] = array(
-            'label' => empty($field_specs['title']) ? 'label not defined in CiviCRM schema' : $field_specs['title'],
-            'type' => 'civicrm_contact'
-          );
+        //type is empty for custom fields - we should sort that out but skipping for now
+        if (CRM_Utils_Array::value('FKClassName', $field_specs)) {
+          $fks = _civicrm_entity_chained_fks();
+          if (array_key_exists($field_specs['FKClassName'], $fks)) {
+            $fksEntity = $fks[$field_specs['FKClassName']];
+            $info[$drupal_entity]['property_info'][$fieldname] = array(
+              'label' => empty($field_specs['title']) ? 'label not defined in CiviCRM schema' : $field_specs['title'],
+              'type' => 'civicrm_' . $fksEntity
+            );
+          }
         }
         $info[$drupal_entity]['property_info'][$fieldname] = array(
           'label' => empty($field_specs['title']) ? 'label not defined in CiviCRM schema' : $field_specs['title'],
