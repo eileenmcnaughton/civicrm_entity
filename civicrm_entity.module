@@ -534,7 +534,7 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify) {
 /*
  * Load or create user as appropriate
 */
-function civicrm_entity_action_load_create_user($entity, $is_active, $notify) {
+function civicrm_entity_action_load_create_user($entity, $is_active = 0 , $notify = 0) {
   if ($user = civicrm_entity_action_load_user($entity)) {
     if($is_active && !$user['civicrm_user']->status){
       $user['civicrm_user']->status = $is_active;
