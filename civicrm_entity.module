@@ -287,7 +287,7 @@ function _civicrm_entity_enabled_entities() {
     'civicrm_relationship' => 'relationship',
     'civicrm_relationship_type' => 'relationship_type',
     'civicrm_activity' => 'activity',
-    'civicrm_group_contact' => 'group_contact',
+    'civicrm_entity_tag' => 'entity_tag',
   );
 }
 /*
@@ -305,7 +305,7 @@ function _civicrm_entity_labels($entity) {
     'civicrm_relationship' => 'description',
     'civicrm_relationship_type' => 'description',
     'civicrm_activity' => 'subject',
-    'civicrm_group_contact' => 'group_id'// OK I'm just putting in something that won't error for now
+    'civicrm_entity_tag' => 'tag_id'// OK I'm just putting in something that won't error for now
   );
   return $labels[$entity];
 }
