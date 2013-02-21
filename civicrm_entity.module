@@ -378,6 +378,20 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
           );
         }
       }
+      // we are treating contact as the only possible entity which is not great - need
+      // to figure out better approach - can we have more than one? define 'civicrm_entity'?
+      if($fieldname == 'entity_id'){
+        $fksEntity = 'contact';
+        $info[$fieldname . '_' . $fksEntity] = array(
+          'label' => empty($field_specs['title']) ? 'Title not defined in schema' : $field_specs['title'],
+          'type' => 'civicrm_' . $fksEntity,
+          'property_info' => array(
+            'field' => $fieldname,
+            'entity' => $fksEntity
+          ),
+          'getter callback' => 'civicrm_entity_metadata_civicrm_entity_get_properties'
+        );
+      }
 
       if (! empty($field_specs['options'])) {
         //  $info[$fieldname]['type'] = 'list<integer>';
@@ -466,8 +480,11 @@ function civicrm_entity_action_load_user($entity) {
 * @param StdClass $entity Contact Std Object
 * @return StdClass $user Drupal User Object
 */
-function civicrm_entity_action_create_user(array $contact, $is_active, $notify) {
-
+function civicrm_entity_action_create_user($contact, $is_active, $notify) {
+  if(!is_array($contact)){
+    //perhaps we should be accepting object rather than array here?
+    $contact = (array) $contact;
+  }
   //we'll use the civicrm sync mechanism to see if Civi can match the contact to an existing user
   // don't think this is a great approach but will use for now -
   // could just create the user but no great support for that yet.
@@ -533,7 +550,6 @@ function civicrm_entity_civicrm_post($op, $object_name, $object_id, &$object_ref
   if (! module_exists('rules')) {
     return;
   }
-
   if (in_array($object_name, array(
     'Individual',
     'Household',
@@ -543,26 +559,69 @@ function civicrm_entity_civicrm_post($op, $object_name, $object_id, &$object_ref
   }
 
   $valid_objects = _civicrm_entity_enabled_entities();
-  if (! in_array(strtolower($object_name), $valid_objects, TRUE)) {
+  $entityName = _civicrm_entity_get_entity_name_from_camel($object_name);
+  if (! in_array($entityName, $valid_objects, TRUE)) {
     return;
   }
-
   $event_name = NULL;
   switch ($op) {
     case 'create':
     case 'edit':
     case 'delete':
-      $event_name = 'civicrm_' . strtolower($object_name) . "_{$op}";
+      $event_name = 'civicrm_' . $entityName . "_{$op}";
       break;
 
     default:
       break;
   }
-
-  if ($event_name) {
-    rules_invoke_event($event_name, $object_ref);
+  if($entityName == 'entity_tag'){
+    //argh entity tag is completely non-standard!!!  CRM-11933 logged
+    foreach ($object_ref[0] as $entityTag){
+      $object = new CRM_Core_BAO_EntityTag();
+      $object->entity_id = $entityTag;
+      $object->entity_table = 'civicrm_contact';
+      $object->tag_id = $object_id;
+      if($object->find(TRUE)){
+        // this find is probably not necessary but until more testing on the
+        // tag create is done I will
+        rules_invoke_event($event_name, $object);
+      }
+    }
+  }
+  else{
+    if ($event_name) {
+      rules_invoke_event($event_name, $object_ref);
+    }
   }
 }
+
+
+/**
+ * Convert possibly camel name to underscore separated entity name
+ *
+ *(copied from api - may change in api
+ * @param string $entity entity name in various formats e.g. Contribution, contribution, OptionValue, option_value, UFJoin, uf_join
+ * @return string $entity entity name in underscore separated format
+ */
+function _civicrm_entity_get_entity_name_from_camel($entity) {
+  if ($entity == strtolower($entity)) {
+    return $entity;
+  }
+  else {
+    $entity = ltrim(strtolower(
+      str_replace('U_F', 'uf',
+        // That's CamelCase, beside an odd UFCamel that is expected as uf_camel
+        preg_replace('/(?=[A-Z])/', '_$0', $entity)
+     )), '_');
+  }
+  return $entity;
+}
+
+/**
+ *
+ * @author eileen
+ *
+ */
 class civicrmEntity extends Entity {
   protected function defaultLabel() {
     return $this->title;

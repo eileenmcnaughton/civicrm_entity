@@ -52,6 +52,15 @@ function civicrm_entity_rules_data_info() {
             );
           }
         }
+
+        if ($fieldname == 'entity_id') {
+          $fksEntity = 'contact';
+          $info[$drupal_entity]['property_info'][$fieldname] = array(
+            'label' => empty($field_specs['title']) ? 'label not defined in CiviCRM schema' : $field_specs['title'],
+            'type' => 'civicrm_' . $fksEntity
+         );
+        }
+
         $info[$drupal_entity]['property_info'][$fieldname] = array(
           'label' => empty($field_specs['title']) ? 'label not defined in CiviCRM schema' : $field_specs['title'],
           'type' => 'integer'
