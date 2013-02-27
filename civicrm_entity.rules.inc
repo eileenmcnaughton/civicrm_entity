@@ -163,14 +163,24 @@ function civicrm_entity_rules_condition_info() {
       'group' => t('CiviCRM')
     ),
     'civicrm_entity_user_creatable' => array(
-      'label' => t('Drupal User Account can be (is) created for user'),
+      'label' => t('Drupal User Account can be created for user (this condition creates the user)'),
       'module' => 'civicrm',
       'access_callback' => '_civicrm_entity_rules_access',
       'parameter' => array(
         'civicrm_contact' => array(
           'label' => t('CiviCRM Contact'),
           'type' => 'civicrm_contact'
-        )
+        ),
+        'is_active' => array(
+          'label' => t('Activate Account'),
+          'type' => 'boolean',
+          'default' => 1,
+        ),
+        'notify' => array(
+          'label' => t('Send account notification email'),
+          'type' => 'boolean',
+          'default' => 1,
+        ),
       ),
       'provides' => array(
         'civicrm_user' => array(
