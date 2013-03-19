@@ -289,6 +289,7 @@ function _civicrm_entity_enabled_entities() {
     'civicrm_activity' => 'activity',
     'civicrm_entity_tag' => 'entity_tag',
     'civicrm_membership' => 'membership',
+    'civicrm_group' => 'group',
   );
 }
 
@@ -315,6 +316,7 @@ function _civicrm_entity_labels($entity) {
     'civicrm_activity' => 'subject',
     'civicrm_entity_tag' => 'tag_id', // OK I'm just putting in something that won't error for now
     'civicrm_membership' => 'id', // ditto
+    'civicrm_group'=> 'name',
   );
   return $labels[$entity];
 }
