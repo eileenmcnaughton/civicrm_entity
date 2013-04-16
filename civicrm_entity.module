@@ -524,7 +524,7 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify) {
   $user['uid'] = $config->userSystem->createUser($params, 'email');
   $user['mail'] = $params['mail'];
 
-  $user_object = (object) $user;
+  $user_object = user_load($user['uid'], TRUE);
   //civi doesn't do this when created off Civi Form
   // Note that we 'pretend' to be logging in to make it do a ufmatch on just the email
   CRM_Core_BAO_UFMatch::synchronizeUFMatch($user_object, $user_object->uid, $contact['email'], 'drupal', NULL, NULL, TRUE);
