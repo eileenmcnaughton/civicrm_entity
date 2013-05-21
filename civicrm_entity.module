@@ -277,6 +277,20 @@ function civicrm_entity_entity_property_info_alter(&$info) {
     'description' => 'Drupal User for contact',
     'type' => 'user'
   );
+
+  // Attach a CiviCRM Contact property to drupal users.
+  $info['user']['properties']['civicrm_contact'] = array (
+    'label'           => 'CiviCRM Contact',
+    'description'     => 'CiviCRM Contact for user',
+    'type'            => 'civicrm_contact',
+    'getter callback' => 'entity_metadata_field_property_get',
+    'setter callback' => 'entity_metadata_field_property_set',
+    /* 'access callback' => 'entity_metadata_field_access_callback',
+       'query callback'  => 'entity_metadata_field_query',
+       'translatable'    => FALSE,
+       'field'           => FALSE, */
+  );
+
   return $info;
 }
 function _civicrm_entity_enabled_entities() {
@@ -820,3 +834,23 @@ class CiviCRMEntityDefaultViewsController extends EntityDefaultViewsController {
   }
 }
 
+/*
+ * Implements hook_user_load().
+ * Set CiviCRM Contact field on user load.
+ */
+function civicrm_entity_user_load($users) {
+  if(!civicrm_initialize())
+    return;
+  foreach($users as $id => &$user) {
+    // Would be better if we could call civicrm_api once with all the user ids, but seems to support all or one only?
+    $contact = civicrm_api('uf_match', 'getsingle', array(
+                 'version' => 3,
+                 'return' => 'contact_id',
+                 'uf_id' => $id,
+                 'domain_id' => civicrm_api('domain', 'get', array('version' => 3, 'return' => 'id', 'current_domain' => TRUE)),
+                 ));
+
+    entity_metadata_field_property_set($user, 'civicrm_contact', array('target_id' => $contact['contact_id']), LANGUAGE_NONE, 'user');
+
+  }
+}
