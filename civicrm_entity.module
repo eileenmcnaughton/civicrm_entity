@@ -223,6 +223,10 @@ function civicrm_entity_entity_info() {
       'views controller class' => 'CiviCRMEntityDefaultViewsController',
       'fieldable' => FALSE,
       'access callback' => 'civicrm_entity_access',
+      'admin ui' => array(
+        'path' => 'civicrm_entity/'. $civicrm_entity,
+        'controller class' => 'CiviCRMEntityUIController',
+      ),
       'bundles' => array(
         $drupal_entity => array(
           'label' => t("CiviCRM $drupal_entity"),
@@ -427,6 +431,134 @@ function civicrm_entity_($entity) {
   return array(
     'path' => "civicrm-entity-$entity/" . $entity->id
   );
+}
+
+function civicrm_entity_action_info() {
+  return array(
+    'civicrm_entity_edit_action' => array(
+      'label' => t('Edit using API'),
+      'type' => 'civicrm_activity',
+      'configurable' => TRUE,
+     // 'pass rows' => TRUE,
+    ),
+  );
+}
+
+
+function civicrm_entity_form($form, $form_state, $entity, $op, $entity_type) {
+
+  // Add the field related form elements.
+  $form_state['entity'] = $entity;
+  field_attach_form($entity_type, $entity, $form, $form_state);
+
+  $form['actions'] = array(
+    '#type' => 'container',
+    '#attributes' => array('class' => array('form-actions')),
+    '#weight' => 400,
+  );
+
+  $form['#validate'] = array();
+  $form['#submit'] = array();
+  $form['#validate'][] = 'civicrmentity_form_validate';
+  $form['#submit'][] = 'civicrmentity_form_submit';
+
+  // We add the form's #submit array to this button along with the actual submit
+  // handler to preserve any submit handlers added by a form callback_wrapper.
+  $submit = array();
+
+  if (!empty($form['#submit'])) {
+    $submit += $form['#submit'];
+  }
+
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+    '#submit' => $submit + array(),
+  );
+
+  //  if (!empty($model->name)) {
+  //    $form['actions']['delete'] = array(
+  //      '#type' => 'submit',
+  //      '#value' => t('Delete model'),
+  //      '#suffix' => l(t('Cancel'), 'admin/content/models'),
+  //      '#submit' => $submit + array('model_form_submit_delete'),
+  //      '#weight' => 45,
+  //    );
+  //  }
+
+  // We append the validate handler to #validate in case a form callback_wrapper
+  // is used to add validate handlers earlier.
+  return $form;
+}
+
+/**
+ * Form API validate callback for the entity form
+ */
+function civicrm_entity_form_validate(&$form, &$form_state) {
+  $entity = $form_state['entity'];
+  $entity_type = $form_state['entity_type'];
+
+  // Notify field widgets to validate their data.
+  field_attach_form_validate($entity_type, $entity, $form, $form_state);
+}
+
+
+/**
+ * Form API submit callback for the entity form.
+ *
+ * @todo remove hard-coded link
+ */
+function civicrm_entity_form_submit(&$form, &$form_state) {
+  $entity_type = $form_state['entity_type'];
+  $entity = entity_ui_controller($entity_type)->entityFormSubmitBuildEntity($form, $form_state);
+  // Save the model and go back to the list of entitys
+
+  // Add in created and changed times.
+  if ($entity->is_new = isset($entity->is_new) ? $entity->is_new : 0){
+    $entity->created = time();
+  }
+
+  $entity->changed = time();
+
+  $entity->save();
+  $t_args = array(
+    '%label' => entity_label($entity_type, $entity),
+  );
+  drupal_set_message(t('Drupal fields on %label have been updated.', $t_args));
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function civicrmentity_views_api() {
+  return array("version" => "3.0");
+}
+
+function civicrm_entity_edit_action(&$object, $context = array()) {
+  civicrm_api('activity', 'create', array(
+  'version' => 3,
+  'id' => $object->id,
+  'assignee_contact_id' => $context['state']));
+}
+
+function civicrm_entity_edit_action_form( $context = array()) {
+
+  $entities = _civicrm_entity_enabled_entities();
+  $entity = $entities[$context['entity_type']];
+  $fields = civicrm_api($entity, 'getfields', array('action' => 'create', 'version' => 3,));
+  foreach ($fields['values'] as $fieldname => $fieldSpecs){
+    if($fieldSpecs['type'] ==1 && $fieldname == 'assignee_contact_id'){
+      $form[$entity][$fieldname] = array(
+        '#type' => 'textfield',
+        '#title' => $fieldSpecs['title'],
+      );
+    }
+  }
+  return $form;
+}
+
+function civicrm_entity_edit_action_submit($form, $form_state) {
+    return array('state' => $form_state['values']['assignee_contact_id']);
 }
 
 /*
@@ -637,6 +769,18 @@ function _civicrm_entity_get_entity_name_from_camel($entity) {
 }
 
 /**
+ * Implementation of hook_admin_paths().
+ *
+ * @return array
+ */
+function civicrm_entity_admin_paths() {
+  $paths = array(
+    'civicrm_entity/*/manage/*' => TRUE,
+  );
+  return $paths;
+}
+
+/**
  *
  * @author eileen
  *
@@ -649,133 +793,6 @@ class civicrmEntity extends Entity {
     return array(
       'path' => 'task/' . $this->identifier()
     );
-  }
-}
-class CivicrmEntityController extends EntityAPIController {
-
-  /**
-   * Implements DrupalEntityControllerInterface::load().
-   */
-  public function load($ids = array(), $conditions = array()) {
-    $entities = array();
-    if(!civicrm_initialize(TRUE)){
-      return;
-    }
-  // not sure about revisioning out at this stage - I don't know if it could have any later use
-    // Revisions are not statically cached, and require a different query to
-    // other conditions, so separate the revision id into its own variable.
-    if ($this->revisionKey && isset($conditions[$this->revisionKey])) {
-      $revision_id = $conditions[$this->revisionKey];
-      unset($conditions[$this->revisionKey]);
-    }
-    else {
-      $revision_id = FALSE;
-    }
-    /*
-     * this seems 'harmless' - but not necessarily relevant?
-     * ie. deals with caching on the drupal side
-     */
-    // Create a new variable which is either a prepared version of the $ids
-    // array for later comparison with the entity cache, or FALSE if no $ids
-    // were passed. The $ids array is reduced as items are loaded from cache,
-    // and we need to know if it's empty for this reason to avoid querying the
-    // database when all requested entities are loaded from cache.
-    $passed_ids = !empty($ids) ? array_flip($ids) : FALSE;
-    // Try to load entities from the static cache, if the entity type supports
-    // static caching.
-    if ($this->cache && !$revision_id) {
-      $entities += $this->cacheGet($ids, $conditions);
-      // If any entities were loaded, remove them from the ids still to load.
-      if ($passed_ids) {
-        $ids = array_keys(array_diff_key($passed_ids, $entities));
-      }
-    }
-
-    /*
-     * OK - here is where we will actually 'Do' something that is Civi-Specific
-     * In drupal land $ids = FALSE would load all - let's only do specifix
-     */
-    // Load any remaining entities from the database. This is the case if $ids
-    // is set to FALSE (so we load all entities), if there are any ids left to
-    // load, if loading a revision, or if $conditions was passed without $ids.
-    if ($ids === FALSE || $ids || $revision_id || ($conditions && !$passed_ids)) {
-      // Build the query.
-      foreach ($ids as $id){
-        $civiEntity = civicrm_api($this->entityInfo['description'], 'getsingle', array('version' => 3, 'id' => $id));
-        // @todo improve this casting
-        $queried_entities[$civiEntity['id']] = new civicrmEntity($civiEntity , 'civicrm_event');
-      }
-    }
-
-    // Pass all entities loaded from the database through $this->attachLoad(),
-    // which attaches fields (if supported by the entity type) and calls the
-    // entity type specific load callback, for example hook_node_load().
-    if (!empty($queried_entities)) {
-      $this->attachLoad($queried_entities, $revision_id);
-      $entities += $queried_entities;
-    }
-
-    if ($this->cache) {
-      // Add entities to the cache if we are not loading a revision.
-      if (!empty($queried_entities) && !$revision_id) {
-        $this->cacheSet($queried_entities);
-      }
-    }
-
-    // Ensure that the returned array is ordered the same as the original
-    // $ids array if this was passed in and remove any invalid ids.
-    if ($passed_ids) {
-      // Remove any invalid ids from the array.
-      $passed_ids = array_intersect_key($passed_ids, $entities);
-      foreach ($entities as $entity) {
-        $passed_ids[$entity->{$this->idKey}] = $entity;
-      }
-      $entities = $passed_ids;
-    }
-    return $entities;
-  }
-
-
-  /**
-   * Implements EntityAPIControllerInterface.
-   *
-   * @param $transaction
-   *   Optionally a DatabaseTransaction object to use. Allows overrides to pass
-   *   in their transaction object.
-   */
-  public function save($entity, DatabaseTransaction $transaction = NULL) {
-    print_r($entity);
-    print_r($transaction);
-    print_r($this);
-    $params = (array) $entity;
-    unset($params['is_new']);
-    $params['version'] = 3;
-    $params['sequential'] = 1;
-
-    try {
-      $entity->is_new = ! empty($entity->is_new) || empty($entity->{$this->idKey});
-      //@todo should we call this hook when drupal saves (as opposed to Civi?) ditto insert, update
-      $this->invoke('presave', $entity);
-      if ($entity->is_new) {
-        $result = civicrm_api(substr($this->entityType, 8), 'create', $params);
-        //$this->invoke('insert', $entity); (see above)
-      }
-      else {
-        $result = civicrm_api(substr($this->entityType, 8), 'update', $params);
-        //$this->invoke('update', $entity); (see above)
-      }
-
-      unset($entity->is_new);
-      unset($entity->is_new_revision);
-      unset($entity->original);
-      if (! civicrm_error($result)) {
-        return (object) $result['values'][0];
-      }
-      throw new Exception($result['error_message']);
-    } catch (Exception $e) {
-      watchdog_exception($this->entityType, $e);
-      throw $e;
-    }
   }
 }
 
