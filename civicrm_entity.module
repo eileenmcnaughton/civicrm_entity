@@ -849,8 +849,8 @@ function civicrm_entity_user_load($users) {
                  'uf_id' => $id,
                  'domain_id' => civicrm_api('domain', 'get', array('version' => 3, 'return' => 'id', 'current_domain' => TRUE)),
                  ));
-
-    entity_metadata_field_property_set($user, 'civicrm_contact', array('target_id' => $contact['contact_id']), LANGUAGE_NONE, 'user');
-
+    if(!empty($contact['contact_id'])){
+      entity_metadata_field_property_set($user, 'civicrm_contact', array('target_id' => $contact['contact_id']), LANGUAGE_NONE, 'user');
+    }
   }
 }
