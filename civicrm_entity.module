@@ -839,6 +839,9 @@ class CiviCRMEntityDefaultViewsController extends EntityDefaultViewsController {
  * Set CiviCRM Contact field on user load.
  */
 function civicrm_entity_user_load($users) {
+  if(!module_exists('civicrm') || ! function_exists('civicrm_initialize')){
+    return;
+  }
   if(!civicrm_initialize())
     return;
   foreach($users as $id => &$user) {
