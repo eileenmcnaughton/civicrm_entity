@@ -517,7 +517,8 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify) {
   $params = array(
     'name' => $contact['display_name'],
     'mail' => $contact['email'],
-    'email' => $contact['email']
+    'email' => $contact['email'],
+    'init' => $contact['email'],
   );
 
   // Check if the requested username is available.
@@ -537,12 +538,22 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify) {
   if ($notify){
     $params['notify'] = TRUE;
   }
-  $user['uid'] = $config->userSystem->createUser($params, 'email');
-  $user['mail'] = $params['mail'];
 
-  $user_object = user_load($user['uid'], TRUE);
-  //civi doesn't do this when created off Civi Form
-  // Note that we 'pretend' to be logging in to make it do a ufmatch on just the email
+  $params['roles'] = array(
+    DRUPAL_AUTHENTICATED_RID => 'authenticated user',
+  );
+
+  $user_object = user_save('', $params);
+  $user_object->password = $user['pass'];
+
+  if ($notify) {
+    drupal_mail('user', 'register_no_approval_required', $params['mail'], NULL, array('account' => $user_object), variable_get('site_mail', 'noreply@example..com'));
+  }
+
+  // Civi doesn't do this when created off Civi Form.
+  //
+  // Note that we 'pretend' to be logging in to make it do a ufmatch
+  // on just the email.
   CRM_Core_BAO_UFMatch::synchronizeUFMatch($user_object, $user_object->uid, $contact['email'], 'drupal', NULL, NULL, TRUE);
   return array(
     'civicrm_user' => $user_object
