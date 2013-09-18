@@ -488,21 +488,24 @@ function civicrm_entity_action_load_user($entity) {
   }
 }
 
-/*
- *Given a contact object return the drupal user
-*
-* @param StdClass $entity Contact Std Object
-* @return StdClass $user Drupal User Object
-*/
+/**
+ * Given a contact object return the drupal user
+ *
+ * @param StdClass $entity Contact Std Object
+ * @return StdClass $user Drupal User Object
+ */
 function civicrm_entity_action_create_user($contact, $is_active, $notify) {
   if(!is_array($contact)){
-    //perhaps we should be accepting object rather than array here?
+    // Perhaps we should be accepting object rather than array here?
     $contact = (array) $contact;
   }
-  //we'll use the civicrm sync mechanism to see if Civi can match the contact to an existing user
-  // don't think this is a great approach but will use for now -
-  // could just create the user but no great support for that yet.
-  //@todo what happens if they don't have an email?
+  // We'll use the civicrm sync mechanism to see if Civi can match the
+  // contact to an existing user.
+  //
+  // Don't think this is a great approach but will use for now - could
+  // just create the user but no great support for that yet.
+  //
+  // @TODO What happens if they don't have an email?
   if (empty($contact['display_name']) || empty($contact['email'])) {
     $contact = civicrm_api('contact', 'getsingle', array(
       'version' => 3,
