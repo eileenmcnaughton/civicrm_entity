@@ -519,12 +519,15 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify) {
     'mail' => $contact['email'],
     'email' => $contact['email']
   );
+
+  // Check if the requested username is available.
   $errors = array();
   $config = CRM_Core_Config::singleton();
   $config->userSystem->checkUserNameEmailExists($params, $errors);
-
-  if (! empty($errors)) {
-    drupal_set_message(" could not create user record " . $errors['email']);
+  if (!empty($errors)) {
+    foreach ($errors as $error) {
+      drupal_set_message(t($error), 'error');
+    }
     return FALSE;
   }
 
