@@ -543,8 +543,15 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify) {
     DRUPAL_AUTHENTICATED_RID => 'authenticated user',
   );
 
+  // Set $config->inCiviCRM = TRUE to prevent creating a duplicate
+  // contact from user_save().
+  $config = CRM_Core_Config::singleton();
+  $config->inCiviCRM = TRUE;
+
   $user_object = user_save('', $params);
   $user_object->password = $user['pass'];
+
+  $config->inCiviCRM = FALSE;
 
   if ($notify) {
     drupal_mail('user', 'register_no_approval_required', $params['mail'], NULL, array('account' => $user_object), variable_get('site_mail', 'noreply@example..com'));
