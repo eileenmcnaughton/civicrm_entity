@@ -73,7 +73,7 @@ function civicrm_entity_access($op, $entity, $account, $entity_type){
 }
 
 /**
- * Implemenation of views_data_alter()
+ * Implements hook_views_data_alter()
  */
 function civicrm_entity_views_data_alter($data) {
   // here for debug really
@@ -494,10 +494,10 @@ function civicrm_entity_action_load_user($entity) {
 }
 
 /**
- * Given a contact object, create and return a drupal user.
+ * Given a contact object, load or create then return a drupal user.
  *
- * @param StdClass $entity Contact Std Object
- * @return StdClass $user Drupal User Object
+ * @param object $entity CiviCRM Contact Object
+ * @return object|boolean $user Drupal User Object or FALSE
  */
 function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE, $signin = FALSE) {
   if(!is_array($contact)){
@@ -856,8 +856,8 @@ class CiviCRMEntityDefaultViewsController extends EntityDefaultViewsController {
    * the entity property information.
    */
   protected function schema_fields() {
-    // so we are not using the 'normal' schema function here due to
-    // the problems discussed in the readme
+    // We are not using the 'normal' schema function here due to
+    // the problems discussed in the readme.
     if(empty($this->info['base table'])){
       return array();
     }
