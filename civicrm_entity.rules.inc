@@ -179,6 +179,12 @@ function civicrm_entity_rules_condition_info() {
           'type' => 'boolean',
           'default' => 1,
         ),
+        'signin' => array(
+          'label' => t('Instant signin'),
+          'type' => 'boolean',
+          'default' => FALSE,
+          'description' => t('Automatically log in as the created user.'),
+        ),
       ),
       'provides' => array(
         'civicrm_user' => array(
@@ -254,6 +260,12 @@ function civicrm_entity_rules_action_info() {
           'label' => t('Send account notification email'),
           'type' => 'boolean',
           'default' => 1,
+        ),
+        'signin' => array(
+          'label' => t('Instant signin'),
+          'type' => 'boolean',
+          'default' => FALSE,
+          'description' => t('Automatically log in as the created user.'),
         ),
       ),
       'provides' => array(

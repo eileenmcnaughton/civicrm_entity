@@ -494,12 +494,12 @@ function civicrm_entity_action_load_user($entity) {
 }
 
 /**
- * Given a contact object return the drupal user
+ * Given a contact object, create and return a drupal user.
  *
  * @param StdClass $entity Contact Std Object
  * @return StdClass $user Drupal User Object
  */
-function civicrm_entity_action_create_user($contact, $is_active, $notify) {
+function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE, $signin = FALSE) {
   if(!is_array($contact)){
     // Perhaps we should be accepting object rather than array here?
     $contact = (array) $contact;
@@ -558,11 +558,23 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify) {
 
   $config->inCiviCRM = FALSE;
 
+  // If selected in action configuration, notify the newly created
+  // user & send registration link. Does not contain password in D7.
   if ($notify) {
     drupal_mail('user', 'register_no_approval_required', $params['mail'], NULL, array('account' => $user_object), variable_get('site_mail', 'noreply@example..com'));
   }
 
-  // Civi doesn't do this when created off Civi Form.
+  // If selected in action configuration, automatically sign in the
+  // current user.
+  if ($signin) {
+    global $user;
+    $user = user_load($user_object->uid);
+    watchdog('civicrm_entity', 'User %name logged in via CiviCRM Entity rule execution.', array('%name' => $user->name), WATCHDOG_INFO);
+    $form_values = array('uid' => $user->uid);
+    user_login_finalize($form_values);
+  }
+
+  // CiviCRM doesn't do this when created off CiviCRM Form.
   //
   // Note that we 'pretend' to be logging in to make it do a ufmatch
   // on just the email.
