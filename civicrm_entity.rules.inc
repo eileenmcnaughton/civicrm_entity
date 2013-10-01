@@ -1,20 +1,15 @@
 <?php
-/**
-* @file
-* Implement Drupal Rules integration for CiviCRM
-*
-*/
-
 
 /**
+ * @file
+ * Implement Drupal Rules integration for CiviCRM
  *
  * @package CRM
  * @copyright CiviCRM LLC (c) 2004-2012
- * $Id$
- *
  */
+
 /**
- * Implementation of hook_rules_data_type_info().
+ * Implements of hook_rules_data_type_info().
  */
 function civicrm_entity_rules_data_info() {
   if (! civicrm_initialize(TRUE)) {
@@ -34,14 +29,15 @@ function civicrm_entity_rules_data_info() {
       'module' => 'civicrm'
     );
     $info[$drupal_entity]['property_info'] = _civicrm_entity_getproperties($civicrm_entity);
-    // I don't think these are being 'kept'
+    // I don't think these are being 'kept'.
     $fields = civicrm_api($civicrm_entity, 'getfields', array(
       'version' => 3,
       'action' => 'create'
     ));
     foreach ($fields['values'] as $fieldname => $field_specs) {
       if (! empty($field_specs['type']) && $field_specs['type'] == 1) {
-        //type is empty for custom fields - we should sort that out but skipping for now
+        // Type is empty for custom fields - we should sort that out
+        // but skipping for now.
         if (CRM_Utils_Array::value('FKClassName', $field_specs)) {
           $fks = _civicrm_entity_chained_fks();
           if (array_key_exists($field_specs['FKClassName'], $fks)) {
@@ -77,7 +73,6 @@ function civicrm_entity_rules_data_info() {
   return $info;
 }
 
-
 /**
  * Implementation of hook_rules_event_info().
  */
@@ -88,8 +83,8 @@ function civicrm_entity_rules_event_info() {
   if (is_array($valid_objects)) {
     foreach ($valid_objects as $entity => $civicrm_entity) {
       $entity_name = 'CiviCRM ' . ucwords(str_replace('_', ' ', $civicrm_entity));
-
-      //todo consider building the entity name into the argument rather than calling the same argument for each
+      // @TODO consider building the entity name into the argument
+      // rather than calling the same argument for each.
       $events[$entity . '_create'] = array(
         'label' => t("!entity has been created", array(
           '!entity' => $entity_name
@@ -139,8 +134,11 @@ function civicrm_entity_rules_event_info() {
   return $events;
 }
 
-/*
- * Implement hookrules_condition_info
+/**
+ * Implements hook_rules_condition_info().
+ *
+ * @TODO I don't think the provides array is supported for conditions?
+ * Remove.
  */
 function civicrm_entity_rules_condition_info() {
   return array(
@@ -181,6 +179,12 @@ function civicrm_entity_rules_condition_info() {
           'type' => 'boolean',
           'default' => 1,
         ),
+        'signin' => array(
+          'label' => t('Instant signin'),
+          'type' => 'boolean',
+          'default' => FALSE,
+          'description' => t('Automatically log in as the created user.'),
+        ),
       ),
       'provides' => array(
         'civicrm_user' => array(
@@ -211,11 +215,11 @@ function civicrm_entity_rules_condition_info() {
   );
 }
 
-/*
- * Implement hookrules_action_info
+/**
+ * Implements hookrules_action_info().
  *
- * http://drupalcontrib.org/api/drupal/contributions!rules!rules.api.php/function/hook_rules_action_info/7
-*/
+ * @see http://drupalcontrib.org/api/drupal/contributions!rules!rules.api.php/function/hook_rules_action_info/7
+ */
 function civicrm_entity_rules_action_info() {
   return array(
     'civicrm_entity_action_load_user' => array(
@@ -256,6 +260,12 @@ function civicrm_entity_rules_action_info() {
           'label' => t('Send account notification email'),
           'type' => 'boolean',
           'default' => 1,
+        ),
+        'signin' => array(
+          'label' => t('Instant signin'),
+          'type' => 'boolean',
+          'default' => FALSE,
+          'description' => t('Automatically log in as the created user.'),
         ),
       ),
       'provides' => array(
@@ -299,7 +309,7 @@ function civicrm_entity_rules_action_info() {
   );
 }
 
-/*
+/**
  * User access function
  *
  * @param String $type
@@ -309,7 +319,9 @@ function civicrm_entity_rules_access($type, $name) {
   return user_access('civicrm_entity.rules.administer');
 }
 
-
+/**
+ *
+ */
 function civicrm_entity_rules_events_variables($label, $type, $civicrm_entity = NULL) {
   $vars = array();
   /*
@@ -345,12 +357,16 @@ function civicrm_entity_rules_events_variables($label, $type, $civicrm_entity = 
   return $default;
 }
 
-/*
- * @todo Add some access params!
+/**
+ * @TODO Add some access params!
  */
 function _civicrm_entity_rules_access() {
   return TRUE;
 }
+
+/**
+ * Return options list.
+ */
 function _civicrm_entity_rules_attach_options($fieldname, $info, $arg3) {
   return $info['property defaults']['options list'];
 }

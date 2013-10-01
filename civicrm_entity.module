@@ -1,22 +1,19 @@
 <?php
-/**
-* @file
-* Implement CiviCRM entities as a Drupal Entity
-*
-*/
 
 /**
+ * @file
+ *   Implement CiviCRM entities as a Drupal Entity
  *
  * @package CRM
  * @copyright CiviCRM LLC (c) 2004-2012
- * $Id$
- *
  */
-/*
- * Implements hook_menu
+
+/**
+ * Implements hook_menu().
  *
- * It may be that civicrm drupals entities could be 'fieldable' - refer to drupal fields
- * with the linkages held in drupal? This code is not doing much right now
+ * It may be that civicrm drupals entities could be 'fieldable' -
+ * refer to drupal fields with the linkages held in drupal? This code
+ * is not doing much right now.
  */
 function civicrm_entity_menu(){
   $items['admin/structure/types/manage/civicrm_relationship_type'] = array(
@@ -35,15 +32,22 @@ function civicrm_entity_menu(){
 }
 
 
-/*
- * Implemenation of hook_enable()
+/**
+ * Implements hook_enable().
  *
- * Set weight higher than civicrm
+ * Set weight higher than CiviCRM.
+ *
+ * @TODO Actually check what CiviCRM's weight should be.
+ *
+ * @TODO Shouldn't this be in .install?
  */
 function civicrm_entity_enable() {
   db_query("UPDATE {system} SET weight = 110 WHERE name = 'civicrm_entity'");
 }
 
+/**
+ * Implements hook_permission().
+ */
 function civicrm_entity_permission() {
   return array(
     'civicrm_entity.rules.administer' => array(
@@ -53,6 +57,9 @@ function civicrm_entity_permission() {
   );
 }
 
+/**
+ * Entity access callback.
+ */
 function civicrm_entity_access($op, $entity, $account, $entity_type){
   if($op == 'view' && $entity_type == 'civicrm_event'){
     return user_access('view event info');
@@ -65,23 +72,22 @@ function civicrm_entity_access($op, $entity, $account, $entity_type){
   }
 }
 
-/*
- * Implemenation of views_data_alter()
-*/
+/**
+ * Implements hook_views_data_alter()
+ */
 function civicrm_entity_views_data_alter($data) {
-// here for debug really
+  // here for debug really
 }
 
 /**
  * Implements hook_schema_alter().
  *
- * Note we are just doing this in a very simple form relationship type which is not defined
- * by views at this stage. We have the problem that the CiviCRM views
- * integration uses the _data hook & would need to use _data_alter hook
- * to be compatible with entity views integration
- *
+ * Note we are just doing this in a very simple form relationship type
+ * which is not defined by views at this stage. We have the problem
+ * that the CiviCRM views integration uses the _data hook & would need
+ * to use _data_alter hook to be compatible with entity views
+ * integration
  */
-
 function civicrm_entity_schema_alter(&$schema) {
   $schemaEntities = _civicrm_entity_enabled_entities();;
   foreach ($schemaEntities as $drupal_entity => $civicrm_entity){
@@ -419,17 +425,13 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
   }
   return $info;
 }
-function civicrm_entity_($entity) {
-  return array(
-    'path' => "civicrm-entity-$entity/" . $entity->id
-  );
-}
 
-/*
- * Implement getter callback -
+/**
+ * Implement getter callback.
  *
- * NB this is in a separate file called callbacks.inc in entity module - I
- * couldn't see how it was loaded so maybe the name has some magic?
+ * NB this is in a separate file called callbacks.inc in entity module
+ * - I couldn't see how it was loaded so maybe the name has some
+ * magic?
  */
 function civicrm_entity_metadata_civicrm_entity_get_properties($data, $options, $name, $type, $info) {
   $entity = civicrm_api($info['property_info']['entity'], 'get', array(
@@ -441,15 +443,18 @@ function civicrm_entity_metadata_civicrm_entity_get_properties($data, $options, 
 }
 
 /**
- * Condition Drupal User Account exists for contact
+ * Condition Drupal User Account exists for contact.
+ *
  * @param array $contact contact array
  * @return object user object if success. False on Fail
  */
 function civicrm_entity_user_exists($contact) {
   return civicrm_entity_action_load_user($contact);
 }
+
 /**
- * Condition Drupal User Account can be created for contact (creates contact)
+ * Condition Drupal User Account can be created for contact (creates contact).
+ *
  * @param array $info contact array
  * @return object user object if success. False on Fail
  */
@@ -458,8 +463,8 @@ function civicrm_entity_user_creatable($contact){
 }
 
 /**
- * Condition Drupal User Account can be created or exists for contact (creates contact
- * if appropriate)
+ * Condition Drupal User Account can be created or exists for contact
+ * (creates contact if appropriate).
  *
  * @param array $contact contact array
  * @return object user object if success. False on Fail
@@ -469,11 +474,11 @@ function civicrm_entity_user_exists_or_creatable($contact){
 }
 
 /**
- * Given a contact object return the drupal user
-*
-* @param StdClass $entity Contact Std Object
-* @return StdClass $user Drupal User Object
-*/
+ * Given a contact object return the Drupal user.
+ *
+ * @param StdClass $entity Contact Std Object
+ * @return StdClass $user Drupal User Object
+ */
 function civicrm_entity_action_load_user($entity) {
   $contact = civicrm_api('uf_match', 'getsingle', array(
     'version' => 3,
@@ -488,21 +493,24 @@ function civicrm_entity_action_load_user($entity) {
   }
 }
 
-/*
- *Given a contact object return the drupal user
-*
-* @param StdClass $entity Contact Std Object
-* @return StdClass $user Drupal User Object
-*/
-function civicrm_entity_action_create_user($contact, $is_active, $notify) {
+/**
+ * Given a contact object, load or create then return a drupal user.
+ *
+ * @param object $entity CiviCRM Contact Object
+ * @return object|boolean $user Drupal User Object or FALSE
+ */
+function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE, $signin = FALSE) {
   if(!is_array($contact)){
-    //perhaps we should be accepting object rather than array here?
+    // Perhaps we should be accepting object rather than array here?
     $contact = (array) $contact;
   }
-  //we'll use the civicrm sync mechanism to see if Civi can match the contact to an existing user
-  // don't think this is a great approach but will use for now -
-  // could just create the user but no great support for that yet.
-  //@todo what happens if they don't have an email?
+  // We'll use the civicrm sync mechanism to see if Civi can match the
+  // contact to an existing user.
+  //
+  // Don't think this is a great approach but will use for now - could
+  // just create the user but no great support for that yet.
+  //
+  // @TODO What happens if they don't have an email?
   if (empty($contact['display_name']) || empty($contact['email'])) {
     $contact = civicrm_api('contact', 'getsingle', array(
       'version' => 3,
@@ -514,14 +522,18 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify) {
   $params = array(
     'name' => $contact['display_name'],
     'mail' => $contact['email'],
-    'email' => $contact['email']
+    'email' => $contact['email'],
+    'init' => $contact['email'],
   );
+
+  // Check if the requested username is available.
   $errors = array();
   $config = CRM_Core_Config::singleton();
   $config->userSystem->checkUserNameEmailExists($params, $errors);
-
-  if (! empty($errors)) {
-    drupal_set_message(" could not create user record " . $errors['email']);
+  if (!empty($errors)) {
+    foreach ($errors as $error) {
+      drupal_set_message(t($error), 'error');
+    }
     return FALSE;
   }
 
@@ -531,22 +543,50 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify) {
   if ($notify){
     $params['notify'] = TRUE;
   }
-  $user['uid'] = $config->userSystem->createUser($params, 'email');
-  $user['mail'] = $params['mail'];
 
-  $user_object = user_load($user['uid'], TRUE);
-  //civi doesn't do this when created off Civi Form
-  // Note that we 'pretend' to be logging in to make it do a ufmatch on just the email
+  $params['roles'] = array(
+    DRUPAL_AUTHENTICATED_RID => 'authenticated user',
+  );
+
+  // Set $config->inCiviCRM = TRUE to prevent creating a duplicate
+  // contact from user_save().
+  $config = CRM_Core_Config::singleton();
+  $config->inCiviCRM = TRUE;
+
+  $user_object = user_save('', $params);
+  $user_object->password = $user['pass'];
+
+  $config->inCiviCRM = FALSE;
+
+  // If selected in action configuration, notify the newly created
+  // user & send registration link. Does not contain password in D7.
+  if ($notify) {
+    drupal_mail('user', 'register_no_approval_required', $params['mail'], NULL, array('account' => $user_object), variable_get('site_mail', 'noreply@example..com'));
+  }
+
+  // If selected in action configuration, automatically sign in the
+  // current user.
+  if ($signin) {
+    global $user;
+    $user = user_load($user_object->uid);
+    watchdog('civicrm_entity', 'User %name logged in via CiviCRM Entity rule execution.', array('%name' => $user->name), WATCHDOG_INFO);
+    $form_values = array('uid' => $user->uid);
+    user_login_finalize($form_values);
+  }
+
+  // CiviCRM doesn't do this when created off CiviCRM Form.
+  //
+  // Note that we 'pretend' to be logging in to make it do a ufmatch
+  // on just the email.
   CRM_Core_BAO_UFMatch::synchronizeUFMatch($user_object, $user_object->uid, $contact['email'], 'drupal', NULL, NULL, TRUE);
   return array(
     'civicrm_user' => $user_object
   );
 }
 
-
-/*
+/**
  * Load or create user as appropriate
-*/
+ */
 function civicrm_entity_action_load_create_user($entity, $is_active = 0 , $notify = 0) {
   if ($user = civicrm_entity_action_load_user($entity)) {
     if($is_active && !$user['civicrm_user']->status){
@@ -610,7 +650,6 @@ function civicrm_entity_civicrm_post($op, $object_name, $object_id, &$object_ref
   }
 }
 
-
 /**
  * Convert possibly camel name to underscore separated entity name
  *
@@ -647,6 +686,10 @@ class civicrmEntity extends Entity {
     );
   }
 }
+
+/**
+ *
+ */
 class CivicrmEntityController extends EntityAPIController {
 
   /**
@@ -775,6 +818,9 @@ class CivicrmEntityController extends EntityAPIController {
   }
 }
 
+/**
+ *
+ */
 class CiviCRMEntityDefaultViewsController extends EntityDefaultViewsController {
   /**
    * Defines the result for hook_views_data().
@@ -804,21 +850,23 @@ class CiviCRMEntityDefaultViewsController extends EntityDefaultViewsController {
     }
     return $data;
   }
+
   /**
    * Try to come up with some views fields with the help of the schema and
    * the entity property information.
    */
   protected function schema_fields() {
-    // so we are not using the 'normal' schema function here due to the problems discussed in the readme
+    // We are not using the 'normal' schema function here due to
+    // the problems discussed in the readme.
     if(empty($this->info['base table'])){
       return array();
     }
     $schema = civicrm_entity_get_schema($this->info['base table']);
     $properties = entity_get_property_info($this->type) + array('properties' => array());
     $data = array();
-    // we will take out the reliance on other schema related checks here
-    // ideally we would 'read' getfields output to determine if we are looking at a DB field
-    // or a custom / pseudofield
+    // we will take out the reliance on other schema related checks
+    // here ideally we would 'read' getfields output to determine if
+    // we are looking at a DB field or a custom / pseudofield
     foreach ($properties['properties'] as $name => $property_info) {
       if (!empty($property_info['schema field']) && !empty($schema['fields']) && isset($schema['fields'][$property_info['schema field']])) {
         if ($views_info = $this->map_from_schema_info($name, $schema['fields'][$property_info['schema field']], $property_info)) {
@@ -830,7 +878,9 @@ class CiviCRMEntityDefaultViewsController extends EntityDefaultViewsController {
   }
 }
 
-/* Load contact entity according to user id. */
+/**
+ * Load contact entity according to user id.
+ */
 function civicrm_entity_user_contact_get($data, array $options, $name, $type, $info) {
   if(!module_exists('civicrm') || ! function_exists('civicrm_initialize')){
     return;
