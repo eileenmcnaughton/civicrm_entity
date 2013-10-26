@@ -31,7 +31,6 @@ function civicrm_entity_menu(){
   );
 }
 
-
 /**
  * Implements hook_enable().
  *
@@ -61,13 +60,13 @@ function civicrm_entity_permission() {
  * Entity access callback.
  */
 function civicrm_entity_access($op, $entity, $account, $entity_type){
-  if($op == 'view' && $entity_type == 'civicrm_event'){
+  if ($op == 'view' && $entity_type == 'civicrm_event') {
     return user_access('view event info');
   }
-  elseif($op == 'view' && $entity_type == 'civicrm_participant'){
+  elseif ($op == 'view' && $entity_type == 'civicrm_participant') {
     return user_access('view event participants');
   }
-  else{
+  else {
     return user_access('administer CiviCRM');
   }
 }
@@ -158,6 +157,9 @@ function civicrm_entity_get_schema($table) {
 
 }
 
+/**
+ * @TODO Document this function.
+ */
 function civicrm_entity_get_field_type($field_spec){
   if($field_spec['name'] == 'id'){
     return array('type' => 'serial');
@@ -235,7 +237,7 @@ function civicrm_entity_entity_info() {
             'path' => 'admin/structure/types/manage/' . $drupal_entity,
             'access arguments' => array('administer CiviCRM'),
           ),
-         ),
+        ),
       ),
       'view modes' => array(
         'full' => array(
@@ -256,27 +258,29 @@ function civicrm_entity_entity_info() {
   return $info;
 }
 
-/*
- * Here we declare Selected CiviCRM entities fields to Drupal
+/**
+ * Here we declare Selected CiviCRM entities fields to Drupal.
  *
- * Some trickiness here as declaring the 'schema' via our
- * special civi schema function seems to cause fields to be declared twice if we
- * us property_info rather than property_info_alter
+ * Some trickiness here as declaring the 'schema' via our special civi
+ * schema function seems to cause fields to be declared twice if we us
+ * property_info rather than property_info_alter.
  *
- * At the moment civicrm_relationship_type is the only entity being managed through 'our' schema
+ * At the moment civicrm_relationship_type is the only entity being
+ * managed through 'our' schema.
  */
 function civicrm_entity_entity_property_info_alter(&$info) {
   if (! civicrm_initialize(TRUE)) {
     return;
   }
 
-  // we'll start with a few basic entities but we could get them the same way the API explorer does
+  // We'll start with a few basic entities but we could get them the
+  // same way the API explorer does.
   $entities = _civicrm_entity_enabled_entities();
   foreach ($entities as $drupal_entity => $civicrm_entity) {
     $info[$drupal_entity]['properties'] = _civicrm_entity_getproperties($civicrm_entity, 'property_info');
-  //  $info[$drupal_entity]['bundles'] = array();
+    // $info[$drupal_entity]['bundles'] = array();
   }
-  // this makes the drupal user available when chaining from a rule
+  // This makes the drupal user available when chaining from a rule.
   $info['civicrm_contact']['properties']['civicrm_user'] = array(
     'label' => 'Drupal User',
     'description' => 'Drupal User for contact',
@@ -295,6 +299,10 @@ function civicrm_entity_entity_property_info_alter(&$info) {
 
   return $info;
 }
+
+/**
+ * @TODO Document this function.
+ */
 function _civicrm_entity_enabled_entities() {
   return array(
     'civicrm_event' => 'event',
@@ -309,20 +317,25 @@ function _civicrm_entity_enabled_entities() {
   );
 }
 
+/**
+ * @TODO Document this function.
+ */
 function _civicrm_entity_chained_fks(){
   return array(
       'CRM_Contact_DAO_Contact' => 'contact',
       'CRM_Event_DAO_Event' => 'event',
     );
 }
-/*
- * OK v basic version of what the 'label' should be for each of these tables
- * we can & probably should create a call back function
+
+/**
+ * Very basic version of what the 'label' should be for each of these
+ * tables.
+ *
+ * @TODO Create a callback function.
  *
  * http://api.drupal.org/api/drupal/modules!system!system.api.php/function/hook_entity_info/7
  */
 function _civicrm_entity_labels($entity) {
-
   $labels = array(
     'civicrm_event' => 'title',
     'civicrm_contact' => 'display_name',
