@@ -248,10 +248,13 @@ function civicrm_entity_entity_info() {
       'entity keys' => array(
         'id' => 'id',
         'label' => _civicrm_entity_labels($drupal_entity),
-      )
-    )
-    ;
-    $info[$drupal_entity]['base table'] = $drupal_entity;
+      ),
+      'base table' => $drupal_entity,
+    );
+    $label_callback = 'civicrm_entity_' . $drupal_entity . '_label_callback';
+    if (function_exists($label_callback)) {
+      $info[$drupal_entity]['label callback'] = $label_callback;
+    }
   }
 
   // OK - so we are not doing this for the ones declared in views until
@@ -352,10 +355,27 @@ function _civicrm_entity_labels($entity) {
   return $labels[$entity];
 }
 
-/*
- * Calculate fields for entities
-*/
+/**
+ * Label callback for civicrm_contact entity type.
+ *
+ *   drupal_alter('civicrm_entity_' . $entity, $, $alterable2, $context);
 
+ */
+function civicrm_entity_civicrm_contact_label_callback($entity, $entity_type) {
+  $label = $entity->display_name;
+  // drupal_alter('civicrm_entity_contact_label', $label, $entity);
+  if (isset($entity->email) && !empty($entity->email)) {
+    $label = t('!label <!email>', array('!label' => $label, '!email' => $entity->email));
+  }
+  elseif (isset($entity->phone) && !empty($entity->phone)) {
+    $label = t('!label <!phone>', array('!label' => $label, '!phone' => $entity->phone));
+  }
+  return $label;
+}
+
+/**
+ * Calculate fields for entities
+ */
 function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
   $info = array();
   if ($civicrm_entity == 'contact') {
