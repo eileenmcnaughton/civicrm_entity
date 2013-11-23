@@ -9,25 +9,29 @@
  * Extend the default OG membership metadata properties.
  */
 class CivicrmEntityMetadataController extends EntityDefaultMetadataController {
+
   /**
-   * Return a set of properties for an entity based on the schema definition
+   * Return a set of properties for an entity based on the schema definition.
    */
   protected function convertSchema() {
-    if(empty($this->info['base table'])){
+    if (empty($this->info['base table'])) {
       return array();
     }
     return civicrm_entity_metadata_convert_schema($this->info['base table']);
   }
 }
+
 /**
- * Converts the schema information available for the given table to property info.
+ * Converts schema info for table to property info.
  *
- * This is based on the CiviCRM get schema function and is a very limited implementation
+ * This is based on the CiviCRM get schema function and is a very
+ * limited implementation.
  *
- * @param $table
+ * @param string $table
  *   The name of the table as used in hook_schema().
- * @return
- *   An array of property info as suiting for hook_entity_property_info().
+ *
+ * @return array
+ *   Property info suitable for hook_entity_property_info().
  */
 function civicrm_entity_metadata_convert_schema($table) {
   $schema = civicrm_entity_get_schema($table);
