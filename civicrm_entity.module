@@ -2,10 +2,7 @@
 
 /**
  * @file
- *   Implement CiviCRM entities as a Drupal Entity
- *
- * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * Implement CiviCRM entities as a Drupal Entity.
  */
 
 /**
@@ -15,7 +12,7 @@
  * refer to drupal fields with the linkages held in drupal? This code
  * is not doing much right now.
  */
-function civicrm_entity_menu(){
+function civicrm_entity_menu() {
   $items['admin/structure/types/manage/civicrm_relationship_type'] = array(
     'title' => 'CiviCRM Relationship Type Settings',
     'description' => 'Configure the settings for the CiviCRM Relationship Type.',
@@ -29,19 +26,6 @@ function civicrm_entity_menu(){
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
   );
-}
-
-/**
- * Implements hook_enable().
- *
- * Set weight higher than CiviCRM.
- *
- * @TODO Actually check what CiviCRM's weight should be.
- *
- * @TODO Shouldn't this be in .install?
- */
-function civicrm_entity_enable() {
-  db_query("UPDATE {system} SET weight = 110 WHERE name = 'civicrm_entity'");
 }
 
 /**
@@ -59,7 +43,7 @@ function civicrm_entity_permission() {
 /**
  * Entity access callback.
  */
-function civicrm_entity_access($op, $entity, $account, $entity_type){
+function civicrm_entity_access($op, $entity, $account, $entity_type) {
   if ($op == 'view' && $entity_type == 'civicrm_event') {
     return user_access('view event info');
   }
@@ -72,11 +56,11 @@ function civicrm_entity_access($op, $entity, $account, $entity_type){
 }
 
 /**
- * Implements hook_views_data_alter()
+ * Implements hook_views_data_alter().
  */
-function civicrm_entity_views_data_alter($data) {
-  // here for debug really
-}
+/*
+function civicrm_entity_views_data_alter($data) { }
+*/
 
 /**
  * Implements hook_schema_alter().
@@ -88,67 +72,41 @@ function civicrm_entity_views_data_alter($data) {
  * integration
  */
 function civicrm_entity_schema_alter(&$schema) {
-  $schemaEntities = _civicrm_entity_enabled_entities();;
-  foreach ($schemaEntities as $drupal_entity => $civicrm_entity){
+  $schema_entities = _civicrm_entity_enabled_entities();;
+  foreach ($schema_entities as $drupal_entity => $civicrm_entity) {
     $schema[$drupal_entity] = civicrm_entity_get_schema($drupal_entity);
   }
-
-
- /* $schema['civicrm_relationship_type'] = array(
-    'description' => 'The base table for CiviCRM Relationship Types',
-    'fields' => array(
-      'id' => array(
-        'description' => 'The Relationship type id.',
-        'type' => 'serial',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ),
-      'label_a_b' => array(
-        'description' => 'Relationship Label',
-        'type' => 'text',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'is_active' => array(
-        'description' => 'Relationship Type is enabled',
-        'type' => 'integer',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-    ),
-    'primary key' => array('id'),
-  );
-  */
 }
-/*
- * This approach may not be required as using the schema_alter hook (as opposed to
- * schema_hook) seems to get around a bunch of the reasons I used a separate schema
+
+/**
+ * Get schema for entities.
+ *
+ * This approach may not be required as using the schema_alter hook
+ * (as opposed to schema_hook) seems to get around a bunch of the
+ * reasons I used a separate schema.
  */
 function civicrm_entity_get_schema($table) {
-  if(!civicrm_initialize(TRUE)){
+  if (!civicrm_initialize(TRUE)) {
     return;
   }
   $schema = array();
   $schema[$table] = array(
     'description' => 'The base table for ' . $table,
     'primary key' => array('id'),
-    'fields' => array(
-     ),
+    'fields' => array(),
   );
   $civicrm_entity = substr($table, 8);
 
   $fields = civicrm_api($civicrm_entity, 'getfields', array('version' => 3));
-  $fields= $fields['values'];
-  foreach ($fields as $fieldname => $field_spec){
-    if(empty($field_spec['name'])){
+  $fields = $fields['values'];
+  foreach ($fields as $fieldname => $field_spec) {
+    if (empty($field_spec['name'])) {
       continue;
     }
-    $unique_name = empty($field_spec['uniqueName'])? $fieldname : $field_spec['uniqueName'];
+    $unique_name = empty($field_spec['uniqueName']) ? $fieldname : $field_spec['uniqueName'];
     $schema[$table]['fields'][$unique_name] = array(
       'real_field' => $field_spec['name'],
-      'description' => empty($field_spec['title'])? 'No description in CiviCRM Schema for field': $field_spec['title'],
+      'description' => empty($field_spec['title']) ? 'No description in CiviCRM Schema for field' : $field_spec['title'],
       'unsigned' => TRUE,
       'not null' => TRUE,
     ) + civicrm_entity_get_field_type($field_spec);
@@ -158,63 +116,52 @@ function civicrm_entity_get_schema($table) {
 }
 
 /**
- * @TODO Document this function.
+ * Please document this function.
  */
-function civicrm_entity_get_field_type($field_spec){
-  if($field_spec['name'] == 'id'){
+function civicrm_entity_get_field_type($field_spec) {
+  if ($field_spec['name'] == 'id') {
     return array('type' => 'serial');
   }
 
-  switch ($field_spec['type']){
-    case CRM_Utils_Type::T_INT :
-    case CRM_Utils_Type::T_BOOLEAN :
-      return array(
-        'type' => 'integer'
-      );
-    case CRM_Utils_Type::T_MONEY :
-    case CRM_Utils_Type::T_FLOAT :
-      return array(
-        'type' => 'float'
-      );
-    case CRM_Utils_Type::T_TEXT :
-    case CRM_Utils_Type::T_STRING :
-    case CRM_Utils_Type::T_LONGTEXT :
-    case CRM_Utils_Type::T_CCNUM :
-    case CRM_Utils_Type::T_EMAIL :
-    case CRM_Utils_Type::T_URL :
-      return array(
-        'type' => 'text'
-      );
-    case CRM_Utils_Type::T_DATE :
-    case CRM_Utils_Type::T_TIME :
-      return array(
-        'type' => 'varchar',
-        'mysql_type' => 'datetime',
-      );
-    case CRM_Utils_Type::T_ENUM :
-      return array(
-        'type' => 'varchar',
-        'mysql_type' => 'enum',
-      );
-    case CRM_Utils_Type::T_BLOB :
-    case CRM_Utils_Type::T_MEDIUMBLOB :
-      return array(
-        'type' => 'blob',
-      );
-    case CRM_Utils_Type::T_TIMESTAMP :
-      return array(
-        'type' => 'varchar',
-        'mysql_type' => 'timestamp',
-      );
+  switch ($field_spec['type']) {
+    case CRM_Utils_Type::T_INT:
+    case CRM_Utils_Type::T_BOOLEAN:
+      return array('type' => 'integer');
+
+    case CRM_Utils_Type::T_MONEY:
+    case CRM_Utils_Type::T_FLOAT:
+      return array('type' => 'float');
+
+    case CRM_Utils_Type::T_TEXT:
+    case CRM_Utils_Type::T_STRING:
+    case CRM_Utils_Type::T_LONGTEXT:
+    case CRM_Utils_Type::T_CCNUM:
+    case CRM_Utils_Type::T_EMAIL:
+    case CRM_Utils_Type::T_URL:
+      return array('type' => 'text');
+
+    case CRM_Utils_Type::T_DATE:
+    case CRM_Utils_Type::T_TIME:
+      return array('type' => 'varchar', 'mysql_type' => 'datetime');
+
+    case CRM_Utils_Type::T_ENUM:
+      return array('type' => 'varchar', 'mysql_type' => 'enum');
+
+    case CRM_Utils_Type::T_BLOB:
+    case CRM_Utils_Type::T_MEDIUMBLOB:
+      return array('type' => 'blob');
+
+    case CRM_Utils_Type::T_TIMESTAMP:
+      return array('type' => 'varchar', 'mysql_type' => 'timestamp');
+
   }
   return array('type' => $field_spec['type']);
 }
 
-/*
- * Here we declare Selected CiviCRM entities to Drupal
+/**
+ * Here we declare selected CiviCRM entities to Drupal.
  *
- * This is necessary for entity module to pick them up
- *
+ * This is necessary for entity module to pick them up.
  */
 function civicrm_entity_entity_info() {
   $entities = _civicrm_entity_enabled_entities();
@@ -232,7 +179,7 @@ function civicrm_entity_entity_info() {
       'access callback' => 'civicrm_entity_access',
       'bundles' => array(
         $drupal_entity => array(
-          'label' => t("CiviCRM $drupal_entity"),
+          'label' => t('CiviCRM @entity', array('@entity')),
           'admin' => array(
             'path' => 'admin/structure/types/manage/' . $drupal_entity,
             'access arguments' => array('administer CiviCRM'),
@@ -242,18 +189,22 @@ function civicrm_entity_entity_info() {
       'view modes' => array(
         'full' => array(
           'label' => t('Default'),
-          'custom settings' => FALSE
-        )
+          'custom settings' => FALSE,
+        ),
       ),
       'entity keys' => array(
         'id' => 'id',
         'label' => _civicrm_entity_labels($drupal_entity),
-      )
-    )
-    ;
-    $info[$drupal_entity]['base table'] = $drupal_entity;
+      ),
+      'base table' => $drupal_entity,
+    );
+    $label_callback = 'civicrm_entity_' . $drupal_entity . '_label_callback';
+    if (function_exists($label_callback)) {
+      $info[$drupal_entity]['label callback'] = $label_callback;
+    }
   }
-  //ok - so we are not doing this for the ones declared in views until more testing has been done
+  // OK - so we are not doing this for the ones declared in views
+  // until more testing has been done.
   $info['civicrm_relationship_type']['views controller class'] = 'CiviCRMEntityDefaultViewsController';
   return $info;
 }
@@ -269,7 +220,7 @@ function civicrm_entity_entity_info() {
  * managed through 'our' schema.
  */
 function civicrm_entity_entity_property_info_alter(&$info) {
-  if (! civicrm_initialize(TRUE)) {
+  if (!civicrm_initialize(TRUE)) {
     return;
   }
 
@@ -284,11 +235,11 @@ function civicrm_entity_entity_property_info_alter(&$info) {
   $info['civicrm_contact']['properties']['civicrm_user'] = array(
     'label' => 'Drupal User',
     'description' => 'Drupal User for contact',
-    'type' => 'user'
+    'type' => 'user',
   );
 
   // Attach a CiviCRM Contact property to drupal users.
-  $info['user']['properties']['civicrm_contact'] = array (
+  $info['user']['properties']['civicrm_contact'] = array(
     'label'           => 'CiviCRM Contact',
     'description'     => 'CiviCRM Contact for user',
     'type'            => 'civicrm_contact',
@@ -301,7 +252,7 @@ function civicrm_entity_entity_property_info_alter(&$info) {
 }
 
 /**
- * @TODO Document this function.
+ * Please document this function.
  */
 function _civicrm_entity_enabled_entities() {
   return array(
@@ -319,22 +270,21 @@ function _civicrm_entity_enabled_entities() {
 }
 
 /**
- * @TODO Document this function.
+ * Please document this function.
  */
-function _civicrm_entity_chained_fks(){
+function _civicrm_entity_chained_fks() {
   return array(
-      'CRM_Contact_DAO_Contact' => 'contact',
-      'CRM_Event_DAO_Event' => 'event',
-    );
+    'CRM_Contact_DAO_Contact' => 'contact',
+    'CRM_Event_DAO_Event' => 'event',
+  );
 }
 
 /**
- * Very basic version of what the 'label' should be for each of these
- * tables.
+ * Provide label (column) for each entity types.
  *
  * @TODO Create a callback function.
  *
- * http://api.drupal.org/api/drupal/modules!system!system.api.php/function/hook_entity_info/7
+ * @see http://api.drupal.org/api/drupal/modules!system!system.api.php/function/hook_entity_info/7
  */
 function _civicrm_entity_labels($entity) {
   $labels = array(
@@ -344,92 +294,112 @@ function _civicrm_entity_labels($entity) {
     'civicrm_relationship' => 'description',
     'civicrm_relationship_type' => 'description',
     'civicrm_activity' => 'subject',
-    'civicrm_entity_tag' => 'tag_id', // OK I'm just putting in something that won't error for now
-    'civicrm_membership' => 'id', // ditto
-    'civicrm_group'=> 'name',
+    // OK, I'm just putting in something that won't error for now.
+    'civicrm_entity_tag' => 'tag_id',
+    // Ditto.
+    'civicrm_membership' => 'id',
+    'civicrm_group' => 'name',
     'civicrm_tag' => 'name',
   );
   return $labels[$entity];
 }
 
-/*
- * Calculate fields for entities
-*/
+/**
+ * Label callback for civicrm_contact entity type.
+ *
+ *   drupal_alter('civicrm_entity_' . $entity, $, $alterable2, $context);
+ */
+function civicrm_entity_civicrm_contact_label_callback($entity, $entity_type) {
+  $label = $entity->display_name;
+  // drupal_alter('civicrm_entity_contact_label', $label, $entity);
+  if (isset($entity->email) && !empty($entity->email)) {
+    $label = t('!label <!email>', array('!label' => $label, '!email' => $entity->email));
+  }
+  elseif (isset($entity->phone) && !empty($entity->phone)) {
+    $label = t('!label <!phone>', array('!label' => $label, '!phone' => $entity->phone));
+  }
+  return $label;
+}
 
+/**
+ * Calculate fields for entities
+ */
 function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
   $info = array();
   if ($civicrm_entity == 'contact') {
     $info['civi_user'] = array(
       'label' => 'Drupal User',
-      'type' => 'user'
+      'type' => 'user',
     );
   }
   $fields = civicrm_api($civicrm_entity, 'getfields', array(
     'version' => 3,
-    'action' => 'create'
+    'action' => 'create',
   ));
   foreach ($fields['values'] as $fieldname => $field_specs) {
-    //type is empty for custom fields - we should sort that out but skipping for now
-    // we are only doing 'integers' at this stage
+    // Type is empty for custom fields - we should sort that out but
+    // skipping for now we are only doing 'integers' at this stage.
     $types = array(
       1 => 'integer',
       2 => 'text',
       32 => 'text',
       16 => 'integer',
     );
-    if (! empty($field_specs['type']) && array_key_exists($field_specs['type'], $types)) {
+    if (!empty($field_specs['type']) && array_key_exists($field_specs['type'], $types)) {
       $info[$fieldname] = array(
-        'label' => empty($field_specs['title'])? 'title not defined see CRM-11547': $field_specs['title'],
+        'label' => empty($field_specs['title']) ? 'title not defined see CRM-11547' : $field_specs['title'],
         'type' => $types[$field_specs['type']],
-        'sanitize' => 'check_plain'
+        'sanitize' => 'check_plain',
       );
-      if($field_specs['type'] == 16){
+      if ($field_specs['type'] == 16) {
         $info[$fieldname]['size'] = 'tiny';
       }
-      /* this is a semi-reliable way of distinguishing 'real' fields from pseudofields
-      // and custom fields and impacts on views (which is only implemented in a very minor way
-      // at this stage because it is 'blocked' by the default views install
-      * using hook_views_data rather than hook_views_data_alter
-      */
-      if(!empty($field_specs['name'])){
+      // This is a semi-reliable way of distinguishing 'real' fields
+      // from pseudofields and custom fields and impacts on views
+      // (which is only implemented in a very minor way at this stage
+      // because it is 'blocked' by the default views install using
+      // hook_views_data rather than hook_views_data_alter.
+      if (!empty($field_specs['name'])) {
         $info[$fieldname]['schema field'] = $field_specs['name'];
       }
 
-      // we will add contact as a related entity for FK references to contact
-      // this could be expanded to all FKs e.g event_id in Participant Could load the event
-      // at the moment we are being cautious
-      if (CRM_Utils_Array::value('FKClassName', $field_specs) ){
+      // We will add contact as a related entity for FK references to
+      // contact. This could be expanded to all FKs e.g event_id in
+      // Participant. Could load the event at the moment we are being
+      // cautious.
+      if (CRM_Utils_Array::value('FKClassName', $field_specs)) {
         $fks = _civicrm_entity_chained_fks();
-        if(array_key_exists($field_specs['FKClassName'], $fks)){
-          $fksEntity = $fks[$field_specs['FKClassName']];
-          $info[$fieldname . '_' . $fksEntity] = array(
+        if (array_key_exists($field_specs['FKClassName'], $fks)) {
+          $fks_entity = $fks[$field_specs['FKClassName']];
+          $info[$fieldname . '_' . $fks_entity] = array(
             'label' => empty($field_specs['title']) ? 'Title not defined in schema' : $field_specs['title'],
-            'type' => 'civicrm_' . $fksEntity,
+            'type' => 'civicrm_' . $fks_entity,
             'property_info' => array(
               'field' => $fieldname,
-              'entity' => $fksEntity
+              'entity' => $fks_entity,
             ),
-            'getter callback' => 'civicrm_entity_metadata_civicrm_entity_get_properties'
+            'getter callback' => 'civicrm_entity_metadata_civicrm_entity_get_properties',
           );
         }
       }
-      // we are treating contact as the only possible entity which is not great - need
-      // to figure out better approach - can we have more than one? define 'civicrm_entity'?
-      if($fieldname == 'entity_id'){
-        $fksEntity = 'contact';
-        $info[$fieldname . '_' . $fksEntity] = array(
+      // @TODO We are treating contact as the only possible entity
+      // which is not great - need to figure out better approach - can
+      // we have more than one? Define 'civicrm_entity'?
+      if ($fieldname == 'entity_id') {
+        $fks_entity = 'contact';
+        $info[$fieldname . '_' . $fks_entity] = array(
           'label' => empty($field_specs['title']) ? 'Title not defined in schema' : $field_specs['title'],
-          'type' => 'civicrm_' . $fksEntity,
+          'type' => 'civicrm_' . $fks_entity,
           'property_info' => array(
             'field' => $fieldname,
-            'entity' => $fksEntity
+            'entity' => $fks_entity,
           ),
-          'getter callback' => 'civicrm_entity_metadata_civicrm_entity_get_properties'
+          'getter callback' => 'civicrm_entity_metadata_civicrm_entity_get_properties',
         );
       }
 
-      if (! empty($field_specs['options'])) {
-        //  $info[$fieldname]['type'] = 'list<integer>';
+      if (!empty($field_specs['options'])) {
+        // $info[$fieldname]['type'] = 'list<integer>';
         $info[$fieldname]['options list'] = '_civicrm_entity_rules_attach_options';
         $info[$fieldname]['options data'] = $field_specs['options'];
         if ($context == 'property_info') {
@@ -452,7 +422,7 @@ function civicrm_entity_metadata_civicrm_entity_get_properties($data, $options, 
   $entity = civicrm_api($info['property_info']['entity'], 'get', array(
     'version' => 3,
     'id' => $data->$info['property_info']['field'],
-    'sequential' => 1
+    'sequential' => 1,
   ));
   return (object) $entity['values'][0];
 }
@@ -460,8 +430,11 @@ function civicrm_entity_metadata_civicrm_entity_get_properties($data, $options, 
 /**
  * Condition Drupal User Account exists for contact.
  *
- * @param array $contact contact array
- * @return object user object if success. False on Fail
+ * @param array $contact
+ *   Contact array.
+ *
+ * @return object
+ *   Drupal user object if success, FALSE on fail.
  */
 function civicrm_entity_user_exists($contact) {
   return civicrm_entity_action_load_user($contact);
@@ -470,52 +443,69 @@ function civicrm_entity_user_exists($contact) {
 /**
  * Condition Drupal User Account can be created for contact (creates contact).
  *
- * @param array $info contact array
- * @return object user object if success. False on Fail
+ * @param array $contact
+ *   contact array
+ *
+ * @return object
+ *   Drupal user object if success, FALSE on Fail
  */
-function civicrm_entity_user_creatable($contact){
+function civicrm_entity_user_creatable($contact) {
   return civicrm_entity_action_create_user($contact);
 }
 
 /**
- * Condition Drupal User Account can be created or exists for contact
- * (creates contact if appropriate).
+ * Condition Drupal User Account can be created or exists for contact.
  *
- * @param array $contact contact array
- * @return object user object if success. False on Fail
+ * Ccreates contact if appropriate.
+ *
+ * @param array $contact
+ *   contact array
+ *
+ * @return mixed
+ *   Drupal user object if success, FALSE on fail.
  */
-function civicrm_entity_user_exists_or_creatable($contact){
+function civicrm_entity_user_exists_or_creatable($contact) {
   return civicrm_entity_action_load_create_user($contact);
 }
 
 /**
  * Given a contact object return the Drupal user.
  *
- * @param StdClass $entity Contact Std Object
- * @return StdClass $user Drupal User Object
+ * @param StdClass $entity
+ *   Contact Std Object
+ *
+ * @return object
+ *   Drupal user object.
  */
 function civicrm_entity_action_load_user($entity) {
-  $contact = civicrm_api('uf_match', 'getsingle', array(
+  $domain_id = civicrm_api('domain', 'getvalue', array(
+                 'version' => 3,
+                 'return' => 'id',
+                 'current_domain' => TRUE,
+               ));
+  $params = array(
     'version' => 3,
     'contact_id' => $entity->id,
     'return' => 'uf_id',
-    'domain_id' => civicrm_api('domain', 'getvalue', array('version' => 3, 'return' => 'id', 'current_domain' => TRUE)),
-  ));
+    'domain_id' => $domain_id,
+  );
+  $contact = civicrm_api('uf_match', 'getsingle', $params);
   if (empty($contact['is_error'])) {
-    return array(
-      'civicrm_user' => user_load($contact['uf_id'])
-    );
+    return array('civicrm_user' => user_load($contact['uf_id']));
   }
 }
 
 /**
  * Given a contact object, load or create then return a drupal user.
  *
- * @param object $entity CiviCRM Contact Object
- * @return object|boolean $user Drupal User Object or FALSE
+ * @param object $contact
+ *   CiviCRM Contact Object
+ *
+ * @return object
+ *   $user Drupal user object or FALSE.
  */
 function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE, $signin = FALSE) {
-  if(!is_array($contact)){
+  if (!is_array($contact)) {
     // Perhaps we should be accepting object rather than array here?
     $contact = (array) $contact;
   }
@@ -531,7 +521,7 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
       'version' => 3,
       'id' => $contact['id'],
       'sequential' => 1,
-      'return' => 'email,display_name'
+      'return' => 'email,display_name',
     ));
   }
   $params = array(
@@ -552,10 +542,10 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
     return FALSE;
   }
 
-  $params['cms_name'] = $params['name'] = $user['name'] = !empty($contact['display_name'])? $contact['display_name'] : $params['mail'];
+  $params['cms_name'] = $params['name'] = $user['name'] = !empty($contact['display_name']) ? $contact['display_name'] : $params['mail'];
   $params['cms_pass'] = $user['pass'] = substr(str_shuffle("abcefghijklmnopqrstuvwxyz"), 0, 8);
   $params['status'] = $is_active;
-  if ($notify){
+  if ($notify) {
     $params['notify'] = TRUE;
   }
 
@@ -595,17 +585,15 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
     user_login_finalize($form_values);
   }
 
-  return array(
-    'civicrm_user' => $user_object
-  );
+  return array('civicrm_user' => $user_object);
 }
 
 /**
- * Load or create user as appropriate
+ * Load or create user as appropriate.
  */
-function civicrm_entity_action_load_create_user($entity, $is_active = 0 , $notify = 0) {
+function civicrm_entity_action_load_create_user($entity, $is_active = 0, $notify = 0) {
   if ($user = civicrm_entity_action_load_user($entity)) {
-    if($is_active && !$user['civicrm_user']->status){
+    if ($is_active && !$user['civicrm_user']->status) {
       $user['civicrm_user']->status = $is_active;
       $user['civicrm_user']->save;
     }
@@ -615,23 +603,24 @@ function civicrm_entity_action_load_create_user($entity, $is_active = 0 , $notif
 }
 
 /**
- * Implement the post hook and fire the corresponding rules event
+ * Implement the post hook and fire the corresponding rules event.
  */
 function civicrm_entity_civicrm_post($op, $object_name, $object_id, &$object_ref) {
-  if (! module_exists('rules')) {
+  if (!module_exists('rules')) {
     return;
   }
-  if (in_array($object_name, array(
+  $contact_types = array(
     'Individual',
     'Household',
-    'Organization'
-  ))) {
+    'Organization',
+  );
+  if (in_array($object_name, $contact_types)) {
     $object_name = 'Contact';
   }
 
   $valid_objects = _civicrm_entity_enabled_entities();
-  $entityName = _civicrm_entity_get_entity_name_from_camel($object_name);
-  if (! in_array($entityName, $valid_objects, TRUE)) {
+  $entity_name = _civicrm_entity_get_entity_name_from_camel($object_name);
+  if (!in_array($entity_name, $valid_objects, TRUE)) {
     return;
   }
   $event_name = NULL;
@@ -639,27 +628,29 @@ function civicrm_entity_civicrm_post($op, $object_name, $object_id, &$object_ref
     case 'create':
     case 'edit':
     case 'delete':
-      $event_name = 'civicrm_' . $entityName . "_{$op}";
+      $event_name = 'civicrm_' . $entity_name . "_{$op}";
       break;
 
     default:
       break;
+
   }
-  if($entityName == 'entity_tag'){
-    //argh entity tag is completely non-standard!!!  CRM-11933 logged
-    foreach ($object_ref[0] as $entityTag){
+  if ($entity_name == 'entity_tag') {
+    // Argh entity tag is completely non-standard!!!
+    // @see CRM-11933
+    foreach ($object_ref[0] as $entity_tag) {
       $object = new CRM_Core_BAO_EntityTag();
-      $object->entity_id = $entityTag;
+      $object->entity_id = $entity_tag;
       $object->entity_table = 'civicrm_contact';
       $object->tag_id = $object_id;
-      if($object->find(TRUE)){
-        // this find is probably not necessary but until more testing on the
-        // tag create is done I will
+      if ($object->find(TRUE)) {
+        // This find is probably not necessary but until more testing
+        // on the tag create is done I will.
         rules_invoke_event($event_name, $object);
       }
     }
   }
-  else{
+  else {
     if ($event_name) {
       rules_invoke_event($event_name, $object_ref);
     }
@@ -667,11 +658,20 @@ function civicrm_entity_civicrm_post($op, $object_name, $object_id, &$object_ref
 }
 
 /**
- * Convert possibly camel name to underscore separated entity name
+ * Convert possibly camel name to underscore separated entity name.
  *
- *(copied from api - may change in api
- * @param string $entity entity name in various formats e.g. Contribution, contribution, OptionValue, option_value, UFJoin, uf_join
- * @return string $entity entity name in underscore separated format
+ * @see _civicrm_api_get_entity_name_from_camel()
+ *
+ * @TODO Why don't we just call the above function directly?
+ *
+ * @param string $entity
+ *   Entity name in various formats e.g:
+ *     Contribution => contribution,
+ *     OptionValue => option_value,
+ *     UFJoin => uf_join.
+ *
+ * @return string
+ *   $entity entity name in underscore separated format
  */
 function _civicrm_entity_get_entity_name_from_camel($entity) {
   if ($entity == strtolower($entity)) {
@@ -688,23 +688,29 @@ function _civicrm_entity_get_entity_name_from_camel($entity) {
 }
 
 /**
- *
- * @author eileen
- *
+ * @TODO Document this class.
  */
-class civicrmEntity extends Entity {
+class CivicrmEntity extends Entity {
+
+  /**
+   * Please document this function.
+   */
   protected function defaultLabel() {
     return $this->title;
   }
+
+  /**
+   * Please document this function.
+   */
   protected function defaultUri() {
     return array(
-      'path' => 'task/' . $this->identifier()
+      'path' => 'task/' . $this->identifier(),
     );
   }
 }
 
 /**
- *
+ * @TODO Document this class.
  */
 class CivicrmEntityController extends EntityAPIController {
 
@@ -713,12 +719,13 @@ class CivicrmEntityController extends EntityAPIController {
    */
   public function load($ids = array(), $conditions = array()) {
     $entities = array();
-    if(!civicrm_initialize(TRUE)){
+    if (!civicrm_initialize(TRUE)) {
       return;
     }
-  // not sure about revisioning out at this stage - I don't know if it could have any later use
-    // Revisions are not statically cached, and require a different query to
-    // other conditions, so separate the revision id into its own variable.
+    // Not sure about revisioning out at this stage - I don't know if
+    // it could have any later use. Revisions are not statically
+    // cached, and require a different query to other conditions, so
+    // separate the revision id into its own variable.
     if ($this->revisionKey && isset($conditions[$this->revisionKey])) {
       $revision_id = $conditions[$this->revisionKey];
       unset($conditions[$this->revisionKey]);
@@ -755,10 +762,10 @@ class CivicrmEntityController extends EntityAPIController {
     // load, if loading a revision, or if $conditions was passed without $ids.
     if ($ids === FALSE || $ids || $revision_id || ($conditions && !$passed_ids)) {
       // Build the query.
-      foreach ($ids as $id){
-        $civiEntity = civicrm_api($this->entityInfo['description'], 'getsingle', array('version' => 3, 'id' => $id));
-        // @todo improve this casting
-        $queried_entities[$civiEntity['id']] = new civicrmEntity($civiEntity , 'civicrm_event');
+      foreach ($ids as $id) {
+        $civicrm_entity = civicrm_api($this->entityInfo['description'], 'getsingle', array('version' => 3, 'id' => $id));
+        // @TODO improve this casting.
+        $queried_entities[$civicrm_entity['id']] = new CivicrmEntity($civicrm_entity, 'civicrm_event');
       }
     }
 
@@ -794,9 +801,9 @@ class CivicrmEntityController extends EntityAPIController {
   /**
    * Implements EntityAPIControllerInterface.
    *
-   * @param $transaction
-   *   Optionally a DatabaseTransaction object to use. Allows overrides to pass
-   *   in their transaction object.
+   * @param DatabaseTransaction $transaction
+   *   Optionally a DatabaseTransaction object to use. Allows
+   *   overrides to pass in their transaction object.
    */
   public function save($entity, DatabaseTransaction $transaction = NULL) {
     print_r($entity);
@@ -808,26 +815,28 @@ class CivicrmEntityController extends EntityAPIController {
     $params['sequential'] = 1;
 
     try {
-      $entity->is_new = ! empty($entity->is_new) || empty($entity->{$this->idKey});
-      //@todo should we call this hook when drupal saves (as opposed to Civi?) ditto insert, update
+      $entity->is_new = !empty($entity->is_new) || empty($entity->{$this->idKey});
+      // @TODO should we call this hook when drupal saves (as opposed
+      // to Civi?) ditto insert, update.
       $this->invoke('presave', $entity);
       if ($entity->is_new) {
         $result = civicrm_api(substr($this->entityType, 8), 'create', $params);
-        //$this->invoke('insert', $entity); (see above)
+        // $this->invoke('insert', $entity);
       }
       else {
         $result = civicrm_api(substr($this->entityType, 8), 'update', $params);
-        //$this->invoke('update', $entity); (see above)
+        // $this->invoke('update', $entity);
       }
 
       unset($entity->is_new);
       unset($entity->is_new_revision);
       unset($entity->original);
-      if (! civicrm_error($result)) {
+      if (!civicrm_error($result)) {
         return (object) $result['values'][0];
       }
       throw new Exception($result['error_message']);
-    } catch (Exception $e) {
+    }
+    catch (Exception $e) {
       watchdog_exception($this->entityType, $e);
       throw $e;
     }
@@ -835,9 +844,10 @@ class CivicrmEntityController extends EntityAPIController {
 }
 
 /**
- *
+ * @TODO Document this class.
  */
 class CiviCRMEntityDefaultViewsController extends EntityDefaultViewsController {
+
   /**
    * Defines the result for hook_views_data().
    */
@@ -868,21 +878,20 @@ class CiviCRMEntityDefaultViewsController extends EntityDefaultViewsController {
   }
 
   /**
-   * Try to come up with some views fields with the help of the schema and
-   * the entity property information.
+   * Find views fields using schema & entity property information.
    */
   protected function schema_fields() {
-    // We are not using the 'normal' schema function here due to
-    // the problems discussed in the readme.
-    if(empty($this->info['base table'])){
+    // We are not using the 'normal' schema function here due to the
+    // problems discussed in the readme.
+    if (empty($this->info['base table'])) {
       return array();
     }
     $schema = civicrm_entity_get_schema($this->info['base table']);
     $properties = entity_get_property_info($this->type) + array('properties' => array());
     $data = array();
-    // we will take out the reliance on other schema related checks
-    // here ideally we would 'read' getfields output to determine if
-    // we are looking at a DB field or a custom / pseudofield
+    // We will take out the reliance on other schema related checks
+    // here, ideally we would 'read' getfields output to determine if
+    // we are looking at a DB field or a custom / pseudofield.
     foreach ($properties['properties'] as $name => $property_info) {
       if (!empty($property_info['schema field']) && !empty($schema['fields']) && isset($schema['fields'][$property_info['schema field']])) {
         if ($views_info = $this->map_from_schema_info($name, $schema['fields'][$property_info['schema field']], $property_info)) {
@@ -898,25 +907,30 @@ class CiviCRMEntityDefaultViewsController extends EntityDefaultViewsController {
  * Load contact entity according to user id.
  */
 function civicrm_entity_user_contact_get($data, array $options, $name, $type, $info) {
-  if(!module_exists('civicrm') || ! function_exists('civicrm_initialize')){
+  if (!module_exists('civicrm') || !function_exists('civicrm_initialize')) {
     return;
   }
-  if(!civicrm_initialize())
+  if (!civicrm_initialize()) {
     return;
+  }
 
+  $domain_id = civicrm_api('domain', 'getvalue', array(
+                 'version' => 3,
+                 'return' => 'id',
+                 'current_domain' => TRUE,
+               ));
   $contact = civicrm_api('uf_match', 'getsingle', array(
                'version' => 3,
                'return' => 'contact_id',
                'uf_id' => $data->uid,
-               'domain_id' => civicrm_api('domain', 'get', array('version' => 3, 'return' => 'id', 'current_domain' => TRUE)),
+               'domain_id' => $domain_id,
              ));
 
-  if(!empty($contact['contact_id'])){
+  if (!empty($contact['contact_id'])) {
     $entity = entity_load('civicrm_contact', array($contact['contact_id']));
     return $entity[$contact['contact_id']];
   }
   else {
     return NULL;
   }
-
 }
