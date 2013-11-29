@@ -88,3 +88,4 @@ to it may hold possibilities
 One issue is considering whether we should limit the fields that get loaded when an entity is loaded
 I believe the drupal bundles concept may be an approach to define a minimum set of fields, a medium set
 and a comprehensive one. However, this would need to be defined somehow? Preferably not ad hoc.
+
