@@ -35,7 +35,7 @@ function civicrm_entity_rules_data_info() {
       if (!empty($field_specs['type']) && $field_specs['type'] == 1) {
         // Type is empty for custom fields - we should sort that out
         // but skipping for now.
-        if (CRM_Utils_Array::value('FKClassName', $field_specs)) {
+        if (CRM_Utils_Array::Value('FKClassName', $field_specs)) {
           $fks = _civicrm_entity_chained_fks();
           if (array_key_exists($field_specs['FKClassName'], $fks)) {
             $fks_entity = $fks[$field_specs['FKClassName']];
@@ -197,6 +197,46 @@ function civicrm_entity_rules_condition_info() {
       ),
       'group' => t('CiviCRM'),
     ),
+    'civicrm_entity_query' => array(
+      'label' => t('Can Fetch CiviCRM entity by property'),
+      'module' => 'civicrm',
+      'access_callback' => '_civicrm_entity_rules_access',
+      'parameter' => array(
+        'type' => array(
+          'type' => 'text',
+          'label' => t('CiviCRM Entity type'),
+          'options list' => '_civicrm_entity_enabled_entities',
+          'description' => t('Specifies the type of CiviCRM entity that should be fetched.'),
+          'restriction' => 'input',
+        ),
+        'property' => array(
+          'type' => 'text',
+          'label' => t('Property'),
+          'description' => t('The property by which the entity is to be selected.'),
+          'restriction' => 'input',
+        ),
+        'value' => array(
+          'type' => 'unknown',
+          'label' => t('Value'),
+          'description' => t('The property value of the entity to be fetched.'),
+        ),
+        'limit' => array(
+          'type' => 'integer',
+          'label' => t('Limit result count'),
+          'description' => t('Limit the maximum number of fetched entities.'),
+          'optional' => TRUE,
+          'default value' => '10',
+        ),
+      ),
+      'group' => t('CiviCRM'),
+      'callbacks' => array(
+        'form_alter' => 'rules_action_type_form_alter',
+      ),
+      'provides' => array(
+        'entity_fetched' => array('type' => 'list', 'label' => t('Fetched CiviCRM entity list (being ignored?)')),
+      ),
+      'base' => 'civicrm_entity_query',
+    ),
   );
 }
 
@@ -291,6 +331,47 @@ function civicrm_entity_rules_action_info() {
       'group' => t('CiviCRM'),
       'base' => 'civicrm_entity_action_load_create_user',
     ),
+    'civicrm_entity_query' => array(
+      'label' => t('Fetch CiviCRM entity by property'),
+      'module' => 'civicrm',
+      'access_callback' => '_civicrm_entity_rules_access',
+      'parameter' => array(
+        'type' => array(
+          'type' => 'text',
+          'label' => t('CiviCRM Entity type'),
+          'options list' => '_civicrm_entity_enabled_entities',
+          'description' => t('Specifies the type of CiviCRM entity that should be fetched.'),
+          'restriction' => 'input',
+        ),
+        'property' => array(
+          'type' => 'text',
+          'label' => t('Property'),
+          'description' => t('The property by which the entity is to be selected.'),
+          'restriction' => 'input',
+        ),
+        'value' => array(
+          'type' => 'unknown',
+          'label' => t('Value'),
+          'description' => t('The property value of the entity to be fetched.'),
+        ),
+        'limit' => array(
+          'type' => 'integer',
+          'label' => t('Limit result count'),
+          'description' => t('Limit the maximum number of fetched entities.'),
+          'optional' => TRUE,
+          'default value' => '10',
+        ),
+      ),
+      'group' => t('CiviCRM'),
+      'callbacks' => array(
+        'form_alter' => 'rules_action_type_form_alter',
+      ),
+      'provides' => array(
+        'entity_fetched' => array('type' => 'list', 'label' => t('Fetched CiviCRM entity list')),
+      ),
+      'base' => 'civicrm_entity_query',
+    ),
+
   );
 }
 
