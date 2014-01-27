@@ -514,8 +514,6 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
   //
   // Don't think this is a great approach but will use for now - could
   // just create the user but no great support for that yet.
-  //
-  // @TODO What happens if they don't have an email?
   if (empty($contact['display_name']) || empty($contact['email'])) {
     $contact = civicrm_api('contact', 'getsingle', array(
       'version' => 3,
@@ -524,6 +522,13 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
       'return' => 'email,display_name',
     ));
   }
+  if (!is_string($contact['email']) && isset($contact['email'][0]->email)) {
+    $contact['email'] = $contact['email'][0]->email;
+  }
+  // @TODO What happens if they don't have an email at this point?
+  // An email is a pre-requisite for a Drupal account, so the action
+  // fails if they don't have an email.
+
   $params = array(
     'name' => $contact['display_name'],
     'mail' => $contact['email'],
