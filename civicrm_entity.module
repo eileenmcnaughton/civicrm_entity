@@ -843,14 +843,11 @@ class CivicrmEntityController extends EntityAPIController {
    *   overrides to pass in their transaction object.
    */
   public function save($entity, DatabaseTransaction $transaction = NULL) {
-    print_r($entity);
-    print_r($transaction);
-    print_r($this);
     $params = (array) $entity;
     unset($params['is_new']);
     $params['version'] = 3;
     $params['sequential'] = 1;
-
+    
     try {
       $entity->is_new = !empty($entity->is_new) || empty($entity->{$this->idKey});
       // @TODO should we call this hook when drupal saves (as opposed
