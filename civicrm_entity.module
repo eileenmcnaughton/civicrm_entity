@@ -120,7 +120,7 @@ function civicrm_entity_get_schema($table) {
     $unique_name = empty($field_spec['uniqueName']) ? $fieldname : $field_spec['uniqueName'];
     $schema[$table]['fields'][$unique_name] = array(
         'real_field' => $field_spec['name'],
-        'description' => empty($field_spec['title']) ? 'No description in CiviCRM Schema for field' : $field_spec['title'],
+        'description' => _civicrm_entity_get_title($field_spec),
         'unsigned' => TRUE,
         'not null' => TRUE,
       ) + civicrm_entity_get_field_type($field_spec);
@@ -360,6 +360,29 @@ function _civicrm_entity_labels($entity) {
   return $labels[$entity];
 }
 
+function _civicrm_entity_get_title($field_specs, $entity_type='') {
+  if (!empty($entity_type)) {
+    $label_field = _civicrm_entity_labels($entity_type);
+  } else {
+    $label_field = 'title';
+  }
+  if (empty($field_specs[$label_field])) {
+    if (array_key_exists('label', $field_specs)) {
+      $label_field = 'label';
+    } else if (array_key_exists('name', $field_specs)) {
+      $label_field = 'name';
+    }
+  }
+
+  $label = $field_specs[$label_field];
+
+  if (!empty($field_specs['groupTitle'])) {
+    $label = $field_specs['groupTitle'] . ': ' . $label;
+  }
+
+  return empty($label) ? 'Title not defined in schema': $label] ;
+}
+
 /**
  * Label callback for civicrm_contact entity type.
  *
@@ -413,17 +436,7 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
     );
     if (!empty($field_specs['type']) && array_key_exists($field_specs['type'], $types)) {
       //determine the label of the field
-      $label = $fieldname;
-      if (!empty($field_specs['title'])) {
-        $label = $field_specs['title'];
-      } elseif (!empty($field_specs['label'])) {
-        $label = $field_specs['label'];
-      }
-
-      if (!empty($field_specs['groupTitle'])) {
-        $label = $field_specs['groupTitle'] . ': ' . $label;
-      }
-
+      $label = _civicrm_entity_get_title($field_specs);
       $info[$fieldname] = array(
         'label' => $label,
         'type' => $types[$field_specs['type']],
@@ -454,7 +467,7 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
         if (array_key_exists($field_specs['FKClassName'], $fks)) {
           $fks_entity = $fks[$field_specs['FKClassName']];
           $info[$fieldname . '_' . $fks_entity] = array(
-            'label' => empty($field_specs['title']) ? 'Title not defined in schema' : $field_specs['title'],
+            'label' => _civicrm_entity_get_title($field_specs),
             'type' => 'civicrm_' . $fks_entity,
             'property_info' => array(
               'field' => $fieldname,
@@ -470,7 +483,7 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
       if ($fieldname == 'entity_id') {
         $fks_entity = 'contact';
         $info[$fieldname . '_' . $fks_entity] = array(
-          'label' => empty($field_specs['title']) ? 'Title not defined in schema' : $field_specs['title'],
+          'label' => _civicrm_entity_get_title($field_specs),
           'type' => 'civicrm_' . $fks_entity,
           'property_info' => array(
             'field' => $fieldname,
