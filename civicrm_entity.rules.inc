@@ -12,7 +12,8 @@ function civicrm_entity_rules_data_info() {
   if (!civicrm_initialize(TRUE)) {
     return;
   }
-
+  module_load_include('module', 'civicrm_entity', 'civicrm_entity');
+  
   $info = array();
   $entities = _civicrm_entity_enabled_entities();
 
