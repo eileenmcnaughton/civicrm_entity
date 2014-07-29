@@ -272,13 +272,22 @@ function civicrm_entity_entity_property_info_alter(&$info) {
   return $info;
 }
 
+
 /**
- * Please document this function.
+ * Whitelist of enabled entities. We don't have a compelling reason for not including all entities
+ * but some entities are fairly non-standard and of course the rule hook would instantiate rules
+ * more often if all were enabled.
+ *
+ * The whitelist approach is mostly out of caution
+ *
+ * @return arrayof enabled entities keyed by the drupal entity name
  */
 function _civicrm_entity_enabled_entities() {
-  return array(
+  $whitelist = array(
+    'civicrm_address' => 'address',
     'civicrm_event' => 'event',
     'civicrm_contact' => 'contact',
+    'civicrm_contribution' => 'contribution',
     'civicrm_participant' => 'participant',
     'civicrm_relationship' => 'relationship',
     'civicrm_relationship_type' => 'relationship_type',
@@ -290,6 +299,11 @@ function _civicrm_entity_enabled_entities() {
     'civicrm_grant' => 'grant',
     'civicrm_tag' => 'tag',
   );
+  //dirty check for whether financialType exists
+  if (!method_exists('CRM_Contribute_PseudoConstant', 'contributionType' )){
+    $whitelist['civicrm_financial_type'] = 'financial_type';
+  }
+  return $whitelist;
 }
 
 /**
@@ -305,7 +319,7 @@ function _civicrm_entity_chained_fks() {
 /**
  * Provide label (column) for each entity types.
  *
- * @TODO Create a callback function.
+ * @TODO Use the CiviCRM 4.5 getlist function - possibly ported into this module to support 4.4
  *
  * @see http://api.drupal.org/api/drupal/modules!system!system.api.php/function/hook_entity_info/7
  *
@@ -315,14 +329,17 @@ function _civicrm_entity_chained_fks() {
  */
 function _civicrm_entity_labels($entity) {
   $labels = array(
-    'civicrm_event' => 'title',
+    'civicrm_activity' => 'subject',
+    'civicrm_address' => 'address_name',
     'civicrm_contact' => 'display_name',
+    'civicrm_contribution' => 'source',
+    'civicrm_event' => 'title',
     'civicrm_participant' => 'source',
     'civicrm_relationship' => 'description',
     'civicrm_relationship_type' => 'description',
-    'civicrm_activity' => 'subject',
     // OK, I'm just putting in something that won't error for now.
     'civicrm_entity_tag' => 'tag_id',
+    'civicrm_financial_type' => 'description',
     // Ditto.
     'civicrm_membership' => 'id',
     'civicrm_membership_type' => 'name',
