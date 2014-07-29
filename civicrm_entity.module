@@ -285,6 +285,7 @@ function _civicrm_entity_enabled_entities() {
     'civicrm_activity' => 'activity',
     'civicrm_entity_tag' => 'entity_tag',
     'civicrm_membership' => 'membership',
+    'civicrm_membership_type' => 'membership_type',
     'civicrm_group' => 'group',
     'civicrm_grant' => 'grant',
     'civicrm_tag' => 'tag',
@@ -324,6 +325,7 @@ function _civicrm_entity_labels($entity) {
     'civicrm_entity_tag' => 'tag_id',
     // Ditto.
     'civicrm_membership' => 'id',
+    'civicrm_membership_type' => 'name',
     'civicrm_group' => 'name',
     'civicrm_grant' => 'id',
     'civicrm_tag' => 'name',
