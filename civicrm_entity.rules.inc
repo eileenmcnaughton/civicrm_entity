@@ -372,7 +372,30 @@ function civicrm_entity_rules_action_info() {
       ),
       'base' => 'civicrm_entity_query',
     ),
-
+    'civicrm_entity_action_load_create_contact' => array(
+      'label' => t('Create or Load Linked CiviCRM Contact'),
+      'module' => 'civicrm',
+      'access_callback' => '_civicrm_entity_rules_access',
+      'parameter' => array(
+        'user' => array(
+          'label' => t('Drupal User'),
+          'type' => 'user',
+        ),
+        'email' => array(
+          'label' => t('email'),
+          'type' => 'email',
+          'optional' => TRUE,
+        )
+      ),
+      'provides' => array(
+        'civicrm_contact' => array(
+          'label' => t('Created or Loaded CiviCRM Contact'),
+          'type' => 'civicrm_contact',
+        )
+      ),
+      'group' => t('CiviCRM'),
+      'base' => 'civicrm_entity_action_load_create_contact',
+    ),
   );
 }
 
