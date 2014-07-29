@@ -1,11 +1,17 @@
 <?php
+
 /**
- * @TODO Document this class.
+ * Entity Controller for CiviCRM entities
  */
 class CivicrmEntityController extends EntityAPIController {
 
   /**
    * Implements DrupalEntityControllerInterface::load().
+   *
+   * @param array $ids
+   * @param array $conditions
+   *
+   * @return array
    */
   public function load($ids = array(), $conditions = array()) {
     $entities = array();
@@ -25,9 +31,9 @@ class CivicrmEntityController extends EntityAPIController {
     }
 
     /*
-     * this seems 'harmless' - but not necessarily relevant?
-     * ie. deals with caching on the drupal side
-     */
+    * this seems 'harmless' - but not necessarily relevant?
+    * ie. deals with caching on the drupal side
+    */
     // Create a new variable which is either a prepared version of the $ids
     // array for later comparison with the entity cache, or FALSE if no $ids
     // were passed. The $ids array is reduced as items are loaded from cache,
@@ -45,16 +51,16 @@ class CivicrmEntityController extends EntityAPIController {
     }
 
     /*
-     * OK - here is where we will actually 'Do' something that is Civi-Specific
-     * In drupal land $ids = FALSE would load all - let's only do specifix
-     */
+    * OK - here is where we will actually 'Do' something that is Civi-Specific
+    * In drupal land $ids = FALSE would load all - let's only do specific
+    */
     // Load any remaining entities from the database. This is the case if $ids
     // is set to FALSE (so we load all entities), if there are any ids left to
     // load, if loading a revision, or if $conditions was passed without $ids.
     if ($ids === FALSE || $ids || $revision_id || ($conditions && !$passed_ids)) {
       // Build the query.
       try {
-        if($conditions) {
+        if ($conditions) {
           $civicrm_entities = civicrm_api3($this->entityInfo['description'], 'get', $conditions);
         }
         foreach ($ids as $id) {
@@ -103,12 +109,18 @@ class CivicrmEntityController extends EntityAPIController {
   /**
    * Implements EntityAPIControllerInterface.
    *
+   * @param $entity
    * @param DatabaseTransaction $transaction
    *   Optionally a DatabaseTransaction object to use. Allows
    *   overrides to pass in their transaction object.
+   *
+   * @throws Exception
    */
   public function save($entity, DatabaseTransaction $transaction = NULL) {
-    $params = (array) $entity;
+    if (!civicrm_initialize()) {
+      throw new Exception('civicrm inaccessible');
+    }
+    $params = (array)$entity;
     unset($params['is_new']);
     $params['version'] = 3;
     $params['sequential'] = 1;
