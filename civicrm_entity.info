@@ -4,4 +4,5 @@ dependencies[] = civicrm
 dependencies[] = entity
 package = CiviCRM
 core = 7.x
+files[] =  civicrm_entity.inc
 files[] =  civicrm_entity_metadata_controller.inc
