@@ -787,28 +787,6 @@ function _civicrm_entity_get_entity_name_from_camel($entity) {
 /**
  * @TODO Document this class.
  */
-class CivicrmEntity extends Entity {
-
-  /**
-   * Please document this function.
-   */
-  protected function defaultLabel() {
-    return $this->title;
-  }
-
-  /**
-   * Please document this function.
-   */
-  protected function defaultUri() {
-    return array(
-      'path' => 'task/' . $this->identifier(),
-    );
-  }
-}
-
-/**
- * @TODO Document this class.
- */
 class CivicrmEntityController extends EntityAPIController {
 
   /**

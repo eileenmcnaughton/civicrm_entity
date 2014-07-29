@@ -1,12 +1,11 @@
 <?php
-
 /**
  * @file
  * Provides Entity metadata integration.
  */
 
 /**
- * Extend the default OG membership metadata properties.
+ * Extend the default CiviCRM membership metadata properties.
  */
 class CivicrmEntityMetadataController extends EntityDefaultMetadataController {
 
@@ -52,3 +51,4 @@ function civicrm_entity_metadata_convert_schema($table) {
   }
   return $properties;
 }
+
