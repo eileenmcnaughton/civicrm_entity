@@ -13,7 +13,7 @@ function civicrm_entity_rules_data_info() {
     return;
   }
   module_load_include('module', 'civicrm_entity', 'civicrm_entity');
-  
+
   $info = array();
   $entities = _civicrm_entity_enabled_entities();
 
@@ -384,6 +384,8 @@ function civicrm_entity_rules_action_info() {
  *
  * @param String $name
  *   Ignored.
+ *
+ * @return bool
  */
 function civicrm_entity_rules_access($type, $name) {
   return user_access('civicrm_entity.rules.administer');
@@ -391,6 +393,12 @@ function civicrm_entity_rules_access($type, $name) {
 
 /**
  * Please document this function.
+ *
+ * @param $label
+ * @param $type
+ * @param null $civicrm_entity
+ *
+ * @return array
  */
 function civicrm_entity_rules_events_variables($label, $type, $civicrm_entity = NULL) {
   $vars = array();
@@ -414,7 +422,11 @@ function _civicrm_entity_rules_access() {
 
 /**
  * Return options list.
- */
+ * @param $fieldname
+ * @param $info
+ * @param $arg3
+ * @return
+*/
 function _civicrm_entity_rules_attach_options($fieldname, $info, $arg3) {
   return $info['property defaults']['options list'];
 }

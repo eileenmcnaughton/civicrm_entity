@@ -42,6 +42,13 @@ function civicrm_entity_permission() {
 
 /**
  * Entity access callback.
+ *
+ * @param $op
+ * @param $entity
+ * @param $account
+ * @param $entity_type
+ *
+ * @return bool
  */
 function civicrm_entity_access($op, $entity, $account, $entity_type) {
   if ($op == 'view' && $entity_type == 'civicrm_event') {
@@ -70,6 +77,8 @@ function civicrm_entity_views_data_alter($data) { }
  * that the CiviCRM views integration uses the _data hook & would need
  * to use _data_alter hook to be compatible with entity views
  * integration
+ *
+ * @param $schema
  */
 function civicrm_entity_schema_alter(&$schema) {
   $schema_entities = _civicrm_entity_enabled_entities();;
@@ -84,6 +93,10 @@ function civicrm_entity_schema_alter(&$schema) {
  * This approach may not be required as using the schema_alter hook
  * (as opposed to schema_hook) seems to get around a bunch of the
  * reasons I used a separate schema.
+ *
+ * @param $table
+ *
+ * @return array
  */
 function civicrm_entity_get_schema($table) {
   if (!civicrm_initialize(TRUE)) {
@@ -105,11 +118,11 @@ function civicrm_entity_get_schema($table) {
     }
     $unique_name = empty($field_spec['uniqueName']) ? $fieldname : $field_spec['uniqueName'];
     $schema[$table]['fields'][$unique_name] = array(
-      'real_field' => $field_spec['name'],
-      'description' => empty($field_spec['title']) ? 'No description in CiviCRM Schema for field' : $field_spec['title'],
-      'unsigned' => TRUE,
-      'not null' => TRUE,
-    ) + civicrm_entity_get_field_type($field_spec);
+        'real_field' => $field_spec['name'],
+        'description' => empty($field_spec['title']) ? 'No description in CiviCRM Schema for field' : $field_spec['title'],
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ) + civicrm_entity_get_field_type($field_spec);
   }
   return empty($schema[$table]) ? array() : $schema[$table];
 
@@ -117,6 +130,10 @@ function civicrm_entity_get_schema($table) {
 
 /**
  * Please document this function.
+ *
+ * @param $field_spec
+ *
+ * @return array
  */
 function civicrm_entity_get_field_type($field_spec) {
   if ($field_spec['name'] == 'id') {
@@ -170,7 +187,7 @@ function civicrm_entity_entity_info() {
     $info[$drupal_entity] = array(
       'description' => $civicrm_entity,
       'optional' => TRUE,
-      'label' => "CiviCRM $drupal_entity",
+      'label' => "CiviCRM " . ucwords($civicrm_entity),
       'module' => 'civicrm_entity',
       'controller class' => 'CivicrmEntityController',
       'metadata controller class' => 'CivicrmEntityMetadataController',
@@ -218,6 +235,10 @@ function civicrm_entity_entity_info() {
  *
  * At the moment civicrm_relationship_type is the only entity being
  * managed through 'our' schema.
+ *
+ * @param $info
+ *
+ * @return
  */
 function civicrm_entity_entity_property_info_alter(&$info) {
   if (!civicrm_initialize(TRUE)) {
@@ -240,11 +261,11 @@ function civicrm_entity_entity_property_info_alter(&$info) {
 
   // Attach a CiviCRM Contact property to drupal users.
   $info['user']['properties']['civicrm_contact'] = array(
-    'label'           => 'CiviCRM Contact',
-    'description'     => 'CiviCRM Contact for user',
-    'type'            => 'civicrm_contact',
-    'field'           => FALSE,
-    'translatable'    => FALSE,
+    'label' => 'CiviCRM Contact',
+    'description' => 'CiviCRM Contact for user',
+    'type' => 'civicrm_contact',
+    'field' => FALSE,
+    'translatable' => FALSE,
     'getter callback' => 'civicrm_entity_user_contact_get',
   );
 
@@ -286,6 +307,10 @@ function _civicrm_entity_chained_fks() {
  * @TODO Create a callback function.
  *
  * @see http://api.drupal.org/api/drupal/modules!system!system.api.php/function/hook_entity_info/7
+ *
+ * @param $entity
+ *
+ * @return
  */
 function _civicrm_entity_labels($entity) {
   $labels = array(
@@ -300,7 +325,7 @@ function _civicrm_entity_labels($entity) {
     // Ditto.
     'civicrm_membership' => 'id',
     'civicrm_group' => 'name',
-    'civicrm_grant'=> 'id',
+    'civicrm_grant' => 'id',
     'civicrm_tag' => 'name',
   );
   return $labels[$entity];
@@ -310,9 +335,14 @@ function _civicrm_entity_labels($entity) {
  * Label callback for civicrm_contact entity type.
  *
  *   drupal_alter('civicrm_entity_' . $entity, $, $alterable2, $context);
+ *
+ * @param $entity
+ * @param $entity_type
+ *
+ * @return null|string
  */
 function civicrm_entity_civicrm_contact_label_callback($entity, $entity_type) {
-  $label = $entity->display_name;
+  $label = isset($entity->display_name) ? $entity->display_name : '';
   // drupal_alter('civicrm_entity_contact_label', $label, $entity);
   if (isset($entity->email) && !empty($entity->email)) {
     $label = t('!label <!email>', array('!label' => $label, '!email' => $entity->email));
@@ -325,6 +355,11 @@ function civicrm_entity_civicrm_contact_label_callback($entity, $entity_type) {
 
 /**
  * Calculate fields for entities
+ *
+ * @param $civicrm_entity
+ * @param string $context
+ *
+ * @return array
  */
 function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
   $info = array();
@@ -419,6 +454,14 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
  * NB this is in a separate file called callbacks.inc in entity module
  * - I couldn't see how it was loaded so maybe the name has some
  * magic?
+ *
+ * @param $data
+ * @param $options
+ * @param $name
+ * @param $type
+ * @param $info
+ *
+ * @return object
  */
 function civicrm_entity_metadata_civicrm_entity_get_properties($data, $options, $name, $type, $info) {
   $entity = civicrm_api($info['property_info']['entity'], 'get', array(
@@ -452,7 +495,7 @@ function civicrm_entity_user_exists($contact) {
  *   Drupal user object if success, FALSE on Fail
  */
 function civicrm_entity_user_creatable($contact) {
-  return civicrm_entity_action_create_user($contact);
+  return civicrm_entity_action_create_user($contact, TRUE);
 }
 
 /**
@@ -481,10 +524,10 @@ function civicrm_entity_user_exists_or_creatable($contact) {
  */
 function civicrm_entity_action_load_user($entity) {
   $domain_id = civicrm_api('domain', 'getvalue', array(
-                 'version' => 3,
-                 'return' => 'id',
-                 'current_domain' => TRUE,
-               ));
+    'version' => 3,
+    'return' => 'id',
+    'current_domain' => TRUE,
+  ));
   $params = array(
     'version' => 3,
     'contact_id' => $entity->id,
@@ -503,6 +546,11 @@ function civicrm_entity_action_load_user($entity) {
  * @param object $contact
  *   CiviCRM Contact Object
  *
+ * @param $is_active
+ * @param bool $notify
+ * @param bool $signin
+ *
+ * @throws Exception
  * @return object
  *   $user Drupal user object or FALSE.
  */
@@ -603,6 +651,9 @@ function civicrm_entity_query($type, $property, $value, $limit) {
 /**
  * Info alteration callback for the entity query action.
  * @todo this is copy of rules_action_entity_query_info_alter
+ *
+ * @param $element_info
+ * @param RulesAbstractPlugin $element
  */
 function civicrm_entity_query_info_alter(&$element_info, RulesAbstractPlugin $element) {
   $element->settings += array('type' => NULL, 'property' => NULL);
@@ -613,7 +664,7 @@ function civicrm_entity_query_info_alter(&$element_info, RulesAbstractPlugin $el
       $wrapper = rules_get_entity_metadata_wrapper_all_properties($element);
       if (isset($wrapper->{$element->settings['property']}) && $property = $wrapper->{$element->settings['property']}) {
         $element_info['parameter']['value']['type'] = $property->type();
-        $element_info['parameter']['value']['options list']  = $property->optionsList() ? 'rules_action_entity_query_value_options_list' : FALSE;
+        $element_info['parameter']['value']['options list'] = $property->optionsList() ? 'rules_action_entity_query_value_options_list' : FALSE;
       }
     }
   }
@@ -622,6 +673,12 @@ function civicrm_entity_query_info_alter(&$element_info, RulesAbstractPlugin $el
 
 /**
  * Load or create user as appropriate.
+ *
+ * @param $entity
+ * @param int $is_active
+ * @param int $notify
+ *
+ * @return object
  */
 function civicrm_entity_action_load_create_user($entity, $is_active = 0, $notify = 0) {
   if ($user = civicrm_entity_action_load_user($entity)) {
@@ -636,6 +693,11 @@ function civicrm_entity_action_load_create_user($entity, $is_active = 0, $notify
 
 /**
  * Implement the post hook and fire the corresponding rules event.
+ *
+ * @param $op
+ * @param $object_name
+ * @param $object_id
+ * @param $object_ref
  */
 function civicrm_entity_civicrm_post($op, $object_name, $object_id, &$object_ref) {
   if (!module_exists('rules')) {
@@ -695,6 +757,7 @@ function civicrm_entity_civicrm_post($op, $object_name, $object_id, &$object_ref
  * @see _civicrm_api_get_entity_name_from_camel()
  *
  * @TODO Why don't we just call the above function directly?
+ * Because the function is officially 'likely' to change as it is an internal api function and calling api functions directly is explicitly not supported
  *
  * @param string $entity
  *   Entity name in various formats e.g:
@@ -714,7 +777,7 @@ function _civicrm_entity_get_entity_name_from_camel($entity) {
       str_replace('U_F', 'uf',
         // That's CamelCase, beside an odd UFCamel that is expected as uf_camel
         preg_replace('/(?=[A-Z])/', '_$0', $entity)
-     )), '_');
+      )), '_');
   }
   return $entity;
 }
@@ -946,6 +1009,14 @@ class CiviCRMEntityDefaultViewsController extends EntityDefaultViewsController {
 
 /**
  * Load contact entity according to user id.
+ *
+ * @param $data
+ * @param array $options
+ * @param $name
+ * @param $type
+ * @param $info
+ *
+ * @return null
  */
 function civicrm_entity_user_contact_get($data, array $options, $name, $type, $info) {
   if (!module_exists('civicrm') || !function_exists('civicrm_initialize')) {
@@ -956,16 +1027,16 @@ function civicrm_entity_user_contact_get($data, array $options, $name, $type, $i
   }
 
   $domain_id = civicrm_api('domain', 'getvalue', array(
-                 'version' => 3,
-                 'return' => 'id',
-                 'current_domain' => TRUE,
-               ));
+    'version' => 3,
+    'return' => 'id',
+    'current_domain' => TRUE,
+  ));
   $contact = civicrm_api('uf_match', 'getsingle', array(
-               'version' => 3,
-               'return' => 'contact_id',
-               'uf_id' => $data->uid,
-               'domain_id' => $domain_id,
-             ));
+    'version' => 3,
+    'return' => 'contact_id',
+    'uf_id' => $data->uid,
+    'domain_id' => $domain_id,
+  ));
 
   if (!empty($contact['contact_id'])) {
     $entity = entity_load('civicrm_contact', array($contact['contact_id']));
