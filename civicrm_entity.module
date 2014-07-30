@@ -6,26 +6,27 @@
  */
 
 /**
- * Implements hook_menu().
+ * Implements hook_menu_later().
  *
- * It may be that civicrm drupals entities could be 'fieldable' -
- * refer to drupal fields with the linkages held in drupal? This code
- * is not doing much right now.
+ * Entity API creates all the fields page links but the basic 'manage' page is missing
+ * so we use the /fields page at that url
  */
-function civicrm_entity_menu() {
-  $items['admin/structure/types/manage/civicrm_relationship_type'] = array(
-    'title' => 'CiviCRM Relationship Type Settings',
-    'description' => 'Configure the settings for the CiviCRM Relationship Type.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('civicrm_entity_settings'),
-    'access arguments' => array('administer CiviCRM'),
-    'weight' => -10,
-  );
-  $items['admin/civicrm_entity/settings'] = array(
-    'title' => 'Settings',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => -10,
-  );
+function civicrm_entity_menu_alter(&$items) {
+  foreach (entity_get_info() as $entity_name => $entity_info) {
+    if ($entity_info['module'] == 'civicrm_entity') {
+      foreach ($entity_info['bundles'] as $file_type => $bundle_info) {
+        if (isset($bundle_info['admin'])) {
+          // Get the base path and access.
+          $path = $bundle_info['admin']['path'];
+          $items[$path] = $items[$path . '/fields'];
+          $items[$path]['type'] = MENU_NORMAL_ITEM;
+          $items[$path]['title'] = $entity_info['label'];
+          $items[$path]['description'] = t('CiviCRM @entity entity', array('@entity' => $entity_name));
+          $items[$path . '/fields']['type'] = MENU_DEFAULT_LOCAL_TASK;
+        }
+      }
+    }
+  }
 }
 
 /**
@@ -192,8 +193,14 @@ function civicrm_entity_entity_info() {
       'controller class' => 'CivicrmEntityController',
       'metadata controller class' => 'CivicrmEntityMetadataController',
       'views controller class' => 'CiviCRMEntityDefaultViewsController',
-      'fieldable' => FALSE,
+      'ui class' => 'RulesDataUIEntity',
+      'fieldable' => TRUE,
+      'extra fields controller class' => 'EntityDefaultExtraFieldsController',
       'access callback' => 'civicrm_entity_access',
+      'admin ui' => array(
+        'path' => $drupal_entity,
+        'controller class' => 'CivicrmEntityUIController',
+      ),
       'bundles' => array(
         $drupal_entity => array(
           'label' => t('CiviCRM @entity', array('@entity')),
@@ -206,12 +213,13 @@ function civicrm_entity_entity_info() {
       'view modes' => array(
         'full' => array(
           'label' => t('Default'),
-          'custom settings' => FALSE,
+          'custom settings' => TRUE,
         ),
       ),
       'entity keys' => array(
         'id' => 'id',
         'label' => _civicrm_entity_labels($drupal_entity),
+        'bundle' => 'civicrm_entity_type',
       ),
       'base table' => $drupal_entity,
     );
@@ -280,7 +288,7 @@ function civicrm_entity_entity_property_info_alter(&$info) {
  *
  * The whitelist approach is mostly out of caution
  *
- * @return arrayof enabled entities keyed by the drupal entity name
+ * @return array of enabled entities keyed by the drupal entity name
  */
 function _civicrm_entity_enabled_entities() {
   $whitelist = array(
@@ -406,12 +414,16 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
         'label' => empty($field_specs['title']) ? 'title not defined see CRM-11547' : $field_specs['title'],
         'type' => $types[$field_specs['type']],
         'sanitize' => 'check_plain',
+        'setter callback' => 'entity_property_verbatim_set',
       );
+      if (!empty($field_specs['api.required'])) {
+        $info[$fieldname]['required'] = TRUE;
+      }
       if ($field_specs['type'] == 16) {
         $info[$fieldname]['size'] = 'tiny';
       }
       // This is a semi-reliable way of distinguishing 'real' fields
-      // from pseudofields and custom fields and impacts on views
+      // from pseudo fields and custom fields and impacts on views
       // (which is only implemented in a very minor way at this stage
       // because it is 'blocked' by the default views install using
       // hook_views_data rather than hook_views_data_alter.
@@ -462,6 +474,16 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
           $info[$fieldname]['property defaults']['options list'] = $field_specs['options'];
         }
       }
+      //was attempting to use our own bundle but so far not working
+      $info['civicrm_entity_type'] = array(
+        'label' => t('Type'),
+        'description' => t('Dummy field for bundle key'),
+        'type' => 'token',
+        'setter callback' => 'entity_property_verbatim_set',
+        'required' => FALSE,
+        'property defaults' => array('civicrm_' . strtolower($civicrm_entity)),
+      );
+      $info['type'] = $info['civicrm_entity_type'];
     }
   }
   return $info;
