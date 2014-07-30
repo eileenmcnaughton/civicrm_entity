@@ -203,7 +203,7 @@ function civicrm_entity_entity_info() {
       ),
       'bundles' => array(
         $drupal_entity => array(
-          'label' => t('CiviCRM @entity', array('@entity')),
+          'label' => t('CiviCRM @entity', array('@entity' => ucwords($civicrm_entity))),
           'admin' => array(
             'path' => 'admin/structure/types/manage/' . $drupal_entity,
             'access arguments' => array('administer CiviCRM'),
@@ -219,7 +219,6 @@ function civicrm_entity_entity_info() {
       'entity keys' => array(
         'id' => 'id',
         'label' => _civicrm_entity_labels($drupal_entity),
-        'bundle' => 'civicrm_entity_type',
       ),
       'base table' => $drupal_entity,
     );
@@ -474,8 +473,8 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
           $info[$fieldname]['property defaults']['options list'] = $field_specs['options'];
         }
       }
-      //was attempting to use our own bundle but so far not working
-      $info['civicrm_entity_type'] = array(
+
+      $info['type'] = array(
         'label' => t('Type'),
         'description' => t('Dummy field for bundle key'),
         'type' => 'token',
@@ -483,11 +482,77 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
         'required' => FALSE,
         'property defaults' => array('civicrm_' . strtolower($civicrm_entity)),
       );
-      $info['type'] = $info['civicrm_entity_type'];
     }
   }
   return $info;
 }
+
+function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
+  // Add the field related form elements.
+  $form_state['entity'] = new CivicrmEntity((array) $entity, $entity_type);
+  field_attach_form($entity_type, $entity, $form, $form_state);
+
+  $form['actions'] = array(
+    '#type' => 'container',
+    '#attributes' => array('class' => array('form-actions')),
+    '#weight' => 400,
+  );
+
+  $form['#validate'] = array();
+  $form['#submit'] = array();
+  $form['#validate'][] = 'civicrm_entity_form_validate';
+  $form['#submit'][] = 'civicrm_entity_form_submit';
+
+  // We add the form's #submit array to this button along with the actual submit
+  // handler to preserve any submit handlers added by a form callback_wrapper.
+  $submit = array();
+
+  if (!empty($form['#submit'])) {
+    $submit += $form['#submit'];
+  }
+
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+    '#submit' => $submit + array(),
+  );
+
+  return $form;
+}
+
+/**
+ * Form API validate callback for the entity form
+ */
+function civicrm_entity_form_validate(&$form, &$form_state) {
+  $entity = $form_state['entity'];
+  $entity_type = $form_state['entity_type'];
+
+  // Notify field widgets to validate their data.
+  field_attach_form_validate($entity_type, $entity, $form, $form_state);
+}
+
+/**
+ * Form API submit callback for the entity form.
+ *
+ */
+function civicrm_entity_form_submit(&$form, &$form_state) {
+  $entity_type = $form_state['entity_type'];
+  //@todo - what is the correct way to do this - taken from bangpound but then I had to do casting
+  $entity = entity_ui_controller($entity_type)->entityFormSubmitBuildEntity($form, $form_state);
+  $entity = new CivicrmEntity((array) $entity, $entity_type);
+  // Add in created and changed times.
+  if ($entity->is_new = isset($entity->is_new) ? $entity->is_new : 0){
+    $entity->created = time();
+  }
+
+  $entity->changed = time();
+  $entity->save();
+  $t_args = array(
+    '%label' => entity_label($entity_type, $entity),
+  );
+  drupal_set_message(t('Drupal fields on %label have been updated.', $t_args));
+}
+
 
 /**
  * Implement getter callback.
