@@ -489,8 +489,19 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
 
 function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
   // Add the field related form elements.
+
   $form_state['entity'] = new CivicrmEntity((array) $entity, $entity_type);
   field_attach_form($entity_type, $entity, $form, $form_state);
+  //not quite sure why these are not being added but ....
+  $wrapper = entity_metadata_wrapper($entity_type);
+  foreach ($wrapper as $name => $child) {
+    $info = $child->info();
+      $form[$name] = array(
+        '#type' => $info['type'],
+        '#title' => $info['label'],
+        '#description' => !empty($info['description']) ? $info['description'] : '',
+      );
+  }
 
   $form['actions'] = array(
     '#type' => 'container',
@@ -502,7 +513,6 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
   $form['#submit'] = array();
   $form['#validate'][] = 'civicrm_entity_form_validate';
   $form['#submit'][] = 'civicrm_entity_form_submit';
-
   // We add the form's #submit array to this button along with the actual submit
   // handler to preserve any submit handlers added by a form callback_wrapper.
   $submit = array();
@@ -961,4 +971,67 @@ function civicrm_entity_user_contact_get($data, array $options, $name, $type, $i
   else {
     return NULL;
   }
+}
+
+/**
+ * Implements hook_rules_action_info_alter
+ * I can't seem to get my info_alter function called by hook so am doing this hacky intercept
+ * to call my function (& then go back to the main function if not a CiviCRM entity
+ */
+function civicrm_entity_rules_action_info_alter(&$info) {
+  $info['entity_create']['callbacks']['info_alter'] = 'civicrm_entity_rules_action_entity_create_info_alter';
+}
+/**
+ * Info alteration callback for the entity create action.
+ * Here we add a tonne of fields to civicrm entity create
+ */
+function civicrm_entity_rules_action_entity_create_info_alter(&$element_info, RulesAbstractPlugin $element) {
+  if (empty($element->settings['type']) || substr($element->settings['type'], 0, 8) != 'civicrm_') {
+    module_load_include('inc', 'rules', 'modules/entity.eval');
+    return rules_action_entity_create_info_alter($element_info,  $element);
+  }
+
+  if (!empty($element->settings['type']) && entity_get_info($element->settings['type'])) {
+    $wrapper = entity_metadata_wrapper($element->settings['type']);
+    // Add the data type's needed parameter for loading to the parameter info.
+    foreach ($wrapper as $name => $child) {
+      $info = $child->info();
+        $info += array('type' => 'text');
+        // Prefix parameter names to avoid name clashes with existing parameters.
+        $element_info['parameter']['param_' . $name] = array_intersect_key($info, array_flip(array('type', 'label', 'description')));
+        $element_info['parameter']['param_' . $name]['options list']  = $child->optionsList() ? 'rules_action_entity_parameter_options_list' : FALSE;
+        $element_info['parameter']['param_' . $name]['optional'] = empty($info['required']);
+      }
+    unset($element_info['parameter']['type']);
+
+    foreach (civicrm_entity_get_custom_fields('contribution') as $fieldname => $field) {
+      $element_info['parameter'][$fieldname] = array(
+        'type' => $field['type'], 'label' => $field['label'], 'optional' => TRUE, 'default mode' => 'selector'
+      );
+    }
+
+    $element_info['provides']['entity_created']['type'] = $element->settings['type'];
+    if (($bundleKey = $wrapper->entityKey('bundle')) && isset($element->settings['param_' . $bundleKey])) {
+      $element_info['provides']['entity_created']['bundle'] = $element->settings['param_' . $bundleKey];
+    }
+  }
+}
+/**
+ * @param $entity
+ */
+function civicrm_entity_get_custom_fields($entity, $types = array('Integer' => 'integer', 'String' => 'text', 'Date' => 'date')) {
+  if (!civicrm_initialize()) {
+    return array();
+  }
+  $fields = civicrm_api3($entity, 'getfields', array('action' => 'create', 'getoptions' => TRUE));
+  $fields = $fields['values'];
+  foreach ($fields as $field_name => $field) {
+    if (substr($field_name, 0, 7) != 'custom_'  || !in_array($field['data_type'], array_keys($types))) {
+      unset($fields[$field_name]);
+    }
+    else {
+      $fields[$field_name]['type'] = $types[$field['data_type']];
+    }
+  }
+  return $fields;
 }
