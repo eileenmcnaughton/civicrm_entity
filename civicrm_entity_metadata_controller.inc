@@ -7,16 +7,18 @@
 /**
  * Extend the default CiviCRM membership metadata properties.
  */
-class CivicrmEntityMetadataController extends EntityDefaultMetadataController {
+if (!class_exists('CiviCRMEntityMetadataController')) {
+  class CivicrmEntityMetadataController extends EntityDefaultMetadataController {
 
-  /**
-   * Return a set of properties for an entity based on the schema definition.
-   */
-  protected function convertSchema() {
-    if (empty($this->info['base table'])) {
-      return array();
+     /**
+     * Return a set of properties for an entity based on the schema definition.
+     */
+    protected function convertSchema() {
+      if (empty($this->info['base table'])) {
+        return array();
+      }
+      return civicrm_entity_metadata_convert_schema($this->info['base table']);
     }
-    return civicrm_entity_metadata_convert_schema($this->info['base table']);
   }
 }
 
