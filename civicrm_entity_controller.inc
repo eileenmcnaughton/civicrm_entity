@@ -66,10 +66,13 @@ class CivicrmEntityController extends EntityAPIController {
         foreach ($ids as $id) {
           // we can't rely on civicrm api accepting the 'IN' => array(1,5,6) for all entities
           $civicrm_entities = civicrm_api3($this->entityInfo['description'], 'get', array('id' => $id));
-        }
-        foreach ($civicrm_entities['values'] as $id => $civicrm_entity) {
-          // @TODO improve this casting.
-          $queried_entities[$id] = new CivicrmEntity($civicrm_entity, $this->entityType);
+          if ($civicrm_entities['count']) {
+            foreach ($civicrm_entities['values'] as $id => $civicrm_entity) {
+              // @TODO improve this casting.
+              $queried_entities[$id] = new CivicrmEntity($civicrm_entity, $this->entityType);
+
+            }
+          }
         }
       }
       catch (Exception $e) {
