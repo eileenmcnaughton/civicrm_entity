@@ -13,7 +13,7 @@
  */
 function civicrm_entity_menu_alter(&$items) {
   foreach (entity_get_info() as $entity_name => $entity_info) {
-    if ($entity_info['module'] == 'civicrm_entity') {
+    if (!empty($entity_info['module']) &&  $entity_info['module'] == 'civicrm_entity') {
       foreach ($entity_info['bundles'] as $file_type => $bundle_info) {
         if (isset($bundle_info['admin'])) {
           // Get the base path and access.
@@ -833,6 +833,9 @@ function civicrm_entity_action_load_create_contact($user, $email = NULL) {
  * @throws CiviCRM_API3_Exception
  */
 function civicrm_entity_action_load_contact($user) {
+  if (!civicrm_initialize()) {
+    return;
+  }
   $contact_id = civicrm_api3('uf_match', 'getvalue', array(
     'uf_id' => $user->uid,
     'return' => 'contact_id',
