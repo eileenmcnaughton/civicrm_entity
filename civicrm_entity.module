@@ -411,8 +411,20 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
       16 => 'integer',
     );
     if (!empty($field_specs['type']) && array_key_exists($field_specs['type'], $types)) {
+      //determine the label of the field
+      $label = $fieldname;
+      if (!empty($field_specs['title'])) {
+        $label = $field_specs['title'];
+      } elseif (!empty($field_specs['label'])) {
+        $label = $field_specs['label'];
+      }
+
+      if (!empty($field_specs['groupTitle'])) {
+        $label = $field_specs['groupTitle'] . ': ' . $label;
+      }
+
       $info[$fieldname] = array(
-        'label' => empty($field_specs['title']) ? 'title not defined see CRM-11547' : $field_specs['title'],
+        'label' => $label,
         'type' => $types[$field_specs['type']],
         'sanitize' => 'check_plain',
         'setter callback' => 'entity_property_verbatim_set',
