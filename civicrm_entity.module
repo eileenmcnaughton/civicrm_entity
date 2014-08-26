@@ -291,14 +291,15 @@ function civicrm_entity_entity_property_info_alter(&$info) {
  */
 function _civicrm_entity_enabled_entities() {
   $whitelist = array(
+    'civicrm_activity' => 'activity',
     'civicrm_address' => 'address',
+    'civicrm_email' => 'email',
     'civicrm_event' => 'event',
     'civicrm_contact' => 'contact',
     'civicrm_contribution' => 'contribution',
     'civicrm_participant' => 'participant',
     'civicrm_relationship' => 'relationship',
     'civicrm_relationship_type' => 'relationship_type',
-    'civicrm_activity' => 'activity',
     'civicrm_entity_tag' => 'entity_tag',
     'civicrm_membership' => 'membership',
     'civicrm_membership_type' => 'membership_type',
@@ -340,6 +341,7 @@ function _civicrm_entity_labels($entity) {
     'civicrm_address' => 'address_name',
     'civicrm_contact' => 'display_name',
     'civicrm_contribution' => 'source',
+    'civicrm_email' => 'email',
     'civicrm_event' => 'title',
     'civicrm_participant' => 'source',
     'civicrm_relationship' => 'description',
@@ -820,7 +822,7 @@ function civicrm_entity_action_load_create_contact($user, $email = NULL) {
   }
   catch (CiviCRM_API3_Exception $e) {
     $ufMatch = CRM_Core_BAO_UFMatch::synchronizeUFMatch($user, $user->uid, ($email ? $email : $user->mail), 'Drupal', FALSE, 'Individual');
-    $entities = entity_load('civicrm_contact', $ufMatch->contact_id);
+    $entities = entity_load('civicrm_contact', array($ufMatch->contact_id));
     return array('civicrm_contact' => reset($entities));
   }
 
