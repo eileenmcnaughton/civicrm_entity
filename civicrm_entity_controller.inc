@@ -154,7 +154,10 @@ class CivicrmEntityController extends EntityAPIController {
       unset($entity->is_new_revision);
       unset($entity->original);
       if (!civicrm_error($result)) {
-        return (object) $result['values'][0];
+        foreach ($result['values'][0] as $key => $value) {
+          $entity->key = $value;
+        }
+        return new CivicrmEntity($this->entityType, array_keys($result['values']));
       }
       throw new Exception($result['error_message']);
     }
