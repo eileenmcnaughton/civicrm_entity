@@ -127,7 +127,7 @@ function civicrm_entity_rules_event_info() {
  * Remove.
  */
 function civicrm_entity_rules_condition_info() {
-  return array(
+  $conditions = array(
     'civicrm_entity_user_exists' => array(
       'label' => t('Drupal User Account exists for Contact'),
       'module' => 'civicrm',
@@ -239,6 +239,38 @@ function civicrm_entity_rules_condition_info() {
       'base' => 'civicrm_entity_query',
     ),
   );
+  //@todo add phone as an entity & add it here, also - I had to remove address as II was less sure about the right approach as I went along
+
+  foreach (array('email') as $address_entity) {
+    $conditions['civicrm_entity_contact_has' . $address_entity] = array(
+      'group' => t('CiviCRM'),
+      'label' => t('CiviCRM Contact has ' . ucfirst($address_entity)),
+      'module' => 'civicrm',
+      'access_callback' => '_civicrm_entity_rules_access',
+      'parameter' => array(
+        'contact' => array(
+          'type' => 'civicrm_contact',
+          'label' => t('CiviCRM Contact'),
+          'description' => t('The CiviCRM Contact to fetch for'),
+        ),
+        'location' => array(
+          'type' => 'integer',
+          'label' => t('Location'),
+          'description' => t('The property by which the entity is to be selected.'),
+          'options list' => 'civicrm_entity_get_locations',
+        ),
+      ),
+      'provides' => array(
+        'created_' . $address_entity => array(
+          'type' => 'civicrm_' . $address_entity,
+          'label' => t('CiviCRM ' . ucfirst($address_entity)),
+        ),
+      ),
+      'base' => 'civicrm_entity_contact_has_location_element_' . $address_entity,
+    );
+  }
+
+  return $conditions;
 }
 
 /**
@@ -247,7 +279,7 @@ function civicrm_entity_rules_condition_info() {
  * @see http://drupalcontrib.org/api/drupal/contributions!rules!rules.api.php/function/hook_rules_action_info/7
  */
 function civicrm_entity_rules_action_info() {
-  return array(
+  $actions = array(
     'civicrm_entity_action_load_user' => array(
       'label' => t('Load Drupal User Account'),
       'module' => 'civicrm',
@@ -397,6 +429,73 @@ function civicrm_entity_rules_action_info() {
       'base' => 'civicrm_entity_action_load_create_contact',
     ),
   );
+
+  $actions['civicrm_entity_contact_get_email'] = array(
+    'group' => t('CiviCRM'),
+    'label' => t('CiviCRM Contact get Email'),
+    'module' => 'civicrm',
+    'access_callback' => '_civicrm_entity_rules_access',
+    'parameter' => array(
+      'contact' => array(
+        'type' => 'civicrm_contact',
+        'label' => t('CiviCRM Contact'),
+        'description' => t('The CiviCRM Contact to fetch for'),
+      ),
+      'location' => array(
+        'type' => 'integer',
+        'label' => t('Location'),
+        'description' => t('The property by which the entity is to be selected.'),
+        'options list' => 'civicrm_entity_get_locations',
+      ),
+    ),
+    'provides' => array(
+      'fetched_email' => array(
+        'type' => 'text',
+        'label' => t('Email'),
+      ),
+    ),
+    'base' => 'civicrm_entity_contact_get_email',
+  );
+
+  $actions['civicrm_entity_contact_send_email'] = array(
+    'group' => t('CiviCRM'),
+    'label' => t('CiviCRM Contact Send Email'),
+    'module' => 'civicrm',
+    'access_callback' => '_civicrm_entity_rules_access',
+    'parameter' => array(
+      'contact' => array(
+        'type' => 'civicrm_contact',
+        'label' => t('CiviCRM Contact'),
+        'description' => t('The CiviCRM Contact to email'),
+      ),
+      'subject' => array(
+        'type' => 'text',
+        'label' => t('Subject'),
+        'description' => t("The mail\'s subject."),
+      ),
+      'message_text' => array(
+        'type' => 'text',
+        'label' => t('Message'),
+        'description' => t("The mail\'s message body - text version."),
+        'optional' => TRUE,
+      ),
+      'message_html' => array(
+        'type' => 'text',
+        'label' => t('Message'),
+        'description' => t("The mail\'s message body - html version."),
+        'optional' => TRUE,
+      ),
+      'from' => array(
+        'type' => 'text',
+        'label' => t('From'),
+        'description' => t("The mail's from address. Leave it empty to use the site-wide configured address."),
+        'optional' => TRUE,
+      ),
+    ),
+    'base' => 'civicrm_entity_contact_send_email',
+  );
+
+  return $actions;
 }
 
 /**

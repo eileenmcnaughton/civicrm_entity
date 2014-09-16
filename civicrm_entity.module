@@ -875,6 +875,89 @@ function civicrm_entity_action_load_contact($user) {
 }
 
 /**
+ * gt location options
+ * @return array
+ */
+function civicrm_entity_get_locations() {
+  if (!civicrm_initialize()) {
+    return array();
+  }
+  $locations = civicrm_api3('address', 'getoptions', array('field' => 'location_type_id'));
+  $locations = $locations['values'];
+  return array('0' => 'Primary') + $locations;
+}
+
+/**
+ * @param $contact
+ * @param $location_type_id
+ * @return array
+ */
+function civicrm_entity_contact_has_location_element_email(&$contact, $location_type_id){
+  if (!empty($contact->email)) {
+    return TRUE;
+  }
+  $email = civicrm_entity_contact_has_location_element('email', $contact, $location_type_id);
+  if (!empty($email['civicrm_email']->email)) {
+    $contact->email = $email['civicrm_email']->email;
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * @param $contact
+ * @param $location_type_id
+ * @return array
+ */
+function civicrm_entity_contact_get_email($contact, $location_type_id){
+  return civicrm_entity_contact_get_location_element('email', $contact, $location_type_id);
+}
+
+/**
+ * @param $contact
+ * @param $location_type_id
+ *
+ * @return array|bool
+ */
+function civicrm_entity_contact_get_location_element($entity, &$contact, $location_type_id){
+  $params = array('contact_id' => $contact->id, 'sequential' => 1, 'on_hold' => 0);
+  if ($location_type_id) {
+    $params['location_type_id'] = $location_type_id;
+  }
+  else {
+     $params['is_primary'] = 1;
+  }
+  $result = civicrm_api3($entity, 'get', $params);
+  if (!$result['count']) {
+    return array('civicrm_' . $entity => '');
+  }
+  return array('fetched_' . $entity => $result['values'][0]['email']);
+}
+
+/**
+ * @param $contact
+ * @param $subject
+ * @param $message_text
+ * @param $message_html
+ * @param null $from
+ */
+function civicrm_entity_contact_send_email($contact, $subject, $message_text, $message_html, $from = NULL) {
+  $email = civicrm_api3('email', 'get', array('contact_id' => $contact->id, 'is_primary' => 1, 'on_hold' => 0, 'sequential' => 1));
+  if (!$email['count']) {
+    watchdog('civicrm_entity_rules', 'no email could be sent to !contact_id', array('!contact_id' => $contact->id));
+  }
+  $params            = array();
+  $params['from']    = !empty($from) ? str_replace(array(
+      "\r", "\n"), '', $from) : 'Admin';
+  $params['toEmail'] = $email['values'][0]['email'];
+  $params['subject'] = $subject;
+  $params['text']    = $message_text;
+  $params['html'] = $message_html;
+  CRM_Utils_Mail::send($params);
+  civicrm_api3('activity', 'create', array('activity_type_id' => 'Email', 'source_contact_id' => $contact->id, 'target_contact_id' => $contact->id, 'subject' => $subject, 'details' => $message_html));
+}
+
+/**
  * Implement the post hook and fire the corresponding rules event.
  *
  * @param $op
