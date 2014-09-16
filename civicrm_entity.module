@@ -1226,7 +1226,7 @@ function civicrm_entity_page_view($id, $entity_type, $view_mode = 'default') {
   return $content;
 }
 /**
- * Temporay function as placeholder for future granular per-entity type access control
+ * Temporary function as placeholder for future granular per-entity type access control
  *
  * @param $op
  * @param $num
