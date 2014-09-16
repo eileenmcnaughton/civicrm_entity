@@ -1022,23 +1022,45 @@ function civicrm_entity_rules_action_entity_create_info_alter(&$element_info, Ru
     module_load_include('inc', 'rules', 'modules/entity.eval');
     return rules_action_entity_create_info_alter($element_info,  $element);
   }
-
+  module_load_include('inc', 'rules', 'modules/data.rules');
+  $civicrm_entity = str_replace('civicrm_', '', $element->settings['type']);
   if (!empty($element->settings['type']) && entity_get_info($element->settings['type'])) {
     $wrapper = entity_metadata_wrapper($element->settings['type']);
     // Add the data type's needed parameter for loading to the parameter info.
+    $priority_fields = array('type');
     foreach ($wrapper as $name => $child) {
       $info = $child->info();
-        $info += array('type' => 'text');
-        // Prefix parameter names to avoid name clashes with existing parameters.
-        $element_info['parameter']['param_' . $name] = array_intersect_key($info, array_flip(array('type', 'label', 'description')));
-        $element_info['parameter']['param_' . $name]['options list']  = $child->optionsList() ? 'rules_action_entity_parameter_options_list' : FALSE;
-        $element_info['parameter']['param_' . $name]['optional'] = empty($info['required']);
+      if (substr($info['type'], 0, 8) == 'civicrm_') {
+        //we are already showing id lets not show entity too
+        continue;
       }
-    unset($element_info['parameter']['type']);
+      $info = array_merge(array('type' => 'text'), $info);
+      // Prefix parameter names to avoid name clashes with existing parameters.
+      $element_info['parameter']['param_' . $name] = array_intersect_key($info, array_flip(array('type', 'label', 'description')));
+      $element_info['parameter']['param_' . $name]['options list']  = $child->optionsList() ? 'rules_action_entity_parameter_options_list' : FALSE;
+      $element_info['parameter']['param_' . $name]['optional'] = $element_info['parameter']['param_' . $name]['allow null']  = empty($info['required']);
+      $element_info['parameter']['param_' . $name]['default mode'] = 'selector';
+      if (!empty($info['required'])) {
+        $priority_fields[] = 'param_' . $name;
+      }
+    }
+    unset($element_info['parameter']['param_type']);
+    if (in_array($civicrm_entity, array('participant', 'membership'))) {
+      $element_info['parameter']['param_civicrm_contribution'] = array(
+        'type' => 'civicrm_contribution',
+        'label' => 'CiviCRM Contribution',
+        'description' => t('Optional CiviCRM contribution for paid ' . $civicrm_entity),
+        'optional' => TRUE,
+        'allow null' => TRUE,
+        'default mode' => 'selector',
+      );
+      $priority_fields[] = 'param_civicrm_contribution';
+    }
 
-    foreach (civicrm_entity_get_custom_fields('contribution') as $fieldname => $field) {
+    $element_info['parameter'] = array_merge(array_flip($priority_fields), $element_info['parameter']);
+    foreach (civicrm_entity_get_custom_fields($civicrm_entity) as $fieldname => $field) {
       $element_info['parameter'][$fieldname] = array(
-        'type' => $field['type'], 'label' => $field['label'], 'optional' => TRUE, 'default mode' => 'selector'
+        'type' => $field['type'], 'label' => $field['label'], 'optional' => TRUE, 'default mode' => 'selector', 'allow null' => TRUE,
       );
     }
 
