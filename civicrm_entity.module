@@ -1199,12 +1199,12 @@ function civicrm_entity_theme() {
 /**
  * Loads UI controller and generates view pages for civicrm entities
  *
- * @param id
- * @param entity_type
- * @param view_mode
+ * @param integer id
+ * @param string entity_type
+ * @param string view_mode
 
  *
- * @return content
+ * @return string content
  */
 
 function civicrm_entity_page_view($id, $entity_type, $view_mode = 'default') {
@@ -1237,5 +1237,5 @@ function  civicrm_entity_temp_access($op,$num){
   if (!civicrm_intialize()) {
     return FALSE;
   }
-  return CRM_Core_Permission::check('Administer CiviCRM', 'View All Contacts');
+  return CRM_Core_Permission::check('administer CiviCRM', 'view all contacts');
 }
