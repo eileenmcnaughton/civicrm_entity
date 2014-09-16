@@ -5,6 +5,10 @@
  */
 class CivicrmEntityController extends EntityAPIController {
 
+ public function __construct($entityType) {
+    parent::__construct($entityType);
+  }
+
   /**
    * Implements DrupalEntityControllerInterface::load().
    *
@@ -154,5 +158,13 @@ class CivicrmEntityController extends EntityAPIController {
       watchdog_exception($this->entityType, $e);
       throw $e;
     }
+  }
+
+
+  public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
+    $content = parent::buildContent($entity, $view_mode, $langcode, $content);
+    //do some custom stuff here
+
+    return $content;
   }
 }
