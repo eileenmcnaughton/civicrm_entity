@@ -380,7 +380,7 @@ function _civicrm_entity_get_title($field_specs, $entity_type='') {
     $label = $field_specs['groupTitle'] . ': ' . $label;
   }
 
-  return empty($label) ? 'Title not defined in schema': $label] ;
+  return empty($label) ? 'Title not defined in schema': $label;
 }
 
 /**
