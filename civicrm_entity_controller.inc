@@ -124,6 +124,10 @@ class CivicrmEntityController extends EntityAPIController {
    * @throws Exception
    */
   public function save($entity, DatabaseTransaction $transaction = NULL) {
+
+   //save drupal fields.....
+     field_attach_update($this->entityType, $entity);
+
     if (!civicrm_initialize()) {
       throw new Exception('civicrm inaccessible');
     }
