@@ -201,6 +201,7 @@ function civicrm_entity_entity_info() {
       'admin ui' => array(
         'path' => $drupal_entity,
         'controller class' => 'CivicrmEntityUIController',
+        'file' => 'civicrm_entity_controller.inc',
       ),
       'bundles' => array(
         $drupal_entity => array(
