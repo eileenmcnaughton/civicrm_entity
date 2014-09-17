@@ -157,7 +157,7 @@ class CivicrmEntityController extends EntityAPIController {
         foreach ($result['values'][0] as $key => $value) {
           $entity->key = $value;
         }
-        return new CivicrmEntity($this->entityType, array_keys($result['values']));
+        return new CivicrmEntity(array_keys($result['values']), $this->entityType);
       }
       throw new Exception($result['error_message']);
     }
