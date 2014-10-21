@@ -1172,3 +1172,70 @@ function civicrm_entity_get_custom_fields($entity, $types = array('Integer' => '
   }
   return $fields;
 }
+
+/**
+ * Implements hook_theme()
+ *
+ * Lets Drupal know to look for templates for the entity types
+ *
+ * @return themes
+ */
+
+function civicrm_entity_theme() {
+  $civicrm_entities = _civicrm_entity_enabled_entities();
+  $themes = array();
+
+  foreach($civicrm_entities as $key => $value) {
+    $dashkey = str_replace('_','-',$key);
+    $themes[$key] = array(
+      'render element' => 'elements',
+      'template' => $dashkey,
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
+    );
+  }
+  return $themes;
+}
+
+/**
+ * Loads UI controller and generates view pages for civicrm entities
+ *
+ * @param integer id
+ * @param string entity_type
+ * @param string view_mode
+
+ *
+ * @return string content
+ */
+
+function civicrm_entity_page_view($id, $entity_type, $view_mode = 'default') {
+  $content = "";
+  $entity = entity_load($entity_type,array($id));
+
+  if(!empty($entity)) {
+    $entity = $entity[$id];
+    $controller = entity_get_controller($entity_type);
+    $content = $controller->view(array($id => $entity),$view_mode);
+  }
+  else {
+    $content = '<p>No ' . $entity_type . ' record found for id: '. $id . '</p>';
+  }
+
+  $formatted_entity_title = ucwords(str_replace('_',' ',$entity_type));
+  drupal_set_title($formatted_entity_title . ' ' . $id);
+
+  return $content;
+}
+/**
+ * Temporary function as placeholder for future granular per-entity type access control
+ *
+ * @param $op
+ * @param $num
+ *
+ * @return TRUE/FALSE
+ */
+function  civicrm_entity_temp_access($op,$num){
+  if (!civicrm_intialize()) {
+    return FALSE;
+  }
+  return CRM_Core_Permission::check('administer CiviCRM', 'view all contacts');
+}

@@ -5,6 +5,10 @@
  */
 class CivicrmEntityController extends EntityAPIController {
 
+ public function __construct($entityType) {
+    parent::__construct($entityType);
+  }
+
   /**
    * Implements DrupalEntityControllerInterface::load().
    *
@@ -120,6 +124,10 @@ class CivicrmEntityController extends EntityAPIController {
    * @throws Exception
    */
   public function save($entity, DatabaseTransaction $transaction = NULL) {
+
+   //save drupal fields.....
+     field_attach_update($this->entityType, $entity);
+
     if (!civicrm_initialize()) {
       throw new Exception('civicrm inaccessible');
     }
@@ -146,7 +154,10 @@ class CivicrmEntityController extends EntityAPIController {
       unset($entity->is_new_revision);
       unset($entity->original);
       if (!civicrm_error($result)) {
-        return (object) $result['values'][0];
+        foreach ($result['values'][0] as $key => $value) {
+          $entity->key = $value;
+        }
+        return new CivicrmEntity(array_keys($result['values']), $this->entityType);
       }
       throw new Exception($result['error_message']);
     }
@@ -154,5 +165,13 @@ class CivicrmEntityController extends EntityAPIController {
       watchdog_exception($this->entityType, $e);
       throw $e;
     }
+  }
+
+
+  public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
+    $content = parent::buildContent($entity, $view_mode, $langcode, $content);
+    //do some custom stuff here
+
+    return $content;
   }
 }

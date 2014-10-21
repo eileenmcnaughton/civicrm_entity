@@ -54,4 +54,27 @@ class CivicrmEntityUIController extends EntityContentUIController {
     return $render;
 */
 }
+
+  public function hook_menu() {
+   /* add menu items for all entities, will display with id as argument to url
+    * for example goto <drupal_root>/civicrm_contact/1, in the example id =1
+    */
+   $civicrm_entities = _civicrm_entity_enabled_entities();
+   foreach($civicrm_entities as $key => $value) {
+     $dashkey = str_replace('_','-',$key);
+     $items[$dashkey . '/' . '%'] = array(
+      //'title' => 'Title',
+        'title callback' => $key . '_page_title',
+        'title arguments' => array(1),
+        'page callback' => 'civicrm_entity_page_view',
+        'page arguments' => array(1,$key),
+        'access callback' => 'civicrm_entity_temp_access',
+        'access arguments' => array('view', 1),
+        'type' => MENU_CALLBACK,
+      );
+
+    }
+
+    return $items;
+  }
 }
