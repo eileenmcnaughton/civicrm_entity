@@ -1233,9 +1233,39 @@ function civicrm_entity_page_view($id, $entity_type, $view_mode = 'default') {
  *
  * @return TRUE/FALSE
  */
-function  civicrm_entity_temp_access($op,$num){
-  if (!civicrm_intialize()) {
-    return FALSE;
+function civicrm_entity_view_access($entity) {
+  switch ($entity) {
+    case "civicrm_contact" :
+    case "civicrm_address" :
+    case "civicrm_email" :
+      return user_access('view all contacts');
+    case "civicrm_activity" :
+      return user_access('view all activities');
+    case "civicrm_event" :
+      return user_access('view event info');
+    case "civicrm_contribution" :
+      return user_access('administer CiviCRM') && user_access('access CiviContribute');
+    case "civicrm_participant" :
+      return user_access('view event participants');
+    case "civicrm_relationship" :
+      return user_access('view all contacts') && user_access('administer CiviCRM');
+    case "civicrm_relationship_type" :
+      return user_access('administer CiviCRM');
+    case "civicrm_entity_tag" :
+      return user_access('administer CiviCRM');
+    case "civicrm_membership" :
+      return user_access('access CiviMember');
+    case "civicrm_membership_type" :
+      return user_access('administer CiviCRM') && user_access('access CiviMember');
+    case "civicrm_group" :
+      return user_access('administer CiviCRM');
+    case "civicrm_grant" :
+      return user_access('access CiviGrant') && user_access('administer CiviCRM');
+    case "civicrm_tag" :
+      return user_access('administer Tagsets') && user_access('administer CiviCRM');
+    case "civicrm_financial_type" :
+      return user_access('access CiviContribute') && user_access('administer CiviCRM');
+    default :
+      return FALSE;
   }
-  return CRM_Core_Permission::check('administer CiviCRM', 'view all contacts');
 }

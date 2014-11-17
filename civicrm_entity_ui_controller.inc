@@ -68,8 +68,8 @@ class CivicrmEntityUIController extends EntityContentUIController {
         'title arguments' => array(1),
         'page callback' => 'civicrm_entity_page_view',
         'page arguments' => array(1,$key),
-        'access callback' => 'civicrm_entity_temp_access',
-        'access arguments' => array('view', 1),
+        'access callback' => 'civicrm_entity_view_access',
+        'access arguments' => array($key),
         'type' => MENU_CALLBACK,
       );
 
