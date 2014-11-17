@@ -140,6 +140,9 @@ function civicrm_entity_get_field_type($field_spec) {
   if ($field_spec['name'] == 'id') {
     return array('type' => 'serial');
   }
+  if(!isset($field_spec['type'])) {
+    return array('type' => 'text');
+  }
 
   switch ($field_spec['type']) {
     case CRM_Utils_Type::T_INT:
