@@ -36,7 +36,6 @@
   <?php endif; ?>
 
   <div class="content"<?php print $content_attributes; ?>>
-  <h2>Test template edit</h2>
     <?php
 
       print render($content);

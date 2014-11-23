@@ -124,13 +124,10 @@ class CivicrmEntityController extends EntityAPIController {
    * @throws Exception
    */
   public function save($entity, DatabaseTransaction $transaction = NULL) {
-
-   //save drupal fields.....
-     field_attach_update($this->entityType, $entity);
-
     if (!civicrm_initialize()) {
       throw new Exception('civicrm inaccessible');
     }
+    
     $params = (array)$entity;
     unset($params['is_new']);
     $params['version'] = 3;
@@ -143,17 +140,26 @@ class CivicrmEntityController extends EntityAPIController {
       $this->invoke('presave', $entity);
       if ($entity->is_new) {
         $result = civicrm_api(substr($this->entityType, 8), 'create', $params);
-        // $this->invoke('insert', $entity);
+        
       }
       else {
         $result = civicrm_api(substr($this->entityType, 8), 'update', $params);
-        // $this->invoke('update', $entity);
+        
       }
-
+      $is_new = $entity->is_new;
       unset($entity->is_new);
       unset($entity->is_new_revision);
       unset($entity->original);
       if (!civicrm_error($result)) {
+        if($is_new) {
+          $entity->id= $result['values'][0]['id'];
+          field_attach_update($this->entityType, $entity);
+         // $this->invoke('insert', $entity);
+        }
+        else {
+          field_attach_update($this->entityType, $entity);
+          $this->invoke('update', $entity);
+        }
         foreach ($result['values'][0] as $key => $value) {
           $entity->key = $value;
         }
@@ -166,7 +172,32 @@ class CivicrmEntityController extends EntityAPIController {
       throw $e;
     }
   }
-
+  
+  public function delete($ids, DatabaseTransaction $transaction = NULL) {
+    if (!civicrm_initialize()) {
+      throw new Exception('civicrm inaccessible');
+    }
+    foreach($ids as $id) {
+      $params['version'] = 3;
+      $params['id'] = $id;
+      
+      try {
+        
+        $this->invoke('predelete', $entity);
+        $result = civicrm_api(substr($this->entityType, 8), 'delete', $params);
+        
+        if (!civicrm_error($result)) {
+           // $this->invoke('delete', $entity);
+          return;
+        }
+        throw new Exception($result['error_message']);
+      }
+      catch (Exception $e) {
+        watchdog_exception($this->entityType, $e);
+        throw $e;
+      }
+    } //end foreach id
+  }
 
   public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
     $content = parent::buildContent($entity, $view_mode, $langcode, $content);
