@@ -1,0 +1,474 @@
+diff -r original/civicrm_entity/civicrm_entity.module new/civicrm_entity/civicrm_entity.module
+143,146c143,144
+<   if(!isset($field_spec['type'])) {
+<     return array('type' => 'text');
+<   }
+<
+---
+>
+>
+522c520,521
+< function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
+---
+> function civicrm_entity_form($form, &$form_state, $entity_id, $op, $entity_type) {
+>
+523a523,566
+>   if($op == 'edit' || $op == 'delete') {
+>     $entity = entity_load($entity_type,array($entity_id));
+>     $entity = $entity[$entity_id];
+>     $form_state['entity'] = $entity;
+>   }
+>   if($op == 'create') {
+>     $entity =  new CiviCRMEntity(array(),$entity_type);
+>     $entity->is_new = TRUE;
+>     $entity->type = $entity_type;
+>     $form_state['entity'] = $entity;
+>   }
+>
+>   if($op =='edit' || $op == 'create') {
+>     field_attach_form($entity_type, $entity, $form, $form_state);
+>     dsm($entity);
+>     dsm($form);
+>     //get entity controller build content
+>     if($op == 'edit') {
+>       $wrapper = entity_metadata_wrapper($entity_type,$entity);
+>     }
+>     else {
+>       $wrapper = entity_metadata_wrapper($entity_type);
+>     }
+>     foreach ($wrapper as $name => $child) {
+>       $info = $child->info();
+>       if(strpos($info['name'], 'field_') === 0 ) {
+>         continue;
+>       }
+>       else {
+>         $form[$name] = array(
+>           //'#type' => $info['type'],
+>           '#type' => 'textfield',
+>           '#title' => $info['label'],
+>           '#description' => !empty($info['description']) ? $info['description'] : '',
+>           '#default_value' => $op == 'edit' ? $child->value() : '',
+>         );
+>       }
+>     }
+>
+>     $form['actions'] = array(
+>       '#type' => 'container',
+>       '#attributes' => array('class' => array('form-actions')),
+>       '#weight' => 400,
+>     );
+525,536c568,574
+<   $form_state['entity'] = new CivicrmEntity((array) $entity, $entity_type);
+<   field_attach_form($entity_type, $entity, $form, $form_state);
+<   //not quite sure why these are not being added but ....
+<   $wrapper = entity_metadata_wrapper($entity_type);
+<   foreach ($wrapper as $name => $child) {
+<     $info = $child->info();
+<       $form[$name] = array(
+<         '#type' => $info['type'],
+<         '#title' => $info['label'],
+<         '#description' => !empty($info['description']) ? $info['description'] : '',
+<       );
+<   }
+---
+>     $form['#validate'] = array();
+>     $form['#submit'] = array();
+>     $form['#validate'][] = 'civicrm_entity_form_validate';
+>     $form['#submit'][] = 'civicrm_entity_form_submit';
+>     // We add the form's #submit array to this button along with the actual submit
+>     // handler to preserve any submit handlers added by a form callback_wrapper.
+>     $submit = array();
+538,542c576,578
+<   $form['actions'] = array(
+<     '#type' => 'container',
+<     '#attributes' => array('class' => array('form-actions')),
+<     '#weight' => 400,
+<   );
+---
+>     if (!empty($form['#submit'])) {
+>       $submit += $form['#submit'];
+>     }
+544,547c580,603
+<   $form['#validate'] = array();
+<   $form['#submit'] = array();
+<   $form['#validate'][] = 'civicrm_entity_form_validate';
+<   $form['#submit'][] = 'civicrm_entity_form_submit';
+---
+>     $form['actions']['submit'] = array(
+>       '#type' => 'submit',
+>       '#value' => t('Save'),
+>       '#submit' => $submit + array(),
+>     );
+>   } //end if op is add or edit
+>
+>   if($op == 'delete') {
+>
+>      $form['delete_markup'] = array(
+>        '#type' => 'markup',
+>        '#markup' => '<div></strong>' . t('Are you sure you want to delete '). $entity_type . " id: " . $entity->id . '</strong></div>',
+>      );
+>
+>      $form['actions'] = array(
+>        '#type' => 'container',
+>        '#attributes' => array('class' => array('form-actions')),
+>        '#weight' => 400,
+>      );
+>
+>      $form['#validate'] = array();
+>      $form['#submit'] = array();
+>      $form['#validate'][] = 'civicrm_entity_delete_form_validate';
+>      $form['#submit'][] = 'civicrm_entity_delete_form_submit';
+550,553c606,617
+<   $submit = array();
+<
+<   if (!empty($form['#submit'])) {
+<     $submit += $form['#submit'];
+---
+>
+>      $form['actions']['cancel'] = array(
+>        '#type' => 'submit',
+>        '#value' => t('Cancel'),
+>        '#submit' => array('civicrm_entity_delete_form_cancel_submit'),
+>       );
+>
+>      $form['actions']['submit'] = array(
+>        '#type' => 'submit',
+>        '#value' => t('Delete'),
+>        '#submit' => $form['#submit'],
+>      );
+555,561c619
+<
+<   $form['actions']['submit'] = array(
+<     '#type' => 'submit',
+<     '#value' => t('Save'),
+<     '#submit' => $submit + array(),
+<   );
+<
+---
+>
+571c629,634
+<
+---
+>   dsm($entity);
+>   dsm($form_state['values']);
+>
+>   foreach($form_state['values'] as $key => $value) {
+>      $entity->{$key} = $value;
+>   }
+573a637
+>
+582,584c646,651
+<   //@todo - what is the correct way to do this - taken from bangpound but then I had to do casting
+<   $entity = entity_ui_controller($entity_type)->entityFormSubmitBuildEntity($form, $form_state);
+<   $entity = new CivicrmEntity((array) $entity, $entity_type);
+---
+>   $entity = $form_state['entity'];
+>
+>   foreach($form_state['values'] as $key => $value) {
+>      $entity->{$key} = $value;
+>   }
+>
+589d655
+<
+591c657,661
+<   $entity->save();
+---
+>
+>   $wrapper = entity_metadata_wrapper($entity_type, $entity);
+>   field_attach_submit($entity_type,$entity,$form,$form_state);
+>   $wrapper->save();
+>
+594a665
+>   $form_state['redirect'] = str_replace('_','-',$entity_type) . '/' . $entity->id;
+595a667,671
+>   drupal_redirect_form($form_state);
+> }
+>
+> function civicrm_entity_delete_form_validate(&$form,&$form_state) {
+>
+597a674,682
+> function civicrm_entity_delete_form_submit(&$form,&$form_state) {
+>   $entity_type = $form_state['entity_type'];
+>   $entity = $form_state['entity'];
+>   $wrapper = entity_metadata_wrapper($entity_type, $entity);
+>   field_attach_delete($entity_type, $entity);
+>   $wrapper->delete();
+>   $form_state['redirect'] = '/';
+>   drupal_redirect_form($form_state);
+> }
+598a684,690
+> function civicrm_entity_delete_form_cancel_submit(&$form, &$form_state) {
+>   $entity_type = $form_state['entity_type'];
+>   $entity = $form_state['entity'];
+>
+>   $form_state['redirect'] = str_replace('_','-',$entity_type) . '/' . $entity->id;
+>   drupal_redirect_form($form_state);
+> }
+1234,1235c1326,1327
+<  * @param $op
+<  * @param $num
+---
+>  * @param $entity
+>  *
+1239,1273c1331,1438
+< function civicrm_entity_view_access($entity) {
+<   switch ($entity) {
+<     case "civicrm_contact" :
+<     case "civicrm_address" :
+<     case "civicrm_email" :
+<       return user_access('view all contacts');
+<     case "civicrm_activity" :
+<       return user_access('view all activities');
+<     case "civicrm_event" :
+<       return user_access('view event info');
+<     case "civicrm_contribution" :
+<       return user_access('administer CiviCRM') && user_access('access CiviContribute');
+<     case "civicrm_participant" :
+<       return user_access('view event participants');
+<     case "civicrm_relationship" :
+<       return user_access('view all contacts') && user_access('administer CiviCRM');
+<     case "civicrm_relationship_type" :
+<       return user_access('administer CiviCRM');
+<     case "civicrm_entity_tag" :
+<       return user_access('administer CiviCRM');
+<     case "civicrm_membership" :
+<       return user_access('access CiviMember');
+<     case "civicrm_membership_type" :
+<       return user_access('administer CiviCRM') && user_access('access CiviMember');
+<     case "civicrm_group" :
+<       return user_access('administer CiviCRM');
+<     case "civicrm_grant" :
+<       return user_access('access CiviGrant') && user_access('administer CiviCRM');
+<     case "civicrm_tag" :
+<       return user_access('administer Tagsets') && user_access('administer CiviCRM');
+<     case "civicrm_financial_type" :
+<       return user_access('access CiviContribute') && user_access('administer CiviCRM');
+<     default :
+<       return FALSE;
+<   }
+---
+> function  civicrm_entity_op_access($op, $entity){
+> if($op == 'view'){
+>   switch($entity) {
+>     case "civicrm_contact":
+>     case "civicrm_address":
+>     case "civicrm_email":
+>        return user_access('view all contacts');
+>     case "civicrm_activity":
+>        return user_access('view all activities');
+>     case "civicrm_event":
+>        return user_access('view event info');
+>     case "civicrm_contribution":
+>        return user_access('administer CiviCRM') && user_access('access CiviContribute');
+>     case "civicrm_participant":
+>        return  user_access('view event participants');
+>     case "civicrm_relationship":
+>        return user_access('view all contacts') && user_access('administer CiviCRM');
+>     case "civicrm_relationship_type":
+>        return user_access('administer CiviCRM');
+>     case "civicrm_entity_tag":
+>        return user_access('administer CiviCRM');
+>     case "civicrm_membership":
+>        return user_access('access CiviMember');
+>     case "civicrm_membership_type":
+>        return user_access('administer CiviCRM') && user_access('access CiviMember');
+>     case "civicrm_group":
+>        return user_access('administer CiviCRM');
+>     case "civicrm_grant":
+>        return user_access('access CiviGrant') && user_access('administer CiviCRM');
+>     case "civicrm_tag":
+>        return user_access('administer Tagsets') && user_access('administer CiviCRM');
+>     case "civicrm_financial_type":
+>        return user_access('access CiviContribute') && user_access('administer CiviCRM');
+>     default: return FALSE;
+>   }
+>  }
+>  if($op == 'edit' || $op == 'create') {
+>    switch($entity){
+>     case "civicrm_contact":
+>     case "civicrm_address":
+>     case "civicrm_email":
+>        return user_access('edit all contacts');
+>     case "civicrm_activity":
+>        return user_access('view all activities');
+>     case "civicrm_event":
+>        return user_access('edit all events');
+>     case "civicrm_contribution":
+>        return user_access('administer CiviCRM') && user_access('edit contributions');
+>     case "civicrm_participant":
+>        return  user_access('edit event participants') && user_access('access CiviEvent');
+>     case "civicrm_relationship":
+>        return user_access('edit all contacts') && user_access('administer CiviCRM');
+>     case "civicrm_relationship_type":
+>        return user_access('administer CiviCRM');
+>     case "civicrm_entity_tag":
+>        return user_access('administer CiviCRM');
+>     case "civicrm_membership":
+>        return user_access('access CiviMember') && user_access('edit memberships');
+>     case "civicrm_membership_type":
+>        return user_access('administer CiviCRM') && user_access('access CiviMember');
+>     case "civicrm_group":
+>        return user_access('administer CiviCRM') && user_access('edit groups');
+>     case "civicrm_grant":
+>        return user_access('access CiviGrant') && user_access('administer CiviCRM') && user_access('edit grants');
+>     case "civicrm_tag":
+>        return user_access('administer Tagsets') && user_access('administer CiviCRM');
+>     case "civicrm_financial_type":
+>        return user_access('access CiviContribute') && user_access('administer CiviCRM');
+>     default: return FALSE;
+>    }
+>  }
+>
+>  if($op == 'delete') {
+>    switch($entity){
+>     case "civicrm_contact":
+>     case "civicrm_address":
+>     case "civicrm_email":
+>        return user_access('delete contacts');
+>     case "civicrm_activity":
+>        return user_access('delete activities');
+>     case "civicrm_event":
+>        return user_access('edit all events') && user_access('delete in CiviEvent');
+>     case "civicrm_contribution":
+>        return user_access('administer CiviCRM') && user_access('edit contributions') && user_access('delete in CiviContribute');
+>     case "civicrm_participant":
+>        return  user_access('edit event participants') && user_access('access CiviEvent');
+>     case "civicrm_relationship":
+>        return user_access('edit all contacts') && user_access('administer CiviCRM') && user_access('delete contacts');
+>     case "civicrm_relationship_type":
+>        return user_access('administer CiviCRM');
+>     case "civicrm_entity_tag":
+>        return user_access('administer CiviCRM');
+>     case "civicrm_membership":
+>        return user_access('access CiviMember') && user_access('edit memberships') && user_access('delete in CiviMember');
+>     case "civicrm_membership_type":
+>        return user_access('administer CiviCRM') && user_access('access CiviMember')  && user_access('delete in CiviMember');
+>     case "civicrm_group":
+>        return user_access('administer CiviCRM') && user_access('edit groups');
+>     case "civicrm_grant":
+>        return user_access('access CiviGrant') && user_access('administer CiviCRM') && user_access('edit grants') && user_access('delete in CiviGrant');
+>     case "civicrm_tag":
+>        return user_access('administer Tagsets') && user_access('administer CiviCRM');
+>     case "civicrm_financial_type":
+>        return user_access('access CiviContribute') && user_access('administer CiviCRM') && user_acces('delete in CiviContribute');
+>     default: return FALSE;
+>    }
+>  }
+>
+diff -r original/civicrm_entity/civicrm_entity_controller.inc new/civicrm_entity/civicrm_entity_controller.inc
+127,130d126
+<
+<    //save drupal fields.....
+<      field_attach_update($this->entityType, $entity);
+<
+133a130
+>
+146c143
+<         // $this->invoke('insert', $entity);
+---
+>
+150c147
+<         // $this->invoke('update', $entity);
+---
+>
+152c149
+<
+---
+>       $is_new = $entity->is_new;
+156a154,162
+>         if($is_new) {
+>           $entity->id= $result['values'][0]['id'];
+>           field_attach_update($this->entityType, $entity);
+>           $this->invoke('insert', $entity);
+>         }
+>         else {
+>           field_attach_update($this->entityType, $entity);
+>           $this->invoke('update', $entity);
+>         }
+169c175,202
+<
+---
+>
+>   public function delete($ids, DatabaseTransaction $transaction = NULL) {
+>     if (!civicrm_initialize()) {
+>       throw new Exception('civicrm inaccessible');
+>     }
+>     foreach($ids as $id) {
+>       $params['version'] = 3;
+>       $params['id'] = $id;
+>
+>       try {
+>
+>         $this->invoke('predelete', $entity);
+>         $result = civicrm_api(substr($this->entityType, 8), 'delete', $params);
+>         dsm($result);
+>         if (!civicrm_error($result)) {
+>
+>
+>           $this->invoke('delete', $entity);
+>           return;
+>         }
+>         throw new Exception($result['error_message']);
+>       }
+>       catch (Exception $e) {
+>         watchdog_exception($this->entityType, $e);
+>         throw $e;
+>       }
+>     } //end foreach id
+>   }
+diff -r original/civicrm_entity/civicrm_entity_ui_controller.inc new/civicrm_entity/civicrm_entity_ui_controller.inc
+64a65,75
+>      $titlename = ucwords(str_replace('_',' ', $key));
+>      $items[$dashkey.'/add'] = array(
+>        'title' => 'Create ' . $key,
+>        'page callback' => 'entity_ui_get_form',
+>        'page arguments' => array($key,array(),'create'),
+>        'access callback' => 'civicrm_entity_op_access',
+>        'access arguments' => array('create',$key),
+>        'type' => MENU_CALLBACK,
+>
+>      );
+>
+71,73c82,84
+<         'access callback' => 'civicrm_entity_view_access',
+<         'access arguments' => array($key),
+<         'type' => MENU_CALLBACK,
+---
+>         'access callback' => 'civicrm_entity_op_access',
+>         'access arguments' => array('view',$key),
+>        // 'type' => MENU_CALLBACK,
+75c86,114
+<
+---
+>
+>      $items[$dashkey.'/%/view'] = array(
+>         'title' => 'View',
+>         'type' => MENU_DEFAULT_LOCAL_TASK,
+>         'weight' => -10,
+>       );
+>
+>      $items[$dashkey.'/'.'%/edit'] = array(
+>        'title' => 'Edit',
+>        'page callback' => 'entity_ui_get_form',
+>        'page arguments' => array($key,1,'edit'),
+>        'access callback' => 'civicrm_entity_op_access',
+>        'access arguments' => array('edit',$key),
+>        'type' => MENU_LOCAL_TASK,
+>        'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+>      );
+>
+>      $items[$dashkey.'/'.'%/delete'] = array(
+>        'title' => 'Delete',
+>        'page callback' => 'entity_ui_get_form',
+>        'page arguments' => array($key,1,'delete'),
+>        'access callback' => 'civicrm_entity_op_access',
+>        'access arguments' => array('delete',$key),
+>        'type' => MENU_LOCAL_TASK,
+>        'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+>        'weight' => 10
+>      );
+>
+>
+diff -r original/civicrm_entity/templates/civicrm-event.tpl.php new/civicrm_entity/templates/civicrm-event.tpl.php
+39d38
+<   <h2>Test template edit</h2>
