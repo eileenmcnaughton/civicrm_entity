@@ -234,9 +234,6 @@ function civicrm_entity_entity_info() {
       $info[$drupal_entity]['label callback'] = $label_callback;
     }
   }
-  // OK - so we are not doing this for the ones declared in views
-  // until more testing has been done.
-  $info['civicrm_relationship_type']['views controller class'] = 'CiviCRMEntityDefaultViewsController';
   return $info;
 }
 
@@ -318,7 +315,61 @@ function _civicrm_entity_enabled_entities() {
   if (!method_exists('CRM_Contribute_PseudoConstant', 'contributionType')) {
     $whitelist['civicrm_financial_type'] = 'financial_type';
   }
+  _civicrm_enabled_entity_alter_whitelist($whitelist);
   return $whitelist;
+}
+
+/**
+ * Allow extensions to alter entities
+ * @param array $whitelist
+ *
+ * @return mixed
+ */
+function _civicrm_enabled_entity_alter_whitelist(&$whitelist) {
+  if (!civicrm_initialize()) {
+    return;
+  }
+  $codeVersion = explode('.', CRM_Utils_System::version());
+  // if db.ver < code.ver, time to upgrade
+  if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.5) >= 0) {
+    return CRM_Utils_Hook::singleton()->invoke(1, $whitelist,
+      CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject,
+      CRM_Core_DAO::$_nullObject,
+      'civicrm_alter_drupal_entities'
+    );
+  }
+  else {
+    return CRM_Utils_Hook::singleton()->invoke(1, $whitelist,
+      CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject,
+      'civicrm_alter_drupal_entities'
+    );
+  }
+}
+
+/**
+ * @param array $labels
+ *
+ * @return mixed
+ */
+function _civicrm_enabled_entity_alter_labels(&$labels) {
+  if (!civicrm_initialize()) {
+    return;
+  }
+  $codeVersion = explode('.', CRM_Utils_System::version());
+  // if db.ver < code.ver, time to upgrade
+  if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.5) >= 0) {
+    return CRM_Utils_Hook::singleton()->invoke(1, $labels,
+      CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject,
+      CRM_Core_DAO::$_nullObject,
+      'civicrm_alter_drupal_entity_labels'
+    );
+  }
+  else {
+    return CRM_Utils_Hook::singleton()->invoke(1, $labels,
+      CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject,
+      'civicrm_alter_drupal_entity_labels'
+    );
+  }
 }
 
 /**
@@ -363,6 +414,7 @@ function _civicrm_entity_labels($entity) {
     'civicrm_grant' => 'id',
     'civicrm_tag' => 'name',
   );
+  _civicrm_enabled_entity_alter_labels($labels);
   return $labels[$entity];
 }
 
@@ -548,9 +600,6 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
       }
       // This is a semi-reliable way of distinguishing 'real' fields
       // from pseudo fields and custom fields and impacts on views
-      // (which is only implemented in a very minor way at this stage
-      // because it is 'blocked' by the default views install using
-      // hook_views_data rather than hook_views_data_alter.
       if (!empty($field_specs['name'])) {
         $info[$fieldname]['schema field'] = $field_specs['name'];
       }
