@@ -489,6 +489,10 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
       2 => 'text',
       32 => 'text',
       16 => 'integer',
+      4 => 'datetime',
+      8 => 'datetime',
+      12 => 'datetime',
+      256 => 'datetime',
     );
     if (!empty($field_specs['type']) && array_key_exists($field_specs['type'], $types)) {
       //determine the label of the field
@@ -504,6 +508,22 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
       }
       if ($field_specs['type'] == 16) {
         $info[$fieldname]['size'] = 'tiny';
+      }
+      if ($types[$field_specs['type']] == 'datetime') {
+        unset($info[$fieldname]['type']);
+        $info[$fieldname]['mysql_type'] = 'datetime';
+        $info[$fieldname]['tz_handling'] = 'site';
+        $info[$fieldname]['offset_field'] = '';
+        $info[$fieldname]['related_fields'] = array();
+        switch ($field_specs['type']) {
+          case 4:
+            $info[$fieldname]['granularity'] = array('year', 'month', 'day');
+            break;
+          case 8:
+            $info[$fieldname]['granularity'] = array('hour', 'minute', 'second');
+          case 12:
+            $info[$fieldname]['granularity'] = array('year', 'month', 'day', 'hour', 'minute', 'second');
+        }
       }
       // This is a semi-reliable way of distinguishing 'real' fields
       // from pseudo fields and custom fields and impacts on views
