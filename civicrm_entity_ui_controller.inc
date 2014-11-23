@@ -62,17 +62,56 @@ class CivicrmEntityUIController extends EntityContentUIController {
    $civicrm_entities = _civicrm_entity_enabled_entities();
    foreach($civicrm_entities as $key => $value) {
      $dashkey = str_replace('_','-',$key);
+     $titlename = ucwords(str_replace('_',' ', $key));
+     $items[$dashkey.'/add'] = array(
+       'title' => 'Create ' . $key,
+       'page callback' => 'entity_ui_get_form',
+       'page arguments' => array($key,array(),'create'),
+       'access callback' => 'civicrm_entity_op_access',
+       'access arguments' => array('create',$key),
+       'type' => MENU_CALLBACK,
+       
+     );
+      
      $items[$dashkey . '/' . '%'] = array(
       //'title' => 'Title',
         'title callback' => $key . '_page_title',
         'title arguments' => array(1),
         'page callback' => 'civicrm_entity_page_view',
         'page arguments' => array(1,$key),
-        'access callback' => 'civicrm_entity_view_access',
-        'access arguments' => array($key),
-        'type' => MENU_CALLBACK,
+        'access callback' => 'civicrm_entity_op_access',
+        'access arguments' => array('view',$key),
+       // 'type' => MENU_CALLBACK,
       );
-
+     
+     $items[$dashkey.'/%/view'] = array(
+        'title' => 'View',
+        'type' => MENU_DEFAULT_LOCAL_TASK,
+        'weight' => -10,
+      );
+      
+     $items[$dashkey.'/'.'%/edit'] = array(
+       'title' => 'Edit',
+       'page callback' => 'entity_ui_get_form',
+       'page arguments' => array($key,1,'edit'),
+       'access callback' => 'civicrm_entity_op_access',
+       'access arguments' => array('edit',$key),
+       'type' => MENU_LOCAL_TASK,
+       'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+     );
+     
+     $items[$dashkey.'/'.'%/delete'] = array(
+       'title' => 'Delete',
+       'page callback' => 'entity_ui_get_form',
+       'page arguments' => array($key,1,'delete'),
+       'access callback' => 'civicrm_entity_op_access',
+       'access arguments' => array('delete',$key),
+       'type' => MENU_LOCAL_TASK,
+       'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+       'weight' => 10
+     );
+     
+     
     }
 
     return $items;
