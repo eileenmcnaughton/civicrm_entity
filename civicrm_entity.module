@@ -568,12 +568,14 @@ function civicrm_entity_form($form, &$form_state, $entity_id, $op, $entity_type)
   if ($op == 'edit' || $op == 'delete') {
     $entity = entity_load($entity_type, array($entity_id));
     $entity = $entity[$entity_id];
+    $form_state['entity_type'] = $entity_type;
     $form_state['entity'] = $entity;
   }
   if ($op == 'create') {
     $entity = new CiviCRMEntity(array(), $entity_type);
     $entity->is_new = TRUE;
     $entity->type = $entity_type;
+    $form_state['entity_type'] = $entity_type;
     $form_state['entity'] = $entity;
   }
 
