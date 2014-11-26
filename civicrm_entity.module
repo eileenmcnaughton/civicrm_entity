@@ -418,7 +418,57 @@ function civicrm_entity_civicrm_contact_label_callback($entity, $entity_type) {
   }
   return $label;
 }
+/**
+ * Please document this function.
+ *
+ * @param $field_spec
+ *
+ * @return array
+ */
+function civicrm_entity_get_field_widget($field_spec,$civicrm_entity) {
+  if ($field_spec['name'] == 'id') {
+    return array('widget' => 'hidden');
+  }
+  if(!isset($field_spec['type'])) {
+    return array('widget' => 'hidden');
+  }
+  if(isset($field_spec['html']['type'])) {
+   switch ($field_spec['html']['type']) {
+    case 'Text':
+      return array('widget' => 'textfield');
+    case 'Select':
+      $widget = array('widget' => 'select');
+      $widget['options'] = civicrm_entity_get_field_options($field_spec['name'], $civicrm_entity);
+      return $widget;
+    case 'Autocomplete-Select':
+      $widget = array('widget' => 'textfield');
+      return $widget; 
+    case 'CheckBox':
+      $widget = array('widget' => 'checkbox');
+      return $widget;
+    case 'RichTextEditor':
+    case 'TextArea':
+      return array('widget' => 'textarea');
+   }
+  }
+  else {
+    return array('widget' =>'textfield');
+  }
+}
 
+function civicrm_entity_get_field_options($field_name, $civicrm_entity){
+  $result = civicrm_api($civicrm_entity, 'getoptions', array('sequential'=>1,'version' => 3, 'field' => $field_name));
+  $options = array(NULL => '- No Value -');
+  if(!$result['is_error']) {
+    foreach($result['values'] as $option) {
+      $options[$option['key']] = $option['value'];
+    }
+    return $options;
+  }
+  else return array();
+
+  
+}
 /**
  * Calculate fields for entities
  *
@@ -505,6 +555,9 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
         $info[$fieldname]['schema field'] = $field_specs['name'];
       }
 
+      //widget code
+      $info[$fieldname]['widget'] = civicrm_entity_get_field_widget($field_specs,$civicrm_entity);
+      
       // We will add contact as a related entity for FK references to
       // contact. This could be expanded to all FKs e.g event_id in
       // Participant. Could load the event at the moment we are being
@@ -569,12 +622,14 @@ function civicrm_entity_form($form, &$form_state, $entity_id, $op, $entity_type)
     $entity = entity_load($entity_type, array($entity_id));
     $entity = $entity[$entity_id];
     $form_state['entity'] = $entity;
+    $form_state['entity_type'] = $entity_type;
   }
   if ($op == 'create') {
     $entity = new CiviCRMEntity(array(), $entity_type);
     $entity->is_new = TRUE;
     $entity->type = $entity_type;
     $form_state['entity'] = $entity;
+    $form_state['entity_type'] = $entity_type;
   }
 
   if ($op == 'edit' || $op == 'create') {
@@ -594,12 +649,14 @@ function civicrm_entity_form($form, &$form_state, $entity_id, $op, $entity_type)
       }
       else {
         $form[$name] = array(
-          //'#type' => $info['type'],
-          '#type' => 'textfield',
+          '#type' => $info['widget']['widget'],
           '#title' => $info['label'],
           '#description' => !empty($info['description']) ? $info['description'] : '',
           '#default_value' => $op == 'edit' ? $child->value() : '',
         );
+        if($form[$name]['#type'] == 'select') {
+          $form[$name]['#options'] = $info['widget']['options'];
+        } 
       }
     }
 
