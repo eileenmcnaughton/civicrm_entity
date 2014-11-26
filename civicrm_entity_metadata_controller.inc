@@ -35,7 +35,6 @@ class CivicrmEntityMetadataController extends EntityDefaultMetadataController {
 function civicrm_entity_metadata_convert_schema($table) {
   $schema = civicrm_entity_get_schema($table);
   $properties = array();
-  dsm($schema);
   foreach ($schema['fields'] as $name => $info) {
     if ($type = _entity_metadata_convert_schema_type($info['type'])) {
       $properties[$name] = array(
