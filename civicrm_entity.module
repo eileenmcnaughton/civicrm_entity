@@ -686,8 +686,6 @@ function civicrm_entity_form($form, &$form_state, $entity_id, $op, $entity_type)
 function civicrm_entity_form_validate(&$form, &$form_state) {
   $entity = $form_state['entity'];
   $entity_type = $form_state['entity_type'];
-  //dsm($entity);
- // dsm($form_state['values']);
   
   foreach($form_state['values'] as $key => $value) {
      $entity->{$key} = $value;
