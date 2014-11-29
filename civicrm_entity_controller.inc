@@ -177,16 +177,20 @@ class CivicrmEntityController extends EntityAPIController {
     if (!civicrm_initialize()) {
       throw new Exception('civicrm inaccessible');
     }
+    $entities = entity_load($this->entityType,$ids);
     foreach($ids as $id) {
       $params['version'] = 3;
       $params['id'] = $id;
       
       try {
         
+        $entity = $entities[$id];
+        
         $this->invoke('predelete', $entity);
         $result = civicrm_api(substr($this->entityType, 8), 'delete', $params);
         
         if (!civicrm_error($result)) {
+          field_attach_delete($this->entityType, $entity);
            // $this->invoke('delete', $entity);
           return;
         }
