@@ -479,6 +479,7 @@ function civicrm_entity_civicrm_contact_label_callback($entity, $entity_type) {
  */
 function civicrm_entity_get_field_widget($field_spec,$civicrm_entity) {
   $widget = array();
+  
   if (isset($field_spec['name']) && $field_spec['name'] == 'id') {
     $widget =  array('widget' => 'hidden');
   }
@@ -527,6 +528,7 @@ function civicrm_entity_get_field_widget($field_spec,$civicrm_entity) {
          break;
      }
   }
+  
   return $widget;
 }
 
@@ -717,7 +719,7 @@ function civicrm_entity_form($form, &$form_state, $entity_id, $op, $entity_type)
     else {
       $wrapper = entity_metadata_wrapper($entity_type);
     }
-foreach ($wrapper as $name => $child) {
+    foreach ($wrapper as $name => $child) {
       $info = $child->info();
       if (strpos($info['name'], 'field_') === 0) {
         continue;
@@ -730,9 +732,12 @@ foreach ($wrapper as $name => $child) {
             '#description' => !empty($info['description']) ? $info['description'] : '',
             '#default_value' => $op == 'edit' ? $child->value() : '',
           );
+          //set the options for select options
           if($form[$name]['#type'] == 'select') {
             $form[$name]['#options'] = $info['widget']['options'];
-          } 
+          }
+          // Date field handling, check for date_api module to use date select widget
+          // else fallback to textfield 
           if($form[$name]['#type'] == 'date_select') {
             if(module_exists('date_api')){
               $form[$name]['#format'] = $info['widget']['format'];
@@ -741,9 +746,17 @@ foreach ($wrapper as $name => $child) {
               $form[$name]['#type'] = 'textfield';
             }
           }
-        }
-      }
-    }
+          //for some reason the is_deleted column of the contact record is coming to the entity
+          // as contact_is_deleted ...special handling to have the form value set properly
+          if($name == 'is_deleted') {
+            if($entity_type=='civicrm_contact') {
+              $form[$name]['#default_value'] = $entity->contact_is_deleted;
+            } 
+          }
+           
+        } // end if isset widget
+      } // end else not a drupal field
+    } // end foreach 
 
     $form['actions'] = array(
       '#type' => 'container',
@@ -807,6 +820,7 @@ foreach ($wrapper as $name => $child) {
   }
   $title = str_replace("Civicrm", "CiviCRM", $title);
   drupal_set_title($title);
+
   return $form;
 }
 
@@ -1562,6 +1576,11 @@ function civicrm_entity_page_view($id, $entity_type, $view_mode = 'default') {
   if (!empty($entity)) {
     $entity = $entity[$id];
     $controller = entity_get_controller($entity_type);
+    if($entity_type == 'civicrm_contact') {
+      //for some reason the is_deleted column of the contact record is coming to the entity
+      // as contact_is_deleted ...special handling to have the page value set properly
+      $entity->is_deleted = $entity->contact_is_deleted; 
+     }
     $content = $controller->view(array($id => $entity), $view_mode);
   }
   else {
@@ -1576,10 +1595,9 @@ function civicrm_entity_page_view($id, $entity_type, $view_mode = 'default') {
 }
 
 /**
- * Temporary function as placeholder for future granular per-entity type access control
- *
+ * Granular per-entity CRUD access control
+ * @param $op
  * @param $entity
- *
  *
  * @return TRUE/FALSE
  */
