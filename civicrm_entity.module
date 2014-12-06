@@ -310,6 +310,10 @@ function _civicrm_entity_enabled_entities() {
     'civicrm_group' => 'group',
     'civicrm_grant' => 'grant',
     'civicrm_tag' => 'tag',
+    'civicrm_price_set' => 'price_set',
+    'civicrm_price_field' => 'price_field',
+    'civicrm_price_field_value' => 'price_field_value',
+    
   );
   //dirty check for whether financialType exists
   if (!method_exists('CRM_Contribute_PseudoConstant', 'contributionType')) {
@@ -413,6 +417,9 @@ function _civicrm_entity_labels($entity) {
     'civicrm_group' => 'name',
     'civicrm_grant' => 'id',
     'civicrm_tag' => 'name',
+    'civicrm_price_set' => 'id',
+    'civicrm_price_field' => 'id',
+    'civicrm_price_field_value' => 'id',
   );
   _civicrm_enabled_entity_alter_labels($labels);
   return $labels[$entity];
@@ -1640,6 +1647,11 @@ function  civicrm_entity_op_access($op, $entity) {
       case "civicrm_financial_type":
         return user_access('access CiviContribute') &&
         user_access('administer CiviCRM');
+      case "civicrm_price_set_entity":
+      case "civicrm_price_set":
+      case "civicrm_price_field":
+      case "civicrm_price_field_value":
+        return user_access('administer CiviCRM');
       default:
         return FALSE;
     }
@@ -1684,6 +1696,11 @@ function  civicrm_entity_op_access($op, $entity) {
       case "civicrm_financial_type":
         return user_access('access CiviContribute') &&
         user_access('administer CiviCRM');
+      case "civicrm_price_set_entity":
+      case "civicrm_price_set":
+      case "civicrm_price_field":
+      case "civicrm_price_field_value":
+        return user_access('administer CiviCRM');
       default:
         return FALSE;
     }
@@ -1734,6 +1751,11 @@ function  civicrm_entity_op_access($op, $entity) {
         return user_access('access CiviContribute') &&
         user_access('administer CiviCRM') &&
         user_acces('delete in CiviContribute');
+      case "civicrm_price_set_entity":
+      case "civicrm_price_set":
+      case "civicrm_price_field":
+      case "civicrm_price_field_value":
+        return user_access('administer CiviCRM');
       default:
         return FALSE;
     }
