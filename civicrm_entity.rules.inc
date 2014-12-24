@@ -297,7 +297,7 @@ function civicrm_entity_rules_action_info() {
         ),
       ),
       'group' => t('CiviCRM'),
-      'access callback' => 'payment_rules_access',
+      'access callback' => '_civicrm_entity_rules_access',
       'base' => 'civicrm_entity_action_load_user',
     ),
     'civicrm_entity_action_create_user' => array(
