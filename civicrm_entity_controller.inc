@@ -204,9 +204,27 @@ class CivicrmEntityController extends EntityAPIController {
   }
 
   public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
-    $content = parent::buildContent($entity, $view_mode, $langcode, $content);
-    //do some custom stuff here
-
-    return $content;
+    $entity->content = $content;
+    $build = parent::buildContent($entity,$view_mode,$langcode,$content);
+    $langcode = isset($langcode) ? $langcode : $GLOBALS['language_content']->language;
+   
+    // Add in fields.
+    if (!empty($this->entityInfo['fieldable'])) {
+      // Perform the preparation tasks if they have not been performed yet.
+      // An internal flag prevents the operation from running twice.
+      $key = isset($entity->{$this->idKey}) ? $entity->{$this->idKey} : NULL;
+      field_attach_prepare_view($this->entityType, array($key => $entity), $view_mode);
+      $entity->content = field_attach_view($this->entityType, $entity, $view_mode, $langcode);
+    }
+    
+    $temp_build = $entity->content;
+    unset($entity->content);
+    
+    foreach($temp_build as $key => $value) {
+      $build[$key] = $value;
+    }
+        
+    return $build;
   }
+  
 }
