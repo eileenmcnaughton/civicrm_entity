@@ -143,13 +143,13 @@ function civicrm_entity_get_field_type($field_spec) {
     return array('type' => 'serial');
   }
   if (!isset($field_spec['type'])) {
-    return array('type' => 'text');
+    return array('type' => 'text', 'field_type' => 'text');
   }
 
   switch ($field_spec['type']) {
     case CRM_Utils_Type::T_INT:
     case CRM_Utils_Type::T_BOOLEAN:
-      return array('type' => 'integer');
+      return array('type' => 'integer', 'field_type' => 'number_integer');
 
     case CRM_Utils_Type::T_MONEY:
     case CRM_Utils_Type::T_FLOAT:
@@ -161,7 +161,7 @@ function civicrm_entity_get_field_type($field_spec) {
     case CRM_Utils_Type::T_CCNUM:
     case CRM_Utils_Type::T_EMAIL:
     case CRM_Utils_Type::T_URL:
-      return array('type' => 'text');
+      return array('type' => 'text','field_type' => 'text');
 
     case CRM_Utils_Type::T_DATE:
     case CRM_Utils_Type::T_TIME:
@@ -255,7 +255,7 @@ function civicrm_entity_entity_property_info_alter(&$info) {
   if (!civicrm_initialize(TRUE)) {
     return;
   }
-
+  
   // We'll start with a few basic entities but we could get them the
   // same way the API explorer does.
   $entities = _civicrm_entity_enabled_entities();
@@ -523,6 +523,7 @@ function civicrm_entity_get_field_widget($field_spec,$civicrm_entity) {
   }
   
   if(isset($field_spec['type'])) {
+
      switch($field_spec['type']) {
        case 4:
          $widget = array('widget' => 'date_select','format' => 'Y:m:d');
@@ -1563,6 +1564,7 @@ function civicrm_entity_theme() {
       'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     );
   }
+
   return $themes;
 }
 
@@ -1576,7 +1578,7 @@ function civicrm_entity_theme() {
  * @return string content
  */
 
-function civicrm_entity_page_view($id, $entity_type, $view_mode = 'default') {
+function civicrm_entity_page_view($id, $entity_type) {
   $content = "";
   $entity = entity_load($entity_type, array($id));
 
@@ -1588,13 +1590,12 @@ function civicrm_entity_page_view($id, $entity_type, $view_mode = 'default') {
       // as contact_is_deleted ...special handling to have the page value set properly
       $entity->is_deleted = $entity->contact_is_deleted; 
      }
-    $content = $controller->view(array($id => $entity), $view_mode);
+    
+    $content = $controller->view(array($id => $entity));
   }
   else {
-    $content = '<p>No ' . $entity_type . ' record found for id: ' . $id .
-      '</p>';
+    $content = '<p>No ' . $entity_type . ' record found for id: ' . $id . '</p>';
   }
-
   $formatted_entity_title = ucwords(str_replace('_', ' ', $entity_type));
   drupal_set_title($formatted_entity_title . ' ' . $id);
 
@@ -1762,3 +1763,137 @@ function  civicrm_entity_op_access($op, $entity) {
   }
 
 }
+
+/**
+ * Implements hook_ds_field_settings_form().
+ */
+function civicrm_entity_ds_field_settings_form($field) {
+  return ds_ds_field_settings_form($field);
+}
+
+/**
+ * Implements hook_ds_field_format_summary().
+ */
+function civicrm_entity_ds_field_format_summary($field) {
+  return ds_ds_field_format_summary($field);
+}
+
+/*
+ * Implementes hook_form_alter()
+ */
+function civicrm_entity_form_alter(&$form, &$form_state, $form_id){
+// For the manage display form, add a submit handler to make display suite custom civicrm "field" settings stick
+  if($form_id == 'field_ui_display_overview_form' ) {
+    if (!civicrm_initialize(TRUE)) {
+       return;
+    }
+    $entities = _civicrm_entity_enabled_entities();
+    $entity_type = $form['#entity_type'];
+    if(array_key_exists($entity_type,$entities)) {
+      $submits = array();
+      $submits[] = '_civicrm_entity_manage_display_submit';
+      foreach($form['#submit'] as $submit_callback){
+        $submits[] = $submit_callback;
+      }
+      $form['#submit'] = $submits;
+    }
+    
+  }
+}
+
+/*
+ * Custom submit handler 
+ * updates bundle visibility settings if a display suite layout is used
+ *
+ */
+function _civicrm_entity_manage_display_submit(&$form, &$form_state) {
+  if($form_state['values']['additional_settings']['layout']!=''){
+    $entity_type = $form['#entity_type'];
+    $bundle = $form['#bundle'];
+    $bundle_settings = field_bundle_settings($entity_type, $bundle);
+ 
+    foreach($bundle_settings['extra_fields']['display'] as $key => $field) {
+      $form_state['values']['fields'][$key]['type'] = 'visible';
+    }
+  }
+}
+
+/*
+ *  Implements hook_field_extra_fields_alter()
+ *  put civicrm properties on the manage fields form for weight based ordering of edit form elements
+ *
+ */
+function civicrm_entity_field_extra_fields_alter(&$info) {
+  if (!civicrm_initialize(TRUE)) {
+    return;
+  }
+  $entities = _civicrm_entity_enabled_entities();
+  foreach ($entities as $drupal_entity => $civicrm_entity) {
+    $properties[$drupal_entity]['properties'] = _civicrm_entity_getproperties($civicrm_entity, 'property_info');
+    
+    foreach($info[$drupal_entity][$drupal_entity]['display'] as $name => $props) {
+      $info[$drupal_entity][$drupal_entity]['form'][$name] = $props;
+    }
+  }
+  
+}
+
+/*
+ *  Implements hook_ds_fields_info()
+ *  setup custom display suite "field" handling for CiviCRM properties
+ *
+ */
+function civicrm_entity_ds_fields_info($entity_type) {
+  $fields = array();
+   if (!civicrm_initialize(TRUE)) {
+    return;
+  }  
+  $properties = _civicrm_entity_getproperties(substr($entity_type,8), 'property_info');
+  // Basic wrapper and class settings for all CiviCRM properties, also makes the label visibility work
+  foreach($properties as $name => $settings) {
+    $fields[$entity_type][$name] = array(
+      'title' => $settings['label'],
+      'field_type' => 2,
+      'function' => '_civicrm_entity_render_fields',
+      'properties' => array(
+        'settings' => array(
+          'wrapper' => array('type' => 'textfield', 'description' => t('Eg: h1, h2, p')),
+          'class' => array('type' => 'textfield', 'description' => t('Put a class on the wrapper. Eg: block-title')),
+        ),
+       'default' => array('wrapper' => 'div', 'class' => 'civicrm-field'),
+      ),
+    );
+  }
+    
+  if (isset($fields[$entity_type])) {
+    return array($entity_type => $fields[$entity_type]);
+  }
+}
+
+/**
+ * Default Display Suite Render handler for CiviCRM "fields".
+ */
+function _civicrm_entity_render_fields($field) {
+  $settings = isset($field['formatter_settings']) ? $field['formatter_settings'] : array();
+  $settings += $field['properties']['default'];
+  
+  $wrapper = entity_metadata_wrapper($field['entity_type'], $field['entity']->id);
+  
+  $formatted_value = $wrapper->{$field['field_name']}->value();
+   
+   // primary_contact_id_contact and other fields are objects produced by the meta wrapper
+   // Will be ease to generate links to the entities if it is consistent across entities
+   if(is_object($formatted_value)){
+    $formatted_value = $formatted_value->id;
+   }
+   
+  // Wrapper and class.
+  if (!empty($settings['wrapper'])) {
+    $wrapper = check_plain($settings['wrapper']);
+    $class = (!empty($settings['class'])) ? ' class="' . check_plain($settings['class']) . '"' : '';
+    $output = '<' . $wrapper . $class . '>' . $formatted_value . '</' . $wrapper . '>';
+  }
+  
+  return $output;
+}
+
