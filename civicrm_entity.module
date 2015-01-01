@@ -1889,7 +1889,6 @@ function _civicrm_entity_contact_formatters(&$fields){
        'civicrm_link' => 'Link',
      );
   }
-    
   $option_fields = array(
     'preferred_communication_method',
     'prefix_id',
@@ -1897,14 +1896,12 @@ function _civicrm_entity_contact_formatters(&$fields){
     'communication_style_id',
     'gender_id',
   );
-  
   foreach($option_fields as $name) {
      $fields['civicrm_contact'][$name]['properties']['formatters'] = array (
         'default' => 'Option ID',
         'civicrm_option_value' => 'Option Value',
      );
   }
-  
   $yes_no_fields = array(
     'is_deceased',
     'do_not_email',
@@ -1916,7 +1913,6 @@ function _civicrm_entity_contact_formatters(&$fields){
     'is_deleted',
     'contact_is_deleted',
   );
-  
   foreach($yes_no_fields as $name) {
      $fields['civicrm_contact'][$name]['properties']['formatters'] = array (
         'default' => 'Raw Value',
@@ -1925,7 +1921,6 @@ function _civicrm_entity_contact_formatters(&$fields){
      );
   }
 }
-
 
 /**
  * Default Display Suite Render handler for CiviCRM "fields".
@@ -1987,8 +1982,12 @@ function _civicrm_entity_render_fields($field) {
   return $output;
 }
 
+/*
+ * Returns a comma delimited list of option labels from id values
+ *
+ */
 function _civicrm_entity_option_lookup($field,$values){
-  $result = civicrm_api3('Contact', 'getoptions', array(
+  $result = civicrm_api3(substr($field['entity_type'],8), 'getoptions', array(
           'field' => $field['field_name'],
   ));
   $fm = array();
@@ -1998,6 +1997,10 @@ function _civicrm_entity_option_lookup($field,$values){
   return implode(",",$fm);
 }
 
+/*
+ * Contact entity field formatted value special handling
+ *
+ */
 function _civicrm_entity_contact_get_formatted_values(&$field,$wrapper){
   switch($field['field_name']){
     case 'contact_sub_type':
@@ -2007,6 +2010,10 @@ function _civicrm_entity_contact_get_formatted_values(&$field,$wrapper){
   }
 }
 
+/*
+ * Returns a comma delimited list of field values which are arrays 
+ *
+ */
 function _civicrm_entity_formatted_output_of_arrays(&$field,$wrapper) {
   return  implode(",", $wrapper->{$field['field_name']}->value());
 }
