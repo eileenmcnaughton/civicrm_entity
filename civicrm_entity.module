@@ -1874,21 +1874,110 @@ function civicrm_entity_ds_fields_info($entity_type) {
 
 function _civicrm_entity_add_formatters($entity_type,&$fields) {
    switch($entity_type) {
+   case 'civicrm_activity':
+     _civicrm_entity_activity_formatters($fields);
+     break;
+   case 'civicrm_address':
+     _civicrm_entity_address_formatters($fields);
+     break;
    case 'civicrm_contact':
      _civicrm_entity_contact_formatters($fields);
      break;
-    
+   case 'civicrm_contribution': 
+     _civicrm_entity_contribution_formatters($fields);
+     break; 
+   case 'civicrm_email':
+     _civicrm_entity_email_formatters($fields);
+     break;
+   case 'civicrm_event':
+     _civicrm_entity_event_formatters($fields);
+     break;
    }
 }
 
+function _civicrm_entity_activity_formatters(&$fields){
+
+  $link_fields = array(
+    array(
+      'link_field' => 'source_contact_id',
+      'target' => 'civicrm_contact',
+    ),
+     array(
+      'link_field' => 'assignee_contact_id',
+      'target' => 'civicrm_contact',
+    ),
+     array(
+      'link_field' => 'target_contact_id',
+      'target' => 'civicrm_contact',
+    ),
+    array(
+      'link_field' => 'relationship_id',
+      'target' => 'civicrm_relationship',
+    ),
+    array(
+      'link_field' => 'parent_id',
+      'target' => 'civicrm_activity',
+    ),
+    array(
+      'link_field' => 'original_id',
+      'target' => 'civicrm_activity',
+    ),
+  );
+  _civicrm_entity_link_addformatters('civicrm_activity',$link_fields,$fields);
+  $option_fields = array(
+    'activity_type_id',
+    'status_id',
+    'medium_id',
+    'priority_id',
+  );
+  _civicrm_entity_option_addformatters('civicrm_activity',$option_fields,$fields);
+  $yes_no_fields = array(
+    'is_auto',
+    'is_current_revision',
+    'is_test',
+    'is_deleted',
+  );
+  _civicrm_entity_yesno_addformatters('civicrm_activity',$yes_no_fields,$fields);
+}
+
+function _civicrm_entity_address_formatters(&$fields){
+  $link_fields = array(
+    array(
+      'link_field' => 'contact_id',
+      'target' => 'civicrm_contact',
+    ),
+    array(
+      'link_field' => 'contact_id_contact',
+      'target' => 'civicrm_contact',
+    ),
+    array(
+      'link_field' => 'master_id',
+      'target' => 'civicrm_contact',
+    ),
+  );
+  _civicrm_entity_link_addformatters('civicrm_address',$link_fields,$fields);
+  $option_fields = array(
+    'location_type_id',
+    'county_id',
+    'state_province_id',
+    'country_id',
+  );
+  _civicrm_entity_option_addformatters('civicrm_address',$option_fields,$fields);
+  $yes_no_fields = array(
+    'is_primary',
+    'is_billing',
+  );
+  _civicrm_entity_yesno_addformatters('civicrm_address',$yes_no_fields,$fields);
+}
+
 function _civicrm_entity_contact_formatters(&$fields){
-  $link_fields = array('employer_id_contact');
-  foreach($link_fields as $name) {
-     $fields['civicrm_contact'][$name]['properties']['formatters'] = array (
-       'default' => 'Default',
-       'civicrm_link' => 'Link',
-     );
-  }
+  $link_fields = array(
+    array(
+      'link_field' => 'employer_id_contact',
+      'target' => 'civicrm_contact',
+    ),
+  );
+  _civicrm_entity_link_addformatters('civicrm_contact',$link_fields,$fields);
   $option_fields = array(
     'preferred_communication_method',
     'prefix_id',
@@ -1896,12 +1985,7 @@ function _civicrm_entity_contact_formatters(&$fields){
     'communication_style_id',
     'gender_id',
   );
-  foreach($option_fields as $name) {
-     $fields['civicrm_contact'][$name]['properties']['formatters'] = array (
-        'default' => 'Option ID',
-        'civicrm_option_value' => 'Option Value',
-     );
-  }
+  _civicrm_entity_option_addformatters('civicrm_contact',$option_fields,$fields);
   $yes_no_fields = array(
     'is_deceased',
     'do_not_email',
@@ -1913,12 +1997,130 @@ function _civicrm_entity_contact_formatters(&$fields){
     'is_deleted',
     'contact_is_deleted',
   );
+  _civicrm_entity_yesno_addformatters('civicrm_contact',$yes_no_fields,$fields);
+}
+
+function _civicrm_entity_contribution_formatters(&$fields){
+  $link_fields = array(
+    array(
+      'link_field' => 'contact_id_contact',
+      'target' => 'civicrm_contact',
+    ),
+    array(
+      'link_field' => 'contact_id',
+      'target' => 'civicrm_contact',
+    ),
+  );
+  _civicrm_entity_link_addformatters('civicrm_contribution',$link_fields,$fields);
+  $option_fields = array(
+   // 'cancel_reason',
+    'financial_type_id',
+    'contribution_status_id',
+  );
+  _civicrm_entity_option_addformatters('civicrm_contribution',$option_fields,$fields);
+  $yes_no_fields = array(
+    'is_test',
+    'is_pay_later',
+    
+  );
+  _civicrm_entity_yesno_addformatters('civicrm_contribution',$yes_no_fields,$fields);
+}
+
+function _civicrm_entity_email_formatters(&$fields){
+  $link_fields = array(
+    array(
+      'link_field' => 'contact_id',
+      'target' => 'civicrm_contact',
+    ),
+    array(
+      'link_field' => 'contact_id_contact',
+      'target' => 'civicrm_contact',
+    ),
+    
+  );
+  _civicrm_entity_link_addformatters('civicrm_email',$link_fields,$fields);
+  $option_fields = array(
+    'location_type_id',
+  );
+  _civicrm_entity_option_addformatters('civicrm_email',$option_fields,$fields);
+  $yes_no_fields = array(
+    'is_primary',
+    'is_billing',
+    'on_hold',
+    'is_bulkmail',
+  );
+  _civicrm_entity_yesno_addformatters('civicrm_email',$yes_no_fields,$fields);
+}
+
+function _civicrm_entity_event_formatters(&$fields){
+  $link_fields = array(
+    array(
+      'link_field' => 'created_id_contact',
+      'target' => 'civicrm_contact',
+    ),
+    array(
+      'link_field' => 'created_id',
+      'target' => 'civicrm_contact',
+    ),
+    array(
+      'link_field' => 'parent_event_id',
+      'target' => 'civicrm_event',
+    ),
+  );
+  _civicrm_entity_link_addformatters('civicrm_event',$link_fields,$fields);
+  $option_fields = array(
+   // 'cancel_reason',
+    'event_type_id',
+    'financial_type_id',
+    'default_role_id',
+  );
+  _civicrm_entity_option_addformatters('civicrm_event',$option_fields,$fields);
+  $yes_no_fields = array(
+    'is_public',
+    'is_pay_later',
+    'is_online_registration',
+    'is_monetary',
+    'is_map',
+    'is_active',
+    'is_show_location',
+    'is_partial_payment',
+    'is_multiple_registrations',
+    'allow_same_participant_emails',
+    'has_waitlist',
+    'requires_approval',
+    'is_template',
+    'is_share',
+    'is_confirm_enabled',
+  );
+  _civicrm_entity_yesno_addformatters('civicrm_event',$yes_no_fields,$fields);
+}
+
+function _civicrm_entity_yesno_addformatters($entity_type,$yes_no_fields,&$fields){
   foreach($yes_no_fields as $name) {
-     $fields['civicrm_contact'][$name]['properties']['formatters'] = array (
+     $fields[$entity_type][$name]['properties']['formatters'] = array (
         'default' => 'Raw Value',
         'civicrm_yes_no' => 'Yes/No',
         'civicrm_true_false' => 'True/False',
      );
+  }
+}
+
+function _civicrm_entity_option_addformatters($entity_type,$option_fields,&$fields){
+  foreach($option_fields as $name) {
+     $fields[$entity_type][$name]['properties']['formatters'] = array (
+        'default' => 'Option ID',
+        'civicrm_option_value' => 'Option Value',
+     );
+  }
+}
+
+function _civicrm_entity_link_addformatters($entity_type,$link_fields,&$fields){
+  foreach($link_fields as $link_field) {
+     $fields[$entity_type][$link_field['link_field']]['properties']['formatters'] = array (
+       'default' => 'Default',
+       'civicrm_link' => 'Link',
+     );
+     $fields[$entity_type][$link_field['link_field']]['properties']['link_entity'] = $link_field['target'];
   }
 }
 
@@ -1940,7 +2142,7 @@ function _civicrm_entity_render_fields($field) {
     default: $formatted_value = $wrapper->{$field['field_name']}->value();
     break;
   }
-   
+  
    // primary_contact_id_contact and other fields are objects produced by the meta wrapper
    // Will be ease to generate links to the entities if it is consistent across entities
    if(is_object($formatted_value)){
@@ -1948,7 +2150,9 @@ function _civicrm_entity_render_fields($field) {
    }
    if($field['formatter'] == 'civicrm_link') {
       global $base_url;
-      $formatted_value = '<a href="'. $base_url . '/'. str_replace('_','-',$wrapper->getBundle()) . '/' . $formatted_value . '">'. $formatted_value . '</a>';
+      if($formatted_value){
+        $formatted_value = '<a href="'. $base_url . '/'. str_replace('_','-',$field['properties']['link_entity']) . '/' . $formatted_value . '">'. $formatted_value . '</a>';
+      }
    }
    
    if($field['formatter'] == 'civicrm_yes_no') {
@@ -1969,7 +2173,9 @@ function _civicrm_entity_render_fields($field) {
    }
    
    if($field['formatter'] == 'civicrm_option_value') {
-     $formatted_value = _civicrm_entity_option_lookup($field,explode(',', $formatted_value));
+     if($formatted_value){
+       $formatted_value = _civicrm_entity_option_lookup($field,explode(',', $formatted_value));
+     }
    }
   
   // Wrapper and class.
@@ -2015,5 +2221,11 @@ function _civicrm_entity_contact_get_formatted_values(&$field,$wrapper){
  *
  */
 function _civicrm_entity_formatted_output_of_arrays(&$field,$wrapper) {
-  return  implode(",", $wrapper->{$field['field_name']}->value());
+  $values = $wrapper->{$field['field_name']}->value();
+  if(is_array($values)) {
+    return  implode(",",$values );
+  }
+  else {
+    return '';
+  }
 }
