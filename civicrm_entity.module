@@ -2018,7 +2018,9 @@ function _civicrm_entity_render_fields($field) {
    }
    
    if($field['formatter'] == 'civicrm_option_value') {
-     $formatted_value = _civicrm_entity_option_lookup($field,explode(',', $formatted_value));
+     if($formatted_value){
+       $formatted_value = _civicrm_entity_option_lookup($field,explode(',', $formatted_value));
+     }
    }
   
   // Wrapper and class.
@@ -2064,5 +2066,11 @@ function _civicrm_entity_contact_get_formatted_values(&$field,$wrapper){
  *
  */
 function _civicrm_entity_formatted_output_of_arrays(&$field,$wrapper) {
-  return  implode(",", $wrapper->{$field['field_name']}->value());
+  $values = $wrapper->{$field['field_name']}->value();
+  if(is_array($values)) {
+    return  implode(",",$values );
+  }
+  else {
+    return '';
+  }
 }
