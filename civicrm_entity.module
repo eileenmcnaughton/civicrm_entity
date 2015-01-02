@@ -1874,6 +1874,9 @@ function civicrm_entity_ds_fields_info($entity_type) {
 
 function _civicrm_entity_add_formatters($entity_type,&$fields) {
    switch($entity_type) {
+   case 'civicrm_address':
+     _civicrm_entity_address_formatters($fields);
+     break;
    case 'civicrm_contact':
      _civicrm_entity_contact_formatters($fields);
      break;
@@ -1882,7 +1885,38 @@ function _civicrm_entity_add_formatters($entity_type,&$fields) {
      break; 
    case 'civicrm_event':
      _civicrm_entity_event_formatters($fields);
+     break;
    }
+}
+
+function _civicrm_entity_address_formatters(&$fields){
+  $link_fields = array(
+    array(
+      'link_field' => 'contact_id',
+      'target' => 'civicrm_contact',
+    ),
+    array(
+      'link_field' => 'contact_id_contact',
+      'target' => 'civicrm_contact',
+    ),
+    array(
+      'link_field' => 'master_id',
+      'target' => 'civicrm_contact',
+    ),
+  );
+  _civicrm_entity_link_addformatters('civicrm_address',$link_fields,$fields);
+  $option_fields = array(
+    'location_type_id',
+    'county_id',
+    'state_province_id',
+    'country_id',
+  );
+  _civicrm_entity_option_addformatters('civicrm_address',$option_fields,$fields);
+  $yes_no_fields = array(
+    'is_primary',
+    'is_billing',
+  );
+  _civicrm_entity_yesno_addformatters('civicrm_address',$yes_no_fields,$fields);
 }
 
 function _civicrm_entity_contact_formatters(&$fields){
@@ -1893,7 +1927,6 @@ function _civicrm_entity_contact_formatters(&$fields){
     ),
   );
   _civicrm_entity_link_addformatters('civicrm_contact',$link_fields,$fields);
-  
   $option_fields = array(
     'preferred_communication_method',
     'prefix_id',
@@ -1928,7 +1961,6 @@ function _civicrm_entity_contribution_formatters(&$fields){
     ),
   );
   _civicrm_entity_link_addformatters('civicrm_contribution',$link_fields,$fields);
-  
   $option_fields = array(
    // 'cancel_reason',
     'financial_type_id',
@@ -1959,7 +1991,6 @@ function _civicrm_entity_event_formatters(&$fields){
     ),
   );
   _civicrm_entity_link_addformatters('civicrm_event',$link_fields,$fields);
-  
   $option_fields = array(
    // 'cancel_reason',
     'event_type_id',
