@@ -1880,6 +1880,8 @@ function _civicrm_entity_add_formatters($entity_type,&$fields) {
    case 'civicrm_contribution': 
      _civicrm_entity_contribution_formatters($fields);
      break; 
+   case 'civicrm_event':
+     _civicrm_entity_event_formatters($fields);
    }
 }
 
@@ -1915,7 +1917,6 @@ function _civicrm_entity_contact_formatters(&$fields){
 }
 
 function _civicrm_entity_contribution_formatters(&$fields){
-
   $link_fields = array(
     array(
       'link_field' => 'contact_id_contact',
@@ -1940,6 +1941,50 @@ function _civicrm_entity_contribution_formatters(&$fields){
     
   );
   _civicrm_entity_yesno_addformatters('civicrm_contribution',$yes_no_fields,$fields);
+}
+
+function _civicrm_entity_event_formatters(&$fields){
+  $link_fields = array(
+    array(
+      'link_field' => 'created_id_contact',
+      'target' => 'civicrm_contact',
+    ),
+    array(
+      'link_field' => 'created_id',
+      'target' => 'civicrm_contact',
+    ),
+    array(
+      'link_field' => 'parent_event_id',
+      'target' => 'civicrm_event',
+    ),
+  );
+  _civicrm_entity_link_addformatters('civicrm_event',$link_fields,$fields);
+  
+  $option_fields = array(
+   // 'cancel_reason',
+    'event_type_id',
+    'financial_type_id',
+    'default_role_id',
+  );
+  _civicrm_entity_option_addformatters('civicrm_event',$option_fields,$fields);
+  $yes_no_fields = array(
+    'is_public',
+    'is_pay_later',
+    'is_online_registration',
+    'is_monetary',
+    'is_map',
+    'is_active',
+    'is_show_location',
+    'is_partial_payment',
+    'is_multiple_registrations',
+    'allow_same_participant_emails',
+    'has_waitlist',
+    'requires_approval',
+    'is_template',
+    'is_share',
+    'is_confirm_enabled',
+  );
+  _civicrm_entity_yesno_addformatters('civicrm_event',$yes_no_fields,$fields);
 }
 
 function _civicrm_entity_yesno_addformatters($entity_type,$yes_no_fields,&$fields){
@@ -1997,7 +2042,9 @@ function _civicrm_entity_render_fields($field) {
    }
    if($field['formatter'] == 'civicrm_link') {
       global $base_url;
-      $formatted_value = '<a href="'. $base_url . '/'. str_replace('_','-',$field['properties']['link_entity']) . '/' . $formatted_value . '">'. $formatted_value . '</a>';
+      if($formatted_value){
+        $formatted_value = '<a href="'. $base_url . '/'. str_replace('_','-',$field['properties']['link_entity']) . '/' . $formatted_value . '">'. $formatted_value . '</a>';
+      }
    }
    
    if($field['formatter'] == 'civicrm_yes_no') {
