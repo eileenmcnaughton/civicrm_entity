@@ -1874,6 +1874,9 @@ function civicrm_entity_ds_fields_info($entity_type) {
 
 function _civicrm_entity_add_formatters($entity_type,&$fields) {
    switch($entity_type) {
+   case 'civicrm_activity':
+     _civicrm_entity_activity_formatters($fields);
+     break;
    case 'civicrm_address':
      _civicrm_entity_address_formatters($fields);
      break;
@@ -1883,10 +1886,58 @@ function _civicrm_entity_add_formatters($entity_type,&$fields) {
    case 'civicrm_contribution': 
      _civicrm_entity_contribution_formatters($fields);
      break; 
+   case 'civicrm_email':
+     _civicrm_entity_email_formatters($fields);
+     break;
    case 'civicrm_event':
      _civicrm_entity_event_formatters($fields);
      break;
    }
+}
+
+function _civicrm_entity_activity_formatters(&$fields){
+
+  $link_fields = array(
+    array(
+      'link_field' => 'source_contact_id',
+      'target' => 'civicrm_contact',
+    ),
+     array(
+      'link_field' => 'assignee_contact_id',
+      'target' => 'civicrm_contact',
+    ),
+     array(
+      'link_field' => 'target_contact_id',
+      'target' => 'civicrm_contact',
+    ),
+    array(
+      'link_field' => 'relationship_id',
+      'target' => 'civicrm_relationship',
+    ),
+    array(
+      'link_field' => 'parent_id',
+      'target' => 'civicrm_activity',
+    ),
+    array(
+      'link_field' => 'original_id',
+      'target' => 'civicrm_activity',
+    ),
+  );
+  _civicrm_entity_link_addformatters('civicrm_activity',$link_fields,$fields);
+  $option_fields = array(
+    'activity_type_id',
+    'status_id',
+    'medium_id',
+    'priority_id',
+  );
+  _civicrm_entity_option_addformatters('civicrm_activity',$option_fields,$fields);
+  $yes_no_fields = array(
+    'is_auto',
+    'is_current_revision',
+    'is_test',
+    'is_deleted',
+  );
+  _civicrm_entity_yesno_addformatters('civicrm_activity',$yes_no_fields,$fields);
 }
 
 function _civicrm_entity_address_formatters(&$fields){
@@ -1973,6 +2024,32 @@ function _civicrm_entity_contribution_formatters(&$fields){
     
   );
   _civicrm_entity_yesno_addformatters('civicrm_contribution',$yes_no_fields,$fields);
+}
+
+function _civicrm_entity_email_formatters(&$fields){
+  $link_fields = array(
+    array(
+      'link_field' => 'contact_id',
+      'target' => 'civicrm_contact',
+    ),
+    array(
+      'link_field' => 'contact_id_contact',
+      'target' => 'civicrm_contact',
+    ),
+    
+  );
+  _civicrm_entity_link_addformatters('civicrm_email',$link_fields,$fields);
+  $option_fields = array(
+    'location_type_id',
+  );
+  _civicrm_entity_option_addformatters('civicrm_email',$option_fields,$fields);
+  $yes_no_fields = array(
+    'is_primary',
+    'is_billing',
+    'on_hold',
+    'is_bulkmail',
+  );
+  _civicrm_entity_yesno_addformatters('civicrm_email',$yes_no_fields,$fields);
 }
 
 function _civicrm_entity_event_formatters(&$fields){
