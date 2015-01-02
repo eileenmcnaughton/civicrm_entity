@@ -1877,18 +1877,21 @@ function _civicrm_entity_add_formatters($entity_type,&$fields) {
    case 'civicrm_contact':
      _civicrm_entity_contact_formatters($fields);
      break;
-    
+   case 'civicrm_contribution': 
+     _civicrm_entity_contribution_formatters($fields);
+     break; 
    }
 }
 
 function _civicrm_entity_contact_formatters(&$fields){
-  $link_fields = array('employer_id_contact');
-  foreach($link_fields as $name) {
-     $fields['civicrm_contact'][$name]['properties']['formatters'] = array (
-       'default' => 'Default',
-       'civicrm_link' => 'Link',
-     );
-  }
+  $link_fields = array(
+    array(
+      'link_field' => 'employer_id_contact',
+      'target' => 'civicrm_contact',
+    ),
+  );
+  _civicrm_entity_link_addformatters('civicrm_contact',$link_fields,$fields);
+  
   $option_fields = array(
     'preferred_communication_method',
     'prefix_id',
@@ -1896,12 +1899,7 @@ function _civicrm_entity_contact_formatters(&$fields){
     'communication_style_id',
     'gender_id',
   );
-  foreach($option_fields as $name) {
-     $fields['civicrm_contact'][$name]['properties']['formatters'] = array (
-        'default' => 'Option ID',
-        'civicrm_option_value' => 'Option Value',
-     );
-  }
+  _civicrm_entity_option_addformatters('civicrm_contact',$option_fields,$fields);
   $yes_no_fields = array(
     'is_deceased',
     'do_not_email',
@@ -1913,12 +1911,63 @@ function _civicrm_entity_contact_formatters(&$fields){
     'is_deleted',
     'contact_is_deleted',
   );
+  _civicrm_entity_yesno_addformatters('civicrm_contact',$yes_no_fields,$fields);
+}
+
+function _civicrm_entity_contribution_formatters(&$fields){
+
+  $link_fields = array(
+    array(
+      'link_field' => 'contact_id_contact',
+      'target' => 'civicrm_contact',
+    ),
+    array(
+      'link_field' => 'contact_id',
+      'target' => 'civicrm_contact',
+    ),
+  );
+  _civicrm_entity_link_addformatters('civicrm_contribution',$link_fields,$fields);
+  
+  $option_fields = array(
+   // 'cancel_reason',
+    'financial_type_id',
+    'contribution_status_id',
+  );
+  _civicrm_entity_option_addformatters('civicrm_contribution',$option_fields,$fields);
+  $yes_no_fields = array(
+    'is_test',
+    'is_pay_later',
+    
+  );
+  _civicrm_entity_yesno_addformatters('civicrm_contribution',$yes_no_fields,$fields);
+}
+
+function _civicrm_entity_yesno_addformatters($entity_type,$yes_no_fields,&$fields){
   foreach($yes_no_fields as $name) {
-     $fields['civicrm_contact'][$name]['properties']['formatters'] = array (
+     $fields[$entity_type][$name]['properties']['formatters'] = array (
         'default' => 'Raw Value',
         'civicrm_yes_no' => 'Yes/No',
         'civicrm_true_false' => 'True/False',
      );
+  }
+}
+
+function _civicrm_entity_option_addformatters($entity_type,$option_fields,&$fields){
+  foreach($option_fields as $name) {
+     $fields[$entity_type][$name]['properties']['formatters'] = array (
+        'default' => 'Option ID',
+        'civicrm_option_value' => 'Option Value',
+     );
+  }
+}
+
+function _civicrm_entity_link_addformatters($entity_type,$link_fields,&$fields){
+  foreach($link_fields as $link_field) {
+     $fields[$entity_type][$link_field['link_field']]['properties']['formatters'] = array (
+       'default' => 'Default',
+       'civicrm_link' => 'Link',
+     );
+     $fields[$entity_type][$link_field['link_field']]['properties']['link_entity'] = $link_field['target'];
   }
 }
 
@@ -1940,7 +1989,7 @@ function _civicrm_entity_render_fields($field) {
     default: $formatted_value = $wrapper->{$field['field_name']}->value();
     break;
   }
-   
+  
    // primary_contact_id_contact and other fields are objects produced by the meta wrapper
    // Will be ease to generate links to the entities if it is consistent across entities
    if(is_object($formatted_value)){
@@ -1948,7 +1997,7 @@ function _civicrm_entity_render_fields($field) {
    }
    if($field['formatter'] == 'civicrm_link') {
       global $base_url;
-      $formatted_value = '<a href="'. $base_url . '/'. str_replace('_','-',$wrapper->getBundle()) . '/' . $formatted_value . '">'. $formatted_value . '</a>';
+      $formatted_value = '<a href="'. $base_url . '/'. str_replace('_','-',$field['properties']['link_entity']) . '/' . $formatted_value . '">'. $formatted_value . '</a>';
    }
    
    if($field['formatter'] == 'civicrm_yes_no') {
