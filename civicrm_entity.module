@@ -1864,9 +1864,61 @@ function civicrm_entity_ds_fields_info($entity_type) {
       ),
     );
   }
-    
+  //add specific property formatters
+  _civicrm_entity_add_formatters($entity_type,$fields);
+  
   if (isset($fields[$entity_type])) {
     return array($entity_type => $fields[$entity_type]);
+  }
+}
+
+function _civicrm_entity_add_formatters($entity_type,&$fields) {
+   switch($entity_type) {
+   case 'civicrm_contact':
+     _civicrm_entity_contact_formatters($fields);
+     break;
+    
+   }
+}
+
+function _civicrm_entity_contact_formatters(&$fields){
+  $link_fields = array('employer_id_contact');
+  foreach($link_fields as $name) {
+     $fields['civicrm_contact'][$name]['properties']['formatters'] = array (
+       'default' => 'Default',
+       'civicrm_link' => 'Link',
+     );
+  }
+  $option_fields = array(
+    'preferred_communication_method',
+    'prefix_id',
+    'suffix_id',
+    'communication_style_id',
+    'gender_id',
+  );
+  foreach($option_fields as $name) {
+     $fields['civicrm_contact'][$name]['properties']['formatters'] = array (
+        'default' => 'Option ID',
+        'civicrm_option_value' => 'Option Value',
+     );
+  }
+  $yes_no_fields = array(
+    'is_deceased',
+    'do_not_email',
+    'do_not_phone',
+    'do_not_sms',
+    'do_not_trade',
+    'do_not_mail',
+    'is_opt_out',
+    'is_deleted',
+    'contact_is_deleted',
+  );
+  foreach($yes_no_fields as $name) {
+     $fields['civicrm_contact'][$name]['properties']['formatters'] = array (
+        'default' => 'Raw Value',
+        'civicrm_yes_no' => 'Yes/No',
+        'civicrm_true_false' => 'True/False',
+     );
   }
 }
 
@@ -1879,14 +1931,47 @@ function _civicrm_entity_render_fields($field) {
   
   $wrapper = entity_metadata_wrapper($field['entity_type'], $field['entity']->id);
   
-  $formatted_value = $wrapper->{$field['field_name']}->value();
+  
+  //civicrm_contact civi_user field needs special handling
+  switch($field['entity_type']) {
+    case 'civicrm_contact': 
+      $formatted_value = _civicrm_entity_contact_get_formatted_values($field,$wrapper);
+      break;
+    default: $formatted_value = $wrapper->{$field['field_name']}->value();
+    break;
+  }
    
    // primary_contact_id_contact and other fields are objects produced by the meta wrapper
    // Will be ease to generate links to the entities if it is consistent across entities
    if(is_object($formatted_value)){
-    $formatted_value = $formatted_value->id;
+    $formatted_value = $wrapper->{$field['field_name']}->id->value();
+   }
+   if($field['formatter'] == 'civicrm_link') {
+      global $base_url;
+      $formatted_value = '<a href="'. $base_url . '/'. str_replace('_','-',$wrapper->getBundle()) . '/' . $formatted_value . '">'. $formatted_value . '</a>';
    }
    
+   if($field['formatter'] == 'civicrm_yes_no') {
+     if($formatted_value) {
+       $formatted_value = 'Yes';
+     }
+     else {
+       $formatted_value = 'No';
+     }
+   }
+   if($field['formatter'] == 'civicrm_true_false') {
+     if($formatted_value) {
+       $formatted_value = 'True';
+     }
+     else {
+       $formatted_value = 'False';
+     }
+   }
+   
+   if($field['formatter'] == 'civicrm_option_value') {
+     $formatted_value = _civicrm_entity_option_lookup($field,explode(',', $formatted_value));
+   }
+  
   // Wrapper and class.
   if (!empty($settings['wrapper'])) {
     $wrapper = check_plain($settings['wrapper']);
@@ -1897,3 +1982,38 @@ function _civicrm_entity_render_fields($field) {
   return $output;
 }
 
+/*
+ * Returns a comma delimited list of option labels from id values
+ *
+ */
+function _civicrm_entity_option_lookup($field,$values){
+  $result = civicrm_api3(substr($field['entity_type'],8), 'getoptions', array(
+          'field' => $field['field_name'],
+  ));
+  $fm = array();
+  foreach($values as $value) {
+    $fm[] = $result['values'][$value];
+  }
+  return implode(",",$fm);
+}
+
+/*
+ * Contact entity field formatted value special handling
+ *
+ */
+function _civicrm_entity_contact_get_formatted_values(&$field,$wrapper){
+  switch($field['field_name']){
+    case 'contact_sub_type':
+    case 'preferred_communication_method':
+       return _civicrm_entity_formatted_output_of_arrays($field,$wrapper);
+    default: return $wrapper->{$field['field_name']}->value();
+  }
+}
+
+/*
+ * Returns a comma delimited list of field values which are arrays 
+ *
+ */
+function _civicrm_entity_formatted_output_of_arrays(&$field,$wrapper) {
+  return  implode(",", $wrapper->{$field['field_name']}->value());
+}
