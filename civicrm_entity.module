@@ -255,7 +255,7 @@ function civicrm_entity_entity_property_info_alter(&$info) {
   if (!civicrm_initialize(TRUE)) {
     return;
   }
-  
+
   // We'll start with a few basic entities but we could get them the
   // same way the API explorer does.
   $entities = _civicrm_entity_enabled_entities();
@@ -479,15 +479,15 @@ function civicrm_entity_civicrm_contact_label_callback($entity, $entity_type) {
  */
 function civicrm_entity_get_field_widget($field_spec,$civicrm_entity) {
   $widget = array();
-  
+
   if (isset($field_spec['name']) && $field_spec['name'] == 'id') {
     $widget =  array('widget' => 'hidden');
   }
-  
+
   if(!isset($field_spec['type'])) {
     $widget = array('widget' => 'hidden');
   }
-  
+
   if(isset($field_spec['html']['type'])) {
    switch ($field_spec['html']['type']) {
     case 'Text':
@@ -514,7 +514,7 @@ function civicrm_entity_get_field_widget($field_spec,$civicrm_entity) {
   else {
     $widget = array('widget' =>'textfield');
   }
-  
+
   if(isset($field_spec['type'])) {
 
      switch($field_spec['type']) {
@@ -529,7 +529,7 @@ function civicrm_entity_get_field_widget($field_spec,$civicrm_entity) {
          break;
      }
   }
-  
+
   return $widget;
 }
 
@@ -629,7 +629,7 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
 
       //widget code
       $info[$fieldname]['widget'] = civicrm_entity_get_field_widget($field_specs,$civicrm_entity);
-      
+
       // We will add contact as a related entity for FK references to
       // contact. This could be expanded to all FKs e.g event_id in
       // Participant. Could load the event at the moment we are being
@@ -710,7 +710,7 @@ function civicrm_entity_form($form, &$form_state, $entity_id, $op, $entity_type)
     else {
       $title = 'Add ' . ucwords(str_replace("_", " ", $entity_type));
     }
-    
+
     field_attach_form($entity_type, $entity, $form, $form_state);
 
     //get entity controller build content
@@ -738,7 +738,7 @@ function civicrm_entity_form($form, &$form_state, $entity_id, $op, $entity_type)
             $form[$name]['#options'] = $info['widget']['options'];
           }
           // Date field handling, check for date_api module to use date select widget
-          // else fallback to textfield 
+          // else fallback to textfield
           if($form[$name]['#type'] == 'date_select') {
             if(module_exists('date_api')){
               $form[$name]['#format'] = $info['widget']['format'];
@@ -752,12 +752,12 @@ function civicrm_entity_form($form, &$form_state, $entity_id, $op, $entity_type)
           if($name == 'is_deleted') {
             if($entity_type=='civicrm_contact') {
               $form[$name]['#default_value'] = $entity->contact_is_deleted;
-            } 
+            }
           }
-           
+
         } // end if isset widget
       } // end else not a drupal field
-    } // end foreach 
+    } // end foreach
 
     $form['actions'] = array(
       '#type' => 'container',
@@ -816,7 +816,7 @@ function civicrm_entity_form($form, &$form_state, $entity_id, $op, $entity_type)
       '#value' => t('Delete'),
       '#submit' => $form['#submit'],
     );
-    
+
     $title = 'Delete ' . ucwords(str_replace("_", " ", $entity_type)) . ": " . entity_label($entity_type, $entity) . " (id:" . $entity->id . ")";;
   }
   $title = str_replace("Civicrm", "CiviCRM", $title);
@@ -1581,7 +1581,7 @@ function civicrm_entity_page_view($id, $entity_type) {
     if($entity_type == 'civicrm_contact') {
       //for some reason the is_deleted column of the contact record is coming to the entity
       // as contact_is_deleted ...special handling to have the page value set properly
-      $entity->is_deleted = $entity->contact_is_deleted; 
+      $entity->is_deleted = $entity->contact_is_deleted;
      }
 
     $content = $controller->view(array($id => $entity));
@@ -1789,12 +1789,12 @@ function civicrm_entity_form_alter(&$form, &$form_state, $form_id){
       }
       $form['#submit'] = $submits;
     }
-    
+
   }
 }
 
 /*
- * Custom submit handler 
+ * Custom submit handler
  * updates bundle visibility settings if a display suite layout is used
  *
  */
@@ -1803,7 +1803,7 @@ function _civicrm_entity_manage_display_submit(&$form, &$form_state) {
     $entity_type = $form['#entity_type'];
     $bundle = $form['#bundle'];
     $bundle_settings = field_bundle_settings($entity_type, $bundle);
- 
+
     foreach($bundle_settings['extra_fields']['display'] as $key => $field) {
       $form_state['values']['fields'][$key]['type'] = 'visible';
     }
@@ -1822,12 +1822,12 @@ function civicrm_entity_field_extra_fields_alter(&$info) {
   $entities = _civicrm_entity_enabled_entities();
   foreach ($entities as $drupal_entity => $civicrm_entity) {
     $properties[$drupal_entity]['properties'] = _civicrm_entity_getproperties($civicrm_entity, 'property_info');
-    
+
     foreach($info[$drupal_entity][$drupal_entity]['display'] as $name => $props) {
       $info[$drupal_entity][$drupal_entity]['form'][$name] = $props;
     }
   }
-  
+
 }
 
 /*
@@ -1839,7 +1839,7 @@ function civicrm_entity_ds_fields_info($entity_type) {
   $fields = array();
    if (!civicrm_initialize(TRUE)) {
     return;
-  }  
+  }
   $properties = _civicrm_entity_getproperties(substr($entity_type,8), 'property_info');
 
   // Basic wrapper and class settings for all CiviCRM properties, also makes the label visibility work
@@ -1862,12 +1862,12 @@ function civicrm_entity_ds_fields_info($entity_type) {
        $fields[$entity_type][$name]['date']['granularity'] = $settings['granularity'];
     }*/
   }
-  
- 
-  
+
+
+
   //add specific property formatters
   _civicrm_entity_add_formatters($entity_type,$fields);
-  
+
   if (isset($fields[$entity_type])) {
     return array($entity_type => $fields[$entity_type]);
   }
@@ -1884,9 +1884,9 @@ function _civicrm_entity_add_formatters($entity_type,&$fields) {
    case 'civicrm_contact':
      _civicrm_entity_contact_formatters($fields);
      break;
-   case 'civicrm_contribution': 
+   case 'civicrm_contribution':
      _civicrm_entity_contribution_formatters($fields);
-     break; 
+     break;
    case 'civicrm_email':
      _civicrm_entity_email_formatters($fields);
      break;
@@ -2060,7 +2060,7 @@ function _civicrm_entity_contribution_formatters(&$fields){
   $yes_no_fields = array(
     'is_test',
     'is_pay_later',
-    
+
   );
   _civicrm_entity_yesno_addformatters('civicrm_contribution',$yes_no_fields,$fields);
 }
@@ -2075,7 +2075,7 @@ function _civicrm_entity_email_formatters(&$fields){
       'link_field' => 'contact_id_contact',
       'target' => 'civicrm_contact',
     ),
-    
+
   );
   _civicrm_entity_link_addformatters('civicrm_email',$link_fields,$fields);
   $option_fields = array(
@@ -2263,7 +2263,7 @@ function _civicrm_entity_membership_type_formatters(&$fields){
   _civicrm_entity_link_addformatters('civicrm_membership_type',$link_fields,$fields);
   $option_fields = array(
     'financial_type_id',
-    
+
   );
   _civicrm_entity_option_addformatters('civicrm_membership_type',$option_fields,$fields);
   $yes_no_fields = array(
@@ -2320,7 +2320,7 @@ function _civicrm_entity_price_field_formatters(&$fields){
   _civicrm_entity_link_addformatters('civicrm_price_field',$link_fields,$fields);
   $option_fields = array(
     'visibility_id',
-    
+
   );
   _civicrm_entity_option_addformatters('civicrm_price_field',$option_fields,$fields);
   $yes_no_fields = array(
@@ -2346,7 +2346,7 @@ function _civicrm_entity_price_field_value_formatters(&$fields){
   _civicrm_entity_link_addformatters('civicrm_price_field_value',$link_fields,$fields);
   $option_fields = array(
     'financial_type_id',
-  
+
   );
   _civicrm_entity_option_addformatters('civicrm_price_field_value',$option_fields,$fields);
   $yes_no_fields = array(
@@ -2484,13 +2484,13 @@ function _civicrm_entity_link_addformatters($entity_type,$link_fields,&$fields){
 function _civicrm_entity_render_fields($field) {
   $settings = isset($field['formatter_settings']) ? $field['formatter_settings'] : array();
   $settings += $field['properties']['default'];
-  
+
   $wrapper = entity_metadata_wrapper($field['entity_type'], $field['entity']->id);
-  
-  
+
+
   //civicrm_contact civi_user field needs special handling
   switch($field['entity_type']) {
-    case 'civicrm_contact': 
+    case 'civicrm_contact':
       $formatted_value = _civicrm_entity_contact_get_formatted_values($field,$wrapper);
       break;
     case 'civicrm_participant':
@@ -2499,7 +2499,7 @@ function _civicrm_entity_render_fields($field) {
     default: $formatted_value = $wrapper->{$field['field_name']}->value();
     break;
   }
-  
+
    // primary_contact_id_contact and other fields are objects produced by the meta wrapper
    // Will be ease to generate links to the entities if it is consistent across entities
    if(is_object($formatted_value)){
@@ -2511,7 +2511,7 @@ function _civicrm_entity_render_fields($field) {
         $formatted_value = '<a href="'. $base_url . '/'. str_replace('_','-',$field['properties']['link_entity']) . '/' . $formatted_value . '">'. _civicrm_entity_get_entity_label($field['properties']['link_entity'],$formatted_value) . '</a>';
       }
    }
-   
+
    if($field['formatter'] == 'civicrm_yes_no') {
      if($formatted_value) {
        $formatted_value = 'Yes';
@@ -2528,20 +2528,20 @@ function _civicrm_entity_render_fields($field) {
        $formatted_value = 'False';
      }
    }
-   
+
    if($field['formatter'] == 'civicrm_option_value') {
      if($formatted_value){
        $formatted_value = _civicrm_entity_option_lookup($field,explode(',', $formatted_value));
      }
    }
-  
+
   // Wrapper and class.
   if (!empty($settings['wrapper'])) {
     $wrapper = check_plain($settings['wrapper']);
     $class = (!empty($settings['class'])) ? ' class="' . check_plain($settings['class']) . '"' : '';
     $output = '<' . $wrapper . $class . '>' . $formatted_value . '</' . $wrapper . '>';
   }
-  
+
   return $output;
 }
 
@@ -2597,7 +2597,7 @@ function _civicrm_entity_participant_get_formatted_values(&$field,$wrapper,$enti
 }
 
 /*
- * Returns a comma delimited list of field values which are arrays 
+ * Returns a comma delimited list of field values which are arrays
  *
  */
 function _civicrm_entity_formatted_output_of_arrays(&$field,$wrapper) {
