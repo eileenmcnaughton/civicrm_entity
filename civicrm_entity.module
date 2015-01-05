@@ -297,23 +297,23 @@ function _civicrm_entity_enabled_entities() {
   $whitelist = array(
     'civicrm_activity' => 'activity',
     'civicrm_address' => 'address',
-    'civicrm_email' => 'email',
-    'civicrm_event' => 'event',
     'civicrm_contact' => 'contact',
     'civicrm_contribution' => 'contribution',
-    'civicrm_participant' => 'participant',
-    'civicrm_relationship' => 'relationship',
-    'civicrm_relationship_type' => 'relationship_type',
+    'civicrm_email' => 'email',
     'civicrm_entity_tag' => 'entity_tag',
-    'civicrm_membership' => 'membership',
-    'civicrm_membership_type' => 'membership_type',
+    'civicrm_event' => 'event',
     'civicrm_group' => 'group',
     'civicrm_grant' => 'grant',
-    'civicrm_tag' => 'tag',
+    'civicrm_membership' => 'membership',
+    'civicrm_membership_type' => 'membership_type',
+    'civicrm_participant' => 'participant',
+    'civicrm_phone' => 'phone',
     'civicrm_price_set' => 'price_set',
     'civicrm_price_field' => 'price_field',
     'civicrm_price_field_value' => 'price_field_value',
-    
+    'civicrm_relationship' => 'relationship',
+    'civicrm_relationship_type' => 'relationship_type',
+    'civicrm_tag' => 'tag',
   );
   //dirty check for whether financialType exists
   if (!method_exists('CRM_Contribute_PseudoConstant', 'contributionType')) {
@@ -387,15 +387,14 @@ function _civicrm_entity_chained_fks() {
 }
 
 /**
- * Provide label (column) for each entity types.
+ * Provide label (column) for each entity types - default to id if nothing specified.
  *
  * @TODO Use the CiviCRM 4.5 getlist function - possibly ported into this module to support 4.4
  *
  * @see http://api.drupal.org/api/drupal/modules!system!system.api.php/function/hook_entity_info/7
  *
  * @param $entity
- *
- * @return
+ * @return string
  */
 function _civicrm_entity_labels($entity) {
   $labels = array(
@@ -405,24 +404,18 @@ function _civicrm_entity_labels($entity) {
     'civicrm_contribution' => 'source',
     'civicrm_email' => 'email',
     'civicrm_event' => 'title',
-    'civicrm_participant' => 'source',
-    'civicrm_relationship' => 'description',
-    'civicrm_relationship_type' => 'description',
-    // OK, I'm just putting in something that won't error for now.
     'civicrm_entity_tag' => 'tag_id',
     'civicrm_financial_type' => 'description',
-    // Ditto.
-    'civicrm_membership' => 'id',
-    'civicrm_membership_type' => 'name',
     'civicrm_group' => 'name',
-    'civicrm_grant' => 'id',
+    'civicrm_membership_type' => 'name',
+    'civicrm_participant' => 'source',
+    'civicrm_phone' => 'phone',
+    'civicrm_relationship' => 'description',
+    'civicrm_relationship_type' => 'description',
     'civicrm_tag' => 'name',
-    'civicrm_price_set' => 'id',
-    'civicrm_price_field' => 'id',
-    'civicrm_price_field_value' => 'id',
   );
   _civicrm_enabled_entity_alter_labels($labels);
-  return $labels[$entity];
+  return isset($labels[$entity]) ? $labels[$entity] : 'id';
 }
 
 function _civicrm_entity_get_title($field_specs, $entity_type = '') {
