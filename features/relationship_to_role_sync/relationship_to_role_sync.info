@@ -1,4 +1,4 @@
-name = relationship to role sync
+name = CiviCRM Relationship to Role Sync
 description = Creates Drupal Roles off CiviCRM relationships
 core = 7.x
 package = CiviCRM
