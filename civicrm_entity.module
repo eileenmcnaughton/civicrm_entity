@@ -1031,7 +1031,7 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
   // @TODO What happens if they don't have an email at this point?
   // An email is a pre-requisite for a Drupal account, so the action
   // fails if they don't have an email.
-
+  $contact['display_name'] = trim(preg_replace("/[^A-Za-z0-9 ]/", '', truncate_utf8($contact['display_name'],60)));
   $params = array(
     'name' => $contact['display_name'],
     'mail' => $contact['email'],
