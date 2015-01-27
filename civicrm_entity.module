@@ -1318,10 +1318,41 @@ function civicrm_entity_civicrm_post($op, $object_name, $object_id, &$object_ref
   }
   $event_name = NULL;
   switch ($op) {
+
     case 'create':
     case 'edit':
-    case 'delete':
       $event_name = 'civicrm_' . $entity_name . "_{$op}";
+      break;
+
+    /*
+     *  Here we are checking if the contact entity is being deleted
+     *  AND if the contact has sent to the trash already. If the
+     *  contact has been sent to the trash, we want to permanently
+     *  delete it. If not, we will just fire the "update" event to
+     *  let the subscribed rules know that the "is_delete" flag has
+     *  changed.
+     */
+    case 'delete':
+      if($entity_name == 'contact') {
+        if($object_ref->is_deleted == 1) {
+          $event_name = 'civicrm_' . $entity_name . "_{$op}";
+        }
+        else {
+          //we are receiving a reference to the contact object before the flag has changed. So we need to force it to change.
+          $object_ref->is_deleted = 1;
+          $event_name = 'civicrm_' . $entity_name . "_edit";
+        }
+      }
+      else {
+        $event_name = 'civicrm_' . $entity_name . "_{$op}";
+      }
+      break;
+
+    //We need to alert subscribed rules that the "is_delete" flag has changed.
+    case 'restore':
+      //we are receiving a reference to the contact object before the flag has changed. So we need to force it to change.
+      $object_ref->is_deleted = 0;
+      $event_name = 'civicrm_' . $entity_name . "_edit";
       break;
 
     default:
