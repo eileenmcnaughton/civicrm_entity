@@ -1051,7 +1051,6 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
   }
 
   $params['cms_name'] = $params['name'] = $user['name'] = !empty($contact['display_name']) ? $contact['display_name'] : $params['mail'];
-  $params['cms_pass'] = $user['pass'] = substr(str_shuffle("abcefghijklmnopqrstuvwxyz"), 0, 8);
   $params['status'] = $is_active;
   if ($notify) {
     $params['notify'] = TRUE;
@@ -1067,14 +1066,13 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
   $config->inCiviCRM = TRUE;
 
   $user_object = user_save('', $params);
-  $user_object->password = $user['pass'];
 
   $config->inCiviCRM = FALSE;
 
   // If selected in action configuration, notify the newly created
-  // user & send registration link. Does not contain password in D7.
+  // user & send registration link.
   if ($notify) {
-    drupal_mail('user', 'register_no_approval_required', $params['mail'], NULL, array('account' => $user_object), variable_get('site_mail', 'noreply@example..com'));
+    _user_mail_notify('register_no_approval_required', $user_object);
   }
 
   // CiviCRM doesn't do this when created off CiviCRM Form.
