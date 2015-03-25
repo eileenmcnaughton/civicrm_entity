@@ -65,18 +65,11 @@ class CivicrmEntityController extends EntityAPIController {
       // Build the query.
       try {
         if ($conditions) {
-          $civicrm_entities = civicrm_api3($this->entityInfo['description'], 'get', $conditions);
+          $queried_entities = $this->loadEntities($conditions);
         }
         foreach ($ids as $id) {
           // we can't rely on civicrm api accepting the 'IN' => array(1,5,6) for all entities
-          $civicrm_entities = civicrm_api3($this->entityInfo['description'], 'get', array('id' => $id));
-          if ($civicrm_entities['count']) {
-            foreach ($civicrm_entities['values'] as $id => $civicrm_entity) {
-              // @TODO improve this casting.
-              $queried_entities[$id] = new CivicrmEntity($civicrm_entity, $this->entityType);
-
-            }
-          }
+          $queried_entities = $this->loadEntities(array('id' => $id));
         }
       }
       catch (Exception $e) {
@@ -216,15 +209,38 @@ class CivicrmEntityController extends EntityAPIController {
       field_attach_prepare_view($this->entityType, array($key => $entity), $view_mode);
       $entity->content = field_attach_view($this->entityType, $entity, $view_mode, $langcode);
     }
-    
+
     $temp_build = $entity->content;
     unset($entity->content);
-    
+
     foreach($temp_build as $key => $value) {
       $build[$key] = $value;
     }
-        
+
     return $build;
   }
-  
+
+  /**
+   * Load entities to an array.
+   *
+   * @param array $condition
+   *
+   * @return mixed
+   * @throws \CiviCRM_API3_Exception
+   */
+  protected function loadEntities($condition) {
+    $entities = array();
+
+    $civicrm_entities = civicrm_api3($this->entityInfo['description'], 'get', $condition);
+    if ($civicrm_entities['count']) {
+      foreach ($civicrm_entities['values'] as $id => $civicrm_entity) {
+        // @TODO improve this casting.
+        $entities[$id] = new CivicrmEntity($civicrm_entity, $this->entityType);
+
+      }
+      return $entities;
+    }
+    return $entities;
+  }
+
 }
