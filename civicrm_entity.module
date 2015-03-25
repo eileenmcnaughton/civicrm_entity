@@ -1097,7 +1097,7 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
 }
 
 function civicrm_entity_query($type, $property, $value, $limit) {
-  $return = entity_load($type, $ids = FALSE, array(
+  $return = entity_load($type, FALSE, array(
       $property => $value,
       'options' => array('limit' => $limit)
     ));

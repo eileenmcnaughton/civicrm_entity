@@ -127,7 +127,7 @@ class CivicrmEntityController extends EntityAPIController {
     if (!civicrm_initialize()) {
       throw new Exception('civicrm inaccessible');
     }
-    
+
     $params = (array)$entity;
     unset($params['is_new']);
     $params['version'] = 3;
@@ -140,11 +140,11 @@ class CivicrmEntityController extends EntityAPIController {
       $this->invoke('presave', $entity);
       if ($entity->is_new) {
         $result = civicrm_api(substr($this->entityType, 8), 'create', $params);
-        
+
       }
       else {
         $result = civicrm_api(substr($this->entityType, 8), 'update', $params);
-        
+
       }
       $is_new = $entity->is_new;
       unset($entity->is_new);
@@ -172,7 +172,7 @@ class CivicrmEntityController extends EntityAPIController {
       throw $e;
     }
   }
-  
+
   public function delete($ids, DatabaseTransaction $transaction = NULL) {
     if (!civicrm_initialize()) {
       throw new Exception('civicrm inaccessible');
@@ -181,14 +181,14 @@ class CivicrmEntityController extends EntityAPIController {
     foreach($ids as $id) {
       $params['version'] = 3;
       $params['id'] = $id;
-      
+
       try {
-        
+
         $entity = $entities[$id];
-        
+
         $this->invoke('predelete', $entity);
         $result = civicrm_api(substr($this->entityType, 8), 'delete', $params);
-        
+
         if (!civicrm_error($result)) {
           field_attach_delete($this->entityType, $entity);
            // $this->invoke('delete', $entity);
@@ -207,7 +207,7 @@ class CivicrmEntityController extends EntityAPIController {
     $entity->content = $content;
     $build = parent::buildContent($entity,$view_mode,$langcode,$content);
     $langcode = isset($langcode) ? $langcode : $GLOBALS['language_content']->language;
-   
+
     // Add in fields.
     if (!empty($this->entityInfo['fieldable'])) {
       // Perform the preparation tasks if they have not been performed yet.
