@@ -64,12 +64,13 @@ class CivicrmEntityController extends EntityAPIController {
     if ($ids === FALSE || $ids || $revision_id || ($conditions && !$passed_ids)) {
       // Build the query.
       try {
+        $queried_entities = array();
         if ($conditions) {
-          $queried_entities = $this->loadEntities($conditions);
+          $queried_entities += $this->loadEntities($conditions);
         }
         foreach ($ids as $id) {
           // we can't rely on civicrm api accepting the 'IN' => array(1,5,6) for all entities
-          $queried_entities = $this->loadEntities(array('id' => $id));
+          $queried_entities += $this->loadEntities(array('id' => $id));
         }
       }
       catch (Exception $e) {
