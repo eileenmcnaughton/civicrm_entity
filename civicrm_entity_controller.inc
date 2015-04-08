@@ -231,6 +231,10 @@ class CivicrmEntityController extends EntityAPIController {
    */
   protected function loadEntities($condition) {
     $entities = array();
+    $fields = civicrm_api3($this->entityInfo['description'], 'getfields', array('action' => 'get'));
+    if (!empty($fields['values'])) {
+      $condition['return'] = array_keys($fields['values']);
+    }
 
     $civicrm_entities = civicrm_api3($this->entityInfo['description'], 'get', $condition);
     if ($civicrm_entities['count']) {
