@@ -576,6 +576,8 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
       8 => 'datetime',
       12 => 'datetime',
       256 => 'datetime',
+      512 => 'decimal',
+      1024 => 'decimal',
     );
     if (!empty($field_specs['type']) &&
       array_key_exists($field_specs['type'], $types)
