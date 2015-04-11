@@ -401,7 +401,7 @@ function _civicrm_entity_labels($entity) {
     'civicrm_activity' => 'subject',
     'civicrm_address' => 'address_name',
     'civicrm_contact' => 'display_name',
-    'civicrm_contribution' => 'source',
+    'civicrm_contribution' => 'contribution_source',
     'civicrm_email' => 'email',
     'civicrm_event' => 'title',
     'civicrm_entity_tag' => 'tag_id',
