@@ -296,6 +296,7 @@ function civicrm_entity_entity_property_info_alter(&$info) {
 function _civicrm_entity_enabled_entities() {
   $whitelist = array(
     'civicrm_activity' => 'activity',
+    'civicrm_action_schedule' => 'action_schedule',
     'civicrm_address' => 'address',
     'civicrm_contact' => 'contact',
     'civicrm_contribution' => 'contribution',
@@ -399,6 +400,7 @@ function _civicrm_entity_chained_fks() {
 function _civicrm_entity_labels($entity) {
   $labels = array(
     'civicrm_activity' => 'subject',
+    'civicrm_action_schedule' => 'name',
     'civicrm_address' => 'address_name',
     'civicrm_contact' => 'display_name',
     'civicrm_contribution' => 'contribution_source',
