@@ -961,7 +961,7 @@ function civicrm_entity_user_creatable($contact) {
 /**
  * Condition Drupal User Account can be created or exists for contact.
  *
- * Ccreates contact if appropriate.
+ * Creates contact if appropriate.
  *
  * @param array $contact
  *   contact array
