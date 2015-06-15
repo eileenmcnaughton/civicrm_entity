@@ -60,6 +60,9 @@ function civicrm_entity_access($op, $entity, $account, $entity_type) {
   elseif ($op == 'view' && $entity_type == 'civicrm_participant') {
     return user_access('view event participants');
   }
+  elseif ($op == 'view' && $entity_type == 'civicrm_contribution_page') {
+    return user_access('make online contributions');
+  }
   else {
     return user_access('administer CiviCRM');
   }
@@ -301,6 +304,7 @@ function _civicrm_entity_enabled_entities() {
     'civicrm_campaign' => 'campaign',
     'civicrm_contact' => 'contact',
     'civicrm_contribution' => 'contribution',
+    'civicrm_contribution_page' => 'contribution_page',
     'civicrm_email' => 'email',
     'civicrm_entity_tag' => 'entity_tag',
     'civicrm_financial_type' => 'financial_type',
@@ -407,6 +411,7 @@ function _civicrm_entity_labels($entity) {
     'civicrm_campaign' => 'title',
     'civicrm_contact' => 'display_name',
     'civicrm_contribution' => 'contribution_source',
+    'civicrm_contribution_page' => 'title',
     'civicrm_email' => 'email',
     'civicrm_event' => 'title',
     'civicrm_entity_tag' => 'tag_id',
@@ -1652,8 +1657,11 @@ function  civicrm_entity_op_access($op, $entity) {
       case "civicrm_event":
         return user_access('view event info');
       case "civicrm_contribution":
-        return user_access('administer CiviCRM') &&
-        user_access('access CiviContribute');
+      case "civicrm_financial_type":
+        return user_access('access CiviContribute') &&
+        user_access('administer CiviCRM');
+      case "civicrm_contribution_page":
+        return user_access('make online contributions');
       case "civicrm_participant":
         return user_access('view event participants');
       case "civicrm_relationship":
@@ -1675,9 +1683,6 @@ function  civicrm_entity_op_access($op, $entity) {
         user_access('administer CiviCRM');
       case "civicrm_tag":
         return user_access('administer Tagsets') &&
-        user_access('administer CiviCRM');
-      case "civicrm_financial_type":
-        return user_access('access CiviContribute') &&
         user_access('administer CiviCRM');
       case "civicrm_price_set_entity":
       case "civicrm_price_set":
@@ -1726,6 +1731,7 @@ function  civicrm_entity_op_access($op, $entity) {
         return user_access('administer Tagsets') &&
         user_access('administer CiviCRM');
       case "civicrm_financial_type":
+      case "civicrm_contribution_page":
         return user_access('access CiviContribute') &&
         user_access('administer CiviCRM');
       case "civicrm_price_set_entity":
@@ -1780,6 +1786,7 @@ function  civicrm_entity_op_access($op, $entity) {
         return user_access('administer Tagsets') &&
         user_access('administer CiviCRM');
       case "civicrm_financial_type":
+      case "civicrm_contribution_page":
         return user_access('access CiviContribute') &&
         user_access('administer CiviCRM') &&
         user_access('delete in CiviContribute');
@@ -1924,6 +1931,9 @@ function _civicrm_entity_add_formatters($entity_type,&$fields) {
      break;
    case 'civicrm_contribution':
      _civicrm_entity_contribution_formatters($fields);
+     break;
+   case 'civicrm_contribution_page':
+     _civicrm_entity_contribution_page_formatters($fields);
      break;
    case 'civicrm_email':
      _civicrm_entity_email_formatters($fields);
@@ -2101,6 +2111,38 @@ function _civicrm_entity_contribution_formatters(&$fields){
 
   );
   _civicrm_entity_yesno_addformatters('civicrm_contribution',$yes_no_fields,$fields);
+}
+
+function _civicrm_entity_contribution_page_formatters(&$fields){
+  $link_fields = array(
+    array(
+      'link_field' => 'created_id_contact',
+      'target' => 'civicrm_contact',
+    ),
+  );
+  _civicrm_entity_link_addformatters('civicrm_contribution_page',$link_fields,$fields);
+  $option_fields = array(
+    'financial_type_id',
+    'currency',
+  );
+  _civicrm_entity_option_addformatters('civicrm_contribution_page',$option_fields,$fields);
+  $yes_no_fields = array(
+    'is_credit_card_only',
+    'is_monetary',
+    'is_recur',
+    'is_confirm_enabled',
+    'is_recur_interval',
+    'is_recur_installments',
+    'is_pay_later',
+    'is_partial_payment',
+    'is_allow_other_amount',
+    'is_for_organization',
+    'is_email_receipt',
+    'is_active',
+    'is_share',
+    'is_billing_required',
+  );
+  _civicrm_entity_yesno_addformatters('civicrm_contribution_page',$yes_no_fields,$fields);
 }
 
 function _civicrm_entity_email_formatters(&$fields){
@@ -2647,4 +2689,3 @@ function _civicrm_entity_formatted_output_of_arrays(&$field,$wrapper) {
     return '';
   }
 }
-
