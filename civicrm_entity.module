@@ -1655,6 +1655,7 @@ function  civicrm_entity_op_access($op, $entity) {
       case "civicrm_contact":
       case "civicrm_address":
       case "civicrm_email":
+      case "civicrm_phone":
         return user_access('view all contacts');
       case "civicrm_activity":
         return user_access('view all activities');
