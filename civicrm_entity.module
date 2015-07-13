@@ -1307,6 +1307,89 @@ function civicrm_entity_contact_send_email($contact, $subject, $message_text, $m
 }
 
 /**
+ * Implement the pre hook and delete field data when civicrm deletes an entity.
+ *
+ * @param $op
+ * @param $object_name
+ * @param $object_id
+ * @param $object_ref
+ */
+function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
+  $civicrm_entities = _civicrm_entity_enabled_entities();
+  if ($op == 'delete') {
+    $entity_type = '';
+    switch($objectName) {
+      case 'Individual':
+      case 'Household':
+      case 'Organization':
+        $entity_type = 'civicrm_contact';
+        break;
+      case 'Group':   
+        $entity_type = 'civicrm_group';
+        break;
+      case 'Relationship':
+        $entity_type = 'civicrm_relationship';
+        break;
+      case 'Activity':
+        $entity_type = 'civicrm_activitiy';
+        break;
+      case 'Contribution':
+        $entity_type = 'civicrm_contribution';
+        break;
+      case 'Membership':
+        $entity_type = 'civicrm_membership';
+        break;
+      case 'Event':
+        $entity_type = 'civicrm_event';
+        break;
+      case 'Participant':
+        $entity_type = 'civicrm_participant';
+        break;
+      case 'ActionSchedule':
+        $entity_type = 'civicrm_action_schedule';
+        break;
+      case 'Address':
+        $entity_type = 'civicrm_address';
+        break;
+      case 'Email':
+        $entity_type = 'civicrm_email';
+        break;
+      case 'EntityTag':
+        $entity_type = 'civicrm_entity_tag';
+        break;
+      case 'Grant':
+        $entity_type = 'civicrm_grant';
+        break;
+      case 'Phone':
+        $entity_type = 'civicrm_phone';
+        break;
+      case 'PriceSet':
+        $entity_type = 'civicrm_price_set';
+        break;
+      case 'PriceField':
+        $entity_type = 'civicrm_price_field';
+        break;
+      case 'PriceFieldValue':
+        $entity_type = 'civicrm_price_field_value';
+        break;
+      case 'MembershipType':
+        $entity_type = 'civicrm_membership_type';
+        break;
+      case 'RelationshipType':
+        $entity_type = 'civicrm_relationship_type';
+        break;
+      case 'Tag':
+        $entity_type = 'civicrm_tag';
+        break;
+    }
+    if($entity_type != '') {
+      $entity = entity_load_single($entity_type, $id);
+      field_attach_delete($entity_type, $entity);
+    }
+
+  }
+}
+/**
  * Implement the post hook and fire the corresponding rules event.
  *
  * @param $op
