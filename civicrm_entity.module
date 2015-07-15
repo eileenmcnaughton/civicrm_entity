@@ -1330,7 +1330,7 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
         $entity_type = 'civicrm_relationship';
         break;
       case 'Activity':
-        $entity_type = 'civicrm_activitiy';
+        $entity_type = 'civicrm_activity';
         break;
       case 'Contribution':
         $entity_type = 'civicrm_contribution';
