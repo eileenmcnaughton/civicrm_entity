@@ -1314,6 +1314,7 @@ function civicrm_entity_contact_send_email($contact, $subject, $message_text, $m
  * @param $id
  * @param $params
  */
+ 
 function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
   if ($op == 'delete') {
     $entity_type = '';
