@@ -64,7 +64,7 @@ function civicrm_entity_access($op, $entity, $account, $entity_type) {
     return user_access('make online contributions');
   }
   else {
-    return user_access('administer CiviCRM');
+    return civicrm_entity_op_access($op, $entity_type);
   }
 }
 
@@ -302,6 +302,7 @@ function _civicrm_entity_enabled_entities() {
     'civicrm_action_schedule' => 'action_schedule',
     'civicrm_address' => 'address',
     'civicrm_campaign' => 'campaign',
+    'civicrm_case' => 'case',
     'civicrm_contact' => 'contact',
     'civicrm_contribution' => 'contribution',
     'civicrm_contribution_page' => 'contribution_page',
@@ -409,6 +410,7 @@ function _civicrm_entity_labels($entity) {
     'civicrm_action_schedule' => 'name',
     'civicrm_address' => 'address_name',
     'civicrm_campaign' => 'title',
+    'civicrm_case' => 'subject',
     'civicrm_contact' => 'display_name',
     'civicrm_contribution' => 'contribution_source',
     'civicrm_contribution_page' => 'title',
@@ -1380,6 +1382,9 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
       case 'Tag':
         $entity_type = 'civicrm_tag';
         break;
+      case 'Case':
+        $entity_type = 'civicrm_case';
+        break;
     }
     if($entity_type != '') {
       $entity = entity_load_single($entity_type, $id);
@@ -1776,6 +1781,8 @@ function  civicrm_entity_op_access($op, $entity) {
       case "civicrm_price_field":
       case "civicrm_price_field_value":
         return user_access('administer CiviCRM');
+      case "civicrm_case":
+        return  user_access('access all cases and activities');
       default:
         return FALSE;
     }
@@ -1827,6 +1834,8 @@ function  civicrm_entity_op_access($op, $entity) {
       case "civicrm_price_field":
       case "civicrm_price_field_value":
         return user_access('administer CiviCRM');
+      case "civicrm_case":
+        return user_access('administer CiviCase') && user_access('add cases') && user_access('access all cases and activities');
       default:
         return FALSE;
     }
@@ -1884,6 +1893,8 @@ function  civicrm_entity_op_access($op, $entity) {
       case "civicrm_price_field":
       case "civicrm_price_field_value":
         return user_access('administer CiviCRM');
+      case "civicrm_case":
+        return user_access('administer CiviCase') && user_access('delete in CiviCase') && user_access('access all cases and activities');
       default:
         return FALSE;
     }
@@ -2015,6 +2026,9 @@ function _civicrm_entity_add_formatters($entity_type,&$fields) {
    case 'civicrm_address':
      _civicrm_entity_address_formatters($fields);
      break;
+   case 'civicrm_case':
+     _civicrm_entity_case_formatters($fields);
+     break;
    case 'civicrm_contact':
      _civicrm_entity_contact_formatters($fields);
      break;
@@ -2145,6 +2159,22 @@ function _civicrm_entity_address_formatters(&$fields){
   );
   _civicrm_entity_yesno_addformatters('civicrm_address',$yes_no_fields,$fields);
 }
+
+function _civicrm_entity_case_formatters(&$fields){
+  $link_fields = array(
+  );
+  _civicrm_entity_link_addformatters('civicrm_case',$link_fields,$fields);
+  $option_fields = array(
+    'case_type_id',
+    'status_id',
+  );
+  _civicrm_entity_option_addformatters('civicrm_case',$option_fields,$fields);
+  $yes_no_fields = array(
+    'is_deleted',
+  );
+  _civicrm_entity_yesno_addformatters('civicrm_case',$yes_no_fields,$fields);
+}
+
 
 function _civicrm_entity_contact_formatters(&$fields){
   $link_fields = array(
