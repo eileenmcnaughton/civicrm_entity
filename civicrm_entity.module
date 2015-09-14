@@ -6,7 +6,7 @@
  */
 
 /**
- * Implements hook_menu_later().
+ * Implements hook_menu_alter().
  *
  * Entity API creates all the fields page links but the basic 'manage' page is missing
  * so we use the /fields page at that url
