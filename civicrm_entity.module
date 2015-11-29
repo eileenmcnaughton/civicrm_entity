@@ -54,18 +54,13 @@ function civicrm_entity_permission() {
  * @return bool
  */
 function civicrm_entity_access($op, $entity, $account, $entity_type) {
-  if ($op == 'view' && $entity_type == 'civicrm_event') {
-    return user_access('view event info');
+  // expected $op values for civicrm_entity_access when called from VBO: view, update, create, delete
+  // expected $op values for civicrm_entity_op_access: view, edit, create, delete
+  if ($op = "update") {
+    $op = "edit";
   }
-  elseif ($op == 'view' && $entity_type == 'civicrm_participant') {
-    return user_access('view event participants');
-  }
-  elseif ($op == 'view' && $entity_type == 'civicrm_contribution_page') {
-    return user_access('make online contributions');
-  }
-  else {
-    return user_access('administer CiviCRM');
-  }
+  return (civicrm_entity_op_access($op, $entity_type) ||
+    user_access('administer CiviCRM'));
 }
 
 /**
@@ -1744,6 +1739,7 @@ function  civicrm_entity_op_access($op, $entity) {
       case "civicrm_event":
         return user_access('view event info');
       case "civicrm_contribution":
+        return user_access('access CiviContribute');
       case "civicrm_financial_type":
         return user_access('access CiviContribute') &&
         user_access('administer CiviCRM');
@@ -1792,8 +1788,7 @@ function  civicrm_entity_op_access($op, $entity) {
       case "civicrm_event":
         return user_access('edit all events');
       case "civicrm_contribution":
-        return user_access('administer CiviCRM') &&
-        user_access('edit contributions');
+        return user_access('edit contributions');
       case "civicrm_participant":
         return user_access('edit event participants') &&
         user_access('access CiviEvent');
@@ -1845,8 +1840,7 @@ function  civicrm_entity_op_access($op, $entity) {
         return user_access('edit all events') &&
         user_access('delete in CiviEvent');
       case "civicrm_contribution":
-        return user_access('administer CiviCRM') &&
-        user_access('edit contributions') &&
+        return user_access('edit contributions') &&
         user_access('delete in CiviContribute');
       case "civicrm_participant":
         return user_access('edit event participants') &&
