@@ -54,13 +54,14 @@ function civicrm_entity_permission() {
  * @return bool
  */
 function civicrm_entity_access($op, $entity, $account, $entity_type) {
-  // expected $op values for civicrm_entity_access when called from VBO: view, update, create, delete
-  // expected $op values for civicrm_entity_op_access: view, edit, create, delete
+  // when called from VBO $op is: view, update, create, delete
+  // civicrm_entity_op_access expects $op as: view, edit, create, delete
   if ($op = "update") {
     $op = "edit";
   }
-  return (civicrm_entity_op_access($op, $entity_type) ||
-    user_access('administer CiviCRM'));
+  // retain previous behaviour where 'administer CiviCRM' can do anything
+  return (user_access('administer CiviCRM') || 
+    civicrm_entity_op_access($op, $entity_type) );
 }
 
 /**
