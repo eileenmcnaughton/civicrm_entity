@@ -76,7 +76,7 @@ class CiviCRMEntityDefaultViewsController extends EntityDefaultViewsController {
 
     $description = array(
       'title' => $property_info['label'],
-      'help' => isset($property_info['description']) ? $property_info['description'] : NULL,
+      'help' => 'Provided by CiviCRM Entity' . (isset($property_info['description']) ? ': ' . $property_info['description'] : NULL),
     );
 
     // Add in relationships to related entities.
