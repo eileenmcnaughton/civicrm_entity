@@ -6,7 +6,7 @@
  */
 
 /**
- * Implements hook_menu_later().
+ * Implements hook_menu_alter().
  *
  * Entity API creates all the fields page links but the basic 'manage' page is missing
  * so we use the /fields page at that url
@@ -197,7 +197,7 @@ function civicrm_entity_entity_info() {
     $info[$drupal_entity] = array(
       'description' => $civicrm_entity,
       'optional' => TRUE,
-      'label' => "CiviCRM " . ucwords($civicrm_entity),
+      'label' => "CiviCRM " . ucwords(str_replace('_', ' ', $civicrm_entity)),
       'module' => 'civicrm_entity',
       'controller class' => 'CivicrmEntityController',
       'metadata controller class' => 'CivicrmEntityMetadataController',
