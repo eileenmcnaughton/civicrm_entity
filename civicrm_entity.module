@@ -1787,7 +1787,7 @@ function  civicrm_entity_op_access($op, $entity) {
         return FALSE;
     }
   }
-  if ($op == 'edit' || $op == 'create') {
+  if ($op == 'edit' || $op == 'create' || $op == 'update') {
     switch ($entity) {
       case "civicrm_contact":
       case "civicrm_address":
