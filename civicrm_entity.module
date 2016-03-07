@@ -315,6 +315,8 @@ function _civicrm_entity_enabled_entities() {
     'civicrm_membership_type' => 'membership_type',
     'civicrm_participant' => 'participant',
     'civicrm_phone' => 'phone',
+    'civicrm_pledge' => 'pledge',
+    'civicrm_pledge_payment' => 'pledge_payment',
     'civicrm_price_set' => 'price_set',
     'civicrm_price_field' => 'price_field',
     'civicrm_price_field_value' => 'price_field_value',
@@ -1323,7 +1325,7 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
       case 'Organization':
         $entity_type = 'civicrm_contact';
         break;
-      case 'Group':   
+      case 'Group':
         $entity_type = 'civicrm_group';
         break;
       case 'Relationship':
@@ -1361,6 +1363,12 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
         break;
       case 'Phone':
         $entity_type = 'civicrm_phone';
+        break;
+      case 'Pledge':
+        $entity_type = 'civicrm_pledge';
+        break;
+      case 'PledgePayment':
+        $entity_type = 'civicrm_pledge_payment';
         break;
       case 'PriceSet':
         $entity_type = 'civicrm_price_set';
@@ -1767,6 +1775,9 @@ function  civicrm_entity_op_access($op, $entity) {
         return user_access('administer CiviCRM');
       case "civicrm_grant":
         return user_access('access CiviGrant') &&
+        user_access('administer CiviCRM');
+      case "civicrm_pledge":
+        return user_access('access CiviPledge') &&
         user_access('administer CiviCRM');
       case "civicrm_tag":
         return user_access('administer Tagsets') &&
