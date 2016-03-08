@@ -579,6 +579,10 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
     $info['civi_user'] = array(
       'label' => 'Drupal User',
       'type' => 'user',
+      'field' => FALSE,
+      'translateable' => FALSE,
+      'getter callback' => 'civicrm_entity_contact_user_get',
+      'setter callback' => 'civicrm_entity_contact_user_set',
     );
   }
   $fields = civicrm_api($civicrm_entity, 'getfields', array(
@@ -1359,6 +1363,84 @@ function civicrm_entity_user_contact_get($data, array $options, $name, $type, $i
   }
   else {
     return NULL;
+  }
+}
+
+/**
+ * * Load user entity according to contact id.
+ *
+ * @param $data
+ * @param array $options
+ * @param $name
+ * @param $type
+ * @param $info
+ */
+function civicrm_entity_contact_user_get($data, array $options, $name, $type, $info) {
+  if (!module_exists('civicrm') || !function_exists('civicrm_initialize')) {
+    return;
+  }
+  if (!civicrm_initialize()) {
+    return;
+  }
+  $domain_id = civicrm_api('domain', 'getvalue', array(
+      'version' => 3,
+      'return' => 'id',
+      'current_domain' => TRUE,
+  ));
+  $uf_info = civicrm_api('uf_match', 'getsingle', array(
+      'version' => 3,
+      'return' => 'uf_id',
+      'contact_id' => $data->contact_id,
+      'domain_id' => $domain_id,
+  ));
+  if (!empty($uf_info['uf_id'])) {
+    $entity = entity_load('user', array($uf_info['uf_id']));
+    return $entity[$uf_info['uf_id']];
+  }
+  else {
+    return NULL;
+  }
+}
+
+/**
+ * Set user entity according to contact id.
+ *
+ * @param $data
+ * @param $name
+ * @param $value
+ * @param $langcode
+ * @param $type
+ * @param $info
+ * @return null|void
+ */
+function civicrm_entity_contact_user_set(&$data, $name, $value, $langcode, $type, $info) {
+  if(!is_null($data->id)){
+    if($user = user_load($value)){
+      if (!module_exists('civicrm') || !function_exists('civicrm_initialize')) {
+        return;
+      }
+      if (!civicrm_initialize()) {
+        return;
+      }
+      $domain_id = civicrm_api('domain', 'getvalue', array(
+          'version' => 3,
+          'return' => 'id',
+          'current_domain' => TRUE,
+      ));
+      $uf_info = civicrm_api('uf_match', 'create', array(
+          'version' => 3,
+          'contact_id' => $data->id,
+          'uf_id' => $user->uid,
+          'uf_name' => $user->name,
+          'domain_id' => $domain_id,
+      ));
+      if (!$uf_info['is_error']) {
+        $data->civi_user = $user;
+      }
+      else {
+        return NULL;
+      }
+    }
   }
 }
 
