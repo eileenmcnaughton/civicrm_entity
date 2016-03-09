@@ -274,6 +274,9 @@ function civicrm_entity_entity_property_info_alter(&$info) {
     'label' => 'Drupal User',
     'description' => 'Drupal User for contact',
     'type' => 'user',
+    'translateable' => FALSE,
+    'getter callback' => 'civicrm_entity_contact_user_get',
+    'setter callback' => 'civicrm_entity_contact_user_set',
   );
 
   // Attach a CiviCRM Contact property to drupal users.
