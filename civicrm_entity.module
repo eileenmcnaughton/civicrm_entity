@@ -274,9 +274,6 @@ function civicrm_entity_entity_property_info_alter(&$info) {
     'label' => 'Drupal User',
     'description' => 'Drupal User for contact',
     'type' => 'user',
-    'translateable' => FALSE,
-    'getter callback' => 'civicrm_entity_contact_user_get',
-    'setter callback' => 'civicrm_entity_contact_user_set',
   );
 
   // Attach a CiviCRM Contact property to drupal users.
@@ -312,6 +309,8 @@ function _civicrm_entity_enabled_entities() {
     'civicrm_contact' => 'contact',
     'civicrm_contribution' => 'contribution',
     'civicrm_contribution_page' => 'contribution_page',
+    'civicrm_county' => 'county',
+    'civicrm_country' => 'country',
     'civicrm_email' => 'email',
     'civicrm_entity_tag' => 'entity_tag',
     'civicrm_financial_type' => 'financial_type',
@@ -329,6 +328,7 @@ function _civicrm_entity_enabled_entities() {
     'civicrm_price_field_value' => 'price_field_value',
     'civicrm_relationship' => 'relationship',
     'civicrm_relationship_type' => 'relationship_type',
+    'civicrm_state_province' => 'state_province',
     'civicrm_tag' => 'tag',
     'civicrm_custom_field' => 'custom_field',
     'civicrm_custom_group' => 'custom_group',
@@ -424,6 +424,8 @@ function _civicrm_entity_labels($entity) {
     'civicrm_contact' => 'display_name',
     'civicrm_contribution' => 'contribution_source',
     'civicrm_contribution_page' => 'title',
+    'civicrm_county' => 'name',
+    'civicrm_country' => 'name',
     'civicrm_email' => 'email',
     'civicrm_event' => 'title',
     'civicrm_entity_tag' => 'tag_id',
@@ -434,6 +436,7 @@ function _civicrm_entity_labels($entity) {
     'civicrm_phone' => 'phone',
     'civicrm_relationship' => 'description',
     'civicrm_relationship_type' => 'description',
+    'civicrm_state_province' => 'name',
     'civicrm_tag' => 'name',
     'civicrm_custom_field' => 'label',
     'civicrm_custom_group' =>  'title',
@@ -1139,6 +1142,10 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
       case 'Contribution':
         $entity_type = 'civicrm_contribution';
         break;
+      case 'County':
+        $entity_type = 'civicrm_county';
+      case 'Country':
+        $entity_type = 'civicrm_country';
       case 'Membership':
         $entity_type = 'civicrm_membership';
         break;
@@ -1187,6 +1194,8 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
       case 'RelationshipType':
         $entity_type = 'civicrm_relationship_type';
         break;
+      case 'StateProvince':
+        $entity_type = 'civicrm_state_province';
       case 'Tag':
         $entity_type = 'civicrm_tag';
         break;
@@ -1639,6 +1648,9 @@ function  civicrm_entity_op_access($op, $entity) {
       case "civicrm_activity":
         return user_access('view all activities');
       case "civicrm_event":
+      case "civicrm_country":
+      case "civicrm_county":
+      case "civicrm_state_province":
         return user_access('view event info');
       case "civicrm_contribution":
       case "civicrm_financial_type":
@@ -1736,6 +1748,9 @@ function  civicrm_entity_op_access($op, $entity) {
         return user_access('administer CiviCase') && user_access('add cases') && user_access('access all cases and activities');
       case "civicrm_custom_field":
       case "civicrm_custom_group":
+      case "civicrm_county":
+      case "civicrm_country":
+      case "civicrm_state_province":
         return user_access('administer CiviCRM');
       default:
         return FALSE;
