@@ -132,12 +132,12 @@ class CivicrmEntityController extends EntityAPIController {
       $params = (array)$entity;
       unset($params['is_new']);
 
-      foreach($params as $key => $value){
-        if (substr($key, 7) !== 'custom_' && ( $value == '' )|| is_null($value) ) {
+      /*foreach($params as $key => $value){
+        if (substr($key, 7) === 'custom_' && ( $value == '' || is_null($value)) ) {
           unset($params[$key]);
         }
-      }
-
+      }*/
+      
       $params['version'] = 3;
       $params['sequential'] = 1;
 
