@@ -122,16 +122,25 @@ class CivicrmEntityController extends EntityAPIController {
       throw new Exception('civicrm inaccessible');
     }
 
-    $params = (array)$entity;
-    unset($params['is_new']);
-    $params['version'] = 3;
-    $params['sequential'] = 1;
-
     try {
       $entity->is_new = !empty($entity->is_new) || empty($entity->{$this->idKey});
       // @TODO should we call this hook when drupal saves (as opposed
       // to Civi?) ditto insert, update.
+
       $this->invoke('presave', $entity);
+
+      $params = (array)$entity;
+      unset($params['is_new']);
+
+      foreach($params as $key => $value){
+        if (substr($key, 7) !== 'custom_' && ( $value == '' )|| is_null($value) ) {
+          unset($params[$key]);
+        }
+      }
+
+      $params['version'] = 3;
+      $params['sequential'] = 1;
+
       if ($entity->is_new) {
         $result = civicrm_api(substr($this->entityType, 8), 'create', $params);
 
@@ -140,10 +149,14 @@ class CivicrmEntityController extends EntityAPIController {
         $result = civicrm_api(substr($this->entityType, 8), 'update', $params);
 
       }
-      $is_new = $entity->is_new;
-      unset($entity->is_new);
+
+      if(isset($entity->is_new)) {
+        $is_new = $entity->is_new;
+        unset($entity->is_new);
+      }
       unset($entity->is_new_revision);
       unset($entity->original);
+
       if (!civicrm_error($result)) {
         if($is_new) {
           $entity->id= $result['values'][0]['id'];
@@ -154,6 +167,7 @@ class CivicrmEntityController extends EntityAPIController {
           field_attach_update($this->entityType, $entity);
           $this->invoke('update', $entity);
         }
+
         foreach ($result['values'][0] as $key => $value) {
           $entity->key = $value;
         }
