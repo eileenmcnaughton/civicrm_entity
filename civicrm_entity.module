@@ -2001,11 +2001,11 @@ function civicrm_entity_civicrm_post($op, $object_name, $object_id, &$object_ref
   else {
     if ($event_name) {
       //this addition here causes a custom field value to be saved every time, duplicates and empty values can be made
-      if(isset($object_ref->id)){
+      /*if(isset($object_ref->id)){
         $entity = entity_load_single('civicrm_' . $entity_name, $object_ref->id);
-      }
-      //rules_invoke_event($event_name, $object_ref);
-      rules_invoke_event($event_name, $entity);
+      }*/
+      rules_invoke_event($event_name, $object_ref);
+      //rules_invoke_event($event_name, $entity);
     }
   }
 }
