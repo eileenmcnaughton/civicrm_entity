@@ -7,6 +7,27 @@
 
 module_load_include('inc', 'civicrm_entity', 'civicrm_entity.ds');
 module_load_include('inc', 'civicrm_entity', 'civicrm_entity.default_form');
+
+/**
+ * Implements hook_menu().
+ *
+ * @return array
+ */
+function civicrm_entity_menu(){
+  $items = array();
+  $items['admin/structure/civicrm-entity'] = array(
+    'title' => t('CiviCRM Entity'),
+    'description' => t('Available CiviCRM Entities'),
+    'type' => MENU_NORMAL_ITEM,
+    'access callback' => 'user_access',
+    'access arguments' => array('administer CiviCRM Entity'),
+    'page callback' => 'system_admin_menu_block_page',
+    'file path' => drupal_get_path('module', 'system'),
+    'file' => 'system.admin.inc',
+  );
+  return $items;
+}
+
 /**
  * Implements hook_menu_alter().
  *
@@ -42,6 +63,10 @@ function civicrm_entity_permission() {
       'title' => t('Administer CiviCRM rule configurations'),
       'restrict access' => TRUE,
     ),
+    'administer CiviCRM Entity' => array(
+      'title' => t('Administer CiviCRM Entity'),
+      'restrict access' => TRUE,
+    )
   );
 }
 
@@ -265,7 +290,7 @@ function civicrm_entity_entity_info() {
         $drupal_entity => array(
           'label' => t('CiviCRM @entity', array('@entity' => ucwords($civicrm_entity))),
           'admin' => array(
-            'path' => 'admin/structure/types/manage/' . $drupal_entity,
+            'path' => 'admin/structure/civicrm-entity/' . $drupal_entity,
             'access arguments' => array('administer CiviCRM'),
           ),
         ),
