@@ -810,7 +810,7 @@ function civicrm_entity_supported_entities_info(){
   );
   $civicrm_entity_info['civicrm_note'] = array(
     'civicrm entity name' => 'note',
-    'label property' => 'title',
+    'label property' => 'subject',
     'permissions' => array(
       'view' => array(),
       'edit' => array(),
