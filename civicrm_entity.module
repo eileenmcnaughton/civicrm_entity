@@ -43,11 +43,13 @@ function civicrm_entity_menu_alter(&$items) {
         if (isset($bundle_info['admin'])) {
           // Get the base path and access.
           $path = $bundle_info['admin']['path'];
-          $items[$path] = $items[$path . '/fields'];
-          $items[$path]['type'] = MENU_NORMAL_ITEM;
-          $items[$path]['title'] = $entity_info['label'];
-          $items[$path]['description'] = t('CiviCRM @entity entity', array('@entity' => $entity_name));
-          $items[$path . '/fields']['type'] = MENU_DEFAULT_LOCAL_TASK;
+          if(isset($items[$path . '/fields'])) {
+            $items[$path] = $items[$path . '/fields'];
+            $items[$path]['type'] = MENU_NORMAL_ITEM;
+            $items[$path]['title'] = $entity_info['label'];
+            $items[$path]['description'] = t('CiviCRM @entity entity', array('@entity' => $entity_name));
+            $items[$path . '/fields']['type'] = MENU_DEFAULT_LOCAL_TASK;
+          }
         }
       }
     }
