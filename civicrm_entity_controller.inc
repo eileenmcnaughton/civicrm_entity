@@ -43,7 +43,7 @@ class CivicrmEntityController extends EntityAPIController {
     // were passed. The $ids array is reduced as items are loaded from cache,
     // and we need to know if it's empty for this reason to avoid querying the
     // database when all requested entities are loaded from cache.
-    $passed_ids = !empty($ids) ? array_flip((array) $ids) : FALSE;
+    $passed_ids = !empty($ids) && !is_null($ids[0]) ? array_flip((array) $ids) : FALSE;
     // Try to load entities from the static cache, if the entity type supports
     // static caching.
     if ($this->cache && !$revision_id) {
@@ -137,7 +137,7 @@ class CivicrmEntityController extends EntityAPIController {
           unset($params[$key]);
         }
       }*/
-      
+
       $params['version'] = 3;
       $params['sequential'] = 1;
 
