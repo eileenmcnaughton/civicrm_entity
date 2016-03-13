@@ -1061,7 +1061,7 @@ function civicrm_entity_supported_entities_info(){
           'target' => 'civicrm_contact',
         ),
       ),
-      'option fields' => array('activity_type_id', 'result_id'),
+      'option fields' => array('activity_type_id',),
       'boolean fields' => array('is_active', 'is_default', 'bypass_confirm', 'is_share'),
     ),
   );
