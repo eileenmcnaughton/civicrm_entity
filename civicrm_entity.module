@@ -46,6 +46,37 @@ function civicrm_entity_permission() {
 }
 
 /**
+ * Implements hook_theme()
+ *
+ * Lets Drupal know to look for templates for the entity types
+ *
+ * @return themes
+ */
+
+function civicrm_entity_theme() {
+  $civicrm_entity_info = civicrm_entity_get_supported_entity_info();
+
+  $themes = array();
+
+  foreach ($civicrm_entity_info as $drupal_entity => $data) {
+    $dashkey = str_replace('_', '-', $drupal_entity);
+    if(isset($data['theme'])) {
+      $themes[$drupal_entity] = array(
+        'render element' => 'elements',
+      );
+      if(isset($data['theme']['template'])) {
+        $themes[$drupal_entity]['template'] = $data['theme']['template'];
+      }
+      if(isset($data['theme']['path'])) {
+        $themes[$drupal_entity]['path'] = $data['theme']['path'];
+      }
+    }
+  }
+
+  return $themes;
+}
+
+/**
  * Entity access callback.
  *
  * @param $op
@@ -56,18 +87,34 @@ function civicrm_entity_permission() {
  * @return bool
  */
 function civicrm_entity_access($op, $entity, $account, $entity_type) {
-  if ($op == 'view' && $entity_type == 'civicrm_event') {
-    return user_access('view event info');
+  // now handles update as a separate op to permission
+  return (user_access('administer CiviCRM') || civicrm_entity_op_access($op, $entity_type) );
+}
+
+
+/**
+ * Granular per-entity CRUD access control
+ * @param $op
+ * @param $entity
+ *
+ * @return TRUE/FALSE
+ */
+function  civicrm_entity_op_access($op, $entity) {
+  $civicrm_entity_info = civicrm_entity_get_supported_entity_info();
+
+  if(isset($civicrm_entity_info[$entity]['permissions'][$op])) {
+    $permissions = $civicrm_entity_info[$entity]['permissions'][$op];
+    if(is_array($permissions) && count($permissions)) {
+      foreach($permissions as $permission){
+        if(!user_access($permission)){
+          return FALSE;
+        }
+      }
+      return TRUE;
+    }
+    else return user_access($permissions);
   }
-  elseif ($op == 'view' && $entity_type == 'civicrm_participant') {
-    return user_access('view event participants');
-  }
-  elseif ($op == 'view' && $entity_type == 'civicrm_contribution_page') {
-    return user_access('make online contributions');
-  }
-  else {
-    return civicrm_entity_op_access($op, $entity_type);
-  }
+  else return user_access('administer CiviCRM');
 }
 
 /**
@@ -245,55 +292,6 @@ function civicrm_entity_entity_info() {
 }
 
 /**
- * Here we declare Selected CiviCRM entities fields to Drupal.
- *
- * Some trickiness here as declaring the 'schema' via our special civi
- * schema function seems to cause fields to be declared twice if we us
- * property_info rather than property_info_alter.
- *
- * At the moment civicrm_relationship_type is the only entity being
- * managed through 'our' schema.
- *
- * @param $info
- *
- * @return
- */
-function civicrm_entity_entity_property_info_alter(&$info) {
-  if (!civicrm_initialize(TRUE)) {
-    return;
-  }
-
-  // We'll start with a few basic entities but we could get them the
-  // same way the API explorer does.
-  $entities = _civicrm_entity_enabled_entities();
-  foreach ($entities as $drupal_entity => $civicrm_entity) {
-    $info[$drupal_entity]['properties'] = _civicrm_entity_getproperties($civicrm_entity, 'property_info');
-    // $info[$drupal_entity]['bundles'] = array();
-  }
-  // This makes the drupal user available when chaining from a rule.
-  $info['civicrm_contact']['properties']['civicrm_user'] = array(
-    'label' => 'Drupal User',
-    'description' => 'Drupal User for contact',
-    'type' => 'user',
-    'translateable' => FALSE,
-    'getter callback' => 'civicrm_entity_contact_user_get',
-    'setter callback' => 'civicrm_entity_contact_user_set',
-  );
-
-  // Attach a CiviCRM Contact property to drupal users.
-  $info['user']['properties']['civicrm_contact'] = array(
-    'label' => 'CiviCRM Contact',
-    'description' => 'CiviCRM Contact for user',
-    'type' => 'civicrm_contact',
-    'field' => FALSE,
-    'translatable' => FALSE,
-    'getter callback' => 'civicrm_entity_user_contact_get',
-  );
-
-  return $info;
-}
-
-/**
  * Get supported CiviCRM entity information
  *
  * implement hook_civicrm_entity_supported_info() to get you custom CiviCRM API entity supported
@@ -321,14 +319,14 @@ function civicrm_entity_get_supported_entity_info($entity_type = NULL){
         // if db.ver < code.ver, time to upgrade
         if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.5) >= 0) {
           CRM_Utils_Hook::singleton()->invoke(1, $civicrm_entity_info,
-              CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject,
-              CRM_Core_DAO::$_nullObject,
-              'civicrm_entity_supported_info'
+            CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject,
+            CRM_Core_DAO::$_nullObject,
+            'civicrm_entity_supported_info'
           );
         } else {
           CRM_Utils_Hook::singleton()->invoke(1, $civicrm_entity_info,
-              CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject,
-              'civicrm_entity_supported_info'
+            CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject,
+            'civicrm_entity_supported_info'
           );
         }
       }
@@ -554,6 +552,24 @@ function civicrm_entity_supported_entities_info(){
       'boolean fields' => array('is_credit_card_only', 'is_monetary', 'is_recur', 'is_confirm_enabled', 'is_recur_interval',
         'is_recur_installments', 'is_pay_later', 'is_partial_payment', 'is_allow_other_amount', 'is_for_organization',
         'is_email_receipt', 'is_active', 'is_share', 'is_billing_required',),
+    ),
+  );
+  $civicrm_entity_info['civicrm_country'] = array(
+    'civicrm entity name' => 'country',
+    'label property' => 'name',
+    'permissions' => array(
+      'view' => array('view all contacts'),
+      'edit' => array(),
+      'update' => array(),
+      'create' => array(),
+      'delete' => array(),
+    ),
+    'theme' => array(
+      'template' => 'civicrm-country',
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+    ),
+    'display suite' => array(
+      'boolean fields' => array('is_province_abbreviated', ),
     ),
   );
   $civicrm_entity_info['civicrm_email'] = array(
@@ -1152,6 +1168,29 @@ function _civicrm_enabled_entity_alter_whitelist(&$whitelist) {
 }
 
 /**
+ * Provide label (column) for each entity types - default to id if nothing specified.
+ *
+ * @TODO Use the CiviCRM 4.5 getlist function - possibly ported into this module to support 4.4
+ *
+ * @see http://api.drupal.org/api/drupal/modules!system!system.api.php/function/hook_entity_info/7
+ *
+ * @param $entity
+ * @return string
+ */
+function _civicrm_entity_labels($entity) {
+  $civicrm_entity_info = civicrm_entity_get_supported_entity_info();
+  $labels = array();
+  foreach($civicrm_entity_info as $drupal_entity => $data){
+    if(isset($data['label property']) && $data['label property'] != '') {
+      $labels[$drupal_entity] = $data['label property'];
+    }
+  }
+
+  _civicrm_enabled_entity_alter_labels($labels);
+  return isset($labels[$entity]) ? $labels[$entity] : 'id';
+}
+
+/**
  * @param array $labels
  *
  * @return mixed
@@ -1178,171 +1217,76 @@ function _civicrm_enabled_entity_alter_labels(&$labels) {
 }
 
 /**
- * Please document this function.
+ * Here we declare Selected CiviCRM entities fields to Drupal.
+ *
+ * Some trickiness here as declaring the 'schema' via our special civi
+ * schema function seems to cause fields to be declared twice if we us
+ * property_info rather than property_info_alter.
+ *
+ * At the moment civicrm_relationship_type is the only entity being
+ * managed through 'our' schema.
+ *
+ * @param $info
+ *
+ * @return
  */
-function _civicrm_entity_chained_fks() {
-  return array(
-    'CRM_Contact_DAO_Contact' => 'contact',
-    'CRM_Event_DAO_Event' => 'event',
+function civicrm_entity_entity_property_info_alter(&$info) {
+  if (!civicrm_initialize(TRUE)) {
+    return;
+  }
+
+  // We'll start with a few basic entities but we could get them the
+  // same way the API explorer does.
+  $entities = _civicrm_entity_enabled_entities();
+  foreach ($entities as $drupal_entity => $civicrm_entity) {
+    $info[$drupal_entity]['properties'] = _civicrm_entity_getproperties($civicrm_entity, 'property_info');
+    // $info[$drupal_entity]['bundles'] = array();
+  }
+  // This makes the drupal user available when chaining from a rule.
+  $info['civicrm_contact']['properties']['civicrm_user'] = array(
+    'label' => 'Drupal User',
+    'description' => 'Drupal User for contact',
+    'type' => 'user',
+    'translateable' => FALSE,
+    'getter callback' => 'civicrm_entity_contact_user_get',
+    'setter callback' => 'civicrm_entity_contact_user_set',
   );
+
+  // Attach a CiviCRM Contact property to drupal users.
+  $info['user']['properties']['civicrm_contact'] = array(
+    'label' => 'CiviCRM Contact',
+    'description' => 'CiviCRM Contact for user',
+    'type' => 'civicrm_contact',
+    'field' => FALSE,
+    'translatable' => FALSE,
+    'getter callback' => 'civicrm_entity_user_contact_get',
+  );
+
+  return $info;
 }
 
 /**
- * Provide label (column) for each entity types - default to id if nothing specified.
+ *  Implements hook_field_extra_fields_alter()
  *
- * @TODO Use the CiviCRM 4.5 getlist function - possibly ported into this module to support 4.4
+ *  put civicrm properties on the manage fields form for weight based ordering of edit form elements
  *
- * @see http://api.drupal.org/api/drupal/modules!system!system.api.php/function/hook_entity_info/7
- *
- * @param $entity
- * @return string
+ * @param $info
  */
-function _civicrm_entity_labels($entity) {
-  $civicrm_entity_info = civicrm_entity_get_supported_entity_info();
-  $labels = array();
-  foreach($civicrm_entity_info as $drupal_entity => $data){
-    if(isset($data['label property']) && $data['label property'] != '') {
-      $labels[$drupal_entity] = $data['label property'];
-    }
+function civicrm_entity_field_extra_fields_alter(&$info) {
+  if (!civicrm_initialize(TRUE)) {
+    return;
   }
-  
-  _civicrm_enabled_entity_alter_labels($labels);
-  return isset($labels[$entity]) ? $labels[$entity] : 'id';
-}
+  $entities = _civicrm_entity_enabled_entities();
+  foreach ($entities as $drupal_entity => $civicrm_entity) {
+    $properties[$drupal_entity]['properties'] = _civicrm_entity_getproperties($civicrm_entity, 'property_info');
 
-/**
- * Title callback
- *
- * @param $field_specs
- * @param string $entity_type
- * @return string
- */
-function _civicrm_entity_get_title($field_specs, $entity_type = '') {
-  if (!empty($entity_type)) {
-    $label_field = _civicrm_entity_labels($entity_type);
-  }
-  else {
-    $label_field = 'title';
-  }
-  if (empty($field_specs[$label_field])) {
-    if (array_key_exists('label', $field_specs)) {
-      $label_field = 'label';
-    }
-    else if (array_key_exists('name', $field_specs)) {
-      $label_field = 'name';
+    foreach($info[$drupal_entity][$drupal_entity]['display'] as $name => $props) {
+      $info[$drupal_entity][$drupal_entity]['form'][$name] = $props;
     }
   }
 
-  $label = $field_specs[$label_field];
-
-  if (!empty($field_specs['groupTitle'])) {
-    $label = $field_specs['groupTitle'] . ': ' . $label;
-  }
-
-  return empty($label) ? 'Title not defined in schema' : $label;
 }
 
-/**
- * Label callback for civicrm_contact entity type.
- *
- *   drupal_alter('civicrm_entity_' . $entity, $, $alterable2, $context);
- *
- * @param $entity
- * @param $entity_type
- *
- * @return null|string
- */
-function civicrm_entity_civicrm_contact_label_callback($entity, $entity_type) {
-  $label = isset($entity->display_name) ? $entity->display_name : '';
-  // drupal_alter('civicrm_entity_contact_label', $label, $entity);
-  if (isset($entity->email) && !empty($entity->email)) {
-    $label = t('!label <!email>', array(
-        '!label' => $label,
-        '!email' => $entity->email
-      ));
-  }
-  elseif (isset($entity->phone) && !empty($entity->phone)) {
-    $label = t('!label <!phone>', array(
-        '!label' => $label,
-        '!phone' => $entity->phone
-      ));
-  }
-  return $label;
-}
-/**
- * Please document this function.
- *
- * @param $field_spec
- *
- * @return array
- */
-function civicrm_entity_get_field_widget($field_spec,$civicrm_entity) {
-  $widget = array();
-
-  if (isset($field_spec['name']) && $field_spec['name'] == 'id') {
-    $widget =  array('widget' => 'hidden');
-  }
-
-  if(!isset($field_spec['type'])) {
-    $widget = array('widget' => 'hidden');
-  }
-
-  if(isset($field_spec['html']['type'])) {
-   switch ($field_spec['html']['type']) {
-    case 'Text':
-      $widget = array('widget' => 'textfield');
-      break;
-    case 'Select':
-      $widget = array('widget' => 'select');
-      $widget['options'] = civicrm_entity_get_field_options($field_spec['name'], $civicrm_entity);
-      break;
-    case 'Autocomplete-Select':
-      $widget = array('widget' => 'textfield');
-      break;
-    case 'CheckBox':
-      $widget = array('widget' => 'checkbox');
-      break;
-    case 'RichTextEditor':
-    case 'TextArea':
-      $widget = array('widget' => 'textarea');
-      break;
-
-    default: break;
-   }
-  }
-  else {
-    $widget = array('widget' =>'textfield');
-  }
-
-  if(isset($field_spec['type'])) {
-
-     switch($field_spec['type']) {
-       case 4:
-         $widget = array('widget' => 'date_select','format' => 'Y:m:d');
-         break;
-       case 8:
-         $widget = array('widget' => 'date_select','format' => 'H:i:s');
-         break;
-       case 12:
-         $widget = array('widget' => 'date_select','format' => 'Y:m:d H:i:s');
-         break;
-     }
-  }
-
-  return $widget;
-}
-
-function civicrm_entity_get_field_options($field_name, $civicrm_entity){
-  $result = civicrm_api($civicrm_entity, 'getoptions', array('sequential'=>1,'version' => 3, 'field' => $field_name));
-  $options = array(NULL => '- No Value -');
-  if(!$result['is_error']) {
-    foreach($result['values'] as $option) {
-      $options[$option['key']] = $option['value'];
-    }
-    return $options;
-  }
-  else return array();
-}
 /**
  * Calculate fields for entities
  *
@@ -1492,7 +1436,160 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
   return $info;
 }
 
+/**
+ * Utility function that takes the provided field specs from a getfields call and builds
+ * a widget property array on the property metadata info
+ *
+ * @param $field_spec
+ *
+ * @return array
+ */
+function civicrm_entity_get_field_widget($field_spec, $civicrm_entity) {
+  $widget = array();
 
+  if (isset($field_spec['name']) && $field_spec['name'] == 'id') {
+    $widget =  array('widget' => 'hidden');
+  }
+
+  if(!isset($field_spec['type'])) {
+    $widget = array('widget' => 'hidden');
+  }
+
+  if(isset($field_spec['html']['type'])) {
+    switch ($field_spec['html']['type']) {
+      case 'Text':
+        $widget = array('widget' => 'textfield');
+        break;
+      case 'Select':
+        $widget = array('widget' => 'select');
+        $widget['options'] = civicrm_entity_get_field_options($field_spec['name'], $civicrm_entity);
+        break;
+      case 'Autocomplete-Select':
+        $widget = array('widget' => 'textfield');
+        break;
+      case 'CheckBox':
+        $widget = array('widget' => 'checkbox');
+        break;
+      case 'RichTextEditor':
+      case 'TextArea':
+        $widget = array('widget' => 'textarea');
+        break;
+
+      default: break;
+    }
+  }
+  else {
+    $widget = array('widget' =>'textfield');
+  }
+
+  if(isset($field_spec['type'])) {
+
+    switch($field_spec['type']) {
+      case 4:
+        $widget = array('widget' => 'date_select','format' => 'Y:m:d');
+        break;
+      case 8:
+        $widget = array('widget' => 'date_select','format' => 'H:i:s');
+        break;
+      case 12:
+        $widget = array('widget' => 'date_select','format' => 'Y:m:d H:i:s');
+        break;
+    }
+  }
+
+  return $widget;
+}
+
+/**
+ * Utility function to get the options for a civicrm options field for the widget metadata
+ *
+ * @param $field_name
+ * @param $civicrm_entity
+ * @return array
+ */
+function civicrm_entity_get_field_options($field_name, $civicrm_entity){
+  $result = civicrm_api($civicrm_entity, 'getoptions', array('sequential'=>1,'version' => 3, 'field' => $field_name));
+  $options = array(NULL => '- No Value -');
+  if(!$result['is_error']) {
+    foreach($result['values'] as $option) {
+      $options[$option['key']] = $option['value'];
+    }
+    return $options;
+  }
+  else return array();
+}
+
+/**
+ * Please document this function.
+ */
+function _civicrm_entity_chained_fks() {
+  return array(
+    'CRM_Contact_DAO_Contact' => 'contact',
+    'CRM_Event_DAO_Event' => 'event',
+  );
+}
+
+
+
+/**
+ * Title callback
+ *
+ * @param $field_specs
+ * @param string $entity_type
+ * @return string
+ */
+function _civicrm_entity_get_title($field_specs, $entity_type = '') {
+  if (!empty($entity_type)) {
+    $label_field = _civicrm_entity_labels($entity_type);
+  }
+  else {
+    $label_field = 'title';
+  }
+  if (empty($field_specs[$label_field])) {
+    if (array_key_exists('label', $field_specs)) {
+      $label_field = 'label';
+    }
+    else if (array_key_exists('name', $field_specs)) {
+      $label_field = 'name';
+    }
+  }
+
+  $label = $field_specs[$label_field];
+
+  if (!empty($field_specs['groupTitle'])) {
+    $label = $field_specs['groupTitle'] . ': ' . $label;
+  }
+
+  return empty($label) ? 'Title not defined in schema' : $label;
+}
+
+/**
+ * Label callback for civicrm_contact entity type.
+ *
+ *   drupal_alter('civicrm_entity_' . $entity, $, $alterable2, $context);
+ *
+ * @param $entity
+ * @param $entity_type
+ *
+ * @return null|string
+ */
+function civicrm_entity_civicrm_contact_label_callback($entity, $entity_type) {
+  $label = isset($entity->display_name) ? $entity->display_name : '';
+  // drupal_alter('civicrm_entity_contact_label', $label, $entity);
+  if (isset($entity->email) && !empty($entity->email)) {
+    $label = t('!label <!email>', array(
+        '!label' => $label,
+        '!email' => $entity->email
+      ));
+  }
+  elseif (isset($entity->phone) && !empty($entity->phone)) {
+    $label = t('!label <!phone>', array(
+        '!label' => $label,
+        '!phone' => $entity->phone
+      ));
+  }
+  return $label;
+}
 
 /**
  * Implement getter callback.
@@ -1500,6 +1597,8 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
  * NB this is in a separate file called callbacks.inc in entity module
  * - I couldn't see how it was loaded so maybe the name has some
  * magic?
+ *
+ * MH - Skvare -- This function should not use the CiviCRM api, but instead the Drupal Entity API to load and return the entity object
  *
  * @param $data
  * @param $options
@@ -1691,6 +1790,15 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
   return array('civicrm_user' => $user_object);
 }
 
+/**
+ * Implements hook_query().
+ *
+ * @param $type
+ * @param $property
+ * @param $value
+ * @param $limit
+ * @return array
+ */
 function civicrm_entity_query($type, $property, $value, $limit) {
   $return = entity_load($type, FALSE, array(
       $property => $value,
@@ -1886,7 +1994,7 @@ function civicrm_entity_contact_send_email($contact, $subject, $message_text, $m
 }
 
 /**
- * Implement the pre hook and delete field data when civicrm deletes an entity.
+ * Implement the pre hook and delete Drupal field data when civicrm deletes an entity.
  *
  * @param $op
  * @param $object_name
@@ -2160,9 +2268,12 @@ function civicrm_entity_contact_user_set(&$data, $name, $value, $langcode, $type
 }
 
 /**
- * Implements hook_rules_action_info_alter
+ * Implements hook_rules_action_info_alter().
+ *
  * I can't seem to get my info_alter function called by hook so am doing this hacky intercept
  * to call my function (& then go back to the main function if not a CiviCRM entity
+ *
+ * @param $info
  */
 function civicrm_entity_rules_action_info_alter(&$info) {
   $info['entity_create']['callbacks']['info_alter'] = 'civicrm_entity_rules_action_entity_create_info_alter';
@@ -2170,7 +2281,11 @@ function civicrm_entity_rules_action_info_alter(&$info) {
 
 /**
  * Info alteration callback for the entity create action.
+ *
  * Here we add a tonne of fields to civicrm entity create
+ *
+ * @param $element_info
+ * @param RulesAbstractPlugin $element
  */
 function civicrm_entity_rules_action_entity_create_info_alter(&$element_info, RulesAbstractPlugin $element) {
   if (empty($element->settings['type']) ||
@@ -2247,6 +2362,8 @@ function civicrm_entity_rules_action_entity_create_info_alter(&$element_info, Ru
 }
 
 /**
+ * Gets the custom fields for a CiviCRM entity
+ *
  * @param $entity
  */
 function civicrm_entity_get_custom_fields($entity, $types = array(
@@ -2275,43 +2392,13 @@ function civicrm_entity_get_custom_fields($entity, $types = array(
   return $fields;
 }
 
-/**
- * Implements hook_theme()
- *
- * Lets Drupal know to look for templates for the entity types
- *
- * @return themes
- */
-
-function civicrm_entity_theme() {
-  $civicrm_entity_info = civicrm_entity_get_supported_entity_info();
-
-  $themes = array();
-
-  foreach ($civicrm_entity_info as $drupal_entity => $data) {
-    $dashkey = str_replace('_', '-', $drupal_entity);
-    if(isset($data['theme'])) {
-      $themes[$drupal_entity] = array(
-        'render element' => 'elements',
-      );
-      if(isset($data['theme']['template'])) {
-        $themes[$drupal_entity]['template'] = $data['theme']['template'];
-      }
-      if(isset($data['theme']['path'])) {
-        $themes[$drupal_entity]['path'] = $data['theme']['path'];
-      }
-    }
-  }
-
-  return $themes;
-}
 
 /**
  * Loads UI controller and generates view pages for civicrm entities
  *
- * @param integer id
- * @param string entity_type
- * @param string view_mode
+ * @param integer $id
+ * @param string  $entity_type
+ * @param string  $view_mode
  *
  * @return string content
  */
@@ -2341,30 +2428,6 @@ function civicrm_entity_page_view($id, $entity_type) {
 }
 
 /**
- * Granular per-entity CRUD access control
- * @param $op
- * @param $entity
- *
- * @return TRUE/FALSE
- */
-function  civicrm_entity_op_access($op, $entity) {
-  $civicrm_entity_info = civicrm_entity_get_supported_entity_info();
-
-  if(isset($civicrm_entity_info[$entity]['permissions'][$op])) {
-    $permissions = $civicrm_entity_info[$entity]['permissions'][$op];
-    if(is_array($permissions) && count($permissions)) {
-      foreach($permissions as $permission){
-        if(!user_access($permission)){
-          return FALSE;
-        }
-      }
-      return TRUE;
-    }
-    else return user_access($permissions);
-  }
-  else return user_access('administer CiviCRM');
-}
-/**
  * Implements hook_ds_field_settings_form().
  */
 function civicrm_entity_ds_field_settings_form($field) {
@@ -2378,7 +2441,7 @@ function civicrm_entity_ds_field_format_summary($field) {
   return ds_ds_field_format_summary($field);
 }
 
-/*
+/**
  * Implementes hook_form_alter()
  */
 function civicrm_entity_form_alter(&$form, &$form_state, $form_id){
@@ -2401,10 +2464,12 @@ function civicrm_entity_form_alter(&$form, &$form_state, $form_id){
   }
 }
 
-/*
+/**
  * Custom submit handler
- * updates bundle visibility settings if a display suite layout is used
  *
+ * Updates bundle visibility settings if a display suite layout is used
+ *
+ * @see civicrm_entity_form_alter().
  */
 function _civicrm_entity_manage_display_submit(&$form, &$form_state) {
   if($form_state['values']['additional_settings']['layout']!=''){
@@ -2418,30 +2483,13 @@ function _civicrm_entity_manage_display_submit(&$form, &$form_state) {
   }
 }
 
-/*
- *  Implements hook_field_extra_fields_alter()
- *  put civicrm properties on the manage fields form for weight based ordering of edit form elements
+/**
+ *  Implements hook_ds_fields_info().
  *
- */
-function civicrm_entity_field_extra_fields_alter(&$info) {
-  if (!civicrm_initialize(TRUE)) {
-    return;
-  }
-  $entities = _civicrm_entity_enabled_entities();
-  foreach ($entities as $drupal_entity => $civicrm_entity) {
-    $properties[$drupal_entity]['properties'] = _civicrm_entity_getproperties($civicrm_entity, 'property_info');
-
-    foreach($info[$drupal_entity][$drupal_entity]['display'] as $name => $props) {
-      $info[$drupal_entity][$drupal_entity]['form'][$name] = $props;
-    }
-  }
-
-}
-
-/*
- *  Implements hook_ds_fields_info()
- *  setup custom display suite "field" handling for CiviCRM properties
+ *  Setup custom display suite "field" handling for CiviCRM properties
  *
+ * @param $entity_type
+ * @return array|void
  */
 function civicrm_entity_ds_fields_info($entity_type) {
   $fields = array();
