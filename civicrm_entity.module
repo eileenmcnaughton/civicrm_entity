@@ -849,6 +849,7 @@ function civicrm_entity_supported_entities_info(){
       'boolean fields' => array('is_test', 'is_pay_later', 'must_wait',),
     ),
   );
+
   $civicrm_entity_info['civicrm_phone'] = array(
     'civicrm entity name' => 'phone',
     'label property' => 'phone',
@@ -1029,6 +1030,39 @@ function civicrm_entity_supported_entities_info(){
     'display suite' => array(
       'option fields' => array('contact_sub_type_a', 'contact_sub_type_b',),
       'boolean fields' => array('is_reserved', 'is_active',),
+    ),
+  );
+  $civicrm_entity_info['civicrm_survey'] = array(
+    'civicrm entity name' => 'survey',
+    'label property' => 'title',
+    'permissions' => array(
+      'view' => array('administer CiviCampaign'),
+      'edit' => array('administer CiviCampaign'),
+      'update' => array('administer CiviCampaign'),
+      'create' => array('administer CiviCampaign'),
+      'delete' => array('administer CiviCampaign'),
+    ),
+    'theme' => array(
+      'template' => 'civicrm-survey',
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+    ),
+    'display suite' => array(
+      'link fields' => array(
+        array(
+          'link_field' => 'campaign_id',
+          'target' => 'civicrm_campaign',
+        ),
+        array(
+          'link_field' => 'created_id',
+          'target' => 'civicrm_contact',
+        ),
+        array(
+          'link_field' => 'last_modified_id',
+          'target' => 'civicrm_contact',
+        ),
+      ),
+      'option fields' => array('activity_type_id', 'result_id'),
+      'boolean fields' => array('is_active', 'is_default', 'bypass_confirm', 'is_share'),
     ),
   );
   $civicrm_entity_info['civicrm_tag'] = array(
