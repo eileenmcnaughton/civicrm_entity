@@ -180,7 +180,15 @@ function civicrm_entity_form_submit(&$form, &$form_state) {
   $t_args = array(
       '%label' => entity_label($entity_type, $entity),
   );
-  $form_state['redirect'] = str_replace('_', '-', $entity_type) . '/' . $entity->id;
+
+  $destination = drupal_get_destination();
+  $request_path = request_path();
+  if(isset($destination['destination']) && $destination['destination'] != '' && $destination['destination'] != $request_path ) {
+    $form_state['redirect'] = $destination['destination'];
+  }
+  else {
+    $form_state['redirect'] = str_replace('_', '-', $entity_type) . '/' . $entity->id;
+  }
   drupal_set_message(t('Drupal fields and %label properties have been updated.', $t_args));
   drupal_redirect_form($form_state);
 }
@@ -201,7 +209,14 @@ function civicrm_entity_delete_form_submit(&$form, &$form_state) {
   $entity = $form_state['entity'];
   $wrapper = entity_metadata_wrapper($entity_type, $entity);
   $wrapper->delete();
-  $form_state['redirect'] = '';
+  $destination = drupal_get_destination();
+  $request_path = request_path();
+  if(isset($destination['destination']) && $destination['destination'] != '' && $destination['destination'] != $request_path ) {
+    $form_state['redirect'] = $destination['destination'];
+  }
+  else {
+    $form_state['redirect'] = '/';
+  }
   drupal_redirect_form($form_state);
 }
 
@@ -213,7 +228,14 @@ function civicrm_entity_delete_form_cancel_submit(&$form, &$form_state) {
   $entity_type = $form_state['entity_type'];
   $entity = $form_state['entity'];
 
-  $form_state['redirect'] = str_replace('_', '-', $entity_type) . '/' .
-      $entity->id;
+
+  $destination = drupal_get_destination();
+  $request_path = request_path();
+  if(isset($destination['destination']) && $destination['destination'] != '' && $destination['destination'] != $request_path ) {
+    $form_state['redirect'] = $destination['destination'];
+  }
+  else {
+    $form_state['redirect'] = str_replace('_', '-', $entity_type) . '/' . $entity->id;
+  }
   drupal_redirect_form($form_state);
 }
