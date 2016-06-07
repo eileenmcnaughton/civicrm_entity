@@ -129,14 +129,15 @@ class CivicrmEntityController extends EntityAPIController {
 
       $this->invoke('presave', $entity);
 
-      $params = (array)$entity;
+      $params = get_object_vars($entity);
+
       unset($params['is_new']);
 
-      /*foreach($params as $key => $value){
-        if (substr($key, 7) === 'custom_' && ( $value == '' || is_null($value)) ) {
+      foreach($params as $key => $value){
+        if ( substr($key, 0, 7) === 'custom_' && empty($entity->original->{$key}) && empty($value)   ) {
           unset($params[$key]);
         }
-      }*/
+      }
 
       $params['version'] = 3;
       $params['sequential'] = 1;
