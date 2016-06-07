@@ -26,6 +26,10 @@ function civicrm_entity_form($form, &$form_state, $entity_id, $op, $entity_type)
 
     field_attach_form($entity_type, $entity, $form, $form_state);
 
+    if($op == 'edit'){
+      $entity->original = clone $entity;
+    }
+
     //get entity controller build content
     if ($op == 'edit') {
       $wrapper = entity_metadata_wrapper($entity_type, $entity);
