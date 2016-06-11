@@ -139,6 +139,12 @@ class CivicrmEntityController extends EntityAPIController {
         }
       }
 
+      // temporary hack for activity saving issues
+      // https://www.drupal.org/node/2736153
+      if($this->entityType == 'civicrm_activity' && isset($entity->campaign_id) && $entity->campaign_id == 0){
+        $entity->campaign_id = NULL;
+      }
+
       $params['version'] = 3;
       $params['sequential'] = 1;
 
