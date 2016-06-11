@@ -129,6 +129,12 @@ class CivicrmEntityController extends EntityAPIController {
 
       $this->invoke('presave', $entity);
 
+      // temporary hack for activity saving issues
+      // https://www.drupal.org/node/2736153
+      if($this->entityType == 'civicrm_activity' && isset($entity->campaign_id) && $entity->campaign_id == 0){
+        $entity->campaign_id = NULL;
+      }
+
       $params = get_object_vars($entity);
 
       unset($params['is_new']);
@@ -137,12 +143,6 @@ class CivicrmEntityController extends EntityAPIController {
         if ( substr($key, 0, 7) === 'custom_' && empty($entity->original->{$key}) && empty($value)   ) {
           unset($params[$key]);
         }
-      }
-
-      // temporary hack for activity saving issues
-      // https://www.drupal.org/node/2736153
-      if($this->entityType == 'civicrm_activity' && isset($entity->campaign_id) && $entity->campaign_id == 0){
-        $entity->campaign_id = NULL;
       }
 
       $params['version'] = 3;

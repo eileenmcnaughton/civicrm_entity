@@ -4,6 +4,11 @@ function civicrm_entity_form($form, &$form_state, $entity_id, $op, $entity_type)
 
   if ($op == 'edit' || $op == 'delete') {
     $entity = entity_load($entity_type, array($entity_id));
+    if(!$entity) {
+      drupal_set_title('No ' . $entity_type . ' with id:' . $entity_id);
+      return $form;
+
+    }
     $entity = $entity[$entity_id];
     $form_state['entity'] = $entity;
     $form_state['entity_type'] = $entity_type;
@@ -27,7 +32,9 @@ function civicrm_entity_form($form, &$form_state, $entity_id, $op, $entity_type)
     field_attach_form($entity_type, $entity, $form, $form_state);
 
     if ($op == 'edit'){
-      $entity->original = clone $entity;
+      if(is_object($entity)) {
+        $entity->original = clone $entity;
+      }
     }
 
     //get entity controller build content
