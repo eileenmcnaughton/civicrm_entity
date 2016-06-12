@@ -1395,6 +1395,7 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
     'version' => 3,
     'action' => 'create',
   ));
+
   foreach ($fields['values'] as $fieldname => $field_specs) {
     // Type is empty for custom fields - we should sort that out but
     // skipping for now we are only doing 'integers' at this stage.
@@ -1517,6 +1518,7 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
       );
     }
   }
+
   return $info;
 }
 
@@ -1538,28 +1540,76 @@ function civicrm_entity_get_field_widget($field_spec, $civicrm_entity) {
   if(!isset($field_spec['type'])) {
     $widget = array('widget' => 'hidden');
   }
+  $field_type = 'standard';
+  // "normal" properties
+  if(isset($field_spec['html']['type'])){
+    $html_type = $field_spec['html']['type'];
+    $field_type = 'standard';
+  }
+  // custom fields
+  elseif(isset($field_spec['html_type'])){
+    $html_type = $field_spec['html_type'];
+    $field_type = 'custom';
+  }
 
-  if(isset($field_spec['html']['type'])) {
-    switch ($field_spec['html']['type']) {
+  if(isset($html_type)) {
+    switch ($html_type) {
       case 'Text':
-        $widget = array('widget' => 'textfield');
+        $widget = array(
+          'widget' => 'textfield',
+          'civicrm_field_type' => $field_type,
+        );
         break;
       case 'Select':
-        $widget = array('widget' => 'select');
+        $widget = array(
+          'widget' => 'select',
+          'civicrm_field_type' => $field_type,
+        );
+        $widget['options'] = civicrm_entity_get_field_options($field_spec['name'], $civicrm_entity);
+        break;
+      case 'Radio':
+        $widget = array(
+          'widget' => 'radios',
+          'civicrm_field_type' => $field_type,
+        );
         $widget['options'] = civicrm_entity_get_field_options($field_spec['name'], $civicrm_entity);
         break;
       case 'Autocomplete-Select':
-        $widget = array('widget' => 'textfield');
+        $widget = array(
+          'widget' => 'textfield',
+          'civicrm_field_type' => $field_type,
+        );
         break;
       case 'CheckBox':
-        $widget = array('widget' => 'checkbox');
+        $options =  civicrm_entity_get_field_options($field_spec['name'], $civicrm_entity);
+        if($field_type == 'custom' && count($options) > 1){
+          $widget = array(
+            'widget' => 'checkboxes',
+            'civicrm_field_type' => $field_type,
+            'options' => $options,
+          );
+        }
+        else {
+          $widget = array(
+            'widget' => 'checkbox',
+            'civicrm_field_type' => $field_type,
+          );
+        }
         break;
       case 'RichTextEditor':
       case 'TextArea':
-        $widget = array('widget' => 'textarea');
+        $widget = array(
+          'widget' => 'textarea',
+          'civicrm_field_type' => $field_type,
+        );
         break;
-
-      default: break;
+//need to add more types to cover the custom fields....Radio etc..
+      default:
+        $widget = array(
+          'widget' => 'textfield',
+          'civicrm_field_type' => $field_type,
+        );
+        break;
     }
   }
   else {

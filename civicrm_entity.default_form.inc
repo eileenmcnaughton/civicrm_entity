@@ -4,6 +4,10 @@ function civicrm_entity_form($form, &$form_state, $entity_id, $op, $entity_type)
 
   if ($op == 'edit' || $op == 'delete') {
     $entity = entity_load($entity_type, array($entity_id));
+    if(!$entity) {
+      drupal_set_title('No ' . $entity_type . ' with id:' . $entity_id);
+      return $form;
+    }
     $entity = $entity[$entity_id];
     $form_state['entity'] = $entity;
     $form_state['entity_type'] = $entity_type;
@@ -17,7 +21,7 @@ function civicrm_entity_form($form, &$form_state, $entity_id, $op, $entity_type)
   }
   // Add the field related form elements.
   if ($op == 'edit' || $op == 'create') {
-    if($op == 'edit') {
+    if ($op == 'edit') {
       $title = 'Edit ' . ucwords(str_replace("_", " ", $entity_type)) . ": " . entity_label($entity_type, $entity) . " (id:" . $entity->id . ")";
     }
     else {
@@ -26,42 +30,65 @@ function civicrm_entity_form($form, &$form_state, $entity_id, $op, $entity_type)
 
     field_attach_form($entity_type, $entity, $form, $form_state);
 
-    if($op == 'edit'){
-      $entity->original = clone $entity;
+    if ($op == 'edit'){
+      if(is_object($entity)) {
+        $entity->original = clone $entity;
+      }
     }
 
     //get entity controller build content
     if ($op == 'edit') {
       $wrapper = entity_metadata_wrapper($entity_type, $entity);
+      //$wrapper = entity_metadata_wrapper($entity_type, $entity_id);
     }
     else {
       $wrapper = entity_metadata_wrapper($entity_type);
     }
+
     foreach ($wrapper as $name => $child) {
       $info = $child->info();
       if (strpos($info['name'], 'field_') === 0) {
         continue;
       }
       else {
-        if(isset($info['widget']['widget'])){
+        if (isset($info['widget']['widget'])){
           $form[$name] = array(
               '#type' => $info['widget']['widget'],
               '#title' => $info['label'],
               '#description' => !empty($info['description']) ? $info['description'] : '',
-              '#default_value' => $op == 'edit' ? $child->value() : '',
+              '#default_value' => $op == 'edit' ? $child->value() : NULL,
           );
           // set api required fields to be required on form
-          if(isset($info['required']) && $info['required']) {
+          if (isset($info['required']) && $info['required']) {
             $form[$name]['#required'] = TRUE;
           }
-          //set the options for select options
-          if($form[$name]['#type'] == 'select') {
+          //set the options for select options, radios, and checkboxes
+          if ($form[$name]['#type'] == 'select') {
+            $form[$name]['#options'] = $info['widget']['options'];
+          }
+          if ($form[$name]['#type'] == 'radios'){
+            $form[$name]['#options'] = $info['widget']['options'];
+          }
+          if ($form[$name]['#type'] == 'checkboxes'){
+            $value = $child->value();
+            if($op == 'edit' && !empty($value)) {
+              foreach($info['widget']['options'] as $key => $label) {
+                if(in_array($key, $value)){
+                  $default_values[] = $key;
+                }
+              }
+              $form[$name]['#default_value'] = $default_values;
+            }
+            else {
+              $form[$name]['#default_value'] = array('');
+            }
+
             $form[$name]['#options'] = $info['widget']['options'];
           }
           // Date field handling, check for date_api module to use date select widget
           // else fallback to textfield
-          if($form[$name]['#type'] == 'date_select') {
-            if(module_exists('date_api')){
+          if ($form[$name]['#type'] == 'date_select') {
+            if (module_exists('date_api')){
               $form[$name]['#format'] = $info['widget']['format'];
             }
             else {
@@ -70,8 +97,8 @@ function civicrm_entity_form($form, &$form_state, $entity_id, $op, $entity_type)
           }
           //for some reason the is_deleted column of the contact record is coming to the entity
           // as contact_is_deleted ...special handling to have the form value set properly
-          if($name == 'is_deleted') {
-            if($entity_type=='civicrm_contact') {
+          if ($name == 'is_deleted') {
+            if ($entity_type=='civicrm_contact') {
               $form[$name]['#default_value'] = $entity->contact_is_deleted;
             }
           }
@@ -167,8 +194,32 @@ function civicrm_entity_form_validate(&$form, &$form_state) {
 function civicrm_entity_form_submit(&$form, &$form_state) {
   $entity_type = $form_state['entity_type'];
   $entity = $form_state['entity'];
+  $civicrm_entity_fields = civicrm_api(substr_replace($entity_type,'', 0, 8),  'getfields', array(
+    'version' => 3,
+    'action' => 'create',
+  ));
   foreach ($form_state['values'] as $key => $value) {
-    $entity->{$key} = $value;
+    //need to convert checkbox values to a consumable format for checkboxes custom fields
+    if(substr($key, 0, 7) == 'custom_'){
+      if($civicrm_entity_fields['values'][$key]['html_type'] == 'CheckBox'){
+        if(is_array($value)) {
+          $stored_value = array();
+          foreach($value as $option => $checkbox_value){
+            if($checkbox_value) {
+              $stored_value[] = $option;
+            }
+          }
+          $entity->{$key} = !empty($stored_value) ? $stored_value : array('');
+        }
+
+      }
+      else {
+        $entity->{$key} = $value;
+      }
+    }
+    else {
+      $entity->{$key} = $value;
+    }
   }
 
   // Add in created and changed times.
@@ -177,8 +228,11 @@ function civicrm_entity_form_submit(&$form, &$form_state) {
   }
   $entity->changed = time();
 
+  //need to convert checkbox values to a consumable format for checkboxes custom fields
+
   $wrapper = entity_metadata_wrapper($entity_type, $entity);
   field_attach_submit($entity_type, $entity, $form, $form_state);
+
   $wrapper->save();
 
   $t_args = array(
