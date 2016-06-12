@@ -7,7 +7,6 @@ function civicrm_entity_form($form, &$form_state, $entity_id, $op, $entity_type)
     if(!$entity) {
       drupal_set_title('No ' . $entity_type . ' with id:' . $entity_id);
       return $form;
-
     }
     $entity = $entity[$entity_id];
     $form_state['entity'] = $entity;
@@ -40,10 +39,12 @@ function civicrm_entity_form($form, &$form_state, $entity_id, $op, $entity_type)
     //get entity controller build content
     if ($op == 'edit') {
       $wrapper = entity_metadata_wrapper($entity_type, $entity);
+      //$wrapper = entity_metadata_wrapper($entity_type, $entity_id);
     }
     else {
       $wrapper = entity_metadata_wrapper($entity_type);
     }
+
     foreach ($wrapper as $name => $child) {
       $info = $child->info();
       if (strpos($info['name'], 'field_') === 0) {
