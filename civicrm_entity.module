@@ -25,6 +25,14 @@ function civicrm_entity_menu(){
     'file path' => drupal_get_path('module', 'system'),
     'file' => 'system.admin.inc',
   );
+  $items['civicrm-entity/autocomplete/%'] = array(
+    'title' => 'CiviCRM entity autocomplete',
+    'page callback' => 'civicrm_entity_autocomplete',
+    'page arguments' => array(2),
+    'access callback' => 'civicrm_entity_op_access',
+    'access arguments' => array('edit', 2),
+    'type' => MENU_CALLBACK,
+  );
   return $items;
 }
 
@@ -54,6 +62,30 @@ function civicrm_entity_menu_alter(&$items) {
       }
     }
   }
+}
+
+/**
+ * Menu callback for autocomplete search function
+ *
+ * @param $entity_type
+ */
+function civicrm_entity_autocomplete($entity_type, $string = '') {
+  $matches = array();
+  if ($string) {
+    switch ($entity_type) {
+      case 'Contact':
+        $result = db_select('civicrm_' . strtolower($entity_type))
+          ->fields('civicrm_' . strtolower($entity_type), array('id', 'display_name'))
+          ->condition('display_name', db_like($string) . '%', 'LIKE')
+          ->range(0, 10)
+          ->execute();
+        foreach ($result as $contact) {
+          $matches[$contact->id] = check_plain($contact->display_name);
+        }
+        break;
+    }
+  }
+  drupal_json_output($matches);
 }
 
 /**
@@ -147,9 +179,11 @@ function  civicrm_entity_op_access($op, $entity) {
 /**
  * Implements hook_views_data_alter().
  */
-/*
-function civicrm_entity_views_data_alter($data) { }
-*/
+function civicrm_entity_views_data_alter($data) {
+
+
+}
+
 
 /**
  * Implements hook_schema_alter().
@@ -1363,9 +1397,10 @@ function civicrm_entity_field_extra_fields_alter(&$info) {
   $entities = _civicrm_entity_enabled_entities();
   foreach ($entities as $drupal_entity => $civicrm_entity) {
     $properties[$drupal_entity]['properties'] = _civicrm_entity_getproperties($civicrm_entity, 'property_info');
-
-    foreach($info[$drupal_entity][$drupal_entity]['display'] as $name => $props) {
-      $info[$drupal_entity][$drupal_entity]['form'][$name] = $props;
+    if(!empty($info[$drupal_entity][$drupal_entity]['display'])) {
+      foreach ($info[$drupal_entity][$drupal_entity]['display'] as $name => $props) {
+        $info[$drupal_entity][$drupal_entity]['form'][$name] = $props;
+      }
     }
   }
 
@@ -1422,9 +1457,47 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
         'sanitize' => 'check_plain',
         'setter callback' => 'entity_property_verbatim_set',
       );
-      if (!empty($field_specs['api.required'])) {
+
+      if (!empty($field_specs['api.required']) || !empty($field_specs['is_required'])) {
         $info[$fieldname]['required'] = TRUE;
       }
+
+      // add field description to metadata
+      if(!empty($field_specs['description'])) {
+        $info[$fieldname]['description'] = $field_specs['description'];
+      }
+
+      // add field maxlength to metadata
+      if(!empty($field_specs['maxlength'])) {
+        $info[$fieldname]['maxlength'] = $field_specs['maxlength'];
+      }
+
+      // add field text_length to metadata
+      if(!empty($field_specs['text_length'])) {
+        // just use the entity maxlength instead of creating another index
+        $info[$fieldname]['maxlength'] = $field_specs['text_length'];
+      }
+
+      // add field size to metadata
+      if(!empty($field_specs['size'])) {
+        $info[$fieldname]['size'] = $field_specs['size'];
+      }
+
+      // add field dataPattern to metadata
+      if(!empty($field_specs['dataPattern'])) {
+        $info[$fieldname]['dataPattern'] = $field_specs['dataPattern'];
+      }
+
+      // add field is_view to metadata
+      if(!empty($field_specs['is_view'])) {
+        $info[$fieldname]['is_view'] = $field_specs['is_view'];
+      }
+
+      // add field default value to metadata
+      if(isset($field_specs['default_value'])) {
+        $info[$fieldname]['default_value'] = $field_specs['default_value'];
+      }
+
       if ($field_specs['type'] == 16) {
         $info[$fieldname]['size'] = 'tiny';
       }
@@ -1616,7 +1689,7 @@ function civicrm_entity_get_field_widget($field_spec, $civicrm_entity) {
     $widget = array('widget' =>'textfield');
   }
 
-  if(isset($field_spec['type'])) {
+  if (isset($field_spec['type'])) {
 
     switch($field_spec['type']) {
       case 4:
@@ -1628,6 +1701,13 @@ function civicrm_entity_get_field_widget($field_spec, $civicrm_entity) {
       case 12:
         $widget = array('widget' => 'date_select','format' => 'Y:m:d H:i:s');
         break;
+    }
+  }
+
+  if (!empty($field_spec['FKApiName'])) {
+    $widget_subtype = civicrm_entity_fk_entities_to_produce_widget_for($field_spec['FKApiName']);
+    if ($widget_subtype){
+      $widget = array('widget' => 'civi_fk_reference', 'subtype' => $widget_subtype, 'entity' => $field_spec['FKApiName']);
     }
   }
 
@@ -1651,6 +1731,19 @@ function civicrm_entity_get_field_options($field_name, $civicrm_entity){
     return $options;
   }
   else return array();
+}
+
+/**
+ * Utility function to return which entities we're allowing for using a special FK FAPI Widget for some FK Reference fields
+ *
+ * @return array
+ */
+function civicrm_entity_fk_entities_to_produce_widget_for($entity_type) {
+ switch ($entity_type) {
+    case 'Contact':
+     return 'autocomplete';
+  }
+  return FALSE;
 }
 
 /**
@@ -2596,6 +2689,23 @@ function civicrm_entity_form_alter(&$form, &$form_state, $form_id){
     }
 
   }
+
+  // for the manage fields form, if display suite forms is enabled, add a validation handler
+  // that enforces that the entity API required fields are set to be on the form
+  if($form_id == 'field_ui_field_overview_form' && module_exists('ds_forms') && !empty($form['#ds_layout'])) {
+    $entities = _civicrm_entity_enabled_entities();
+    $entity_type = $form['#entity_type'];
+    if(array_key_exists($entity_type,$entities)) {
+      $entity_props = entity_get_property_info($entity_type);
+      foreach($entity_props['properties'] as $property => $info){
+        if(!empty($info['required'])) {
+          $form['fields'][$property]['label']['#markup'] = '<span class="form-required" title="This field is required.">* </span>' . '<span title="This field is required.">' .$form['fields'][$property]['label']['#markup'] . '</span>';
+        }
+      }
+      $form['#validate'][] = '_civicrm_entity_manage_display_suite_forms_validate';
+
+    }
+  }
 }
 
 /**
@@ -2615,7 +2725,32 @@ function _civicrm_entity_manage_display_submit(&$form, &$form_state) {
       $form_state['values']['fields'][$key]['type'] = 'visible';
     }
   }
+
 }
+
+/**
+ * Custom validation handler
+ *
+ * Enforces that required entity API fields are set to display on form
+ *
+ * @param $form
+ * @param $form_state
+ */
+function _civicrm_entity_manage_display_suite_forms_validate(&$form, &$form_state) {
+
+  $entity_type = $form['#entity_type'];
+  $entity_props = entity_get_property_info($entity_type);
+
+  foreach($entity_props['properties'] as $property => $info){
+    if(!empty($info['required']) && (empty($form_state['values']['fields'][$property]['region']) || $form_state['values']['fields'][$property]['region'] == 'hidden')) {
+
+      form_set_error('fields][' . $property, $info['label'] . ' property is required by CiviCRM API to be included on this form.');
+
+    }
+  }
+
+}
+
 
 /**
  *  Implements hook_ds_fields_info().
