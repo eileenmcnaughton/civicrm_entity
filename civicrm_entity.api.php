@@ -24,6 +24,7 @@
  *   -update: (optional) array of permissions necessary to update Drupal entity (defaults to 'administer CiviCRM' if not provided)
  *   -create: (optional) array of permissions necessary to create Drupal entity (defaults to 'administer CiviCRM' if not provided)
  *   -delete: (optional) array of permissions necessary to delete Drupal entity (defaults to 'administer CiviCRM' if not provided)
+ *   -access callback: (optional) string of function name to use as alternate permissions handler to that provided by CiviCRM entity (default to 'user_access')
  * -theme: (optional) array
  *   -template: (optional) Name of template file (without the .tpl.php extension)
  *   -path: (optional) Path to template file

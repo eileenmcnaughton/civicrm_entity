@@ -1,0 +1,6 @@
+name = CiviCRM Entity Reference Field
+description = "Provides CiviCRM entity reference field type"
+dependencies[] = civicrm_entity_reference_field_storage
+dependencies[] = civicrm_entity_inline
+package = CiviCRM
+core = 7.x

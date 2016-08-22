@@ -149,6 +149,7 @@ class CivicrmEntityController extends EntityAPIController {
       $params['sequential'] = 1;
 
       if ($entity->is_new) {
+        if(isset($params['id'])) unset($params['id']);
         $result = civicrm_api(substr($this->entityType, 8), 'create', $params);
 
       }

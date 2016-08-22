@@ -70,45 +70,47 @@ class CivicrmEntityUIController extends EntityContentUIController {
        'access callback' => 'civicrm_entity_op_access',
        'access arguments' => array('create',$key),
        'type' => MENU_CALLBACK,
-       
      );
       
-     $items[$dashkey . '/' . '%'] = array(
+     $items[$dashkey . '/' . '%civicrm_entity_loader'] = array(
       //'title' => 'Title',
         'title callback' => $key . '_page_title',
         'title arguments' => array(1),
         'page callback' => 'civicrm_entity_page_view',
         'page arguments' => array(1,$key),
         'access callback' => 'civicrm_entity_op_access',
-        'access arguments' => array('view',$key),
-       // 'type' => MENU_CALLBACK,
+        'access arguments' => array('view',$key, 1),
+        'load arguments' => array($key),
       );
      
-     $items[$dashkey.'/%/view'] = array(
+     $items[$dashkey.'/%civicrm_entity_loader/view'] = array(
         'title' => 'View',
         'type' => MENU_DEFAULT_LOCAL_TASK,
         'weight' => -10,
+        'load arguments' => array($key),
       );
       
-     $items[$dashkey.'/'.'%/edit'] = array(
+     $items[$dashkey.'/'.'%civicrm_entity_loader/edit'] = array(
        'title' => 'Edit',
        'page callback' => 'entity_ui_get_form',
        'page arguments' => array($key,1,'edit'),
        'access callback' => 'civicrm_entity_op_access',
-       'access arguments' => array('edit',$key),
+       'access arguments' => array('edit',$key, 1),
        'type' => MENU_LOCAL_TASK,
        'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+       'load arguments' => array($key),
      );
      
-     $items[$dashkey.'/'.'%/delete'] = array(
+     $items[$dashkey.'/'.'%civicrm_entity_loader/delete'] = array(
        'title' => 'Delete',
        'page callback' => 'entity_ui_get_form',
        'page arguments' => array($key,1,'delete'),
        'access callback' => 'civicrm_entity_op_access',
-       'access arguments' => array('delete',$key),
+       'access arguments' => array('delete',$key, 1),
        'type' => MENU_LOCAL_TASK,
        'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
-       'weight' => 10
+       'weight' => 10,
+       'load arguments' => array($key),
      );
      
      

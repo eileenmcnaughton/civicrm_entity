@@ -1,14 +1,12 @@
 <?php
 
-function civicrm_entity_form($form, &$form_state, $entity_id, $op, $entity_type) {
+function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
 
   if ($op == 'edit' || $op == 'delete') {
-    $entity = entity_load($entity_type, array($entity_id));
-    if(!$entity) {
-      drupal_set_title('No ' . $entity_type . ' with id:' . $entity_id);
+    if(!is_object($entity)) {
+      drupal_set_title('No ' . $entity_type . ' with id:' . $entity);
       return $form;
     }
-    $entity = $entity[$entity_id];
     $form_state['entity'] = $entity;
     $form_state['entity_type'] = $entity_type;
   }
@@ -39,7 +37,6 @@ function civicrm_entity_form($form, &$form_state, $entity_id, $op, $entity_type)
     //get entity controller build content
     if ($op == 'edit') {
       $wrapper = entity_metadata_wrapper($entity_type, $entity);
-      //$wrapper = entity_metadata_wrapper($entity_type, $entity_id);
     }
     else {
       $wrapper = entity_metadata_wrapper($entity_type);
@@ -253,7 +250,7 @@ function civicrm_entity_form_validate(&$form, &$form_state) {
       // integer validation
       if ($info['type'] == 'integer') {
         //text field validation
-        if ($form[$name]['#type'] == 'textfield') {
+        if (isset($form[$name]['#type']) && $form[$name]['#type'] == 'textfield') {
           if (isset($form_state['values'][$name]) && strlen($form_state['values'][$name]) && (string)(int)$form_state['values'][$name] !== (string)$form_state['values'][$name]) {
             form_set_error($name, 'Value must be an integer. e.g (1, 154, 0)');
           }
@@ -263,14 +260,12 @@ function civicrm_entity_form_validate(&$form, &$form_state) {
       // money validation
       elseif($info['type'] == 'decimal') {
         //text field validation
-        if ($form[$name]['#type'] == 'textfield') {
+        if (isset($form[$name]['#type']) && $form[$name]['#type'] == 'textfield') {
           if (isset($form_state['values'][$name]) && strlen($form_state['values'][$name]) && !is_numeric($form_state['values'][$name])) {
             form_set_error($name, 'Value must be an number. e.g (1, 1.26, -1.3)');
           }
         }
       }
-
-
     }
   }
 

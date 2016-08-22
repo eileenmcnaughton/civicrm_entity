@@ -136,6 +136,22 @@ function civicrm_entity_theme() {
 }
 
 /**
+ * CiviCRM Entity view,edit,delete form autoloader callback
+ *
+ * @param $entity_type
+ * @param $id
+ * @return mixed
+ */
+function civicrm_entity_loader_load($id, $entity_type){
+  $entity = entity_load_single($entity_type, $id);
+  if($entity) {
+    return $entity;
+  }
+  else return $id;
+
+}
+
+/**
  * Entity access callback.
  *
  * @param $op
@@ -146,34 +162,50 @@ function civicrm_entity_theme() {
  * @return bool
  */
 function civicrm_entity_access($op, $entity, $account, $entity_type) {
+  if(is_null($account)){
+    global $user;
+    $account = $user;
+  }
   // now handles update as a separate op to permission
-  return (user_access('administer CiviCRM') || civicrm_entity_op_access($op, $entity_type) );
+  return (user_access('administer CiviCRM') || civicrm_entity_op_access($op, $entity_type, $entity, $account) );
 }
 
 
 /**
  * Granular per-entity CRUD access control
- * @param $op
- * @param $entity
  *
- * @return TRUE/FALSE
+ * @param $op
+ * @param $entity_type
+ * @param null $entity
+ * @param null $account
+ * @return TRUE|FALSE
  */
-function  civicrm_entity_op_access($op, $entity) {
+function  civicrm_entity_op_access($op, $entity_type, $entity = NULL, $account = NULL) {
+  if(is_null($account)){
+    global $user;
+    $account = $user;
+  }
   $civicrm_entity_info = civicrm_entity_get_supported_entity_info();
 
-  if(isset($civicrm_entity_info[$entity]['permissions'][$op])) {
-    $permissions = $civicrm_entity_info[$entity]['permissions'][$op];
-    if(is_array($permissions) && count($permissions)) {
-      foreach($permissions as $permission){
-        if(!user_access($permission)){
-          return FALSE;
-        }
-      }
-      return TRUE;
+  if(isset($civicrm_entity_info[$entity_type]['permissions'][$op])) {
+    $permissions = $civicrm_entity_info[$entity_type]['permissions'][$op];
+
+    if(!empty($civicrm_entity_info[$entity_type]['permissions']['access callback'])){
+      $access_callback = $civicrm_entity_info[$entity_type]['permissions']['access callback'];
+      return call_user_func($access_callback, $op, $entity_type, $entity, $account, $permissions);
     }
-    else return user_access($permissions);
+    elseif(!empty($permissions)) {
+      if (is_array($permissions) && count($permissions)) {
+        foreach ($permissions as $permission) {
+          if (!user_access($permission, $account)) {
+            return FALSE;
+          }
+        }
+        return TRUE;
+      } else return user_access($permissions, $account);
+    }
   }
-  else return user_access('administer CiviCRM');
+  else return user_access('administer CiviCRM', $account);
 }
 
 /**
@@ -469,7 +501,7 @@ function civicrm_entity_supported_entities_info(){
   );
   $civicrm_entity_info['civicrm_address'] = array(
     'civicrm entity name' => 'address',
-    'label property' => 'address_name',
+    'label property' => 'name',
     'permissions' => array(
       'view' => array('view all contacts'),
       'edit' => array('edit all contacts'),
@@ -838,6 +870,34 @@ function civicrm_entity_supported_entities_info(){
       ),
       'option fields' => array('membership_type_id', 'status_id',),
       'boolean fields' => array('is_test', 'is_pay_later', 'is_override',),
+    ),
+  );
+  $civicrm_entity_info['civicrm_membership_payment'] = array(
+    'civicrm entity name' => 'membership_payment',
+    'permissions' => array(
+      'view' => array('access CiviMember', 'access CiviContribute'),
+      'edit' => array('access CiviMember', 'access CiviContribute'),
+      'update' => array('access CiviMember', 'access CiviContribute'),
+      'create' => array('access CiviMember', 'access CiviContribute'),
+      'delete' => array('delete in CiviMember', 'access CiviMember', 'access CiviContribute'),
+    ),
+    'theme' => array(
+      'template' => 'civicrm-membership-payment',
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+    ),
+    'display suite' => array(
+      'link fields' => array(
+        array(
+          'link_field' => 'contribution_id',
+          'target' => 'civicrm_contribution',
+        ),
+        array(
+          'link_field' => 'membership_id',
+          'target' => 'civicrm_membership',
+        ),
+      ),
+      'option fields' => array(),
+      'boolean fields' => array(),
     ),
   );
   $civicrm_entity_info['civicrm_membership_type'] = array(
@@ -2630,12 +2690,17 @@ function civicrm_entity_get_custom_fields($entity, $types = array(
  * @return string content
  */
 
-function civicrm_entity_page_view($id, $entity_type) {
+function civicrm_entity_page_view($entity, $entity_type) {
   $content = "";
-  $entity = entity_load($entity_type, array($id));
 
-  if (!empty($entity)) {
-    $entity = $entity[$id];
+  if(!empty($entity->id)){
+    $id = $entity->id;
+  }
+  elseif(!is_object($entity) && is_numeric($entity)){
+    $id = $entity;
+  }
+
+  if (!empty($entity) && is_object($entity)) {
     $controller = entity_get_controller($entity_type);
     if($entity_type == 'civicrm_contact') {
       //for some reason the is_deleted column of the contact record is coming to the entity
@@ -2643,7 +2708,7 @@ function civicrm_entity_page_view($id, $entity_type) {
       $entity->is_deleted = $entity->contact_is_deleted;
      }
 
-    $content = $controller->view(array($id => $entity));
+    $content = $controller->view(array($entity->id => $entity));
   }
   else {
     $content = '<p>No ' . $entity_type . ' record found for id: ' . $id . '</p>';
