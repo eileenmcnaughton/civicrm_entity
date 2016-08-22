@@ -222,7 +222,7 @@ function civicrm_entity_reference_field_inline_entity_form_settings_alter(&$sett
  * @return bool
  */
 function civicrm_entity_reference_field_field_is_empty($item, $field) {
-  if (empty($item['target_id']) || (string) $item['target_id'] === '0') {
+  if (!isset($item['target_id']) || !is_numeric($item['target_id'])) {
     return TRUE;
   }
   return FALSE;

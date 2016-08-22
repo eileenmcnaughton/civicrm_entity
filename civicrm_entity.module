@@ -185,6 +185,7 @@ function  civicrm_entity_op_access($op, $entity_type, $entity = NULL, $account =
     global $user;
     $account = $user;
   }
+
   $civicrm_entity_info = civicrm_entity_get_supported_entity_info();
 
   if(isset($civicrm_entity_info[$entity_type]['permissions'][$op])) {
@@ -195,17 +196,21 @@ function  civicrm_entity_op_access($op, $entity_type, $entity = NULL, $account =
       return call_user_func($access_callback, $op, $entity_type, $entity, $account, $permissions);
     }
     elseif(!empty($permissions)) {
-      if (is_array($permissions) && count($permissions)) {
-        foreach ($permissions as $permission) {
-          if (!user_access($permission, $account)) {
-            return FALSE;
+      if (is_array($permissions)) {
+        if (count($permissions)) {
+          foreach ($permissions as $permission) {
+            if (!user_access($permission, $account)) {
+              return FALSE;
+            }
           }
+          return TRUE;
         }
-        return TRUE;
-      } else return user_access($permissions, $account);
+        else return user_access('administer CiviCRM', $account);
+      }
+      else return user_access($permissions, $account);
     }
   }
-  else return user_access('administer CiviCRM', $account);
+  return user_access('administer CiviCRM', $account);
 }
 
 /**
@@ -1736,7 +1741,6 @@ function civicrm_entity_get_field_widget($field_spec, $civicrm_entity) {
           'civicrm_field_type' => $field_type,
         );
         break;
-//need to add more types to cover the custom fields....Radio etc..
       default:
         $widget = array(
           'widget' => 'textfield',
@@ -1749,8 +1753,8 @@ function civicrm_entity_get_field_widget($field_spec, $civicrm_entity) {
     $widget = array('widget' =>'textfield');
   }
 
+  // some date field handling
   if (isset($field_spec['type'])) {
-
     switch($field_spec['type']) {
       case 4:
         $widget = array('widget' => 'date_select','format' => 'Y:m:d');
@@ -1764,6 +1768,7 @@ function civicrm_entity_get_field_widget($field_spec, $civicrm_entity) {
     }
   }
 
+  // FK Reference field handling
   if (!empty($field_spec['FKApiName'])) {
     $widget_subtype = civicrm_entity_fk_entities_to_produce_widget_for($field_spec['FKApiName']);
     if ($widget_subtype){
@@ -1771,7 +1776,55 @@ function civicrm_entity_get_field_widget($field_spec, $civicrm_entity) {
     }
   }
 
+  // some one off handle for properties of some entities that don't provide html type information
+  $entities_to_alter = array('address', 'phone', 'email', 'relationship', 'membership_type', 'activity');
+  if(in_array(strtolower($civicrm_entity), $entities_to_alter)) {
+    $checkbox_fields = array ('is_primary', 'is_billing', 'on_hold', 'is_bulk_mail', 'is_active', 'is_permission_a_b', 'is_permission_b_a', 'is_deleted');
+    if(in_array($field_spec['name'], $checkbox_fields)){
+      $widget = array('widget' => 'checkbox', 'civicrm_field_type' => 'standard');
+    }
+  }
+  if($field_spec['name'] == 'relationship_type_id' && $civicrm_entity == 'membership_type'){
+    $widget = array('widget' => 'civi_fk_reference', 'subtype' => civicrm_entity_fk_entities_to_produce_widget_for('RelationshipType'), 'entity' => 'RelationshipType');
+  }
+
   return $widget;
+}
+
+/**
+ * Call back function used to get select list options for some FK Reference fields.
+ *
+ * @param $civicrm_entity
+ * @return array
+ */
+function _civicrm_entity_get_entities_list($civicrm_entity){
+  try{
+    $result = civicrm_api3($civicrm_entity, 'get', array(
+      'options' => array('limit' => 100),
+    ));
+  }
+  catch(CiviCRM_API3_Exception $e){
+    return array('');
+  }
+  $entities = array();
+
+  if($result['count']) {
+    foreach($result['values'] as $id => $data){
+      switch($civicrm_entity) {
+        case 'RelationshipType':
+          $entities[$id] = $data['label_a_b'] . ' / ' . $data['label_b_a'];
+          break;
+        case 'FinancialType':
+          $entities[$id] = $data['name'];
+          break;
+
+        case 'Campaign':
+          $entities[$id] = $data['title'];
+          break;
+      }
+    }
+  }
+  return $entities;
 }
 
 /**
@@ -1800,8 +1853,14 @@ function civicrm_entity_get_field_options($field_name, $civicrm_entity){
  */
 function civicrm_entity_fk_entities_to_produce_widget_for($entity_type) {
  switch ($entity_type) {
-    case 'Contact':
+   case 'Campaign':
+     return 'select';
+   case 'Contact':
      return 'autocomplete';
+   case 'RelationshipType':
+     return 'select';
+   case 'FinancialType':
+     return 'select';
   }
   return FALSE;
 }

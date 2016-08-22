@@ -39,12 +39,22 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
             '#title' => $info['label'],
             '#description' => !empty($info['description']) ? $info['description'] : '',
           );
+
+          // set api required fields to be required on form
+          if (!empty($info['required'])) {
+            $entity_form[$name]['#required'] = TRUE;
+          }
+
           // FK Reference field handling
           if($entity_form[$name]['#type'] == 'civi_fk_reference'){
             switch($info['widget']['subtype']){
               case 'autocomplete':
                 $entity_form[$name]['#type'] = 'textfield';
                 $entity_form[$name]['#autocomplete_path'] = 'civicrm-entity/autocomplete/' . $info['widget']['entity'];
+                break;
+              case 'select':
+                $form[$name]['#type'] = 'select';
+                $form[$name]['#options'] = !empty($entity_form[$name]['#required']) ? _civicrm_entity_get_entities_list($info['widget']['entity']) : array(NULL => 'None') + _civicrm_entity_get_entities_list($info['widget']['entity']);
                 break;
               default:
                 $entity_form[$name]['#type'] = 'textfield';
@@ -74,17 +84,14 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
             }
           }
 
-          // set api required fields to be required on form
-          if (!empty($info['required'])) {
-            $entity_form[$name]['#required'] = TRUE;
-          }
-
           //set the options for select options, radios, and checkboxes
           if ($entity_form[$name]['#type'] == 'select') {
-            $entity_form[$name]['#options'] = $info['widget']['options'];
-            if(!empty($info['required'])) {
-              if(isset($entity_form[$name]['#options'][''])) {
-                unset($entity_form[$name]['#options']['']);
+            if(!empty($info['widget']['options'])) {
+              $entity_form[$name]['#options'] = $info['widget']['options'];
+              if (!empty($info['required'])) {
+                if (isset($entity_form[$name]['#options'][''])) {
+                  unset($entity_form[$name]['#options']['']);
+                }
               }
             }
           }

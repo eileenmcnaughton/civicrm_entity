@@ -54,12 +54,22 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
               '#title' => $info['label'],
               '#description' => !empty($info['description']) ? $info['description'] : '',
           );
+
+          // set api required fields to be required on form
+          if (!empty($info['required'])) {
+            $form[$name]['#required'] = TRUE;
+          }
+
           // FK Reference field handling
           if($form[$name]['#type'] == 'civi_fk_reference'){
             switch($info['widget']['subtype']){
               case 'autocomplete':
                 $form[$name]['#type'] = 'textfield';
                 $form[$name]['#autocomplete_path'] = 'civicrm-entity/autocomplete/' . $info['widget']['entity'];
+                break;
+              case 'select':
+                $form[$name]['#type'] = 'select';
+                $form[$name]['#options'] = !empty($entity_form[$name]['#required']) ? _civicrm_entity_get_entities_list($info['widget']['entity']) : array(NULL => 'None') + _civicrm_entity_get_entities_list($info['widget']['entity']);
                 break;
               default:
                 $form[$name]['#type'] = 'textfield';
@@ -89,17 +99,14 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
             }
           }
 
-          // set api required fields to be required on form
-          if (!empty($info['required'])) {
-            $form[$name]['#required'] = TRUE;
-          }
-
           //set the options for select options, radios, and checkboxes
           if ($form[$name]['#type'] == 'select') {
-            $form[$name]['#options'] = $info['widget']['options'];
-            if(!empty($info['required'])) {
-              if(isset($form[$name]['#options'][''])) {
-                unset($form[$name]['#options']['']);
+            if(!empty($info['widget']['options'])) {
+              $form[$name]['#options'] = $info['widget']['options'];
+              if (!empty($info['required'])) {
+                if (isset($form[$name]['#options'][''])) {
+                  unset($form[$name]['#options']['']);
+                }
               }
             }
           }
@@ -285,6 +292,7 @@ function civicrm_entity_form_submit(&$form, &$form_state) {
     'version' => 3,
     'action' => 'create',
   ));
+
   foreach ($form_state['values'] as $key => $value) {
     //need to convert checkbox values to a consumable format for checkboxes custom fields
     if(substr($key, 0, 7) == 'custom_'){
