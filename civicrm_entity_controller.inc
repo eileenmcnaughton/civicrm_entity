@@ -149,6 +149,7 @@ class CivicrmEntityController extends EntityAPIController {
       $params['sequential'] = 1;
 
       if ($entity->is_new) {
+        if(isset($params['id'])) unset($params['id']);
         $result = civicrm_api(substr($this->entityType, 8), 'create', $params);
 
       }
@@ -277,7 +278,7 @@ class CivicrmEntityController extends EntityAPIController {
 
     // some fields are still not retrieved, for example the financial_type_id for Contribution get even though they are returned in the getfields list
     // and if you don't use any return conditions, they come through, but in that case custom fields don't come through
-    // typical inconsistencies in teh CiviCRm api that play havoc for automation
+    // typical inconsistencies in the CiviCRm api that play havoc for automation
 
     // we really would prefer to use the 'create' action in the getfields list, because you get more....
     // but we need get to return all the field values for all the fields that are available for writing in the 'create' action
@@ -291,16 +292,18 @@ class CivicrmEntityController extends EntityAPIController {
     $condition['return'] = $return_fields['return'];
     $civicrm_entities2 = civicrm_api3($this->entityInfo['description'], 'get', $condition);
 
-    // merge the two together and unset anything not in the return array
+    // merge the two together
+    $new_civicrm_entities = array();
     foreach($civicrm_entities['values'] as $id => $entity){
       $new_civicrm_entities[$id] = array_merge($entity, $civicrm_entities2['values'][$id]);
+      // unset anything not in the return array (if you wanted to) but why?
       /*foreach($new_civicrm_entities[$id] as $key => $value){
         if(!in_array($key, $return_fields['return'])) {
           unset($new_civicrm_entities[$id][$key]);
         }
       }*/
     }
-
+    // create the Drupal Entities
     if (count($new_civicrm_entities)) {
       foreach ($new_civicrm_entities as $id => $civicrm_entity) {
         // @TODO improve this casting.

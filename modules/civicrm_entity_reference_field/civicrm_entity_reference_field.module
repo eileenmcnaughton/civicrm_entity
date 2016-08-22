@@ -1,0 +1,532 @@
+<?php
+
+/**
+ * @file
+ * Provide CiviCRM entity reference field type
+ */
+
+/**
+ * Implements hook_field_info().
+ *
+ * @return array
+ */
+function civicrm_entity_reference_field_field_info() {
+  return array(
+    'civicrm_entity_reference' => array(
+      'label' => t('CiviCRM Entity Reference'),
+      'description' => t('This field references CiviCRM entities by querying configured entity by a column name from a value on the host entity.'),
+      'settings' => array('target_entity_type' => 'address', 'target_id_column' => 'contact_id', 'host_source_id' => 'id'),
+      'instance_settings' => array(),
+      'default_widget' => 'civicrm_entity_reference_default_widget',
+      'default_formatter' => 'civicrm_entity_reference_default_formatter',
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_schema().
+ *
+ * @param $field
+ * @return array
+ */
+function civicrm_entity_reference_field_field_schema($field) {
+  if($field['type'] == 'civicrm_entity_reference'){
+    $columns = array(
+      'target_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+    );
+    return array(
+      'columns' => $columns,
+    );
+  }
+}
+
+/**
+ * Implements hook_field_create_field().
+ *
+ * Update fields of type 'civicrm_entity_reference' to use the 'civicrm_entity_reference_storage' storage type and module
+ *
+ * @param $field
+ */
+function civicrm_entity_reference_field_field_create_field($field) {
+  if($field['type'] == 'civicrm_entity_reference') {
+    // update field_config table record to alternative storage
+    db_update('field_config')
+      ->fields(array('storage_type' => 'civicrm_entity_reference_field_storage', 'storage_module' => 'civicrm_entity_reference_field_storage', 'cardinality' => -1))
+      ->condition('id', $field['id'])
+      ->execute();
+    // remove field data and revision tables
+    db_drop_table('field_data_' . $field['field_name']);
+    db_drop_table('field_revision_' . $field['field_name']);
+  }
+}
+
+/**
+ * Implements hook_form_FORMID_alter().
+ *
+ * form id : field_ui_field_edit_form
+ *
+ * Alter Field Settings form to set cardinality to Unlimited, and disable the select widget
+ *
+ * @param $form
+ * @param $form_state
+ */
+function civicrm_entity_reference_field_form_field_ui_field_edit_form_alter(&$form, &$form_state) {
+  if($form['#field']['type'] == 'civicrm_entity_reference') {
+    $form['field']['cardinality']['#default_value'] = -1;
+    $form['field']['cardinality']['#disabled'] = TRUE;
+  }
+}
+
+/**
+ * Implements hook_field_settings_form().
+ *
+ * @param $field
+ * @param $instance
+ * @param $has_data
+ */
+function civicrm_entity_reference_field_field_settings_form($field, $instance, $has_data) {
+  $defaults = field_info_field_settings($field['type']);
+  $settings = array_merge($defaults, $field['settings']);
+
+  $host_entity_type = $instance['entity_type'];
+
+  $civicrm_entities = _civicrm_entity_enabled_entities();
+
+  $entities = array();
+  foreach($civicrm_entities as $drupal_name => $civicrm_name){
+    $entities[$civicrm_name] = ucwords(str_replace('_', ' ', $civicrm_name));
+  }
+
+  $form['target_entity_type'] = array(
+    '#type' => 'select',
+    '#title' => t('Target Entity Type'),
+    '#default_value' => $settings['target_entity_type'],
+    '#description' => t('Target entity type for this reference field.'),
+    '#options' => $entities,
+    '#ajax' => array(
+      'event' => 'change',
+      'wrapper' => 'target-id-column-wrapper',
+      'callback' => 'civicrm_entity_reference_field_target_entity_type_ajax_callback',
+      'method' => 'replace',
+    ),
+  );
+
+  $target_id_column_options = _civicrm_entity_reference_field_get_target_id_column_options($settings['target_entity_type']);
+
+  $form['target_id_column'] = array(
+    '#type' => 'select',
+    '#title' => t('Target ID Join Column'),
+    '#default_value' => $settings['target_id_column'],
+    '#description' => t('The column of the targeted entity type to use to query against'),
+    '#options' => $target_id_column_options,
+    '#prefix' => '<div id="target-id-column-wrapper">',
+    '#suffix' => '</div>',
+  );
+  $form['host_source_id'] = array(
+    '#type' => 'select',
+    '#title' => t('Host Source Column'),
+    '#default_value' => $settings['host_source_id'],
+    '#description' => t('Host Entity property which value is used query target entity table.'),
+    '#options' => array ('id' => 'ID')
+  );
+
+  return $form;
+}
+
+/**
+ * Ajax callback for the field settings Target Entity Type select field change
+ *
+ * Update Target ID Join Column options
+ *
+ * @param $form
+ * @param $form_state
+ * @return mixed
+ */
+function civicrm_entity_reference_field_target_entity_type_ajax_callback(&$form, $form_state){
+  $entity_type = $form_state['values']['field']['settings']['target_entity_type'];
+  $target_id_column_options = _civicrm_entity_reference_field_get_target_id_column_options($entity_type);
+  $form['field']['settings']['target_id_column']['#options'] = $target_id_column_options;
+  return $form['field']['settings']['target_id_column'];
+}
+
+/**
+ * @param $entity_type
+ * @return array
+ */
+function _civicrm_entity_reference_field_get_target_id_column_options($entity_type) {
+  $options = array();
+  if (!civicrm_initialize()) {
+    return;
+  }
+  $result = civicrm_api3($entity_type, 'getfields', array(
+    'api_action' => "create",
+  ));
+
+  foreach ($result['values'] as $prop => $data){
+    if(strpos($prop, 'id') !== FALSE){
+      $options[$prop] = $data['title'];
+    }
+  }
+  return $options;
+}
+
+/**
+ * Implements hook_field_widget_info().
+ */
+function civicrm_entity_reference_field_field_widget_info() {
+  return array(
+    'civicrm_entity_reference_default_widget' => array(
+      'label' => t('CiviCRM Entity Reference Default Widget'),
+      'field types' => array('civicrm_entity_reference'),
+      'settings' => array(),
+      'behaviors' => array(
+        'multiple values' => FIELD_BEHAVIOR_DEFAULT,
+        'default value' => FIELD_BEHAVIOR_DEFAULT,
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_widget_info_alter().
+ *
+ * @param $info
+ */
+function civicrm_entity_reference_field_field_widget_info_alter(&$info) {
+  $info['inline_entity_form']['field types'][] = 'civicrm_entity_reference';
+}
+
+/**
+ * Implements hook_inline_entity_form_settings_alter().
+ *
+ * @param $settings
+ * @param $field
+ * @param $instance
+ */
+function civicrm_entity_reference_field_inline_entity_form_settings_alter(&$settings, $field, $instance) {
+  if ($field['type'] == 'civicrm_entity_reference') {
+    $settings['entity_type'] = 'civicrm_' . $field['settings']['target_entity_type'];
+    $settings['column'] = 'target_id';
+    $settings['bundles'] = array('civicrm_' . $field['settings']['target_entity_type']);
+  }
+}
+
+/**
+ * Implements hook_field_is_empty().
+ *
+ * @param $item
+ * @param $field
+ * @return bool
+ */
+function civicrm_entity_reference_field_field_is_empty($item, $field) {
+  if (!isset($item['target_id']) || !is_numeric($item['target_id'])) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * Implements hook_field_widget_form().
+ */
+function civicrm_entity_reference_field_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+  $orig_element = $element;
+  switch ($instance['widget']['type']) {
+    case 'civicrm_entity_reference_default_widget':
+      $widget = array();
+      $widget = $orig_element + array(
+          '#type' => 'textfield',
+          '#default_value' => isset($items[$delta]['target_id']) ? $items[$delta]['target_id'] : NULL,
+      );
+      $widget['#title'] = t('Target ID');
+      $widget['#weight'] = 0;
+      $element['target_id'] = $widget;
+      break;
+  }
+
+  return $element;
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function civicrm_entity_reference_field_field_formatter_info() {
+  return array(
+    'civicrm_entity_reference_default_formatter' => array( // Machine name of the formatter
+      'label' => t('Referenced ID'),
+      'field types' => array('civicrm_entity_reference'),
+      'settings'  => array( // Array of the settings we'll create
+        //'data_display' => 'display_en_us',
+      ),
+    ),
+    'civicrm_entity_reference_entity_label_formatter' => array( // Machine name of the formatter
+      'label' => t('Label'),
+      'field types' => array('civicrm_entity_reference'),
+      'settings'  => array( // Array of the settings we'll create
+        'link_to_entity' => 0,
+      ),
+    ),
+    'civicrm_entity_reference_entity_formatter' => array( // Machine name of the formatter
+      'label' => t('Rendered Entity'),
+      'field types' => array('civicrm_entity_reference'),
+      'settings'  => array( // Array of the settings we'll create
+        'view_mode' => 'default',
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_settings_form().
+ *
+ * @param $field
+ * @param $instance
+ * @param $view_mode
+ * @param $form
+ * @param $form_state
+ * @return array
+ */
+function civicrm_entity_reference_field_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state){
+  if ($field['type'] == 'civicrm_entity_reference') {
+    $display = $instance['display'][$view_mode];
+    $settings = $display['settings'];
+    $target_entity_type = 'civicrm_' . $field['settings']['target_entity_type'];
+
+
+    $modes = field_view_mode_settings($target_entity_type, $target_entity_type);
+
+    $view_modes = array('default' => 'default');
+    foreach ($modes as $key => $data) {
+      $view_modes[$key] = $key;
+    }
+
+    $element = array();
+
+    $element['view_mode'] = array(
+      '#type' => 'select',
+      '#title' => t('View mode'),
+      '#description' => 'Target Entity: civicrm_' . $field['settings']['target_entity_type'] . ', Select the view mode to render the entity as.',
+      '#options' => $view_modes,
+      '#default_value' => isset($settings['view_mode']) ? $settings['view_mode'] : 'default',
+    );
+    $element['link_to_entity'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Output as link to entity'),
+      '#default_value' => isset($settings['link_to_entity']) ? $settings['link_to_entity'] : 'default',
+      '#return_value' => 1,
+    );
+
+    if ($display['type'] == 'civicrm_entity_reference_entity_formatter'){
+      $element['link_to_entity']['#access'] = FALSE;
+    }
+    elseif ($display['type'] == 'civicrm_entity_reference_entity_label_formatter') {
+      $element['view_mode']['#access'] = FALSE;
+    }
+
+
+    return $element;
+  }
+
+}
+
+/**
+ * Implements hook_field_formatter_settings_summary().
+ *
+ * @param $field
+ * @param $instance
+ * @param $view_mode
+ * @return string
+ */
+function civicrm_entity_reference_field_field_formatter_settings_summary($field, $instance, $view_mode) {
+  if($field['type'] == 'civicrm_entity_reference') {
+    $display = $instance['display'][$view_mode];
+    $settings = $display['settings'];
+    $summary = '';
+    if ($display['type'] == 'civicrm_entity_reference_entity_formatter') {
+      $summary = t('Target Entity @entity_type Rendered as : @data', array(
+        '@entity_type' => 'civicrm_' . $field['settings']['target_entity_type'],
+        '@data' => isset($settings['view_mode']) ? $settings['view_mode'] : 'default',
+      ));
+    }
+    elseif ($display['type'] == 'civicrm_entity_reference_entity_label_formatter') {
+      $summary = t('Display @entity_type label as @data', array(
+        '@entity_type' => 'civicrm_' . $field['settings']['target_entity_type'],
+        '@data' => !empty($settings['link_to_entity']) ? 'link' : 'plain text.',
+      ));
+    }
+    return $summary;
+  }
+}
+
+/**
+ * Implement hook_field_formatter_prepare_view().
+ *
+ * @param $entity_type
+ * @param $entities
+ * @param $field
+ * @param $instances
+ * @param $langcode
+ * @param $items
+ * @param $displays
+ */
+function civicrm_entity_reference_field_field_formatter_prepare_view($entity_type, $entities, $field, $instances, $langcode, &$items, $displays) {
+  // this function borrowed pretty much straight from the entityreference module :)
+  $target_ids = array();
+  $target_entity_type = 'civicrm_' . $field['settings']['target_entity_type'];
+  // Collect every possible entity attached to any of the entities.
+  foreach ($entities as $id => $entity) {
+    foreach ($items[$id] as $delta => $item) {
+      if (isset($item['target_id'])) {
+        $target_ids[] = $item['target_id'];
+      }
+    }
+  }
+
+  if ($target_ids) {
+    $target_entities = entity_load($target_entity_type, $target_ids);
+  }
+  else {
+    $target_entities = array();
+  }
+
+  // Iterate through the fieldable entities again to attach the loaded data.
+  foreach ($entities as $id => $entity) {
+    $rekey = FALSE;
+
+    foreach ($items[$id] as $delta => $item) {
+      // Check whether the referenced entity could be loaded.
+      if (isset($target_entities[$item['target_id']])) {
+        // Replace the instance value with the term data.
+        $items[$id][$delta]['entity'] = $target_entities[$item['target_id']];
+        // Check whether the user has access to the referenced entity.
+        $has_view_access = (entity_access('view', $target_entity_type, $target_entities[$item['target_id']]) !== FALSE);
+        $has_update_access = (entity_access('update', $target_entity_type, $target_entities[$item['target_id']]) !== FALSE);
+        $items[$id][$delta]['access'] = ($has_view_access || $has_update_access);
+      }
+      // Otherwise, unset the instance value, since the entity does not exist.
+      else {
+        unset($items[$id][$delta]);
+        $rekey = TRUE;
+      }
+    }
+
+    if ($rekey) {
+      // Rekey the items array.
+      $items[$id] = array_values($items[$id]);
+    }
+  }
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function civicrm_entity_reference_field_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  $settings = $display['settings'];
+  // Rebuild the items list to contain only those with access.
+  foreach ($items as $key => $item) {
+    if (empty($item['access'])) {
+      unset($items[$key]);
+    }
+  }
+  switch ($display['type']) {
+    case 'civicrm_entity_reference_default_formatter':
+      foreach ($items as $delta => $item) {
+        $element[$delta] = array(
+          '#markup' => $item['target_id'],
+        );
+      }
+      break;
+    case 'civicrm_entity_reference_entity_formatter':
+      $target_entity_type = 'civicrm_' . $field['settings']['target_entity_type'];
+
+      foreach ($items as $delta => $item) {
+        static $depth = 0;
+        $depth++;
+        if ($depth > 20) {
+          throw new EntityReferenceRecursiveRenderingException(t('Recursive rendering detected when rendering entity @entity_type(@entity_id). Aborting rendering.', array('@entity_type' => $entity_type, '@entity_id' => $item['target_id'])));
+        }
+        $entity = clone $item['entity'];
+        unset($entity->content);
+        if ($target_entity_type == 'civicrm_contact') {
+          //for some reason the is_deleted column of the contact record is coming to the entity
+          // as contact_is_deleted ...special handling to have the page value set properly
+          $entity->is_deleted = $entity->contact_is_deleted;
+        }
+
+        $view_mode = isset($settings['view_mode']) ? $settings['view_mode'] : 'default';
+        $controller = entity_get_controller($target_entity_type);
+        $content = $controller->view(array($item['target_id'] => $entity), $view_mode);
+        $depth = 0;
+        $element[$delta] = array(
+          '#markup' => drupal_render($content),
+        );
+
+      }
+      break;
+    case 'civicrm_entity_reference_entity_label_formatter':
+      $target_entity_type = 'civicrm_' . $field['settings']['target_entity_type'];
+      foreach ($items as $delta => $item) {
+        $output_as_link = !empty($settings['link_to_entity']) ? 1 : 0;
+        $entity_text = entity_label($target_entity_type, $item['entity']);
+        $entity_path = '/' . str_replace('_', '-', $target_entity_type) . '/' . $item['target_id'];
+        if (empty($entity_text)) {
+          $entity_text = ucwords(str_replace('_', ' ', $target_entity_type)) . 'id:' . $item['target_id'];
+        }
+
+        if ($output_as_link) {
+          $element[$delta] = array(
+            '#markup' => l($entity_text, $entity_path),
+          );
+        }
+        else {
+          $element[$delta] = array(
+            '#markup' => $entity_text,
+          );
+        }
+      }
+      break;
+  }
+
+  return $element;
+}
+
+/**
+ * Implements hook_civicrm_post().
+ *
+ * Clear specific entity field cache for entities that have fields of type civicrm_reference_field and target new or deleted entity
+ *
+ * This won't work for every entity. For example new Notes do not cause this hook to fire. :(
+ *
+ * @param $op
+ * @param $objectName
+ * @param $objectId
+ * @param $objectRef
+ */
+function civicrm_entity_reference_field_civicrm_post($op, $objectName, $objectId, &$objectRef){
+  if ($op == 'create' || $op == 'delete') {
+    $civicrm_entity_reference_fields = db_select('field_config', 'fc')
+      ->fields('fc', array('field_name', 'id'))
+      ->condition('type', 'civicrm_entity_reference')
+      ->execute();
+    while ($record = $civicrm_entity_reference_fields->fetchAssoc()){
+      $field =  field_info_field_by_id($record['id']);
+      $civicrm_entity_type = ltrim(strtolower(preg_replace('/[A-Z]/', '_$0', $objectName)), '_');
+      if ($field['settings']['target_entity_type'] == $civicrm_entity_type) {
+          $instances = db_select('field_config_instance', 'fi')
+            ->fields('fi', array('id', 'entity_type'))
+            ->condition('field_id', $record['id'])
+            ->execute();
+        while ($instance = $instances->fetchAssoc()){
+          //clear the cache of entity
+          if (!empty($field['settings']['target_id_column'])) {
+            $host_id_to_clear = $objectRef->{$field['settings']['target_id_column']};
+            cache_clear_all('field:' . $instance['entity_type'] . ':' . $host_id_to_clear, 'cache_field');
+          }
+        }
+      }
+    }
+  }
+}

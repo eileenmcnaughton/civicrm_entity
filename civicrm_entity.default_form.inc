@@ -1,14 +1,12 @@
 <?php
 
-function civicrm_entity_form($form, &$form_state, $entity_id, $op, $entity_type) {
+function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
 
   if ($op == 'edit' || $op == 'delete') {
-    $entity = entity_load($entity_type, array($entity_id));
-    if(!$entity) {
-      drupal_set_title('No ' . $entity_type . ' with id:' . $entity_id);
+    if(!is_object($entity)) {
+      drupal_set_title('No ' . $entity_type . ' with id:' . $entity);
       return $form;
     }
-    $entity = $entity[$entity_id];
     $form_state['entity'] = $entity;
     $form_state['entity_type'] = $entity_type;
   }
@@ -39,7 +37,6 @@ function civicrm_entity_form($form, &$form_state, $entity_id, $op, $entity_type)
     //get entity controller build content
     if ($op == 'edit') {
       $wrapper = entity_metadata_wrapper($entity_type, $entity);
-      //$wrapper = entity_metadata_wrapper($entity_type, $entity_id);
     }
     else {
       $wrapper = entity_metadata_wrapper($entity_type);
@@ -56,38 +53,102 @@ function civicrm_entity_form($form, &$form_state, $entity_id, $op, $entity_type)
               '#type' => $info['widget']['widget'],
               '#title' => $info['label'],
               '#description' => !empty($info['description']) ? $info['description'] : '',
-              '#default_value' => $op == 'edit' ? $child->value() : NULL,
           );
+
           // set api required fields to be required on form
-          if (isset($info['required']) && $info['required']) {
+          if (!empty($info['required'])) {
             $form[$name]['#required'] = TRUE;
           }
-          //set the options for select options, radios, and checkboxes
-          if ($form[$name]['#type'] == 'select') {
-            $form[$name]['#options'] = $info['widget']['options'];
+
+          // FK Reference field handling
+          if($form[$name]['#type'] == 'civi_fk_reference'){
+            switch($info['widget']['subtype']){
+              case 'autocomplete':
+                $form[$name]['#type'] = 'textfield';
+                $form[$name]['#autocomplete_path'] = 'civicrm-entity/autocomplete/' . $info['widget']['entity'];
+                break;
+              case 'select':
+                $form[$name]['#type'] = 'select';
+                $form[$name]['#options'] = !empty($entity_form[$name]['#required']) ? _civicrm_entity_get_entities_list($info['widget']['entity']) : array(NULL => 'None') + _civicrm_entity_get_entities_list($info['widget']['entity']);
+                break;
+              default:
+                $form[$name]['#type'] = 'textfield';
+                break;
+            }
           }
-          if ($form[$name]['#type'] == 'radios'){
-            $form[$name]['#options'] = $info['widget']['options'];
+
+          if($op == 'edit') {
+            $form[$name]['#default_value'] = $child->value();
           }
-          if ($form[$name]['#type'] == 'checkboxes'){
-            $value = $child->value();
-            if($op == 'edit' && !empty($value)) {
-              foreach($info['widget']['options'] as $key => $label) {
-                if(in_array($key, $value)){
-                  $default_values[] = $key;
-                }
-              }
-              $form[$name]['#default_value'] = $default_values;
+          elseif($op == 'create') {
+            if(isset($info['default_value'])){
+              $form[$name]['#default_value'] = $info['default_value'];
             }
             else {
-              $form[$name]['#default_value'] = array('');
+              $form[$name]['#default_value'] = NULL;
+            }
+          }
+
+          // set the #size and #maxlength FAPI properties if the #type is a textfield
+          if($form[$name]['#type'] == 'textfield') {
+            if(!empty($info['size'])) {
+              $form[$name]['#size'] = $info['size'];
+            }
+            if(!empty($info['maxlength'])) {
+              $form[$name]['#maxlength'] = $info['maxlength'];
+            }
+          }
+
+          //set the options for select options, radios, and checkboxes
+          if ($form[$name]['#type'] == 'select') {
+            if(!empty($info['widget']['options'])) {
+              $form[$name]['#options'] = $info['widget']['options'];
+              if (!empty($info['required'])) {
+                if (isset($form[$name]['#options'][''])) {
+                  unset($form[$name]['#options']['']);
+                }
+              }
+            }
+          }
+          elseif ($form[$name]['#type'] == 'radios'){
+            $form[$name]['#options'] = $info['widget']['options'];
+            if(!empty($info['required'])) {
+              if(isset($form[$name]['#options'][''])) {
+                unset($form[$name]['#options']['']);
+              }
+            }
+          }
+          elseif ($form[$name]['#type'] == 'checkboxes'){
+            if($op == 'edit') {
+              $value = $child->value();
+              if(!empty($value)) {
+                foreach ($info['widget']['options'] as $key => $label) {
+                  if (in_array($key, $value)) {
+                    $default_values[] = $key;
+                  }
+                }
+                $form[$name]['#default_value'] = $default_values;
+              }
+              else {
+                $form[$name]['#default_value'] = array('');
+              }
+            }
+            elseif($op == 'create') {
+              if(isset($info['default_value'])){
+                $form[$name]['#default_value'] = explode(CRM_Core_DAO::VALUE_SEPARATOR, $form[$name]['#default_value']);
+              }
             }
 
             $form[$name]['#options'] = $info['widget']['options'];
+            if(!empty($info['required'])) {
+              if(isset($form[$name]['#options'][''])) {
+                unset($form[$name]['#options']['']);
+              }
+            }
           }
           // Date field handling, check for date_api module to use date select widget
           // else fallback to textfield
-          if ($form[$name]['#type'] == 'date_select') {
+          elseif ($form[$name]['#type'] == 'date_select') {
             if (module_exists('date_api')){
               $form[$name]['#format'] = $info['widget']['format'];
             }
@@ -95,12 +156,18 @@ function civicrm_entity_form($form, &$form_state, $entity_id, $op, $entity_type)
               $form[$name]['#type'] = 'textfield';
             }
           }
+
           //for some reason the is_deleted column of the contact record is coming to the entity
           // as contact_is_deleted ...special handling to have the form value set properly
           if ($name == 'is_deleted') {
             if ($entity_type=='civicrm_contact') {
-              $form[$name]['#default_value'] = $entity->contact_is_deleted;
+              $form[$name]['#default_value'] = isset($entity->contact_is_deleted) ? $entity->contact_is_deleted : 0;
             }
+          }
+
+          // make sure to disable id field, and any custom field with is_view = 1
+          if($name == 'id' || !empty($info['is_view'])) {
+            $form[$name]['#disabled'] = TRUE;
           }
 
         } // end if isset widget
@@ -182,6 +249,33 @@ function civicrm_entity_form_validate(&$form, &$form_state) {
   foreach ($form_state['values'] as $key => $value) {
     $entity->{$key} = $value;
   }
+
+  // validate civicrm data
+  $entity_metadata_info = entity_get_property_info($entity_type);
+  foreach($entity_metadata_info['properties'] as $name => $info) {
+    if(!empty($info['type'])) {
+      // integer validation
+      if ($info['type'] == 'integer') {
+        //text field validation
+        if (isset($form[$name]['#type']) && $form[$name]['#type'] == 'textfield') {
+          if (isset($form_state['values'][$name]) && strlen($form_state['values'][$name]) && (string)(int)$form_state['values'][$name] !== (string)$form_state['values'][$name]) {
+            form_set_error($name, 'Value must be an integer. e.g (1, 154, 0)');
+          }
+        }
+      }
+      // number validation
+      // money validation
+      elseif($info['type'] == 'decimal') {
+        //text field validation
+        if (isset($form[$name]['#type']) && $form[$name]['#type'] == 'textfield') {
+          if (isset($form_state['values'][$name]) && strlen($form_state['values'][$name]) && !is_numeric($form_state['values'][$name])) {
+            form_set_error($name, 'Value must be an number. e.g (1, 1.26, -1.3)');
+          }
+        }
+      }
+    }
+  }
+
   // Notify field widgets to validate their data.
   field_attach_form_validate($entity_type, $entity, $form, $form_state);
 
@@ -198,6 +292,7 @@ function civicrm_entity_form_submit(&$form, &$form_state) {
     'version' => 3,
     'action' => 'create',
   ));
+
   foreach ($form_state['values'] as $key => $value) {
     //need to convert checkbox values to a consumable format for checkboxes custom fields
     if(substr($key, 0, 7) == 'custom_'){
@@ -216,6 +311,11 @@ function civicrm_entity_form_submit(&$form, &$form_state) {
       else {
         $entity->{$key} = $value;
       }
+
+      if(!empty($civicrm_entity_fields['values'][$key]['is_view'])) {
+        unset($entity->{$key});
+      }
+
     }
     else {
       $entity->{$key} = $value;
@@ -227,8 +327,6 @@ function civicrm_entity_form_submit(&$form, &$form_state) {
     $entity->created = time();
   }
   $entity->changed = time();
-
-  //need to convert checkbox values to a consumable format for checkboxes custom fields
 
   $wrapper = entity_metadata_wrapper($entity_type, $entity);
   field_attach_submit($entity_type, $entity, $form, $form_state);
