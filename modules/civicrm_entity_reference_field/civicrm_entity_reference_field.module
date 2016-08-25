@@ -70,13 +70,23 @@ function civicrm_entity_reference_field_field_create_field($field) {
  *
  * Alter Field Settings form to set cardinality to Unlimited, and disable the select widget
  *
+ * Check the "delete reference" inline entity form option if that is the widget
+ *
  * @param $form
  * @param $form_state
  */
 function civicrm_entity_reference_field_form_field_ui_field_edit_form_alter(&$form, &$form_state) {
   if($form['#field']['type'] == 'civicrm_entity_reference') {
+    // field settings mods
     $form['field']['cardinality']['#default_value'] = -1;
     $form['field']['cardinality']['#disabled'] = TRUE;
+
+    if ($form['instance']['widget']['type']['#value'] == 'inline_entity_form_single' || $form['instance']['widget']['type']['#value'] == 'inline_entity_form') {
+      // Its going to delete the referenced entity so we just set this value to 1 and disable the checkbox to avoid confusion
+      $form['instance']['widget']['settings']['type_settings']['delete_references']['#default_value'] = 1;
+      $form['instance']['widget']['settings']['type_settings']['delete_references']['#disabled'] = TRUE;
+    }
+
   }
 }
 
@@ -197,7 +207,9 @@ function civicrm_entity_reference_field_field_widget_info() {
  */
 function civicrm_entity_reference_field_field_widget_info_alter(&$info) {
   $info['inline_entity_form']['field types'][] = 'civicrm_entity_reference';
+  $info['inline_entity_form_single']['field types'][] = 'civicrm_entity_reference';
 }
+
 
 /**
  * Implements hook_inline_entity_form_settings_alter().
@@ -213,6 +225,7 @@ function civicrm_entity_reference_field_inline_entity_form_settings_alter(&$sett
     $settings['bundles'] = array('civicrm_' . $field['settings']['target_entity_type']);
   }
 }
+
 
 /**
  * Implements hook_field_is_empty().
@@ -506,7 +519,7 @@ function civicrm_entity_reference_field_field_formatter_view($entity_type, $enti
  * @param $objectRef
  */
 function civicrm_entity_reference_field_civicrm_post($op, $objectName, $objectId, &$objectRef){
-  if ($op == 'create' || $op == 'delete') {
+  if ($op == 'create' || $op == 'delete' || $op == 'edit') {
     $civicrm_entity_reference_fields = db_select('field_config', 'fc')
       ->fields('fc', array('field_name', 'id'))
       ->condition('type', 'civicrm_entity_reference')

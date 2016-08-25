@@ -51,9 +51,15 @@ function civicrm_entity_reference_field_storage_field_storage_load($entity_type,
     foreach($ids as $id) {
       $field_values = array();
       try {
-        $result = civicrm_api3($field['settings']['target_entity_type'], 'get', array(
+        $params = array(
           $field['settings']['target_id_column'] => $entities[$id]->{$field['settings']['host_source_id']},
-        ));
+        );
+        $is_primary_entities = array('address', 'phone', 'email');
+
+        if(in_array($field['settings']['target_entity_type'], $is_primary_entities)) {
+          $params['options'] = array('sort' => 'is_primary DESC');
+        }
+        $result = civicrm_api3($field['settings']['target_entity_type'], 'get', $params);
       }
       catch (CiviCRM_API3_Exception $e) {
         $error = $e->getMessage();
