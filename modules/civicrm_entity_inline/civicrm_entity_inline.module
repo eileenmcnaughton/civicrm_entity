@@ -1,0 +1,14 @@
+<?php
+
+/*
+ * Implements hook_entity_info_alter().
+ */
+function civicrm_entity_inline_entity_info_alter(&$entity_info) {
+  $entities = _civicrm_entity_enabled_entities();
+
+  foreach ($entities as $drupal => $civi) {
+    $entity_info[$drupal]['inline entity form'] = array(
+      'controller' => 'CivicrmInlineEntityFormController',
+    );
+  }
+}
