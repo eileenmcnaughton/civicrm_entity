@@ -1,0 +1,5 @@
+name = CiviCRM Entity Contact Group Assign Field
+description = "Consider experimental. Provides CiviCRM Entity Contact Group Assign Field Type.  Provides a widget for adding/removing a contact to a selected list of groups."
+dependencies[] = civicrm_entity
+package = CiviCRM
+core = 7.x
