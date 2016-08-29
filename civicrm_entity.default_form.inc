@@ -244,8 +244,9 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
  * Form API validate callback for the entity form
  */
 function civicrm_entity_form_validate(&$form, &$form_state) {
-  $entity = $form_state['entity'];
-  $entity_type = $form_state['entity_type'];
+  $entity = $form['#entity'];
+  $entity_type = $form['#entity_type'];
+
   foreach ($form_state['values'] as $key => $value) {
     $entity->{$key} = $value;
   }
@@ -286,8 +287,8 @@ function civicrm_entity_form_validate(&$form, &$form_state) {
  *
  */
 function civicrm_entity_form_submit(&$form, &$form_state) {
-  $entity_type = $form_state['entity_type'];
-  $entity = $form_state['entity'];
+  $entity_type = $form['#entity_type'];
+  $entity = $form['#entity'];
   $civicrm_entity_fields = civicrm_api(substr_replace($entity_type,'', 0, 8),  'getfields', array(
     'version' => 3,
     'action' => 'create',

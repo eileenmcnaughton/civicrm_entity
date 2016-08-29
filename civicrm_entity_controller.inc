@@ -168,7 +168,7 @@ class CivicrmEntityController extends EntityAPIController {
       if (!civicrm_error($result)) {
         if($is_new) {
           $entity->id= $result['values'][0]['id'];
-          field_attach_update($this->entityType, $entity);
+          field_attach_insert($this->entityType, $entity);
          // $this->invoke('insert', $entity);
         }
         else {

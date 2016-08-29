@@ -151,14 +151,24 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
           }
 
           // Automatically set the referenced entity target id column with the id of the host entity
+
           if( $op == 'add' || $op == 'create' ) {
             $field_name = $entity_form['#parents'][0];
             $field_info = field_info_field($field_name);
-            $target_id_column = $field_info['settings']['target_id_column'];
-            $host_id_prop = $field_info['settings']['host_source_id'];
-            if ($name == $target_id_column && isset($form_state['complete form'][$host_id_prop]['#default_value'])) {
-              $entity_form[$name]['#default_value'] = $form_state['complete form'][$host_id_prop]['#default_value'];
-              $entity_form[$name]['#disabled'] = TRUE;
+            $target_id_column = isset($field_info['settings']['target_id_column']) ? $field_info['settings']['target_id_column'] : '';
+            $host_id_prop =isset($field_info['settings']['host_source_id']) ? $field_info['settings']['host_source_id'] : '';
+            if ($name == $target_id_column ) {
+              if(isset($form_state['complete form'][$host_id_prop]['#default_value'])) {
+                $entity_form[$name]['#default_value'] = $form_state['complete form'][$host_id_prop]['#default_value'];
+                $entity_form[$name]['#disabled'] = TRUE;
+              }
+              elseif(isset($form_state['field'][$field_name][LANGUAGE_NONE]['instance']['entity_type'])){
+                $host_entity_type = $form_state['field'][$field_name][LANGUAGE_NONE]['instance']['entity_type'];
+                if(isset($form_state[$host_entity_type]->{$host_id_prop})) {
+                  $entity_form[$name]['#default_value'] = $form_state[$host_entity_type]->{$host_id_prop};
+                  $entity_form[$name]['#disabled'] = TRUE;
+                }
+              }
             }
           }
 
@@ -173,34 +183,34 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
     return $entity_form;
   }
   
-  public function entityFormValidate($entity_form, &$form_state) {
+  public function entityFormValidate($entity_form, &$form_state)
+  {
     $entity_type = $form_state['entity_type'];
-    $field_name = $entity_form['#parents'][0] ;
+    $field_name = $entity_form['#parents'][0];
     $ief_id = $entity_form['#ief_id'];
     $op = $entity_form['#op'];
 
-    if ($op == 'edit')
-     {
-      foreach ($form_state['inline_entity_form'][$ief_id]['entities'] as $k => $entity_array) {
-        if (isset($form_state['values'][$field_name]['und']['entities'][$k]['form'])){
-          $entity = $entity_array['entity'];
-          foreach ($form_state['values'][$field_name]['und']['entities'][$k]['form'] as $key => $value) {
-            $entity->{$key} = $value;
+    if ($op == 'edit') {
+      foreach ($form_state['inline_entity_form'][$ief_id]['entities'] as $delta => $entity_array) {
+        if (isset($form_state['values'][$field_name]['und']['entities'][$delta]['form'])) {
+          //$entity = $entity_array['entity'];
+          foreach ($form_state['values'][$field_name]['und']['entities'][$delta]['form'] as $key => $value) {
+            //$entity->{$key} = $value;
+            $entity_array['entity']->{$key} = $value;
           }
-         // field_attach_form_validate($entity_type, $entity, $entity_form, $form_state);
+          // field_attach_form_validate($entity_type, $entity, $entity_form, $form_state);
         }
       }
-    }
-    elseif ($op == 'create' || $op == 'add') {
+    } elseif ($op == 'create' || $op == 'add') {
       $entity = $form_state['entity'];
-      
+
       foreach ($form_state['values'][$field_name]['und']['form'] as $key => $value) {
         $entity->{$key} = $value;
       }
 
     }
 
-    if($op == 'create' || $op == 'add' || $op == 'edit') {
+    if ($op == 'create' || $op == 'add' || $op == 'edit') {
       // validate civicrm data
       $entity_metadata_info = entity_get_property_info($entity_type);
       foreach ($form_state['inline_entity_form'][$ief_id]['entities'] as $delta => $entity_array) {
@@ -210,9 +220,10 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
             if ($info['type'] == 'integer') {
               //text field validation
               if (isset($entity_form[$name]['#type']) && $entity_form[$name]['#type'] == 'textfield') {
-                if ( isset($form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form'][$name]) &&
-                    strlen($form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form'][$name]) &&
-                    (string)(int)$form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form'][$name] !== (string)$form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form'][$name] ) {
+                if (isset($form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form'][$name]) &&
+                  strlen($form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form'][$name]) &&
+                  (string)(int)$form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form'][$name] !== (string)$form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form'][$name]
+                ) {
                   form_set_error($field_name . '][' . LANGUAGE_NONE . '][entities][' . $delta . '][form][' . $name, 'Value must be an integer. e.g (1, 154, 0)');
                 }
               }
@@ -222,17 +233,19 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
             elseif ($info['type'] == 'decimal') {
               //text field validation
               if (isset($entity_form[$name]['#type']) && $entity_form[$name]['#type'] == 'textfield') {
-                if ( isset($form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form'][$name]) &&
-                    strlen($form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form'][$name]) &&
-                    !is_numeric($form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form'][$name]) ) {
+                if (isset($form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form'][$name]) &&
+                  strlen($form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form'][$name]) &&
+                  !is_numeric($form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form'][$name])
+                ) {
                   form_set_error($field_name . '][' . LANGUAGE_NONE . '][entities][' . $delta . '][form][' . $name, 'Value must be an number. e.g (1, 1.26, -1.3)');
                 }
               }
             }
           }
         }
+        field_attach_form_validate($entity_type, $entity_array['entity'], $entity_form, $form_state);
       }
-      field_attach_form_validate($entity_type, $entity, $entity_form, $form_state);
+
     }
 
     parent::entityFormValidate($entity_form, $form_state);
@@ -248,6 +261,8 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
       'action' => 'create',
     ));
     if ($op == 'edit') {
+
+
       foreach ($form_state['inline_entity_form'][$ief_id]['entities'] as $k => $entity_array) {
         if (isset($form_state['values'][$field_name]['und']['entities'][$k]['form'])) {
           $entity = $entity_array['entity'];
@@ -284,8 +299,9 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
           }
           $entity->changed = time();
 
-          $wrapper = entity_metadata_wrapper($entity_type, $entity);
+          //$wrapper = entity_metadata_wrapper($entity_type, $entity);
           field_attach_submit($entity_type, $entity, $entity_form, $form_state);
+
         }
       }
     }
@@ -324,11 +340,12 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
       }
       $entity->changed = time();
 
-      $wrapper = entity_metadata_wrapper($entity_type, $entity);
+      //$wrapper = entity_metadata_wrapper($entity_type, $entity);
       field_attach_submit($entity_type, $entity, $entity_form, $form_state);
     }
     // Add in created and changed times.
-    
+
+
     parent::entityFormSubmit($entity_form, $form_state);
   }
 
