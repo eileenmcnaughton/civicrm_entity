@@ -224,7 +224,7 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
                   strlen($form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form'][$name]) &&
                   (string)(int)$form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form'][$name] !== (string)$form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form'][$name]
                 ) {
-                  form_set_error($field_name . '][' . LANGUAGE_NONE . '][entities][' . $delta . '][form][' . $name, 'Value must be an integer. e.g (1, 154, 0)');
+                  form_set_error($field_name . '][' . LANGUAGE_NONE . '][entities][' . $delta . '][form][' . $name, t('Value must be an integer. e.g (1, 154, 0)'));
                 }
               }
             }
@@ -237,9 +237,38 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
                   strlen($form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form'][$name]) &&
                   !is_numeric($form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form'][$name])
                 ) {
-                  form_set_error($field_name . '][' . LANGUAGE_NONE . '][entities][' . $delta . '][form][' . $name, 'Value must be an number. e.g (1, 1.26, -1.3)');
+                  form_set_error($field_name . '][' . LANGUAGE_NONE . '][entities][' . $delta . '][form][' . $name, t('Value must be an number. e.g (1, 1.26, -1.3)'));
                 }
               }
+            }
+          }
+        }
+        // validate name for contact
+        if ($entity_type == 'civicrm_contact' && isset($form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form']['contact_type'])) {
+          if ($form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form']['contact_type'] == 'Individual') {
+            if (!isset($entity_form['first_name']) && !isset($entity_form['middle_name']) && !isset($entity_form['last_name'])) {
+              form_set_error($field_name . '][' . LANGUAGE_NONE . '][entities][' . $delta . '][form][' . 'contact_type', t('Individual contact type, form must include at least one of first, middle, or last name fields.'));
+            }
+            elseif (empty($form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form']['first_name']) && empty($form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form']['middle_name']) && empty($form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form']['last_name'])) {
+              form_set_error($field_name . '][' . LANGUAGE_NONE . '][entities][' . $delta . '][form][' . 'first_name', t('At least one of first, middle, or last names must be set when contact type is set to Individual.'));
+              form_set_error($field_name . '][' . LANGUAGE_NONE . '][entities][' . $delta . '][form][' . 'middle_name');
+              form_set_error($field_name . '][' . LANGUAGE_NONE . '][entities][' . $delta . '][form][' . 'last_name');
+            }
+          }
+          elseif ($form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form']['contact_type'] == 'Household') {
+            if (!isset($entity_form['household_name'])){
+              form_set_error($field_name . '][' . LANGUAGE_NONE . '][entities][' . $delta . '][form][' . 'contact_type', t('Household contact type, form must include the household name field.'));
+            }
+            elseif (empty($form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form']['household_name'])) {
+              form_set_error($field_name . '][' . LANGUAGE_NONE . '][entities][' . $delta . '][form][' . 'household_name', t('Household name is required when contact type is set to Household'));
+            }
+          }
+          elseif ($form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form']['contact_type'] == 'Organization') {
+            if (!isset($entity_form['organization_name'])){
+              form_set_error($field_name . '][' . LANGUAGE_NONE . '][entities][' . $delta . '][form][' . 'contact_type', t('Organization contact type, form must include the organization name field.'));
+            }
+            elseif (empty($form_state['values'][$field_name][LANGUAGE_NONE]['entities'][$delta]['form']['organization_name'])) {
+              form_set_error($field_name . '][' . LANGUAGE_NONE . '][entities][' . $delta . '][form][' . 'organization_name', t('Organization name is required when contact type is set to Organization.'));
             }
           }
         }

@@ -85,6 +85,11 @@ function civicrm_entity_reference_field_form_field_ui_field_edit_form_alter(&$fo
       // Its going to delete the referenced entity so we just set this value to 1 and disable the checkbox to avoid confusion
       $form['instance']['widget']['settings']['type_settings']['delete_references']['#default_value'] = 1;
       $form['instance']['widget']['settings']['type_settings']['delete_references']['#disabled'] = TRUE;
+      // Does it make sense to have the "add existing entities?" functionality, disabling it for now
+      if(isset($form['instance']['widget']['settings']['type_settings']['allow_existing'])){
+        $form['instance']['widget']['settings']['type_settings']['allow_existing']['#default_value'] = 0;
+        $form['instance']['widget']['settings']['type_settings']['allow_existing']['#disabled'] = TRUE;
+      }
     }
 
   }
@@ -537,6 +542,46 @@ function civicrm_entity_reference_field_civicrm_post($op, $objectName, $objectId
           if (!empty($field['settings']['target_id_column'])) {
             $host_id_to_clear = $objectRef->{$field['settings']['target_id_column']};
             cache_clear_all('field:' . $instance['entity_type'] . ':' . $host_id_to_clear, 'cache_field');
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * For CiviCRM Entity Add forms
+ *
+ * Unset field form for Inline Entity Form -- Single on entity create.
+ * Disable widget buttons for Inline Entity Form -- Multiple on entity create.
+ * Disable widget for default widget.
+ *
+ * @param $form
+ * @param $form_state
+ * @param $form_id
+ */
+function civicrm_entity_reference_field_form_alter(&$form, &$form_state, $form_id) {
+  $civicrm_entities = _civicrm_entity_enabled_entities();
+  foreach ($civicrm_entities as $drupal_name => $civicrm_name) {
+    if(strpos($form_id, $drupal_name) === 0 && $form_state['op'] == 'create') {
+      foreach($form as $index => $data) {
+        if(strpos($index,'field_') === 0) {
+          if(!empty($data[LANGUAGE_NONE]['#field_name'])) {
+            $field = field_info_field($data[LANGUAGE_NONE]['#field_name']);
+            if($field['type'] == 'civicrm_entity_reference') {
+              $instance = field_info_instance($form['#entity_type'], $data[LANGUAGE_NONE]['#field_name'], $form['#entity_type']);
+              if($instance['widget']['type'] == 'inline_entity_form_single') {
+                unset($form[$index][LANGUAGE_NONE]['form']);
+              }
+              elseif ($instance['widget']['type'] == 'inline_entity_form') {
+                $form[$index][LANGUAGE_NONE]['actions']['ief_add']['#disabled'] = TRUE;
+              }
+              elseif ($instance['widget']['type'] == 'civicrm_entity_reference_default_widget') {
+                $form[$index]['#disabled'] = TRUE;
+              }
+            }
           }
         }
       }

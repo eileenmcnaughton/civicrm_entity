@@ -1,7 +1,6 @@
 <?php
 
 function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
-
   if ($op == 'edit' || $op == 'delete') {
     if(!is_object($entity)) {
       drupal_set_title('No ' . $entity_type . ' with id:' . $entity);
@@ -9,6 +8,7 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
     }
     $form_state['entity'] = $entity;
     $form_state['entity_type'] = $entity_type;
+    $form['#entity'] = $entity;
   }
   if ($op == 'create') {
     $entity = new CiviCRMEntity(array(), $entity_type);
@@ -16,6 +16,7 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
     $entity->type = $entity_type;
     $form_state['entity'] = $entity;
     $form_state['entity_type'] = $entity_type;
+    $form['#entity'] = $entity;
   }
   // Add the field related form elements.
   if ($op == 'edit' || $op == 'create') {
@@ -236,7 +237,6 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
   }
   $title = str_replace("Civicrm", "CiviCRM", $title);
   drupal_set_title($title);
-
   return $form;
 }
 
@@ -260,7 +260,7 @@ function civicrm_entity_form_validate(&$form, &$form_state) {
         //text field validation
         if (isset($form[$name]['#type']) && $form[$name]['#type'] == 'textfield') {
           if (isset($form_state['values'][$name]) && strlen($form_state['values'][$name]) && (string)(int)$form_state['values'][$name] !== (string)$form_state['values'][$name]) {
-            form_set_error($name, 'Value must be an integer. e.g (1, 154, 0)');
+            form_set_error($name, t('Value must be an integer. e.g (1, 154, 0)'));
           }
         }
       }
@@ -270,12 +270,42 @@ function civicrm_entity_form_validate(&$form, &$form_state) {
         //text field validation
         if (isset($form[$name]['#type']) && $form[$name]['#type'] == 'textfield') {
           if (isset($form_state['values'][$name]) && strlen($form_state['values'][$name]) && !is_numeric($form_state['values'][$name])) {
-            form_set_error($name, 'Value must be an number. e.g (1, 1.26, -1.3)');
+            form_set_error($name, t('Value must be an number. e.g (1, 1.26, -1.3)'));
           }
         }
       }
     }
   }
+  // validate name for contact
+  if ($entity_type == 'civicrm_contact') {
+    if ($form_state['values']['contact_type'] == 'Individual') {
+      if (!isset($form['first_name']) && !isset($form['middle_name']) && !isset($form['last_name'])) {
+        form_set_error('contact_type', t('Individual contact type, form must include at least one of first, middle, or last name fields.'));
+      }
+      elseif (empty($form_state['values']['first_name']) && empty($form_state['values']['middle_name']) && empty($form_state['values']['last_name'])) {
+        form_set_error('first_name', t('At least one of first, middle, or last names must be set when contact type is set to Individual.'));
+        form_set_error('middle_name');
+        form_set_error('last_name');
+      }
+    }
+    elseif ($form_state['values']['contact_type'] == 'Household') {
+      if (!isset($form['household_name'])){
+        form_set_error('contact_type', t('Household contact type, form must include the household name field.'));
+      }
+      elseif (empty($form_state['values']['household_name'])) {
+        form_set_error('household_name', t('Household name is required when contact type is set to Household'));
+      }
+    }
+    elseif ($form_state['values']['contact_type'] == 'Organization') {
+      if (!isset($form['organization_name'])){
+        form_set_error('contact_type', t('Organization contact type, form must include the organization name field.'));
+      }
+      elseif (empty($form_state['values']['organization_name'])) {
+        form_set_error('organization_name', t('Organization name is required when contact type is set to Organization.'));
+      }
+    }
+  }
+
 
   // Notify field widgets to validate their data.
   field_attach_form_validate($entity_type, $entity, $form, $form_state);

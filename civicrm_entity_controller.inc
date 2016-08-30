@@ -137,9 +137,11 @@ class CivicrmEntityController extends EntityAPIController {
 
       $params = get_object_vars($entity);
 
-      unset($params['is_new']);
-
+      $params_to_unset = array('is_new', 'rdf_mapping', 'original', 'submit', 'form_build_id', 'form_token', 'form_id', 'op', 'changed');
       foreach($params as $key => $value){
+        if(in_array($key, $params_to_unset)) {
+          unset($params[$key]);
+        }
         if ( substr($key, 0, 7) === 'custom_' && empty($entity->original->{$key}) && empty($value)   ) {
           unset($params[$key]);
         }
@@ -151,11 +153,9 @@ class CivicrmEntityController extends EntityAPIController {
       if ($entity->is_new) {
         if(isset($params['id'])) unset($params['id']);
         $result = civicrm_api(substr($this->entityType, 8), 'create', $params);
-
       }
       else {
-        $result = civicrm_api(substr($this->entityType, 8), 'update', $params);
-
+        $result = civicrm_api(substr($this->entityType, 8), 'create', $params);
       }
 
       if(isset($entity->is_new)) {
