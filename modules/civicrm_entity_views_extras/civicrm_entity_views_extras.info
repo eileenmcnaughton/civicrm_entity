@@ -2,5 +2,5 @@ name = CiviCRM Entity Views Extras
 description = "Provides Views Relationships and other handlers for CiviCRM Entities"
 dependencies[] = civicrm_entity
 dependencies[] = views
-package = CiviCRM
+package = CiviCRM Entity
 core = 7.x

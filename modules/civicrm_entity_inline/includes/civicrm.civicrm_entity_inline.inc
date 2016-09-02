@@ -142,11 +142,28 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
             }
           }
 
-          //for some reason the is_deleted column of the contact record is coming to the entity
-          // as contact_is_deleted ...special handling to have the form value set properly
-          if ($name == 'is_deleted') {
-            if ($entity_type=='civicrm_contact') {
+          if ($entity_type=='civicrm_contact') {
+            //for some reason the is_deleted column of the contact record is coming to the entity
+            // as contact_is_deleted ...special handling to have the form value set properly
+            if ($name == 'is_deleted') {
               $entity_form[$name]['#default_value'] = isset($entity->contact_is_deleted) ? $entity->contact_is_deleted : 0;
+            }
+            if($name == 'contact_type'){
+              $entity_form[$name]['#ajax'] = array(
+                'event' => 'change',
+                'wrapper' => 'contact-subtype-wrapper',
+                'callback' => '_civicrm_entity_form_contact_subtype_ajax_callback',
+                'method' => 'replace',
+              );
+            }
+            if($name == 'contact_sub_type') {
+              $contact_type = !empty($form['contact_type']['#default_value']) ? $entity_form['contact_type']['#default_value'] : 'Individual';
+              $entity_form[$name]['#type'] = 'select';
+              $entity_form[$name]['#options'] = _civicrm_entity_form_contact_get_subtypes($contact_type);
+              $entity_form[$name]['#prefix'] = '<div id="contact-subtype-wrapper">';
+              $entity_form[$name]['#suffix'] = '</div>';
+              $entity_form[$name]['#validated'] = TRUE;
+              unset($entity_form[$name]['#size']);
             }
           }
 

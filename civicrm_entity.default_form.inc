@@ -158,11 +158,28 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
             }
           }
 
-          //for some reason the is_deleted column of the contact record is coming to the entity
-          // as contact_is_deleted ...special handling to have the form value set properly
-          if ($name == 'is_deleted') {
-            if ($entity_type=='civicrm_contact') {
+          if ($entity_type=='civicrm_contact') {
+            //for some reason the is_deleted column of the contact record is coming to the entity
+            // as contact_is_deleted ...special handling to have the form value set properly
+            if ($name == 'is_deleted') {
               $form[$name]['#default_value'] = isset($entity->contact_is_deleted) ? $entity->contact_is_deleted : 0;
+            }
+            if($name == 'contact_type'){
+              $form[$name]['#ajax'] = array(
+                'event' => 'change',
+                'wrapper' => 'contact-subtype-wrapper',
+                'callback' => '_civicrm_entity_form_contact_subtype_ajax_callback',
+                'method' => 'replace',
+               );
+            }
+            if($name == 'contact_sub_type') {
+              $contact_type = !empty($form['contact_type']['#default_value']) ? $form['contact_type']['#default_value'] : 'Individual';
+              $form[$name]['#type'] = 'select';
+              $form[$name]['#options'] = _civicrm_entity_form_contact_get_subtypes($contact_type);
+              $form[$name]['#prefix'] = '<div id="contact-subtype-wrapper">';
+              $form[$name]['#suffix'] = '</div>';
+              $form[$name]['#validated'] = TRUE;
+              unset($form[$name]['#size']);
             }
           }
 
@@ -425,4 +442,44 @@ function civicrm_entity_delete_form_cancel_submit(&$form, &$form_state) {
     $form_state['redirect'] = str_replace('_', '-', $entity_type) . '/' . $entity->id;
   }
   drupal_redirect_form($form_state);
+}
+
+/**
+ * Ajax callback for populating contact subtype options
+ *
+ * @param $form
+ * @param $form_state
+ * @return mixed
+ */
+function _civicrm_entity_form_contact_subtype_ajax_callback(&$form, &$form_state) {
+  $contact_type = $form_state['values']['contact_type'];
+  $contact_subtypes = _civicrm_entity_form_contact_get_subtypes($contact_type);
+  $form['contact_sub_type']['#options'] = $contact_subtypes;
+  return $form['contact_sub_type'];
+}
+
+/**
+ * Helper function to return array of contact subtypes given contact type
+ *
+ * @param $contact_type
+ * @return array
+ */
+function _civicrm_entity_form_contact_get_subtypes($contact_type) {
+  civicrm_initialize(TRUE);
+  try {
+    $result = civicrm_api3('ContactType', 'get', array(
+      'parent_id' => $contact_type,
+      'is_active' => 1,
+    ));
+    $contact_subtypes = array('' => '- None - ');
+    if($result['count']) {
+      foreach ($result['values'] as $id => $subtype) {
+        $contact_subtypes[$subtype['name']] = $subtype['label'];
+      }
+    }
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    $contact_subtypes = array('' => '- None - ');
+  }
+  return $contact_subtypes;
 }
