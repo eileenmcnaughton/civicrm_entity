@@ -78,6 +78,7 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
             }
           }
 
+          // Handle default value
           if($op == 'edit') {
             $form[$name]['#default_value'] = $child->value();
           }
@@ -97,6 +98,17 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
             }
             if(!empty($info['maxlength'])) {
               $form[$name]['#maxlength'] = $info['maxlength'];
+            }
+          }
+
+          //set rows and cols if available for textarea or text_format
+          if($form[$name]['#type'] == 'textarea' || $form[$name]['#type'] == 'text_format') {
+            // set rows value if not empty
+            if (!empty($info['rows'])) {
+              $form[$name]['#rows'] = $info['rows'];
+            }
+            if (!empty($info['cols'])) {
+              $form[$name]['#cols'] = $info['cols'];
             }
           }
 
@@ -158,6 +170,7 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
             }
           }
 
+          // contact special handling
           if ($entity_type=='civicrm_contact') {
             //for some reason the is_deleted column of the contact record is coming to the entity
             // as contact_is_deleted ...special handling to have the form value set properly
@@ -180,6 +193,13 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
               $form[$name]['#suffix'] = '</div>';
               $form[$name]['#validated'] = TRUE;
               unset($form[$name]['#size']);
+            }
+          }
+
+          // event special handling
+          if ($entity_type=='civicrm_event') {
+            if($name == 'thankyou_text' || $name == 'thankyou_footer_text') {
+              //$form[$name]['#type'] = 'text_format';
             }
           }
 

@@ -50,30 +50,31 @@ function civicrm_entity_reference_field_storage_field_storage_load($entity_type,
     civicrm_initialize();
     foreach($ids as $id) {
       $field_values = array();
-      try {
-        $params = array(
-          $field['settings']['target_id_column'] => $entities[$id]->{$field['settings']['host_source_id']},
-        );
-        $is_primary_entities = array('address', 'phone', 'email');
+      if (!empty($entities[$id]->{$field['settings']['host_source_id']})) {
+        try {
+          $params = array(
+            $field['settings']['target_id_column'] => $entities[$id]->{$field['settings']['host_source_id']},
+          );
+          $is_primary_entities = array('address', 'phone', 'email');
 
-        if(in_array($field['settings']['target_entity_type'], $is_primary_entities)) {
-          $params['options'] = array('sort' => 'is_primary DESC');
+          if (in_array($field['settings']['target_entity_type'], $is_primary_entities)) {
+            $params['options'] = array('sort' => 'is_primary DESC');
+          }
+          $result = civicrm_api3($field['settings']['target_entity_type'], 'get', $params);
+        } catch (CiviCRM_API3_Exception $e) {
+          $error = $e->getMessage();
+          drupal_set_message($error, 'error');
+          continue;
         }
-        $result = civicrm_api3($field['settings']['target_entity_type'], 'get', $params);
-      }
-      catch (CiviCRM_API3_Exception $e) {
-        $error = $e->getMessage();
-        drupal_set_message($error, 'error');
-        continue;
-      }
 
-      if ($result['count']) {
-        $delta = 0;
-        foreach ($result['values'] as $target_id => $data) {
-          $field_values[LANGUAGE_NONE][$delta]['target_id'] = $target_id;
-          $delta += 1;
+        if ($result['count']) {
+          $delta = 0;
+          foreach ($result['values'] as $target_id => $data) {
+            $field_values[LANGUAGE_NONE][$delta]['target_id'] = $target_id;
+            $delta += 1;
+          }
+          $entities[$id]->{$field_name} = $field_values;
         }
-        $entities[$id]->{$field_name} = $field_values;
       }
     }
   }

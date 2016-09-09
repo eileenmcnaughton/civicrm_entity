@@ -139,7 +139,12 @@ class CivicrmEntityController extends EntityAPIController {
 
       $params_to_unset = array('is_new', 'rdf_mapping', 'original', 'submit', 'form_build_id', 'form_token', 'form_id', 'op', 'changed');
       foreach($params as $key => $value){
+        // unset some drupal form stuff
         if(in_array($key, $params_to_unset)) {
+          unset($params[$key]);
+        }
+        // unset the drupal fields
+        if(strpos($key, 'field_') === 0) {
           unset($params[$key]);
         }
         if ( substr($key, 0, 7) === 'custom_' && empty($entity->original->{$key}) && empty($value)   ) {
@@ -167,12 +172,10 @@ class CivicrmEntityController extends EntityAPIController {
 
       if (!civicrm_error($result)) {
         if($is_new) {
-          $entity->id= $result['values'][0]['id'];
-          field_attach_insert($this->entityType, $entity);
-         // $this->invoke('insert', $entity);
+          $entity->id = $result['values'][0]['id'];
+          $this->invoke('insert', $entity);
         }
         else {
-          field_attach_update($this->entityType, $entity);
           $this->invoke('update', $entity);
         }
 
