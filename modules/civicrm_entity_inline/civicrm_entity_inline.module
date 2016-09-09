@@ -1,7 +1,9 @@
 <?php
 
-/*
+/**
  * Implements hook_entity_info_alter().
+ *
+ * @param $entity_info
  */
 function civicrm_entity_inline_entity_info_alter(&$entity_info) {
   $entities = _civicrm_entity_enabled_entities();
@@ -11,4 +13,16 @@ function civicrm_entity_inline_entity_info_alter(&$entity_info) {
       'controller' => 'CivicrmInlineEntityFormController',
     );
   }
+}
+
+/**
+ * Implements hook_inline_entity_form_entity_form_alter().
+ *
+ * @param $entity_form
+ * @param $form_state
+ */
+function civicrm_entity_inline_inline_entity_form_entity_form_alter(&$entity_form, &$form_state) {
+  $form_id = $form_state['build_info']['form_id'] . '-ief-' . $entity_form['#entity_type'] . '-' . $entity_form['#bundle'];
+  $entity_form['#form_id'] = $form_id;
+  drupal_alter('form', $entity_form, $form_state, $form_id);
 }

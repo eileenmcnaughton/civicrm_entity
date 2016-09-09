@@ -84,6 +84,17 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
             }
           }
 
+          //set rows and cols if available for textarea or text_format
+          if($entity_form[$name]['#type'] == 'textarea' || $entity_form[$name]['#type'] == 'text_format') {
+            // set rows value if not empty
+            if (!empty($info['rows'])) {
+              $form[$name]['#rows'] = $info['rows'];
+            }
+            if (!empty($info['cols'])) {
+              $form[$name]['#cols'] = $info['cols'];
+            }
+          }
+
           //set the options for select options, radios, and checkboxes
           if ($entity_form[$name]['#type'] == 'select') {
             if(!empty($info['widget']['options'])) {
@@ -167,25 +178,10 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
             }
           }
 
-          // Automatically set the referenced entity target id column with the id of the host entity
-
-          if( $op == 'add' || $op == 'create' ) {
-            $field_name = $entity_form['#parents'][0];
-            $field_info = field_info_field($field_name);
-            $target_id_column = isset($field_info['settings']['target_id_column']) ? $field_info['settings']['target_id_column'] : '';
-            $host_id_prop =isset($field_info['settings']['host_source_id']) ? $field_info['settings']['host_source_id'] : '';
-            if ($name == $target_id_column ) {
-              if(isset($form_state['complete form'][$host_id_prop]['#default_value'])) {
-                $entity_form[$name]['#default_value'] = $form_state['complete form'][$host_id_prop]['#default_value'];
-                $entity_form[$name]['#disabled'] = TRUE;
-              }
-              elseif(isset($form_state['field'][$field_name][LANGUAGE_NONE]['instance']['entity_type'])){
-                $host_entity_type = $form_state['field'][$field_name][LANGUAGE_NONE]['instance']['entity_type'];
-                if(isset($form_state[$host_entity_type]->{$host_id_prop})) {
-                  $entity_form[$name]['#default_value'] = $form_state[$host_entity_type]->{$host_id_prop};
-                  $entity_form[$name]['#disabled'] = TRUE;
-                }
-              }
+          // event special handling
+          if ($entity_type=='civicrm_event') {
+            if($name == 'thankyou_text' || $name == 'thankyou_footer_text') {
+              $form[$name]['#type'] = 'text_format';
             }
           }
 

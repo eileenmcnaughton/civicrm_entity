@@ -78,13 +78,15 @@ function civicrm_entity_reference_field_field_create_field($field) {
 function civicrm_entity_reference_field_form_field_ui_field_edit_form_alter(&$form, &$form_state) {
   if($form['#field']['type'] == 'civicrm_entity_reference') {
     // field settings mods
-    $form['field']['cardinality']['#default_value'] = -1;
-    $form['field']['cardinality']['#disabled'] = TRUE;
+    // Commenting our for now, for cases like location block on events, there is only one value, maybe it doesn't make sense to force 'Unlimited'
+    //$form['field']['cardinality']['#default_value'] = -1;
+    //$form['field']['cardinality']['#disabled'] = TRUE;
 
     if ($form['instance']['widget']['type']['#value'] == 'inline_entity_form_single' || $form['instance']['widget']['type']['#value'] == 'inline_entity_form') {
       // Its going to delete the referenced entity so we just set this value to 1 and disable the checkbox to avoid confusion
-      $form['instance']['widget']['settings']['type_settings']['delete_references']['#default_value'] = 1;
-      $form['instance']['widget']['settings']['type_settings']['delete_references']['#disabled'] = TRUE;
+      // UPDATE: OR not? Cases like Events that have location blocks, don't need to delete the location block when deleting the event?
+      //$form['instance']['widget']['settings']['type_settings']['delete_references']['#default_value'] = 1;
+      //$form['instance']['widget']['settings']['type_settings']['delete_references']['#disabled'] = TRUE;
       // Does it make sense to have the "add existing entities?" functionality, disabling it for now
       if(isset($form['instance']['widget']['settings']['type_settings']['allow_existing'])){
         $form['instance']['widget']['settings']['type_settings']['allow_existing']['#default_value'] = 0;
@@ -145,7 +147,8 @@ function civicrm_entity_reference_field_field_settings_form($field, $instance, $
     '#title' => t('Host Source Column'),
     '#default_value' => $settings['host_source_id'],
     '#description' => t('Host Entity property which value is used query target entity table.'),
-    '#options' => array ('id' => 'ID')
+    // want to automate choices for this setting in the future
+    '#options' => array ('id' => 'ID',  'loc_block_id' => 'Location Block ID (CiviCRM Event Entity)', 'address_id' => 'Address ID (Location Block Entity)')
   );
 
   return $form;
@@ -549,8 +552,9 @@ function civicrm_entity_reference_field_civicrm_post($op, $objectName, $objectId
   }
 }
 
+
 /**
- * Implements hook_form_alter().
+ * Implements hook_field_widget_form_alter().
  *
  * For CiviCRM Entity Add forms
  *
@@ -558,30 +562,140 @@ function civicrm_entity_reference_field_civicrm_post($op, $objectName, $objectId
  * Disable widget buttons for Inline Entity Form -- Multiple on entity create.
  * Disable widget for default widget.
  *
- * @param $form
+ * @param $element
  * @param $form_state
- * @param $form_id
+ * @param $context
  */
-function civicrm_entity_reference_field_form_alter(&$form, &$form_state, $form_id) {
-  $civicrm_entities = _civicrm_entity_enabled_entities();
-  foreach ($civicrm_entities as $drupal_name => $civicrm_name) {
-    if(strpos($form_id, $drupal_name) === 0 && $form_state['op'] == 'create') {
-      foreach($form as $index => $data) {
-        if(strpos($index,'field_') === 0) {
-          if(!empty($data[LANGUAGE_NONE]['#field_name'])) {
-            $field = field_info_field($data[LANGUAGE_NONE]['#field_name']);
-            if($field['type'] == 'civicrm_entity_reference') {
-              $instance = field_info_instance($form['#entity_type'], $data[LANGUAGE_NONE]['#field_name'], $form['#entity_type']);
-              if($instance['widget']['type'] == 'inline_entity_form_single') {
-                unset($form[$index][LANGUAGE_NONE]['form']);
-              }
-              elseif ($instance['widget']['type'] == 'inline_entity_form') {
-                $form[$index][LANGUAGE_NONE]['actions']['ief_add']['#disabled'] = TRUE;
-              }
-              elseif ($instance['widget']['type'] == 'civicrm_entity_reference_default_widget') {
-                $form[$index]['#disabled'] = TRUE;
-              }
+function civicrm_entity_reference_field_field_widget_form_alter(&$element, &$form_state, $context) {
+  if($context['field']['type'] == 'civicrm_entity_reference') {
+    if($context['instance']['widget']['type'] == 'inline_entity_form_single') {
+      if($form_state['op'] == 'create'){
+        unset($element['form']);
+      }
+    }
+    elseif($context['instance']['widget']['type'] == 'inline_entity_form') {
+      if($form_state['op'] == 'create'){
+        $element['actions']['ief_add']['#disabled'] = TRUE;
+      }
+    }
+    elseif($context['instance']['widget']['type'] == 'civicrm_entity_reference_default_widget') {
+      if($form_state['op'] == 'create'){
+        $element['#disabled'] = TRUE;
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_inline_entity_form_entity_form_alter().
+ *
+ * @param $entity_form
+ * @param $form_state
+ */
+function civicrm_entity_reference_field_inline_entity_form_entity_form_alter(&$entity_form, &$form_state) {
+
+  $ief_id = $entity_form['#ief_id'];
+  $host_entity_type = $form_state['inline_entity_form'][$ief_id]['instance']['entity_type'];
+
+  $field_info = array();
+
+  foreach($entity_form['#parents'] as $key => $parent) {
+    if(strpos($parent, 'field_') === 0) {
+      $field = field_info_field($parent);
+      $instances = db_select('field_config_instance', 'fi')
+        ->fields('fi', array('id'))
+        ->condition('field_id', $field['id'])
+        ->condition('entity_type', $host_entity_type)
+        ->condition('bundle', $host_entity_type)
+        ->execute();
+
+      if ($instances->rowCount()) {
+        $field_name = $parent;
+        $field_info = $field;
+      }
+    }
+  }
+
+  if(!empty($field_info) && $field_info['type'] == 'civicrm_entity_reference') {
+    // Generally you want to set the target_id_column to the host_id_prop
+    $target_id_column = isset($field_info['settings']['target_id_column']) ? $field_info['settings']['target_id_column'] : '';
+    $host_id_prop = isset($field_info['settings']['host_source_id']) ? $field_info['settings']['host_source_id'] : '';
+
+    // this handles the 'multi' widget
+    if (isset($form_state['complete form'][$host_id_prop]['#default_value']) && isset($entity_form[$target_id_column]) && is_array($entity_form[$target_id_column])) {
+      if ($entity_form['#op'] == 'add' || $entity_form['#op'] == 'create') {
+        $entity_form[$target_id_column]['#default_value'] = $form_state['complete form'][$host_id_prop]['#default_value'];
+      }
+      $entity_form[$target_id_column]['#disabled'] = TRUE;
+    } // this handles the 'single' widget
+    elseif (isset($form_state['field'][$field_name][LANGUAGE_NONE]['instance']['entity_type'])) {
+      $host_entity_type = $form_state['field'][$field_name][LANGUAGE_NONE]['instance']['entity_type'];
+      if (isset($form_state[$host_entity_type]->{$host_id_prop})) {
+        if ($entity_form['#op'] == 'add' || $entity_form['#op'] == 'create') {
+          $entity_form[$target_id_column]['#default_value'] = $form_state[$host_entity_type]->{$host_id_prop};
+        }
+        $entity_form[$target_id_column]['#disabled'] = TRUE;
+      }
+    }
+    // special handling of address fields on location blocks, because in this case the contact_id is not required
+    $contact_id_entities = array('civicrm_address', 'civicrm_email', 'civicrm_phone');
+    if($host_entity_type == 'civicrm_loc_block' && in_array($entity_form['#entity_type'], $contact_id_entities)) {
+      $entity_form['contact_id']['#required'] = FALSE;
+      $entity_form['contact_id']['#default_value'] = 1;
+      $entity_form['contact_id']['#disabled'] = TRUE;
+    }
+
+  }
+}
+
+/**
+ * Implements hook_entity_presave().
+ *
+ * We needed this because sometimes you need to back fill a value before save
+ *
+ * For example, if you put a civicrm entity reference field which targets the location block, on a event entity, you have to make sure the event gets a value for the location_block_id
+ * Another example is that the location block address_id property needs to be set after the address is saved (considering if you have an civicrm_entity_reference field on the location block form, targeting address
+ *
+ * More cases of this type may crop up and we'll better understand how to automate as time passes and experience hits us over the head
+ *
+ * @param $entity
+ * @param $type
+ */
+function civicrm_entity_reference_field_entity_presave($entity, $type) {
+  if($type == 'civicrm_loc_block' || $type == 'civicrm_event') {
+    foreach($entity as $key => $value) {
+      if(strpos($key, 'field_') === 0) {
+        $field = field_info_field($key);
+        if($field['type'] == 'civicrm_entity_reference') {
+          if($type == 'civicrm_loc_block') {
+            switch ($field['settings']['target_entity_type']) {
+              case 'address':
+                $entity->{$field['settings']['host_source_id']} = $entity->{$key}[LANGUAGE_NONE][0]['target_id'];
+                // VIA the API you cannot save/create an address without a contact id, we fool it in this special case by in the form setting the id to 1, then undoing it with sql directly
+                // it ain't pretty but it works
+                db_update('civicrm_address')
+                  ->fields(array('contact_id' => NULL))
+                  ->condition('id', $entity->{$key}[LANGUAGE_NONE][0]['target_id'])
+                  ->execute();
+                break;
+              case 'email':
+                $entity->{$field['settings']['host_source_id']} = $entity->{$key}[LANGUAGE_NONE][0]['target_id'];
+                db_update('civicrm_email')
+                  ->fields(array('contact_id' => NULL))
+                  ->condition('id', $entity->{$key}[LANGUAGE_NONE][0]['target_id'])
+                  ->execute();
+                break;
+              case 'phone':
+                $entity->{$field['settings']['host_source_id']} = $entity->{$key}[LANGUAGE_NONE][0]['target_id'];
+                db_update('civicrm_phone')
+                  ->fields(array('contact_id' => NULL))
+                  ->condition('id', $entity->{$key}[LANGUAGE_NONE][0]['target_id'])
+                  ->execute();
+                break;
             }
+          }
+          elseif($type == 'civicrm_event' && $field['settings']['target_entity_type'] == 'loc_block') {
+            $entity{$field['settings']['host_source_id']} = $entity->{$key}[LANGUAGE_NONE][0]['target_id'];
           }
         }
       }

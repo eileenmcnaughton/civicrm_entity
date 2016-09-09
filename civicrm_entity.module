@@ -845,6 +845,51 @@ function civicrm_entity_supported_entities_info(){
       'boolean fields' => array('grant_report_received',),
     ),
   );
+  $civicrm_entity_info['civicrm_loc_block'] = array(
+    'civicrm entity name' => 'loc_block',
+    'label property' => '',
+    'permissions' => array(
+      'view' => array('administer CiviCRM'),
+      'edit' => array('administer CiviCRM'),
+      'update' => array('administer CiviCRM'),
+      'create' => array('administer CiviCRM'),
+      'delete' => array('administer CiviCRM'),
+    ),
+    'theme' => array(
+      'template' => 'civicrm-loc-block',
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+    ),
+    'display suite' => array(
+      'link fields' => array(
+        array(
+          'link_field' => 'address_id',
+          'target' => 'civicrm_address',
+        ),
+        array(
+          'link_field' => 'email_id',
+          'target' => 'civicrm_email',
+        ),
+        array(
+          'link_field' => 'phone_id',
+          'target' => 'civicrm_phone',
+        ),
+        array(
+          'link_field' => 'address_2_id',
+          'target' => 'civicrm_address',
+        ),
+        array(
+          'link_field' => 'phone_2_id',
+          'target' => 'civicrm_phone',
+        ),
+        array(
+          'link_field' => 'email_2_id',
+          'target' => 'civicrm_email',
+        ),
+      ),
+      'option fields' => array(),
+      'boolean fields' => array(),
+    ),
+  );
   $civicrm_entity_info['civicrm_membership'] = array(
     'civicrm entity name' => 'membership',
     'permissions' => array(
@@ -1121,7 +1166,27 @@ function civicrm_entity_supported_entities_info(){
       'boolean fields' => array('is_default', 'is_active',),
     ),
   );
+  $civicrm_entity_info['civicrm_recurring_entity'] = array(
+    'civicrm entity name' => 'recurring_entity',
+    'permissions' => array(
+      'view' => array(),
+      'edit' => array(),
+      'update' => array(),
+      'create' => array(),
+      'delete' => array(),
+    ),
+    'theme' => array(
+      'template' => 'civicrm-recurring-entity',
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+    ),
+    'display suite' => array(
+      'link fields' => array(
 
+      ),
+      'option fields' => array(),
+      'boolean fields' => array(),
+    ),
+  );
   $civicrm_entity_info['civicrm_relationship'] = array(
     'civicrm entity name' => 'relationship',
     'label property' => 'description',
@@ -1563,6 +1628,15 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
         $info[$fieldname]['default_value'] = $field_specs['default_value'];
       }
 
+      // add field rows to metadata
+      if(isset($field_specs['rows'])) {
+        $info[$fieldname]['rows'] = $field_specs['rows'];
+      }
+      // add field rows to metadata
+      if(isset($field_specs['cols'])) {
+        $info[$fieldname]['cols'] = $field_specs['cols'];
+      }
+
       if ($field_specs['type'] == 16) {
         $info[$fieldname]['size'] = 'tiny';
       }
@@ -1735,11 +1809,25 @@ function civicrm_entity_get_field_widget($field_spec, $civicrm_entity) {
         }
         break;
       case 'RichTextEditor':
-      case 'TextArea':
         $widget = array(
-          'widget' => 'textarea',
+          'widget' => 'text_format',
           'civicrm_field_type' => $field_type,
         );
+        break;
+      case 'TextArea':
+        //if(!empty($field_spec['description']) && strpos($field_spec['description'], 'Text and html allowed.') !== FALSE) {
+        if(0 == 1) {
+          $widget = array(
+            'widget' => 'text_format',
+            'civicrm_field_type' => $field_type,
+          );
+        }
+        else {
+          $widget = array(
+            'widget' => 'textarea',
+            'civicrm_field_type' => $field_type,
+          );
+        }
         break;
       default:
         $widget = array(
@@ -2797,7 +2885,7 @@ function civicrm_entity_ds_field_format_summary($field) {
  */
 function civicrm_entity_form_alter(&$form, &$form_state, $form_id){
 // For the manage display form, add a submit handler to make display suite custom civicrm "field" settings stick
-  if($form_id == 'field_ui_display_overview_form' ) {
+  if($form_id == 'field_ui_display_overview_form') {
     if (!civicrm_initialize(TRUE)) {
        return;
     }
@@ -2844,9 +2932,7 @@ function _civicrm_entity_manage_display_submit(&$form, &$form_state) {
     $entity_type = $form['#entity_type'];
     $bundle = $form['#bundle'];
     $bundle_settings = field_bundle_settings($entity_type, $bundle);
-
     foreach($bundle_settings['extra_fields']['display'] as $key => $field) {
-      $form_state['values']['fields'][$key]['type'] = 'visible';
     }
   }
 
