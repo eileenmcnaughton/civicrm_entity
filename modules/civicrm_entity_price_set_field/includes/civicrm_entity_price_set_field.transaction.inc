@@ -164,8 +164,8 @@ function civicrm_entity_price_set_field_dummy_payment_processing($processor, $pr
   //dsm($entity_type);
   //dsm($entity);
   //dsm($form_data);
-  dsm($contacts);
-  dsm($form_data);
+  //dsm($contacts);
+  //dsm($form_data);
 
   //transact call
 // Set the required params for the payment processor

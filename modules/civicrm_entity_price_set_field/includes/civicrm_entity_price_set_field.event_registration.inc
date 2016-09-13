@@ -704,7 +704,7 @@ function civicrm_entity_price_set_field_event_registration_form_register_as_anot
  * @param $form_state
  */
 function _civicrm_entity_price_set_field_process_event_registration($form_state) {
-  dsm($form_state);
+  //dsm($form_state);
   // create/update contacts
   foreach($form_state['contacts'] as $count => $contact) {
     _civicrm_entity_price_set_field_display_form_create_update_contact('other', $count, $form_state);
@@ -739,6 +739,7 @@ function _civicrm_entity_price_set_field_process_event_registration($form_state)
     'receipt_from_email' => "donations@txpeds.org",
     'receipt_from_name' => "TPS",
   ));*/
+  
   // trigger rule event with all the pertinent data here
 
 }
