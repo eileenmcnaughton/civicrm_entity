@@ -5,6 +5,9 @@
  * Provide CiviCRM Entity Price Set Field Type.
  */
 
+module_load_include('inc', 'civicrm_entity_price_set_field', 'includes/civicrm_entity_price_set_field.event_registration');
+module_load_include('inc', 'civicrm_entity_price_set_field', 'includes/civicrm_entity_price_set_field.transaction');
+
 /**
  * Implements hook_field_info().
  *
@@ -361,6 +364,7 @@ function _civicrm_entity_price_set_field_get_relevant_entities($price_set_id) {
     $price_field_query = new EntityFieldQuery();
     $price_field_result = $price_field_query->entityCondition('entity_type', 'civicrm_price_field')
       ->propertyCondition('price_set_id', $price_set_id)
+      ->propertyOrderBy('weight', 'ASC')
       ->execute();
     $data['price_fields'] = array();
     if (!empty($price_field_result['civicrm_price_field'])) {
@@ -643,6 +647,27 @@ function civicrm_entity_price_set_field_theme($existing, $type, $theme, $path) {
     'civicrm_entity_price_set_field_price_field_drag_components' => array(
       'render element' => 'element'
     ),
+    'civicrm_entity_price_set_field_price_field_display_form_confirmation_page' => array(
+      'render element' => 'element',
+      'variables' => array(
+        'form_data' => NULL,
+        'entity_type',
+        'entity' => NULL,
+        'price_set_data' => NULL,
+        'heading' => 'Confirmation Page',
+
+      ),
+    ),
+    'civicrm_entity_price_set_field_price_field_display_form_thank_you_page' => array(
+      'render element' => 'element',
+      'variables' => array(
+        'form_data' => NULL,
+        'entity_type',
+        'entity' => NULL,
+        'price_set_data' => NULL,
+        'heading' => 'Thank You Page',
+      ),
+    ),
   );
   return $themes;
 }
@@ -850,8 +875,8 @@ function _civicrm_entity_price_set_field_amount_element_validate($element, &$for
  */
 function civicrm_entity_price_set_field_field_formatter_info() {
   return array(
-    'civicrm_entity_price_set_field_default_formatter' => array( // Machine name of the formatter
-      'label' => t('Default'),
+    'civicrm_entity_price_set_field_form_formatter' => array( // Machine name of the formatter
+      'label' => t('Form'),
       'field types' => array('civicrm_entity_price_set_field'),
       'settings'  => array( // Array of the settings we'll create
       ),
@@ -894,7 +919,7 @@ function civicrm_entity_price_set_field_field_formatter_settings_summary($field,
     $display = $instance['display'][$view_mode];
     $settings = $display['settings'];
     $summary = '';
-    if ($display['type'] == 'civicrm_entity_price_set_field_default_formatter') {
+    if ($display['type'] == 'civicrm_entity_price_set_field_form_formatter') {
 
     }
     return $summary;
@@ -908,19 +933,28 @@ function civicrm_entity_price_set_field_field_formatter_view($entity_type, $enti
   $element = array();
   $settings = $display['settings'];
   switch ($display['type']) {
-    case 'civicrm_entity_price_set_field_default_formatter':
-
+    case 'civicrm_entity_price_set_field_form_formatter':
       foreach ($items as $delta => $item) {
-        $markup ='';
-        if(!empty($item['price_set_id'])){
-          $element[$delta] = array(
-            '#markup' => $item['price_set_id'],
-          );
-        }
 
+
+        if (!empty($item['price_set_id'])) {
+          $price_set_id = $item['price_set_id'];
+        }
+        else {
+          $price_set_id = 0;
+        }
+        switch ($entity_type) {
+          case 'civicrm_event':
+            $price_set_form = drupal_get_form('civicrm_entity_price_set_field_display_form_event', $price_set_id, $entity_type, $entity);
+            break;
+        }
+        $price_set_form['#form_id'] = 'civicrm_entity_price_set_display_form-' . $field['field_name'] . '-' . $langcode . '-' . $delta;
+        $element[$delta] = $price_set_form;
       }
-      break;
+    break;
   }
+
+
   return $element;
 }
 

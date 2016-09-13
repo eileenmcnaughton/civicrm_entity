@@ -180,8 +180,14 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
 
           // event special handling
           if ($entity_type=='civicrm_event') {
-            if($name == 'thankyou_text' || $name == 'thankyou_footer_text') {
-              $form[$name]['#type'] = 'text_format';
+            //if($name == 'thankyou_text' || $name == 'thankyou_footer_text') {
+            //  $form[$name]['#type'] = 'text_format';
+           // }
+            if($name == 'event_type_id') {
+              $form[$name]['#required'] = TRUE;
+            }
+            if($name == 'default_role_id') {
+              $form[$name]['#required'] = TRUE;
             }
           }
 

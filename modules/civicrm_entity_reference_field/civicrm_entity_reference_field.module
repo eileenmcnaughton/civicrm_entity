@@ -695,7 +695,7 @@ function civicrm_entity_reference_field_entity_presave($entity, $type) {
             }
           }
           elseif($type == 'civicrm_event' && $field['settings']['target_entity_type'] == 'loc_block') {
-            $entity{$field['settings']['host_source_id']} = $entity->{$key}[LANGUAGE_NONE][0]['target_id'];
+            $entity->{$field['settings']['host_source_id']} = $entity->{$key}[LANGUAGE_NONE][0]['target_id'];
           }
         }
       }

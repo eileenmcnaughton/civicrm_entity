@@ -201,6 +201,12 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
             if($name == 'thankyou_text' || $name == 'thankyou_footer_text') {
               //$form[$name]['#type'] = 'text_format';
             }
+            if($name == 'event_type_id') {
+              $form[$name]['#required'] = TRUE;
+            }
+            if($name == 'default_role_id') {
+              $form[$name]['#required'] = TRUE;
+            }
           }
 
           // make sure to disable id field, and any custom field with is_view = 1
