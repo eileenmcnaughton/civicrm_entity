@@ -722,7 +722,53 @@ function civicrm_entity_supported_entities_info(){
       ),
     ),
   );
-
+  $civicrm_entity_info['civicrm_entity_financial_trxn'] = array(
+    'civicrm entity name' => 'entity_financial_trxn',
+    'label property' => 'id',
+    'permissions' => array(
+      'view' => array(),
+      'edit' => array(),
+      'update' => array(),
+      'create' => array(),
+      'delete' => array(),
+    ),
+    'theme' => array(
+      'template' => 'civicrm-entity-financial-trxn',
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+    ),
+    'display suite' => array(
+      'link fields' => array(
+        array(
+          'link_field' => 'financial_trxn_id',
+          'target' => 'civicrm_financial_trxn',
+        ),
+      ),
+    ),
+  );
+  $civicrm_entity_info['civicrm_financial_trxn'] = array(
+    'civicrm entity name' => 'financial_trxn',
+    'label property' => 'id',
+    'permissions' => array(
+      'view' => array(),
+      'edit' => array(),
+      'update' => array(),
+      'create' => array(),
+      'delete' => array(),
+    ),
+    'theme' => array(
+      'template' => 'civicrm-financial-trxn',
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+    ),
+    'display suite' => array(
+      'option fields' => array('status_id', ),
+      'link fields' => array(
+        array(
+          'link_field' => 'payment_processor_id',
+          'target' => 'civicrm_payment_processor',
+        ),
+      ),
+    ),
+  );
   //dirty check for whether financialType exists
   if (!method_exists('CRM_Contribute_PseudoConstant', 'contributionType')) {
     $civicrm_entity_info['civicrm_financial_type'] = array(
@@ -843,6 +889,41 @@ function civicrm_entity_supported_entities_info(){
       ),
       'option fields' => array('status_id', 'financial_type_id', 'grant_type_id',),
       'boolean fields' => array('grant_report_received',),
+    ),
+  );
+  $civicrm_entity_info['civicrm_line_item'] = array(
+    'civicrm entity name' => 'line_item',
+    'label property' => 'label',
+    'permissions' => array(
+      'view' => array('administer CiviCRM'),
+      'edit' => array('administer CiviCRM'),
+      'update' => array('administer CiviCRM'),
+      'create' => array('administer CiviCRM'),
+      'delete' => array('administer CiviCRM'),
+    ),
+    'theme' => array(
+      'template' => 'civicrm-line-item',
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+    ),
+    'display suite' => array(
+      'link fields' => array(
+        array(
+          'link_field' => 'contribution_id',
+          'target' => 'civicrm_contribution',
+        ),
+        array(
+          'link_field' => 'price_field_id',
+          'target' => 'civicrm_price_field',
+        ),
+        array(
+          'link_field' => 'price_field_value_id',
+          'target' => 'civicrm_price_field_value',
+        ),
+        array(
+          'link_field' => 'financial_type_id',
+          'target' => 'civicrm_financial_type',
+        ),
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_loc_block'] = array(
@@ -1043,7 +1124,79 @@ function civicrm_entity_supported_entities_info(){
       'boolean fields' => array('is_test', 'is_pay_later', 'must_wait',),
     ),
   );
-
+  $civicrm_entity_info['civicrm_participant_payment'] = array(
+    'civicrm entity name' => 'participant_payment',
+    'label property' => 'id',
+    'permissions' => array(
+      'view' => array('administer CiviCRM'),
+      'edit' => array('administer CiviCRM'),
+      'update' => array('administer CiviCRM'),
+      'create' => array('administer CiviCRM'),
+      'delete' => array('administer CiviCRM'),
+    ),
+    'theme' => array(
+      'template' => 'civicrm-participant-payment',
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+    ),
+    'display suite' => array(
+      'link fields' => array(
+        array(
+          'link_field' => 'participant_id',
+          'target' => 'civicrm_participant',
+        ),
+        array(
+          'link_field' => 'contact_id',
+          'target' => 'civicrm_contact',
+        ),
+      ),
+    ),
+  );
+  $civicrm_entity_info['civicrm_payment_processor'] = array(
+    'civicrm entity name' => 'payment_processor',
+    'label property' => 'name',
+    'permissions' => array(
+      'view' => array('administer CiviCRM'),
+      'edit' => array('administer CiviCRM'),
+      'update' => array('administer CiviCRM'),
+      'create' => array('administer CiviCRM'),
+      'delete' => array('administer CiviCRM'),
+    ),
+    'theme' => array(
+      'template' => 'civicrm-payment-processor',
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+    ),
+    'display suite' => array(
+      'link fields' => array(
+        array(
+          'link_field' => 'payment_processor_type_id',
+          'target' => 'civicrm_payment_processor_type',
+        ),
+      ),
+      'option fields' => array(),
+      'boolean fields' => array('is_active', 'is_default', 'is_test'),
+    ),
+  );
+  $civicrm_entity_info['civicrm_payment_processor_type'] = array(
+    'civicrm entity name' => 'payment_processor_type',
+    'label property' => 'title',
+    'permissions' => array(
+      'view' => array('administer CiviCRM'),
+      'edit' => array('administer CiviCRM'),
+      'update' => array('administer CiviCRM'),
+      'create' => array('administer CiviCRM'),
+      'delete' => array('administer CiviCRM'),
+    ),
+    'theme' => array(
+      'template' => 'civicrm-payment-processor-type',
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+    ),
+    'display suite' => array(
+      'link fields' => array(
+      ),
+      'option fields' => array(),
+      'boolean fields' => array('is_active', 'is_default',),
+    ),
+  );
   $civicrm_entity_info['civicrm_phone'] = array(
     'civicrm entity name' => 'phone',
     'label property' => 'phone',
@@ -1929,9 +2082,8 @@ function civicrm_entity_get_field_options($field_name, $civicrm_entity){
     foreach($result['values'] as $option) {
       $options[$option['key']] = $option['value'];
     }
-    return $options;
   }
-  else return array();
+  return $options;
 }
 
 /**
