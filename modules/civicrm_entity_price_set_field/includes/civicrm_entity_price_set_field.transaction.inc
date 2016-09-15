@@ -45,6 +45,7 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
       $line_item = array();
       $line_item['price_field_id'] = $pf_id;
       $line_item['label'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->label;
+
       if(!empty($price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->financial_type_id)) {
         $line_item['financial_type_id'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->financial_type_id;
       }
@@ -54,12 +55,14 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
       switch ($price_set_data['price_fields'][$pf_id]['pf_entity']->html_type){
         case 'Radio':
           if (!empty($value['price_field_values']) && !is_array($value['price_field_values']) && is_numeric($value['price_field_values'])) {
+            $line_item['price_field_value_id'] = $value['price_field_values'];
             $line_item['unit_price'] = $line_item['line_total'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->amount;
             $total['total'] += $line_item['line_total'];
           }
           break;
         case 'Select':
           if (!empty($value['price_field_values']) && !is_array($value['price_field_values']) && is_numeric($value['price_field_values'])) {
+            $line_item['price_field_value_id'] = $value['price_field_values'];
             $line_item['unit_price'] = $line_item['line_total'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->amount;
             $total['total'] += $line_item['line_total'];
           }
@@ -72,12 +75,15 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
                 $line_item['unit_price'] += $price_set_data['price_fields'][$pf_id]['price_field_values'][$id]->amount;
               }
             }
+            // what to set the price_field_value_id key of the line item array too for checkboxes???
+            // should there be a line item per checkbox that is checked?
             $line_item['line_total'] = $line_item['unit_price'];
             $total['total'] += $line_item['line_total'];
           }
           break;
         case 'Text':
           if (!empty($value['price_field_values']) && !is_array($value['price_field_values']) && is_numeric($value['price_field_values'])) {
+            $line_item['price_field_value_id'] = $value['price_field_values'];
             $line_item['unit_price'] = $line_item['line_total'] = $value * $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->amount;
             $total['total'] += $line_item['line_total'];
           }
@@ -157,21 +163,12 @@ function civicrm_entity_price_set_field_civicrm_entity_price_set_field_processor
  * @return bool|array
  */
 function civicrm_entity_price_set_field_dummy_payment_processing($processor, $processor_type, $price_set_data, $entity_type, $entity, $contacts, $form_state) {
-  //dsm($processor);
-  //dsm($processor_type);
-  //dsm($price_set_data);
-  //dsm($entity_type);
-  //dsm($entity);
-  //dsm($form_data);
-  //dsm($contacts);
-  //dsm($form_state);
-
   // Set the required params for the payment processor
   $params = array(
+    'sequential' => 1,
     'financial_type_id' => $entity->financial_type_id,
     'total_amount' => $form_state['transaction']['total'],
     'contact_id' => $contacts[0]->id,
-    'is_test' => 1,
     'payment_processor' => $processor->id,
     'credit_card_number' => $form_state['registration_cc_block']['cc_number'],
     'cvv2' => $form_state['registration_cc_block']['cvv'],
@@ -179,7 +176,7 @@ function civicrm_entity_price_set_field_dummy_payment_processing($processor, $pr
     'year' => $form_state['registration_cc_block']['cc_exp']['year'],
     'invoice_id' => md5(uniqid(rand(), TRUE)),
     'skipLineItem' => 1,
-    'source' => 'Annual Meeting Event Registration',
+    'source' => 'CiviCRM Entity Price Set Field -- Event Registration',
   );
 
   $result = _civicrm_entity_price_set_field_api_transact_call($params);
@@ -189,23 +186,29 @@ function civicrm_entity_price_set_field_dummy_payment_processing($processor, $pr
     return FALSE;
   }
 
-  return FALSE;
+  return $result;
 }
 
 /**
+ * Utility function to make a transact Contribution API call
+ *
+ * Accepts a array of API parameters and returns a Drupal CivicrmEntity object if successful
+ *
  * @param $params
- * @throws CiviCRM_API3_Exception
+ * @return array
  */
 function _civicrm_entity_price_set_field_api_transact_call($params) {
   $result = array();
   try {
-    $result = civicrm_api3('Contribution', 'transact', $params);
+    $api_contribution = civicrm_api3('Contribution', 'transact', $params);
   }
   catch (CiviCRM_API3_Exception $e) {
     return array('error' => $e->getMessage());
   }
 
-  //create civicrm_entity_financial_trxn item
+  if(!empty($api_contribution['values'][0])) {
+    $result['contribution'] = new CivicrmEntity($api_contribution['values'][0], 'civicrm_contribution');
+  }
 
   return $result;
 }

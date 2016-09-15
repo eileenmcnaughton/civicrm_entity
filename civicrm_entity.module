@@ -1124,6 +1124,33 @@ function civicrm_entity_supported_entities_info(){
       'boolean fields' => array('is_test', 'is_pay_later', 'must_wait',),
     ),
   );
+  $civicrm_entity_info['civicrm_participant_payment'] = array(
+    'civicrm entity name' => 'participant_payment',
+    'label property' => 'id',
+    'permissions' => array(
+      'view' => array('administer CiviCRM'),
+      'edit' => array('administer CiviCRM'),
+      'update' => array('administer CiviCRM'),
+      'create' => array('administer CiviCRM'),
+      'delete' => array('administer CiviCRM'),
+    ),
+    'theme' => array(
+      'template' => 'civicrm-participant-payment',
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+    ),
+    'display suite' => array(
+      'link fields' => array(
+        array(
+          'link_field' => 'participant_id',
+          'target' => 'civicrm_participant',
+        ),
+        array(
+          'link_field' => 'contact_id',
+          'target' => 'civicrm_contact',
+        ),
+      ),
+    ),
+  );
   $civicrm_entity_info['civicrm_payment_processor'] = array(
     'civicrm entity name' => 'payment_processor',
     'label property' => 'name',
