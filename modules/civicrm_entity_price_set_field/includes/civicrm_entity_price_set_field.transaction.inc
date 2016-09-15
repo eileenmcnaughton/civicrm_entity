@@ -18,7 +18,7 @@ function civicrm_entity_price_set_field_get_processor_handler_info($id = NULL) {
 
   drupal_alter('civicrm_entity_price_set_field_processor_info', $results);
 
-  if($id && !empty($result[$id])) {
+  if ($id && !empty($result[$id])) {
     return $results[$id];
   }
   else {
@@ -41,8 +41,8 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
   $total['total'] = 0.0;
   //calculate the total
   foreach($form_state['contacts'] as $id => $contact ) {
-    $line_item = array();
     foreach($contact['price_set'] as $pf_id => $value){
+      $line_item = array();
       $line_item['price_field_id'] = $pf_id;
       $line_item['label'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->label;
       if(!empty($price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->financial_type_id)) {
@@ -51,21 +51,21 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
       elseif(!empty($entity->financial_type_id)) {
         $line_item['financial_type_id'] = $entity->financial_type_id;
       }
-      switch($price_set_data['price_fields'][$pf_id]['pf_entity']->html_type){
+      switch ($price_set_data['price_fields'][$pf_id]['pf_entity']->html_type){
         case 'Radio':
-          if(!empty($value['price_field_values']) && !is_array($value['price_field_values']) && is_numeric($value['price_field_values'])) {
+          if (!empty($value['price_field_values']) && !is_array($value['price_field_values']) && is_numeric($value['price_field_values'])) {
             $line_item['unit_price'] = $line_item['line_total'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->amount;
             $total['total'] += $line_item['line_total'];
           }
           break;
         case 'Select':
-          if(!empty($value['price_field_values']) && !is_array($value['price_field_values']) && is_numeric($value['price_field_values'])) {
+          if (!empty($value['price_field_values']) && !is_array($value['price_field_values']) && is_numeric($value['price_field_values'])) {
             $line_item['unit_price'] = $line_item['line_total'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->amount;
             $total['total'] += $line_item['line_total'];
           }
           break;
         case 'CheckBox':
-          if(!empty($value['price_field_values']) && is_array($value['price_field_values'])) {
+          if (!empty($value['price_field_values']) && is_array($value['price_field_values'])) {
             $line_item['unit_price'] = 0.0;
             foreach($value['price_field_values'] as $id => $v) {
               if($v) {
@@ -77,7 +77,7 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
           }
           break;
         case 'Text':
-          if(!empty($value['price_field_values']) && !is_array($value['price_field_values']) && is_numeric($value['price_field_values'])) {
+          if (!empty($value['price_field_values']) && !is_array($value['price_field_values']) && is_numeric($value['price_field_values'])) {
             $line_item['unit_price'] = $line_item['line_total'] = $value * $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->amount;
             $total['total'] += $line_item['line_total'];
           }
@@ -99,9 +99,7 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
 }
 
 /**
- * Run the credit card transaction. Do any financial type stuff here...After its all said in done return
- * the contribution object (Drupal entity object)
- * or false if unsuccessful
+ * Run the credit card transaction. Find a handler for the payment processor type if one is available and invoke its callback
  *
  * @param $price_set_data
  * @param $entity_type
@@ -111,19 +109,19 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
  */
 function _civicrm_entity_price_set_field_run_cc_transaction($price_set_data, $entity_type, $entity, $contacts, $form_state) {
   $civicrm_entity_prise_set_field_processor_types = civicrm_entity_price_set_field_get_processor_handler_info();
-  if(!empty($entity->payment_processor)) {
+  if (!empty($entity->payment_processor)) {
     $processor = entity_load_single('civicrm_payment_processor', $entity->payment_processor);
-    if(!empty($processor->payment_processor_type_id)) {
+    if (!empty($processor->payment_processor_type_id)) {
       $processor_type = entity_load_single('civicrm_payment_processor_type', $processor->payment_processor_type_id);
       foreach ($civicrm_entity_prise_set_field_processor_types as $id => $type) {
         if ($type['payment_processor_type'] == $processor_type->name) {
           $invoke_type = $type;
         }
       }
-      if(!empty($invoke_type)) {
+      if (!empty($invoke_type)) {
         $result = call_user_func($invoke_type['callback'], $processor, $processor_type, $price_set_data, $entity_type, $entity, $contacts, $form_state);
       }
-      if(!empty($result)) {
+      if (!empty($result)) {
         return $result;
       }
     }
@@ -154,10 +152,11 @@ function civicrm_entity_price_set_field_civicrm_entity_price_set_field_processor
  * @param $price_set_data
  * @param $entity_type
  * @param $entity
- * @param $form_data
- * @return bool|CivicrmEntity
+ * @param $contacts
+ * @param $form_state
+ * @return bool|array
  */
-function civicrm_entity_price_set_field_dummy_payment_processing($processor, $processor_type, $price_set_data, $entity_type, $entity, $contacts, $form_data) {
+function civicrm_entity_price_set_field_dummy_payment_processing($processor, $processor_type, $price_set_data, $entity_type, $entity, $contacts, $form_state) {
   //dsm($processor);
   //dsm($processor_type);
   //dsm($price_set_data);
@@ -165,30 +164,48 @@ function civicrm_entity_price_set_field_dummy_payment_processing($processor, $pr
   //dsm($entity);
   //dsm($form_data);
   //dsm($contacts);
-  //dsm($form_data);
+  //dsm($form_state);
 
-  //transact call
-// Set the required params for the payment processor
-  /*$donationParams = array(
-    'financial_type_id' => "Donation",
-    'total_amount' => $donationTotalAmount,
-    'contact_id' => $form->_values['participant']['contact_id'],
+  // Set the required params for the payment processor
+  $params = array(
+    'financial_type_id' => $entity->financial_type_id,
+    'total_amount' => $form_state['transaction']['total'],
+    'contact_id' => $contacts[0]->id,
     'is_test' => 1,
-    'payment_processor' => 1,
-    'credit_card_number' => 4111111111111111,
-    'cvv2' => "001",
-    'month' => 1,
-    'credit_card_type' => "Visa",
-    'year' => 2017,
+    'payment_processor' => $processor->id,
+    'credit_card_number' => $form_state['registration_cc_block']['cc_number'],
+    'cvv2' => $form_state['registration_cc_block']['cvv'],
+    'month' => $form_state['registration_cc_block']['cc_exp']['month'],
+    'year' => $form_state['registration_cc_block']['cc_exp']['year'],
     'invoice_id' => md5(uniqid(rand(), TRUE)),
-    //'skipLineItem' => 1,
+    'skipLineItem' => 1,
     'source' => 'Annual Meeting Event Registration',
-  );*/
+  );
 
-  //$donation = civicrm_api3('Contribution','transact',$donationParams);
-  //create civicrm_entity_financial_trxn item
+  $result = _civicrm_entity_price_set_field_api_transact_call($params);
 
-
+  if(!empty($result['error'])) {
+    drupal_set_message($result['error']);
+    return FALSE;
+  }
 
   return FALSE;
+}
+
+/**
+ * @param $params
+ * @throws CiviCRM_API3_Exception
+ */
+function _civicrm_entity_price_set_field_api_transact_call($params) {
+  $result = array();
+  try {
+    $result = civicrm_api3('Contribution', 'transact', $params);
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    return array('error' => $e->getMessage());
+  }
+
+  //create civicrm_entity_financial_trxn item
+
+  return $result;
 }

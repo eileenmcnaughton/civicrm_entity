@@ -472,13 +472,10 @@ function civicrm_entity_price_set_field_display_form_event_submit($form, &$form_
       $event = $form_state['event'];
       $success = 1;
 
-      if(!empty($form_state['process_cc_transaction']) &&
-        empty($form_state['storage']['registration_form']['pay_later']) &&
+      if(empty($form_state['storage']['registration_form']['pay_later']) &&
         !empty($form_state['storage']['registration_form']['transaction']['total']) &&
         is_numeric($form_state['storage']['registration_form']['transaction']['total']) &&
         $form_state['storage']['registration_form']['transaction']['total'] > 0) {
-        // run the transact()
-        // need to create first contact if its not created yet...or not?
 
         _civicrm_entity_price_set_field_display_form_create_update_contact('first', 0, $form_state);
         $success = _civicrm_entity_price_set_field_run_cc_transaction($data, 'civicrm_event', $event, $form_state['contacts'], $form_state['storage']['registration_form']);
@@ -704,44 +701,78 @@ function civicrm_entity_price_set_field_event_registration_form_register_as_anot
  * @param $form_state
  */
 function _civicrm_entity_price_set_field_process_event_registration($form_state) {
-  //dsm($form_state);
-  // create/update contacts
-  foreach($form_state['contacts'] as $count => $contact) {
+  $form_state['participants'] = array();
+  if(empty($form_state['contribution'])) {
+    $form_state['contribution'] = NULL;
+  }
+  foreach ($form_state['contacts'] as $count => $contact) {
     _civicrm_entity_price_set_field_display_form_create_update_contact('other', $count, $form_state);
-    civicrm_initialize();
     try {
-      /*$result = civicrm_api3('Participant', 'create', array(
-        'sequential' => 1,
-        'event_id' => "",
-        'contact_id' => "user_contact_id",
+      $params = array(
+        'is_new' => TRUE,
+        'event_id' => $form_state['event']->id,
+        'contact_id' => $contact->id,
         'source' => "User Created - CiviCRM Entity Price Set Field Display Form",
         'role_id' => "Attendee",
         'status_id' => "Registered",
-        'register_date' => date(''),
-        'is_pay_later' => "",
-        'registered_by_id' => "",
-      ));*/
+        'register_date' => date('Y-m-d H:i:s'),
+        'is_pay_later' => !empty($form_state['storage']['registration_form']['pay_later']) ? 1 : 0,
+      );
+      if ($count) {
+        $params['registered_by_id'] = $form_state['contacts'][0]->id;
+      }
+      if (!empty($form_state['storage']['registration_form']['pay_later'])) {
+        $params['status_id'] = "Pending from pay later";
+      }
+
+      $participant = new CivicrmEntity($params, 'civicrm_participant');
+      $participant_wrapper = entity_metadata_wrapper('civicrm_participant', $participant);
+      $participant_wrapper->save();
+      $form_state['participants'][$count] = $participant_wrapper->value();
+
+      if (!empty($form_state['contribution'])) {
+        // create line items, 1 per price field for each participant
+      }
+
     }
-    catch (CiviCRM_API3_Exception $e) {
+    catch (Exception $e) {
       drupal_set_message('Error creating participant record for contact: ' . $contact->first_name . ' ' . $contact->last_name);
     }
 
   }
-  // create participant records.
-  // create line item for each price field that has a selection for each participant
-  // participant count is a setting on the price field
-
 
 // if send confirmation email
   // Send the contribution confirmation email
-  /*$confirmation = civicrm_api3('Contribution', 'sendconfirmation', array(
-    'id' => $donation['id'],
-    'receipt_from_email' => "donations@txpeds.org",
-    'receipt_from_name' => "TPS",
-  ));*/
-  
-  // trigger rule event with all the pertinent data here
+  if (!empty($form_state['contribution'])) {
+    /*$confirmation = civicrm_api3('Contribution', 'sendconfirmation', array(
+      'id' => $form_state['contribution']->id,
+      'receipt_from_email' => "",
+      'receipt_from_name' => "",
+    ));*/
+  }
 
+  $price_fields = array();
+  $price_field_values = array();
+  foreach ($form_state['price_set_data']['price_fields'] as $pf_id => $pf_data) {
+    $price_fields[] = $pf_data['pf_entity'];
+    foreach ($pf_data['price_field_values'] as $pfv_id => $pfv) {
+      $price_field_values[] = $pfv;
+    }
+  }
+  // trigger rule event with all the pertinent data here
+  /*$event_variables = array(
+    'event' => $form_state['event'],
+    'price_set' => $form_state['price_set_data']['price_set'],
+    'price_fields' => $price_fields,
+    'price_field_values' => $price_field_values,
+    'line_items' => ,
+    'contribution' => $form_state['contribution'],
+    'contacts' => $form_state['contacts'],
+    'participants' => $form_state['participants'],
+  );*/
+
+
+  //rules_invoke_event_by_args('civicrm_entity_price_set_field_event_registration', $event_variables);
 }
 /**
  * Helper function to add price set FAPI elements on form
@@ -755,7 +786,6 @@ function _civicrm_entity_price_set_field_process_event_registration($form_state)
 function _civicrm_entity_price_set_field_setup_price_set_fapi(&$form, &$form_state, $default_values, $parent, $count) {
   $data = $form_state['price_set_data'];
   if(!empty($data)) {
-    $form_state['process_cc_transaction'] = TRUE;
     $form[$parent]['contacts'][$count]['price_set'] = array(
       '#type' => 'container',
       '#attributes' => array(
@@ -778,7 +808,7 @@ function _civicrm_entity_price_set_field_setup_price_set_fapi(&$form, &$form_sta
       $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values'] = array();
       $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#title'] = t($price_field['pf_entity']->label);
 
-      if(!empty($price_field['pf_entity']->is_required)) {
+      if (!empty($price_field['pf_entity']->is_required)) {
         $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#required'] = TRUE;
 
       };
@@ -820,9 +850,6 @@ function _civicrm_entity_price_set_field_setup_price_set_fapi(&$form, &$form_sta
       }
     }
   }
-  else {
-    $form_state['process_cc_transaction'] = FALSE;
-  }
 }
 
 /**
@@ -833,13 +860,13 @@ function _civicrm_entity_price_set_field_setup_price_set_fapi(&$form, &$form_sta
  */
 function theme_civicrm_entity_price_set_field_price_field_display_form_confirmation_page($vars) {
   $html = '<h3 class="confirmation-title">' . $vars['heading'] . '</h3>';
-  if(!empty($vars['entity']->confirm_text)) {
+  if (!empty($vars['entity']->confirm_text)) {
     $html .= $vars['entity']->confirm_text;
   }
 
   $header = array('name' => 'Name', 'email' => 'Email', 'phone' => 'Phone');
   $rows = array();
-  foreach($vars['form_data']['contacts'] as $id => $contact) {
+  foreach ($vars['form_data']['contacts'] as $id => $contact) {
    $rows[$id]['data']['name'] = implode(' ', array($contact['contact_info']['first_name'], $contact['contact_info']['last_name']));
    $rows[$id]['data']['email'] = $contact['contact_info']['email'];
    $rows[$id]['data']['phone'] = $contact['contact_info']['phone'];
@@ -849,7 +876,7 @@ function theme_civicrm_entity_price_set_field_price_field_display_form_confirmat
 
   $html .= '<h4 class="total"><strong class="label">Total: </strong>' . '$' . $vars['form_data']['transaction']['total'] . '</h4>';
 
-  if(!empty($vars['entity']->confirm_footer_text)) {
+  if (!empty($vars['entity']->confirm_footer_text)) {
     $html .= $vars['entity']->confirm_footer_text;
   }
 
@@ -864,13 +891,13 @@ function theme_civicrm_entity_price_set_field_price_field_display_form_confirmat
  */
 function theme_civicrm_entity_price_set_field_price_field_display_form_thank_you_page($vars) {
   $html = '<h3>' . $vars['heading'] . '</h3>';
-  if(!empty($vars['entity']->thankyou_text)) {
+  if (!empty($vars['entity']->thankyou_text)) {
     $html .= $vars['entity']->thankyou_text;
   }
 
   $header = array('name' => 'Name', 'email' => 'Email', 'phone' => 'Phone');
   $rows = array();
-  foreach($vars['form_data']['contacts'] as $id => $contact) {
+  foreach ($vars['form_data']['contacts'] as $id => $contact) {
     $rows[$id]['data']['name'] = implode(' ', array($contact['contact_info']['first_name'], $contact['contact_info']['last_name']));
     $rows[$id]['data']['email'] = $contact['contact_info']['email'];
     $rows[$id]['data']['phone'] = $contact['contact_info']['phone'];
@@ -880,7 +907,7 @@ function theme_civicrm_entity_price_set_field_price_field_display_form_thank_you
 
   $html .= '<h4 class="total"><strong class="label">Total: </strong>' . '$' . $vars['form_data']['transaction']['total']  . '</h4>';
 
-  if(!empty($vars['entity']->thankyou_footer_text)) {
+  if (!empty($vars['entity']->thankyou_footer_text)) {
     $html .= $vars['entity']->thankyou_footer_text;
   }
 
@@ -895,13 +922,13 @@ function theme_civicrm_entity_price_set_field_price_field_display_form_thank_you
  */
 function civicrm_entity_price_set_field_display_form_event_validate($form, $form_state) {
   if (isset($form_state['values']['registration_form']['pay_later']) && $form_state['values']['registration_form']['pay_later'] == 0){
-    if(empty($form_state['values']['registration_form']['registration_cc_block']['name_on_card'])) {
+    if (empty($form_state['values']['registration_form']['registration_cc_block']['name_on_card'])) {
       form_set_error('registration_form][registration_cc_block][name_on_card', 'Name on card field required.');
     }
-    if(empty($form_state['values']['registration_form']['registration_cc_block']['cc_number'])) {
+    if (empty($form_state['values']['registration_form']['registration_cc_block']['cc_number'])) {
       form_set_error('registration_form][registration_cc_block][cc_number', 'Credit card number required.');
     }
-    if(empty($form_state['values']['registration_form']['registration_cc_block']['cvv'])) {
+    if (empty($form_state['values']['registration_form']['registration_cc_block']['cvv'])) {
       form_set_error('registration_form][registration_cc_block][cvv', 'CVV required.');
     }
   }
@@ -916,10 +943,10 @@ function civicrm_entity_price_set_field_display_form_event_validate($form, $form
  * @param $form_state
  */
 function civicrm_entity_price_set_field_form_civicrm_event_form_alter(&$form, &$form_state) {
-  foreach($form as $key => $element) {
-    if(strpos($key, 'field_') === 0) {
+  foreach ($form as $key => $element) {
+    if (strpos($key, 'field_') === 0) {
       $field_info = field_info_field($key);
-      if($field_info['type'] == 'civicrm_entity_price_set_field') {
+      if ($field_info['type'] == 'civicrm_entity_price_set_field') {
         $form['#validate'][] = 'civicrm_entity_price_set_field_event_form_additional_validation';
         //$form['#submit'][] = 'civicrm_entity_price_set_field_event_form_additional_processing';
         break;
@@ -936,14 +963,14 @@ function civicrm_entity_price_set_field_form_civicrm_event_form_alter(&$form, &$
  * @param $form_state
  */
 function civicrm_entity_price_set_field_event_form_additional_validation(&$form, &$form_state) {
-  if(!empty($form_state['values']['is_monetary'])) {
-    if(empty($form_state['values']['financial_type_id'])) {
+  if (!empty($form_state['values']['is_monetary'])) {
+    if (empty($form_state['values']['financial_type_id'])) {
       form_set_error('financial_type_id', 'Financial Type is required when the event is a paid event.');
     }
-    if(empty($form_state['values']['fee_label'])) {
+    if (empty($form_state['values']['fee_label'])) {
       form_set_error('fee_label', 'Fee Label is required when the event is a paid event.');
     }
-    if(empty($form_state['values']['payment_processor'])) {
+    if (empty($form_state['values']['payment_processor'])) {
       form_set_error('payment_processor', 'Payment Processor is required when the event is a paid event.');
     }
   }
