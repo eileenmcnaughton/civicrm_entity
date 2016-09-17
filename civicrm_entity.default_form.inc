@@ -362,6 +362,7 @@ function civicrm_entity_form_validate(&$form, &$form_state) {
 function civicrm_entity_form_submit(&$form, &$form_state) {
   $entity_type = $form['#entity_type'];
   $entity = $form['#entity'];
+  civicrm_initialize();
   $civicrm_entity_fields = civicrm_api(substr_replace($entity_type,'', 0, 8),  'getfields', array(
     'version' => 3,
     'action' => 'create',

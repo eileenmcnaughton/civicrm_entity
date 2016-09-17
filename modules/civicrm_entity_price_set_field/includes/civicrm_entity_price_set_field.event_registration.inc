@@ -568,7 +568,7 @@ function _civicrm_entity_price_set_field_display_form_create_update_contact($act
       $contact_wrapper->save();
       $form_state['contacts'][$count] = $contact_wrapper->value();
       $form_state['contacts'][$count]->is_new_temp = TRUE;
-      if (empty($form_state['storage']['registration_form']['register_as_another'])) {
+      if ( $count == 0 && empty($form_state['storage']['registration_form']['register_as_another'])) {
         global $user;
         if($user->uid) {
           $form_state['contacts'][$count]->uid = $user->uid;
@@ -733,7 +733,7 @@ function _civicrm_entity_price_set_field_process_event_registration($form_state)
       $params = array(
         'is_new' => TRUE,
         'event_id' => $form_state['event']->id,
-        'contact_id' => $contact->id,
+        'contact_id' => $form_state['contacts'][$count]->id,
         'source' => "User Created - CiviCRM Entity Price Set Field Display Form",
         'role_id' => "Attendee",
         'status_id' => "Registered",
@@ -748,18 +748,20 @@ function _civicrm_entity_price_set_field_process_event_registration($form_state)
       }
 
       if ($count) {
-        $params['registered_by_id'] = $form_state['contacts'][0]->id;
+        //$params['registered_by_id'] = $form_state['contacts'][0]->id;
       }
       if (!empty($form_state['storage']['registration_form']['pay_later'])) {
         $params['status_id'] = "Pending from pay later";
       }
 
       $participant = new CivicrmEntity($params, 'civicrm_participant');
+
       $participant_wrapper = entity_metadata_wrapper('civicrm_participant', $participant);
       $participant_wrapper->save();
       $form_state['participants'][$count] = $participant_wrapper->value();
 
       if (!empty($form_state['contribution'])) {
+
         if($count == 0) {
           // create participant_payment entity
           $participant_payment = new CivicrmEntity(array('contribution_id' => $form_state['contribution']->id, 'participant_id' => $form_state['participants'][$count]->id), 'civicrm_participant_payment');
@@ -790,8 +792,14 @@ function _civicrm_entity_price_set_field_process_event_registration($form_state)
       }
     }
     catch (Exception $e) {
-      drupal_set_message('Error creating participant record for contact: ' . $contact->first_name . ' ' . $contact->last_name);
+
+      drupal_set_message('Error creating participant record for contact: ' . $form_state['contacts'][$count]->first_name . ' ' . $form_state['contacts'][$count]->last_name . '  -- ' . $e->getMessage());
     }
+
+
+    unset($params);
+    unset($participant);
+    unset($participant_wrapper);
   }
 
   // if send confirmation email
@@ -807,19 +815,24 @@ function _civicrm_entity_price_set_field_process_event_registration($form_state)
 
   $price_fields = array();
   $price_field_values = array();
-  foreach ($form_state['price_set_data']['price_fields'] as $pf_id => $pf_data) {
-    $price_fields[] = $pf_data['pf_entity'];
-    foreach ($pf_data['price_field_values'] as $pfv_id => $pfv) {
-      $price_field_values[] = $pfv;
+  if(!empty($form_state['price_set_data']['price_fields'])) {
+    foreach ($form_state['price_set_data']['price_fields'] as $pf_id => $pf_data) {
+      $price_fields[] = $pf_data['pf_entity'];
+      if(!empty($pf_data['price_field_values'])) {
+        foreach ($pf_data['price_field_values'] as $pfv_id => $pfv) {
+          $price_field_values[] = $pfv;
+        }
+      }
     }
   }
+
   // trigger rule event with all the pertinent data here
   $event_variables = array(
     'event' => $form_state['event'],
-    'price_set' => $form_state['price_set_data']['price_set'],
-    'price_fields' => $price_fields,
-    'price_field_values' => $price_field_values,
-    'line_items' => $line_items,
+    //'price_set' => !empty($form_state['price_set_data']['price_set']) ? $form_state['price_set_data']['price_set'] : array(),
+    //'price_fields' => $price_fields,
+    //'price_field_values' => $price_field_values,
+    //'line_items' => $line_items,
     'contribution' => $form_state['contribution'],
     'contacts' => $form_state['contacts'],
     'participants' => $form_state['participants'],

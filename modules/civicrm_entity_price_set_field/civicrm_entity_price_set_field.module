@@ -37,11 +37,11 @@ function civicrm_entity_price_set_field_rules_event_info() {
       'group' => 'CiviCRM Entity Price Set Field' ,
       'variables' => array(
         'event' => array('type' => 'civicrm_event', 'label' => t('The event being registered for.')),
-        'price_set' => array('type' => 'civicrm_price_set', 'label' => t('Price Set for the event.')),
-        'price_fields' => array('type' => 'list<civicrm_price_field>', 'label' => t('Price Fields')),
-        'price_field_values' => array('type' => 'list<civicrm_price_field_value>', 'label' => t('Price Field Values')),
-        'line_items' => array('type' => 'list<civicrm_line_item>', 'label' => t('Line Items')),
-        'contribution' => array('type' => 'civicrm_contribution', 'label' => t('Contribution')),
+        //'price_set' => array('type' => 'civicrm_price_set', 'label' => t('Price Set for the event.')),
+        //'price_fields' => array('type' => 'list<civicrm_price_field>', 'label' => t('Price Fields')),
+        // 'price_field_values' => array('type' => 'list<civicrm_price_field_value>', 'label' => t('Price Field Values')),
+        //'line_items' => array('type' => 'list<civicrm_line_item>', 'label' => t('Line Items')),
+        //'contribution' => array('type' => 'civicrm_contribution', 'label' => t('Contribution')),
         'contacts' => array('type' => 'list<civicrm_contact>', 'label' => t('Contacts')),
         'participants' => array('type' => 'list<civicrm_participant>', 'label' => t('Participants')),
       ),
@@ -137,6 +137,9 @@ function civicrm_entity_price_set_field_field_load($entity_type, $entities, $fie
         ->fetchField();
       if(!empty($price_set_id)) {
         $items[$entity_id][0]['price_set_id'] = $price_set_id;
+      }
+      else {
+        $items[$entity_id][0]['price_set_id'] = 0;
       }
     }
   }
