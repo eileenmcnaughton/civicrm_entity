@@ -727,6 +727,7 @@ function _civicrm_entity_price_set_field_process_event_registration($form_state)
   }
 
   $line_items = array();
+
   foreach ($form_state['contacts'] as $count => $contact) {
     _civicrm_entity_price_set_field_display_form_create_update_contact('other', $count, $form_state);
     try {
@@ -741,14 +742,12 @@ function _civicrm_entity_price_set_field_process_event_registration($form_state)
         'is_pay_later' => !empty($form_state['storage']['registration_form']['pay_later']) ? 1 : 0,
       );
 
-      if($count == 0) {
-        //$params['fee_level'] = '';
-        if(!empty($form_state['contribution']->total_amount))
-        $params['fee_amount'] = $form_state['contribution']->total_amount;
+      if(!empty($form_state['contribution']) && isset($form_state['storage']['registration_form']['transaction']['fee_amounts'][$count])) {
+        $params['fee_amount'] = $form_state['storage']['registration_form']['transaction']['fee_amounts'][$count];
       }
 
       if ($count) {
-        //$params['registered_by_id'] = $form_state['contacts'][0]->id;
+        $params['registered_by_id'] = $form_state['participants'][0]->id;
       }
       if (!empty($form_state['storage']['registration_form']['pay_later'])) {
         $params['status_id'] = "Pending from pay later";
@@ -768,7 +767,6 @@ function _civicrm_entity_price_set_field_process_event_registration($form_state)
           $participant_payment_wrapper = entity_metadata_wrapper('civicrm_participant_payment', $participant_payment);
           $participant_payment_wrapper->save();
         }
-        // create line items, 1 per price field for each participant
 
         foreach($form_state['storage']['registration_form']['transaction']['line_items'][$count] as $pf_id => $price_field) {
           foreach($price_field as $pfv_id => $price_field_value) {
@@ -784,7 +782,7 @@ function _civicrm_entity_price_set_field_process_event_registration($form_state)
               'line_total' => $price_field_value['line_total'],
               'unit_price' => $price_field_value['unit_price'],
             );
-            dsm($line_item_params);
+
             $line_item = new CivicrmEntity($line_item_params, 'civicrm_line_item');
             $line_item_wrapper = entity_metadata_wrapper('civicrm_line_item', $line_item);
             $line_item_wrapper->save();
@@ -795,14 +793,8 @@ function _civicrm_entity_price_set_field_process_event_registration($form_state)
       }
     }
     catch (Exception $e) {
-
-      drupal_set_message('Error creating participant record for contact: ' . $form_state['contacts'][$count]->first_name . ' ' . $form_state['contacts'][$count]->last_name . '  -- ' . $e->getMessage());
+      drupal_set_message('Error creating participant record or financial records for registration for contact: ' . $form_state['contacts'][$count]->first_name . ' ' . $form_state['contacts'][$count]->last_name . '  -- ' . $e->getMessage());
     }
-
-
-    unset($params);
-    unset($participant);
-    unset($participant_wrapper);
   }
 
   // if send confirmation email

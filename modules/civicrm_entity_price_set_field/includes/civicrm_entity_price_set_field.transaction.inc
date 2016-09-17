@@ -38,11 +38,13 @@ function civicrm_entity_price_set_field_get_processor_handler_info($id = NULL) {
 function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entity_type, $entity, $form_state) {
   $total = array();
   $total['line_items'] = array();
+  $total['fee_amounts'] = array();
   $total['total'] = 0.0;
-  //calculate the total
-
+  //calculate the total, each line item and its total, and each "fee amount" (sum of all line items for a participant)
+  // TODO, when is participant_count something other than 0?
   if(!empty($entity->is_monetary)) {
     foreach ($form_state['contacts'] as $id => $contact) {
+      $total['fee_amounts'][$id] = 0.0;
       if(!empty($contact['price_set'])) {
         foreach ($contact['price_set'] as $pf_id => $value) {
           $line_item = array();
@@ -59,8 +61,10 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
               if (!empty($value['price_field_values']) && !is_array($value['price_field_values']) && is_numeric($value['price_field_values'])) {
                 $line_item['price_field_value_id'] = $value['price_field_values'];
                 $line_item['unit_price'] = $line_item['line_total'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->amount;
-                $total['total'] += $line_item['line_total'];
+                $line_item['participant_count'] = 0;
                 $line_item['qty'] = 1;
+                $total['total'] += $line_item['line_total'];
+                $total['fee_amounts'][$id] += $line_item['line_total'];
                 $total['line_items'][$id][$pf_id][$line_item['price_field_value_id']] = $line_item;
               }
               break;
@@ -68,8 +72,10 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
               if (!empty($value['price_field_values']) && !is_array($value['price_field_values']) && is_numeric($value['price_field_values'])) {
                 $line_item['price_field_value_id'] = $value['price_field_values'];
                 $line_item['unit_price'] = $line_item['line_total'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->amount;
-                $total['total'] += $line_item['line_total'];
+                $line_item['participant_count'] = 0;
                 $line_item['qty'] = 1;
+                $total['total'] += $line_item['line_total'];
+                $total['fee_amounts'][$id] += $line_item['line_total'];
                 $total['line_items'][$id][$pf_id][$line_item['price_field_value_id']] = $line_item;
               }
               break;
@@ -83,7 +89,9 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
                     $line_item['price_field_value_id'] = $id;
                     $line_item['line_total'] = $line_item['unit_price'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$id]->amount;
                     $line_item['qty'] = 1;
+                    $line_item['participant_count'] = 0;
                     $total['total'] += $line_item['line_total'];
+                    $total['fee_amounts'][$id] += $line_item['line_total'];
                     $total['line_items'][$id][$pf_id][$id] = $line_item;
                   }
                 }
@@ -95,9 +103,12 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
                 $line_item['price_field_value_id'] = $value['price_field_values'];
                 $line_item['unit_price'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->amount;
                 $line_item['line_total'] = $line_item['unit_price'] * $value;
-                $total['total'] += $line_item['line_total'];
                 $line_item['qty'] = $value;
+                $line_item['participant_count'] = 0;
                 $total['line_items'][$id][$pf_id][$line_item['price_field_value_id']] = $line_item;
+                $total['fee_amounts'][$id] += $line_item['line_total'];
+                $total['fee_levels'][$id] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->label;
+                $total['total'] += $line_item['line_total'];
               }
               break;
           }
