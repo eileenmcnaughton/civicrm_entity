@@ -41,12 +41,12 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
   $total = array();
   $total['line_items'] = array();
   $total['fee_amounts'] = array();
-  $total['total'] = 0.0;
+  $total['total'] = 0.00;
   //calculate the total, each line item and its total, and each "fee amount" (sum of all line items for a participant)
   // TODO, when is participant_count something other than 0?
   if(!empty($entity->is_monetary)) {
     foreach ($form_state['contacts'] as $id => $contact) {
-      $total['fee_amounts'][$id] = 0.0;
+      $total['fee_amounts'][$id] = 0.00;
       if(!empty($contact['price_set'])) {
         foreach ($contact['price_set'] as $pf_id => $value) {
           $line_item = array();

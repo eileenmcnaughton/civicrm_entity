@@ -3086,6 +3086,7 @@ function _civicrm_entity_manage_display_submit(&$form, &$form_state) {
     $bundle = $form['#bundle'];
     $bundle_settings = field_bundle_settings($entity_type, $bundle);
     foreach($bundle_settings['extra_fields']['display'] as $key => $field) {
+      $form_state['values']['fields'][$key]['type'] = 'visible';
     }
   }
 
