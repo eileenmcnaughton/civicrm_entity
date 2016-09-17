@@ -2039,6 +2039,7 @@ function civicrm_entity_get_field_widget($field_spec, $civicrm_entity) {
  * @return array
  */
 function _civicrm_entity_get_entities_list($civicrm_entity){
+  civicrm_initialize();
   try{
     $result = civicrm_api3($civicrm_entity, 'get', array(
       'options' => array('limit' => 100),

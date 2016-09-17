@@ -958,8 +958,6 @@ function civicrm_entity_price_set_field_field_formatter_view($entity_type, $enti
   switch ($display['type']) {
     case 'civicrm_entity_price_set_field_form_formatter':
       foreach ($items as $delta => $item) {
-
-
         if (!empty($item['price_set_id'])) {
           $price_set_id = $item['price_set_id'];
         }
