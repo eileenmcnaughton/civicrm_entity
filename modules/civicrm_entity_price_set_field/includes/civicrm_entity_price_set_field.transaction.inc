@@ -40,7 +40,8 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
   $total['line_items'] = array();
   $total['total'] = 0.0;
   //calculate the total
-  if(!empty($form_state['event']->is_monetary)) {
+
+  if(!empty($entity->is_monetary)) {
     foreach ($form_state['contacts'] as $id => $contact) {
       if(!empty($contact['price_set'])) {
         foreach ($contact['price_set'] as $pf_id => $value) {
@@ -59,6 +60,8 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
                 $line_item['price_field_value_id'] = $value['price_field_values'];
                 $line_item['unit_price'] = $line_item['line_total'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->amount;
                 $total['total'] += $line_item['line_total'];
+                $line_item['qty'] = 1;
+                $total['line_items'][$id][$pf_id][$line_item['price_field_value_id']] = $line_item;
               }
               break;
             case 'Select':
@@ -66,31 +69,39 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
                 $line_item['price_field_value_id'] = $value['price_field_values'];
                 $line_item['unit_price'] = $line_item['line_total'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->amount;
                 $total['total'] += $line_item['line_total'];
+                $line_item['qty'] = 1;
+                $total['line_items'][$id][$pf_id][$line_item['price_field_value_id']] = $line_item;
               }
               break;
             case 'CheckBox':
               if (!empty($value['price_field_values']) && is_array($value['price_field_values'])) {
-                $line_item['unit_price'] = 0.0;
                 foreach ($value['price_field_values'] as $id => $v) {
                   if ($v) {
-                    $line_item['unit_price'] += $price_set_data['price_fields'][$pf_id]['price_field_values'][$id]->amount;
+                    $line_item = array();
+                    $line_item['price_field_id'] = $pf_id;
+                    $line_item['unit_price'] = 0.0;
+                    $line_item['price_field_value_id'] = $id;
+                    $line_item['line_total'] = $line_item['unit_price'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$id]->amount;
+                    $line_item['qty'] = 1;
+                    $total['total'] += $line_item['line_total'];
+                    $total['line_items'][$id][$pf_id][$id] = $line_item;
                   }
                 }
-                // what to set the price_field_value_id key of the line item array too for checkboxes???
-                // should there be a line item per checkbox that is checked?
-                $line_item['line_total'] = $line_item['unit_price'];
-                $total['total'] += $line_item['line_total'];
+                continue;
               }
               break;
             case 'Text':
               if (!empty($value['price_field_values']) && !is_array($value['price_field_values']) && is_numeric($value['price_field_values'])) {
                 $line_item['price_field_value_id'] = $value['price_field_values'];
-                $line_item['unit_price'] = $line_item['line_total'] = $value * $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->amount;
+                $line_item['unit_price'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->amount;
+                $line_item['line_total'] = $line_item['unit_price'] * $value;
                 $total['total'] += $line_item['line_total'];
+                $line_item['qty'] = $value;
+                $total['line_items'][$id][$pf_id][$line_item['price_field_value_id']] = $line_item;
               }
               break;
           }
-          $total['line_items'][$id][$pf_id] = $line_item;
+
         }
       }
     }

@@ -771,22 +771,25 @@ function _civicrm_entity_price_set_field_process_event_registration($form_state)
         // create line items, 1 per price field for each participant
 
         foreach($form_state['storage']['registration_form']['transaction']['line_items'][$count] as $pf_id => $price_field) {
-          $line_item_params = array(
-            'entity_table' => 'civicrm_participant',
-            'entity_id' => $form_state['participants'][$count]->id,
-            'label' => $form_state['price_set_data']['price_fields'][$pf_id][$price_field['price_field_value_id']]->label,
-            'qty' => 1,
-            'contribution_id' => $form_state['contribution']->id,
-            'price_field_id' => $price_field['price_field_id'],
-            'price_field_value_id' => $price_field['price_field_value_id'],
-            'financial_type_id' => $price_field['financial_type_id'],
-            'line_total' => $price_field['line_total'],
-            'unit_price' => $price_field['unit_price'],
-          );
-          $line_item = new CivicrmEntity($line_item_params, 'civicrm_line_item');
-          $line_item_wrapper = entity_metadata_wrapper('civicrm_line_item', $line_item);
-          $line_item_wrapper->save();
-          $line_items[] = $line_item_wrapper->value();
+          foreach($price_field as $pfv_id => $price_field_value) {
+            $line_item_params = array(
+              'entity_table' => 'civicrm_participant',
+              'entity_id' => $form_state['participants'][$count]->id,
+              'label' => $form_state['price_set_data']['price_fields'][$pf_id]['price_field_values'][$price_field_value['price_field_value_id']]->label,
+              'qty' => $price_field_value['qty'],
+              'contribution_id' => $form_state['contribution']->id,
+              'price_field_id' => $price_field_value['price_field_id'],
+              'price_field_value_id' => $price_field_value['price_field_value_id'],
+              'financial_type_id' => $price_field_value['financial_type_id'],
+              'line_total' => $price_field_value['line_total'],
+              'unit_price' => $price_field_value['unit_price'],
+            );
+            dsm($line_item_params);
+            $line_item = new CivicrmEntity($line_item_params, 'civicrm_line_item');
+            $line_item_wrapper = entity_metadata_wrapper('civicrm_line_item', $line_item);
+            $line_item_wrapper->save();
+            $line_items[] = $line_item_wrapper->value();
+          }
         }
 
       }
