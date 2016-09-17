@@ -12,7 +12,7 @@ function civicrm_entity_price_set_field_get_processor_handler_info($id = NULL) {
     // Returning results than pushing them into the $result array:
     $result = module_invoke($module, 'civicrm_entity_price_set_field_processor_info');
     foreach($result as $id => $r) {
-      if (!empty($r['id']) && !empty($r['callback'])) {
+      if (!empty($r['callback'])) {
         $results[$id] = $result;
       }
     }
