@@ -313,18 +313,20 @@ function _civicrm_entity_price_set_field_setup_event_registration_form_fapi(&$fo
     }
 
   }
-
-  $form['registration_form']['add_participant'] = array(
-    '#type' => 'submit',
-    '#value' => t('Add a participant'),
-    '#limit_validation_errors' => array(),
-    '#submit' => array('_civicrm_entity_price_set_field_event_registration_add_participant_submit'),
-    '#ajax' => array(
-      'wrapper' => 'civicrm-price-set-field-event-registration',
-      'callback' => 'civicrm_entity_price_set_field_event_registration_form_ajax_callback',
-    ),
-  );
-
+  // if event is configured to allow multiple registrations then add an "Add Participant" button
+  // to ajax load another contact price set and information container to the form
+  if(!empty($form_state['event']->is_multiple_registrations)) {
+    $form['registration_form']['add_participant'] = array(
+      '#type' => 'submit',
+      '#value' => t('Add a participant'),
+      '#limit_validation_errors' => array(),
+      '#submit' => array('_civicrm_entity_price_set_field_event_registration_add_participant_submit'),
+      '#ajax' => array(
+        'wrapper' => 'civicrm-price-set-field-event-registration',
+        'callback' => 'civicrm_entity_price_set_field_event_registration_form_ajax_callback',
+      ),
+    );
+  }
   // setup pay options
   if(!empty($form_state['event']->is_monetary)) {
     if (!empty($form_state['event']->is_pay_later)) {
@@ -476,38 +478,50 @@ function _civicrm_entity_price_set_field_setup_event_thank_you_page_fapi(&$form,
 function civicrm_entity_price_set_field_display_form_event_submit($form, &$form_state) {
   switch($form_state['step']) {
     case 1:
+      // Registration form submit
       $form_state['storage']['registration_form'] = $form_state['values']['registration_form'];
       $form_state['storage']['registration_form']['transaction'] = _civicrm_entity_price_set_field_calculate_total($form_state['price_set_data'], 'civicrm_event', $form_state['event'], $form_state['storage']['registration_form']);
       $form_state['step']++;
       break;
     case 2:
-      // here we try to process the transaction
+      // confirmation page submit
       $data = $form_state['price_set_data'];
       $event = $form_state['event'];
       $success = TRUE;
 
-      if(empty($form_state['storage']['registration_form']['pay_later']) &&
-        !empty($form_state['storage']['registration_form']['transaction']['total']) &&
+      if(!empty($form_state['storage']['registration_form']['transaction']['total']) &&
         is_numeric($form_state['storage']['registration_form']['transaction']['total']) &&
         $form_state['storage']['registration_form']['transaction']['total'] > 0) {
-
-        _civicrm_entity_price_set_field_display_form_create_update_contact('first', 0, $form_state);
-        $transact_result = _civicrm_entity_price_set_field_run_cc_transaction($data, 'civicrm_event', $event, $form_state['contacts'], $form_state['storage']['registration_form']);
-        if($transact_result !== FALSE && !empty($transact_result['contribution']) && is_object($transact_result['contribution'])) {
-          $form_state['contribution'] = $transact_result['contribution'];
-          if(!empty($transact_result['entity_financial_trxn'])) {
-            $form_state['entity_financial_trxn'] = $transact_result['entity_financial_trxn'];
+        if(empty($form_state['storage']['registration_form']['pay_later'])) {
+          _civicrm_entity_price_set_field_display_form_create_update_contact('first', 0, $form_state);
+          $transact_result = _civicrm_entity_price_set_field_run_cc_transaction($data, 'civicrm_event', $event, $form_state['contacts'], $form_state['storage']['registration_form']);
+          if ($transact_result !== FALSE && !empty($transact_result['contribution']) && is_object($transact_result['contribution'])) {
+            $form_state['contribution'] = $transact_result['contribution'];
+          } else {
+            $success = FALSE;
           }
         }
         else {
-          $success = FALSE;
+          $contribution_params = array(
+            'is_new' => TRUE,
+            'financial_type_id' => $form_state['event']->financial_type_id,
+            'total_amount' => $form_state['storage']['registration_form']['transaction']['total'],
+            'contact_id' => $form_state['contacts'][0]->id,
+            'invoice_id' => md5(uniqid(rand(), TRUE)),
+            'source' => 'CiviCRM Entity Price Set Field -- Event Registration',
+            'is_pay_later' => 1,
+            'receive_date' => date('Y-m-d H:i:s'),
+            'contribution_status_id' => "Pending",
+            'skipLineItem' => 1,
+          );
+          $contribution = new CivicrmEntity($contribution_params, 'civicrm_contribution');
+          $contribution_wrapper = entity_metadata_wrapper('civicrm_contribution', $contribution);
+          $contribution_wrapper->save();
+          $form_state['contribution'] = $contribution_wrapper->value();
         }
       }
-
       if(!empty($success)) {
-
         _civicrm_entity_price_set_field_process_event_registration($form_state);
-
         $form_state['step']++;
       }
       else {
@@ -736,13 +750,13 @@ function _civicrm_entity_price_set_field_process_event_registration($form_state)
         'event_id' => $form_state['event']->id,
         'contact_id' => $form_state['contacts'][$count]->id,
         'source' => "User Created - CiviCRM Entity Price Set Field Display Form",
-        'role_id' => "Attendee",
+        'role_id' => !empty($form_state['event']->default_role_id) ? $form_state['event']->default_role_id : "Attendee",
         'status_id' => "Registered",
         'register_date' => date('Y-m-d H:i:s'),
         'is_pay_later' => !empty($form_state['storage']['registration_form']['pay_later']) ? 1 : 0,
       );
 
-      if(!empty($form_state['contribution']) && isset($form_state['storage']['registration_form']['transaction']['fee_amounts'][$count])) {
+      if(isset($form_state['storage']['registration_form']['transaction']['fee_amounts'][$count])) {
         $params['fee_amount'] = $form_state['storage']['registration_form']['transaction']['fee_amounts'][$count];
       }
 
@@ -797,16 +811,6 @@ function _civicrm_entity_price_set_field_process_event_registration($form_state)
     }
   }
 
-  // if send confirmation email
-  // Send the contribution confirmation email
-  // Or since we are triggering a rule below, let site builders use Drupal Rules to build an email?
-  if (!empty($form_state['contribution'])) {
-    /*$confirmation = civicrm_api3('Contribution', 'sendconfirmation', array(
-      'id' => $form_state['contribution']->id,
-      'receipt_from_email' => "",
-      'receipt_from_name' => "",
-    ));*/
-  }
 
   $price_fields = array();
   $price_field_values = array();
@@ -824,10 +828,6 @@ function _civicrm_entity_price_set_field_process_event_registration($form_state)
   // trigger rule event with all the pertinent data here
   $event_variables = array(
     'event' => $form_state['event'],
-    //'price_set' => !empty($form_state['price_set_data']['price_set']) ? $form_state['price_set_data']['price_set'] : array(),
-    //'price_fields' => $price_fields,
-    //'price_field_values' => $price_field_values,
-    //'line_items' => $line_items,
     'contribution' => $form_state['contribution'],
     'contacts' => $form_state['contacts'],
     'participants' => $form_state['participants'],
