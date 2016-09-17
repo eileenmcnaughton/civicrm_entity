@@ -11,8 +11,10 @@ function civicrm_entity_price_set_field_get_processor_handler_info($id = NULL) {
     // Calling all modules implementing hook_hook_name and
     // Returning results than pushing them into the $result array:
     $result = module_invoke($module, 'civicrm_entity_price_set_field_processor_info');
-    if(!empty($result['id']) && !empty($result['callback'])) {
-      $results[$result['id']] = $result;
+    foreach($result as $id => $r) {
+      if (!empty($r['id']) && !empty($r['callback'])) {
+        $results[$id] = $result;
+      }
     }
   }
 
@@ -167,10 +169,23 @@ function _civicrm_entity_price_set_field_run_cc_transaction($price_set_data, $en
  *
  */
 function civicrm_entity_price_set_field_civicrm_entity_price_set_field_processor_info() {
-  return array (
-    'id' => 'dummy',
-    'payment_processor_type' => 'Dummy',
-    'callback' => 'civicrm_entity_price_set_field_dummy_payment_processing',
+  return array(
+    'dummy' => array (
+      'payment_processor_type' => 'Dummy',
+      'callback' => 'civicrm_entity_price_set_field_transact_payment_processing',
+    ),
+    'authnet' => array(
+      'payment_processor_type' => 'AuthNet',
+      'callback' => 'civicrm_entity_price_set_field_transact_payment_processing',
+    ),
+    'payflowpro' => array(
+      'payment_processor_type' => 'PayflowPro',
+      'callback' => 'civicrm_entity_price_set_field_transact_payment_processing',
+    ),
+    'paypal' => array(
+      'payment_processor_type' => 'PayflowPro',
+      'callback' => 'civicrm_entity_price_set_field_transact_payment_processing',
+    ),
   );
 }
 
@@ -186,7 +201,7 @@ function civicrm_entity_price_set_field_civicrm_entity_price_set_field_processor
  * @param $form_state
  * @return bool|array
  */
-function civicrm_entity_price_set_field_dummy_payment_processing($processor, $processor_type, $price_set_data, $entity_type, $entity, $contacts, $form_state) {
+function civicrm_entity_price_set_field_transact_payment_processing($processor, $processor_type, $price_set_data, $entity_type, $entity, $contacts, $form_state) {
   // Set the required params for the payment processor
   $params = array(
     'sequential' => 1,

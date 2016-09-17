@@ -351,7 +351,6 @@ function _civicrm_entity_price_set_field_setup_event_registration_form_fapi(&$fo
           'civicrm-entity-price-set-field-cc-block',
         ),
       ),
-
     );
     $form['registration_form']['registration_cc_block']['name_on_card'] = array(
       '#type' => 'textfield',
@@ -989,8 +988,14 @@ function civicrm_entity_price_set_field_display_form_event_validate($form, $form
     if (empty($form_state['values']['registration_form']['registration_cc_block']['cc_number'])) {
       form_set_error('registration_form][registration_cc_block][cc_number', 'Credit card number required.');
     }
+    elseif(!is_numeric($form_state['values']['registration_form']['registration_cc_block']['cc_number'])) {
+      form_set_error('registration_form][registration_cc_block][cc_number', 'Credit card number must be numeric.');
+    }
     if (empty($form_state['values']['registration_form']['registration_cc_block']['cvv'])) {
       form_set_error('registration_form][registration_cc_block][cvv', 'CVV required.');
+    }
+    elseif(!is_numeric($form_state['values']['registration_form']['registration_cc_block']['cvv'])) {
+      form_set_error('registration_form][registration_cc_block][cvv', 'CVV must be numeric.');
     }
   }
 }
