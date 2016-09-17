@@ -11,8 +11,10 @@ function civicrm_entity_price_set_field_get_processor_handler_info($id = NULL) {
     // Calling all modules implementing hook_hook_name and
     // Returning results than pushing them into the $result array:
     $result = module_invoke($module, 'civicrm_entity_price_set_field_processor_info');
-    if(!empty($result['id']) && !empty($result['callback'])) {
-      $results[$result['id']] = $result;
+    foreach($result as $id => $r) {
+      if (!empty($r['callback'])) {
+        $results[$id] = $result;
+      }
     }
   }
 
@@ -38,10 +40,13 @@ function civicrm_entity_price_set_field_get_processor_handler_info($id = NULL) {
 function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entity_type, $entity, $form_state) {
   $total = array();
   $total['line_items'] = array();
+  $total['fee_amounts'] = array();
   $total['total'] = 0.0;
-  //calculate the total
-  if(!empty($form_state['event']->is_monetary)) {
+  //calculate the total, each line item and its total, and each "fee amount" (sum of all line items for a participant)
+  // TODO, when is participant_count something other than 0?
+  if(!empty($entity->is_monetary)) {
     foreach ($form_state['contacts'] as $id => $contact) {
+      $total['fee_amounts'][$id] = 0.0;
       if(!empty($contact['price_set'])) {
         foreach ($contact['price_set'] as $pf_id => $value) {
           $line_item = array();
@@ -58,39 +63,58 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
               if (!empty($value['price_field_values']) && !is_array($value['price_field_values']) && is_numeric($value['price_field_values'])) {
                 $line_item['price_field_value_id'] = $value['price_field_values'];
                 $line_item['unit_price'] = $line_item['line_total'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->amount;
+                $line_item['participant_count'] = 0;
+                $line_item['qty'] = 1;
                 $total['total'] += $line_item['line_total'];
+                $total['fee_amounts'][$id] += $line_item['line_total'];
+                $total['line_items'][$id][$pf_id][$line_item['price_field_value_id']] = $line_item;
               }
               break;
             case 'Select':
               if (!empty($value['price_field_values']) && !is_array($value['price_field_values']) && is_numeric($value['price_field_values'])) {
                 $line_item['price_field_value_id'] = $value['price_field_values'];
                 $line_item['unit_price'] = $line_item['line_total'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->amount;
+                $line_item['participant_count'] = 0;
+                $line_item['qty'] = 1;
                 $total['total'] += $line_item['line_total'];
+                $total['fee_amounts'][$id] += $line_item['line_total'];
+                $total['line_items'][$id][$pf_id][$line_item['price_field_value_id']] = $line_item;
               }
               break;
             case 'CheckBox':
               if (!empty($value['price_field_values']) && is_array($value['price_field_values'])) {
-                $line_item['unit_price'] = 0.0;
                 foreach ($value['price_field_values'] as $id => $v) {
                   if ($v) {
-                    $line_item['unit_price'] += $price_set_data['price_fields'][$pf_id]['price_field_values'][$id]->amount;
+                    $line_item = array();
+                    $line_item['price_field_id'] = $pf_id;
+                    $line_item['unit_price'] = 0.0;
+                    $line_item['price_field_value_id'] = $id;
+                    $line_item['line_total'] = $line_item['unit_price'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$id]->amount;
+                    $line_item['qty'] = 1;
+                    $line_item['participant_count'] = 0;
+                    $total['total'] += $line_item['line_total'];
+                    $total['fee_amounts'][$id] += $line_item['line_total'];
+                    $total['line_items'][$id][$pf_id][$id] = $line_item;
                   }
                 }
-                // what to set the price_field_value_id key of the line item array too for checkboxes???
-                // should there be a line item per checkbox that is checked?
-                $line_item['line_total'] = $line_item['unit_price'];
-                $total['total'] += $line_item['line_total'];
+                continue;
               }
               break;
             case 'Text':
               if (!empty($value['price_field_values']) && !is_array($value['price_field_values']) && is_numeric($value['price_field_values'])) {
                 $line_item['price_field_value_id'] = $value['price_field_values'];
-                $line_item['unit_price'] = $line_item['line_total'] = $value * $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->amount;
+                $line_item['unit_price'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->amount;
+                $line_item['line_total'] = $line_item['unit_price'] * $value;
+                $line_item['qty'] = $value;
+                $line_item['participant_count'] = 0;
+                $total['line_items'][$id][$pf_id][$line_item['price_field_value_id']] = $line_item;
+                $total['fee_amounts'][$id] += $line_item['line_total'];
+                $total['fee_levels'][$id] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->label;
                 $total['total'] += $line_item['line_total'];
               }
               break;
           }
-          $total['line_items'][$id][$pf_id] = $line_item;
+
         }
       }
     }
@@ -145,10 +169,23 @@ function _civicrm_entity_price_set_field_run_cc_transaction($price_set_data, $en
  *
  */
 function civicrm_entity_price_set_field_civicrm_entity_price_set_field_processor_info() {
-  return array (
-    'id' => 'dummy',
-    'payment_processor_type' => 'Dummy',
-    'callback' => 'civicrm_entity_price_set_field_dummy_payment_processing',
+  return array(
+    'dummy' => array (
+      'payment_processor_type' => 'Dummy',
+      'callback' => 'civicrm_entity_price_set_field_transact_payment_processing',
+    ),
+    'authnet' => array(
+      'payment_processor_type' => 'AuthNet',
+      'callback' => 'civicrm_entity_price_set_field_transact_payment_processing',
+    ),
+    'payflowpro' => array(
+      'payment_processor_type' => 'PayflowPro',
+      'callback' => 'civicrm_entity_price_set_field_transact_payment_processing',
+    ),
+    'paypal' => array(
+      'payment_processor_type' => 'PayflowPro',
+      'callback' => 'civicrm_entity_price_set_field_transact_payment_processing',
+    ),
   );
 }
 
@@ -164,7 +201,7 @@ function civicrm_entity_price_set_field_civicrm_entity_price_set_field_processor
  * @param $form_state
  * @return bool|array
  */
-function civicrm_entity_price_set_field_dummy_payment_processing($processor, $processor_type, $price_set_data, $entity_type, $entity, $contacts, $form_state) {
+function civicrm_entity_price_set_field_transact_payment_processing($processor, $processor_type, $price_set_data, $entity_type, $entity, $contacts, $form_state) {
   // Set the required params for the payment processor
   $params = array(
     'sequential' => 1,

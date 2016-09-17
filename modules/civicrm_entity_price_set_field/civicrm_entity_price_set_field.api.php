@@ -27,7 +27,7 @@
  * Add payment processor handlers for CiviCRM Entity Price Set Field
  * The API supports the following keys
  *
- * -- id  The unique id of the payment processor info
+ *
  * -- payment_processor_type the unique name of the payment processor type (the name column of the civicrm_payment_processor_type table)
  * -- callback -- The function to invoke that makes the call to the payment processor
  *
@@ -38,10 +38,11 @@
  * @return array
  */
 function hook_civicrm_entity_price_set_field_processor_info() {
-  return array (
-    'id' => 'dummy',
-    'payment_processor_type' => 'Dummy',
-    'callback' => 'civicrm_entity_price_set_field_dummy_payment_processing',
+  return array(
+    'dummy' => array (
+      'payment_processor_type' => 'Dummy',
+      'callback' => 'civicrm_entity_price_set_field_transact_payment_processing',
+    ),
   );
 }
 
