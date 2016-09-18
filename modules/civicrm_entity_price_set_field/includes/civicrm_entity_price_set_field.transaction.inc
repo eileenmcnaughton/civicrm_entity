@@ -139,7 +139,7 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
  * @param $form_state
  * @return bool|mixed
  */
-function _civicrm_entity_price_set_field_run_cc_transaction($price_set_data, $entity_type, $entity, $contacts, $form_state) {
+function _civicrm_entity_price_set_field_run_cc_transaction($instance, $price_set_data, $entity_type, $entity, $contacts, $form_state) {
   $civicrm_entity_prise_set_field_processor_types = civicrm_entity_price_set_field_get_processor_handler_info();
   if (!empty($entity->payment_processor)) {
     $processor = entity_load_single('civicrm_payment_processor', $entity->payment_processor);
@@ -151,7 +151,7 @@ function _civicrm_entity_price_set_field_run_cc_transaction($price_set_data, $en
         }
       }
       if (!empty($invoke_type)) {
-        $result = call_user_func($invoke_type['callback'], $processor, $processor_type, $price_set_data, $entity_type, $entity, $contacts, $form_state);
+        $result = call_user_func($invoke_type['callback'], $instance, $processor, $processor_type, $price_set_data, $entity_type, $entity, $contacts, $form_state);
       }
       if (!empty($result)) {
         return $result;
@@ -201,7 +201,7 @@ function civicrm_entity_price_set_field_civicrm_entity_price_set_field_processor
  * @param $form_state
  * @return bool|array
  */
-function civicrm_entity_price_set_field_transact_payment_processing($processor, $processor_type, $price_set_data, $entity_type, $entity, $contacts, $form_state) {
+function civicrm_entity_price_set_field_transact_payment_processing($display, $processor, $processor_type, $price_set_data, $entity_type, $entity, $contacts, $form_state) {
   // Set the required params for the payment processor
   $params = array(
     'sequential' => 1,
@@ -218,6 +218,9 @@ function civicrm_entity_price_set_field_transact_payment_processing($processor, 
     'source' => 'CiviCRM Entity Price Set Field -- Event Registration',
   );
 
+  if(!empty($display['settings']['test_transaction'])) {
+    $params['is_test'] = 1;
+  }
   $result = _civicrm_entity_price_set_field_api_transact_call($params);
 
   if(!empty($result['error'])) {

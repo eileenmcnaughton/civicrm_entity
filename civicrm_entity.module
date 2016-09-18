@@ -3001,14 +3001,13 @@ function civicrm_entity_page_view($entity, $entity_type) {
   }
 
   if (!empty($entity) && is_object($entity)) {
-    $controller = entity_get_controller($entity_type);
     if($entity_type == 'civicrm_contact') {
       //for some reason the is_deleted column of the contact record is coming to the entity
       // as contact_is_deleted ...special handling to have the page value set properly
       $entity->is_deleted = $entity->contact_is_deleted;
      }
-
-    $content = $controller->view(array($entity->id => $entity));
+    $content_array = entity_view($entity_type, array($entity->id => $entity));
+    $content = drupal_render($content_array);
   }
   else {
     $content = '<p>No ' . $entity_type . ' record found for id: ' . $id . '</p>';

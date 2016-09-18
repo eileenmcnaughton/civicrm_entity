@@ -16,7 +16,9 @@ function civicrm_entity_price_set_field_display_form_event($form, &$form_state) 
   $price_set_id = $form_state['build_info']['args'][0];
   $host_entity_type = $form_state['build_info']['args'][1];
   $event = $form_state['event'] = $form_state['build_info']['args'][2];
-
+  $form_state['field'] = $form_state['build_info']['args'][3];
+  $form_state['instance'] = $form_state['build_info']['args'][4];
+  $form_state['display_settings'] = $form_state['build_info']['args'][5];
   // online registration
   if(!empty($event->is_online_registration)) {
     if(user_access('register for events')) {
@@ -493,7 +495,7 @@ function civicrm_entity_price_set_field_display_form_event_submit($form, &$form_
         $form_state['storage']['registration_form']['transaction']['total'] > 0) {
         if(empty($form_state['storage']['registration_form']['pay_later'])) {
           _civicrm_entity_price_set_field_display_form_create_update_contact('first', 0, $form_state);
-          $transact_result = _civicrm_entity_price_set_field_run_cc_transaction($data, 'civicrm_event', $event, $form_state['contacts'], $form_state['storage']['registration_form']);
+          $transact_result = _civicrm_entity_price_set_field_run_cc_transaction($form_state['display_settings'], $data, 'civicrm_event', $event, $form_state['contacts'], $form_state['storage']['registration_form']);
           if ($transact_result !== FALSE && !empty($transact_result['contribution']) && is_object($transact_result['contribution'])) {
             $form_state['contribution'] = $transact_result['contribution'];
           } else {
