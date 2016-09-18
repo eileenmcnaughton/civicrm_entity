@@ -139,7 +139,7 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
  * @param $form_state
  * @return bool|mixed
  */
-function _civicrm_entity_price_set_field_run_cc_transaction($instance, $price_set_data, $entity_type, $entity, $contacts, $form_state) {
+function _civicrm_entity_price_set_field_run_cc_transaction($display, $price_set_data, $entity_type, $entity, $contacts, $form_state) {
   $civicrm_entity_prise_set_field_processor_types = civicrm_entity_price_set_field_get_processor_handler_info();
   if (!empty($entity->payment_processor)) {
     $processor = entity_load_single('civicrm_payment_processor', $entity->payment_processor);
@@ -151,7 +151,7 @@ function _civicrm_entity_price_set_field_run_cc_transaction($instance, $price_se
         }
       }
       if (!empty($invoke_type)) {
-        $result = call_user_func($invoke_type['callback'], $instance, $processor, $processor_type, $price_set_data, $entity_type, $entity, $contacts, $form_state);
+        $result = call_user_func($invoke_type['callback'], $display, $processor, $processor_type, $price_set_data, $entity_type, $entity, $contacts, $form_state);
       }
       if (!empty($result)) {
         return $result;
