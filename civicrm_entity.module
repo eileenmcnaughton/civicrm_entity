@@ -1124,6 +1124,27 @@ function civicrm_entity_supported_entities_info(){
       'boolean fields' => array('is_test', 'is_pay_later', 'must_wait',),
     ),
   );
+  $civicrm_entity_info['civicrm_participant_status_type'] = array(
+    'civicrm entity name' => 'participant_status_type',
+    'label property' => 'label',
+    'permissions' => array(
+      'view' => array('view event participants'),
+      'edit' => array('edit event participants', 'access CiviEvent'),
+      'update' => array('edit event participants', 'access CiviEvent'),
+      'create' => array('edit event participants', 'access CiviEvent'),
+      'delete' => array('edit event participants', 'access CiviEvent'),
+    ),
+    'theme' => array(
+      'template' => 'civicrm-participant-status-type',
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+    ),
+    'display suite' => array(
+      'link fields' => array(
+      ),
+      'option fields' => array('visibility_id'),
+      'boolean fields' => array('is_reserved', 'is_active', 'is_counted',),
+    ),
+  );
   $civicrm_entity_info['civicrm_participant_payment'] = array(
     'civicrm entity name' => 'participant_payment',
     'label property' => 'id',

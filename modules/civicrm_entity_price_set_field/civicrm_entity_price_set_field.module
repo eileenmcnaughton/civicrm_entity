@@ -989,7 +989,7 @@ function civicrm_entity_price_set_field_field_formatter_view($entity_type, $enti
 /**
  * Implements hook_civicrm_post().
  *
- * Here we need to probably clear some field caches when price sets / price fields / price field values are created/edited/deleted
+ * Here we need to clear the field cache if the price set is changed in the event/contribution page
  *
  * @param $op
  * @param $objectName
