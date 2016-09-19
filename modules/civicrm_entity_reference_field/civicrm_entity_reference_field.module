@@ -469,22 +469,19 @@ function civicrm_entity_reference_field_field_formatter_view($entity_type, $enti
         if ($depth > 20) {
           throw new EntityReferenceRecursiveRenderingException(t('Recursive rendering detected when rendering entity @entity_type(@entity_id). Aborting rendering.', array('@entity_type' => $entity_type, '@entity_id' => $item['target_id'])));
         }
-        $entity = clone $item['entity'];
-        unset($entity->content);
+        $entity_to_render = $item['entity'];
+        unset($entity_to_render->content);
         if ($target_entity_type == 'civicrm_contact') {
           //for some reason the is_deleted column of the contact record is coming to the entity
           // as contact_is_deleted ...special handling to have the page value set properly
-          $entity->is_deleted = $entity->contact_is_deleted;
+          $entity_to_render->is_deleted = $entity_to_render->contact_is_deleted;
         }
 
         $view_mode = isset($settings['view_mode']) ? $settings['view_mode'] : 'default';
-        $controller = entity_get_controller($target_entity_type);
-        $content = $controller->view(array($item['target_id'] => $entity), $view_mode);
-        $depth = 0;
-        $element[$delta] = array(
-          '#markup' => drupal_render($content),
-        );
 
+        $content = entity_view($target_entity_type, array($item['target_id'] => $entity_to_render), $view_mode, $langcode, FALSE);
+        $depth = 0;
+        $element[$delta] = $content;
       }
       break;
     case 'civicrm_entity_reference_entity_label_formatter':

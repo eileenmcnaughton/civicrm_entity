@@ -16,7 +16,9 @@ function civicrm_entity_price_set_field_display_form_event($form, &$form_state) 
   $price_set_id = $form_state['build_info']['args'][0];
   $host_entity_type = $form_state['build_info']['args'][1];
   $event = $form_state['event'] = $form_state['build_info']['args'][2];
-
+  $form_state['field'] = $form_state['build_info']['args'][3];
+  $form_state['instance'] = $form_state['build_info']['args'][4];
+  $form_state['display_settings'] = $form_state['build_info']['args'][5];
   // online registration
   if(!empty($event->is_online_registration)) {
     if(user_access('register for events')) {
@@ -493,7 +495,7 @@ function civicrm_entity_price_set_field_display_form_event_submit($form, &$form_
         $form_state['storage']['registration_form']['transaction']['total'] > 0) {
         if(empty($form_state['storage']['registration_form']['pay_later'])) {
           _civicrm_entity_price_set_field_display_form_create_update_contact('first', 0, $form_state);
-          $transact_result = _civicrm_entity_price_set_field_run_cc_transaction($data, 'civicrm_event', $event, $form_state['contacts'], $form_state['storage']['registration_form']);
+          $transact_result = _civicrm_entity_price_set_field_run_cc_transaction($form_state['display_settings'], $data, 'civicrm_event', $event, $form_state['contacts'], $form_state['storage']['registration_form']);
           if ($transact_result !== FALSE && !empty($transact_result['contribution']) && is_object($transact_result['contribution'])) {
             $form_state['contribution'] = $transact_result['contribution'];
           } else {
@@ -924,17 +926,18 @@ function theme_civicrm_entity_price_set_field_price_field_display_form_confirmat
     $html .= $vars['entity']->confirm_text;
   }
 
-  $header = array('name' => 'Name', 'email' => 'Email', 'phone' => 'Phone');
+  $header = array('fee' => 'Fee', 'name' => 'Name', 'email' => 'Email', 'phone' => 'Phone');
   $rows = array();
   foreach ($vars['form_data']['contacts'] as $id => $contact) {
-   $rows[$id]['data']['name'] = implode(' ', array($contact['contact_info']['first_name'], $contact['contact_info']['last_name']));
-   $rows[$id]['data']['email'] = $contact['contact_info']['email'];
-   $rows[$id]['data']['phone'] = $contact['contact_info']['phone'];
+    $rows[$id]['data']['fee'] = '$' . number_format($vars['form_data']['transaction']['fee_amounts'][$id], 2);
+    $rows[$id]['data']['name'] = implode(' ', array($contact['contact_info']['first_name'], $contact['contact_info']['last_name']));
+    $rows[$id]['data']['email'] = $contact['contact_info']['email'];
+    $rows[$id]['data']['phone'] = $contact['contact_info']['phone'];
   }
   $html .= '<h4>' . 'Registering participants:' . '</h4>';
   $html .= theme('table', array('header' => $header, 'rows' => $rows));
 
-  $html .= '<h4 class="total"><strong class="label">Total: </strong>' . '$' . $vars['form_data']['transaction']['total'] . '</h4>';
+  $html .= '<h4 class="total"><strong class="label">Total: </strong>' . '$' . number_format($vars['form_data']['transaction']['total'], 2) . '</h4>';
 
   if (!empty($vars['entity']->confirm_footer_text)) {
     $html .= $vars['entity']->confirm_footer_text;
@@ -955,9 +958,10 @@ function theme_civicrm_entity_price_set_field_price_field_display_form_thank_you
     $html .= $vars['entity']->thankyou_text;
   }
 
-  $header = array('name' => 'Name', 'email' => 'Email', 'phone' => 'Phone');
+  $header = array('fee' => 'Fee', 'name' => 'Name', 'email' => 'Email', 'phone' => 'Phone');
   $rows = array();
   foreach ($vars['form_data']['contacts'] as $id => $contact) {
+    $rows[$id]['data']['fee'] = '$' . number_format($vars['form_data']['transaction']['fee_amounts'][$id], 2);
     $rows[$id]['data']['name'] = implode(' ', array($contact['contact_info']['first_name'], $contact['contact_info']['last_name']));
     $rows[$id]['data']['email'] = $contact['contact_info']['email'];
     $rows[$id]['data']['phone'] = $contact['contact_info']['phone'];
@@ -965,7 +969,7 @@ function theme_civicrm_entity_price_set_field_price_field_display_form_thank_you
   $html .= '<h4>' . 'Registered participants:' . '</h4>';
   $html .= theme('table', array('header' => $header, 'rows' => $rows));
 
-  $html .= '<h4 class="total"><strong class="label">Total: </strong>' . '$' . $vars['form_data']['transaction']['total']  . '</h4>';
+  $html .= '<h4 class="total"><strong class="label">Total: </strong>' . '$' . number_format($vars['form_data']['transaction']['total'], 2)  . '</h4>';
 
   if (!empty($vars['entity']->thankyou_footer_text)) {
     $html .= $vars['entity']->thankyou_footer_text;

@@ -31,7 +31,8 @@
  * -- payment_processor_type the unique name of the payment processor type (the name column of the civicrm_payment_processor_type table)
  * -- callback -- The function to invoke that makes the call to the payment processor
  *
- * see civicrm_entity_price_set_field_dummy_payment_processing in includes/civicrm_entity_price_set_field.transaction.inc for an example callback using the CiviCRM API Contribution transact action
+ * see civicrm_entity_price_set_field_transact_payment_processing($display, $processor, $processor_type, $price_set_data, $entity_type, $entity, $contacts, $form_state)
+ * in includes/civicrm_entity_price_set_field.transaction.inc for an example callback using the CiviCRM API Contribution transact action
  *
  * It really can be anything, doesn't necessarily have to use a CiviCRM Payment Processor.
  *

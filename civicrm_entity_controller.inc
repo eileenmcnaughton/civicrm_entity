@@ -244,14 +244,8 @@ class CivicrmEntityController extends EntityAPIController {
     }
 
     if(module_exists('ds')) {
-      //load display suite css if layout is enabled for view mode
-      static $loaded_css = array();
       $layout = ds_get_layout($this->entityType, $this->entityType, $view_mode);
-
-      // Add path to css file for this layout and disable block regions if necessary.
-      if (isset($layout['css']) && !isset($loaded_css[$layout['path'] . '/' . $layout['layout'] . '.css'])) {
-        // Register css file.
-        $loaded_css[$layout['path'] . '/' . $layout['layout'] . '.css'] = TRUE;
+      if (!empty($layout['css']) && empty($layout['settings']['layout_disable_css'])) {
         // Add css file.
         if (isset($layout['module']) && $layout['module'] == 'panels') {
           $build['#attached']['css'][] = $layout['path'] . '/' . $layout['panels']['css'];
@@ -260,6 +254,7 @@ class CivicrmEntityController extends EntityAPIController {
         }
       }
     }
+
     return $build;
   }
 

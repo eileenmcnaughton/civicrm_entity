@@ -900,6 +900,7 @@ function civicrm_entity_price_set_field_field_formatter_info() {
       'label' => t('Form'),
       'field types' => array('civicrm_entity_price_set_field'),
       'settings'  => array( // Array of the settings we'll create
+        'test_transaction' => 0,
       ),
     ),
 
@@ -921,7 +922,13 @@ function civicrm_entity_price_set_field_field_formatter_settings_form($field, $i
     $display = $instance['display'][$view_mode];
     $settings = $display['settings'];
     $element = array();
-
+    $element['test_transaction'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Transaction test mode'),
+      '#description' => 'Check box to process transactions in test mode.',
+      '#return_value' => 1,
+      '#default_value' => isset($settings['test_transaction']) ? $settings['test_transaction'] : 0,
+    );
 
     return $element;
   }
@@ -941,7 +948,9 @@ function civicrm_entity_price_set_field_field_formatter_settings_summary($field,
     $settings = $display['settings'];
     $summary = '';
     if ($display['type'] == 'civicrm_entity_price_set_field_form_formatter') {
-
+      $summary = t('CC Transactions run in @data mode', array(
+        '@data' => empty($settings['test_transaction']) ? 'live' : 'test',
+      ));
     }
     return $summary;
   }
@@ -964,7 +973,7 @@ function civicrm_entity_price_set_field_field_formatter_view($entity_type, $enti
         }
         switch ($entity_type) {
           case 'civicrm_event':
-            $price_set_form = drupal_get_form('civicrm_entity_price_set_field_display_form_event', $price_set_id, $entity_type, $entity);
+            $price_set_form = drupal_get_form('civicrm_entity_price_set_field_display_form_event', $price_set_id, $entity_type, $entity, $field, $instance, $display);
             break;
         }
         $price_set_form['#form_id'] = 'civicrm_entity_price_set_display_form-' . $field['field_name'] . '-' . $langcode . '-' . $delta;
@@ -980,7 +989,7 @@ function civicrm_entity_price_set_field_field_formatter_view($entity_type, $enti
 /**
  * Implements hook_civicrm_post().
  *
- * Here we need to probably clear some field caches when price sets / price fields / price field values are created/edited/deleted
+ * Here we need to clear the field cache if the price set is changed in the event/contribution page
  *
  * @param $op
  * @param $objectName
