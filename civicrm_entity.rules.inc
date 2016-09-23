@@ -325,6 +325,13 @@ function civicrm_entity_rules_action_info() {
           'default' => FALSE,
           'description' => t('Automatically log in as the created user.'),
         ),
+        'username_format' => array(
+          'label' => t('Username Format'),
+          'type' => 'text',
+          'default' => 'first last',
+          'options list' => '_civicrm_entity_options_username_format',
+          'description' => t('Preferred username format'),
+        ),
       ),
       'provides' => array(
         'civicrm_user' => array(
