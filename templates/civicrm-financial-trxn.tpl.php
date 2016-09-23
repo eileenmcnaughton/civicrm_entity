@@ -34,9 +34,6 @@
   <?php endif; ?>
 
   <div class="content"<?php print $content_attributes; ?>>
-    <?php
-
-    print render($content);
-    ?>
+    <?php print render($content); ?>
   </div>
 </div>
