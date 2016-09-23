@@ -31,7 +31,6 @@ function civicrm_entity_reference_field_storage_field_storage_details($field) {
 }
 
 
-
 /**
  * Implements hook_field_storage_load().
  *
@@ -48,7 +47,7 @@ function civicrm_entity_reference_field_storage_field_storage_load($entity_type,
     $field = field_info_field_by_id($field_id);
     $field_name = $field['field_name'];
     civicrm_initialize();
-    foreach($ids as $id) {
+    foreach ($ids as $id) {
       $field_values = array();
       if (!empty($entities[$id]->{$field['settings']['host_source_id']})) {
         try {
@@ -88,9 +87,9 @@ function civicrm_entity_reference_field_storage_field_storage_load($entity_type,
  * @param $query
  * @return array
  */
-function civicrm_entity_reference_field_storage_field_storage_query($query){
-  foreach($query->fieldConditions as $delta => $data){
-    if($data['field']['type'] == 'civicrm_entity_reference'){
+function civicrm_entity_reference_field_storage_field_storage_query($query) {
+  foreach ($query->fieldConditions as $delta => $data) {
+    if ($data['field']['type'] == 'civicrm_entity_reference') {
 
       // this doesn't work
       /*

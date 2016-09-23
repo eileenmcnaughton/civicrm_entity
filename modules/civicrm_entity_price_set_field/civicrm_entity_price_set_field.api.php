@@ -40,7 +40,7 @@
  */
 function hook_civicrm_entity_price_set_field_processor_info() {
   return array(
-    'dummy' => array (
+    'dummy' => array(
       'payment_processor_type' => 'Dummy',
       'callback' => 'civicrm_entity_price_set_field_transact_payment_processing',
     ),
@@ -64,8 +64,8 @@ function hook_civicrm_entity_price_set_field_processor_info_alter(&$info) {
 function hook_civicrm_entity_price_set_field_calculate_total($total) {
   // add 10%
   $total['total'] = $total['total'] * 1.10;
-  foreach($total['line_items'] as $index => $price_fields) {
-    foreach($price_fields as $pf_id => $line_item) {
+  foreach ($total['line_items'] as $index => $price_fields) {
+    foreach ($price_fields as $pf_id => $line_item) {
       $line_item['line_total'] = $line_item['unit_price'] = $line_item['unit_price'] * 1.10;
     }
   }

@@ -15,7 +15,11 @@ function civicrm_entity_reference_field_field_info() {
     'civicrm_entity_reference' => array(
       'label' => t('CiviCRM Entity Reference'),
       'description' => t('This field references CiviCRM entities by querying configured entity by a column name from a value on the host entity.'),
-      'settings' => array('target_entity_type' => 'address', 'target_id_column' => 'contact_id', 'host_source_id' => 'id'),
+      'settings' => array(
+        'target_entity_type' => 'address',
+        'target_id_column' => 'contact_id',
+        'host_source_id' => 'id',
+      ),
       'instance_settings' => array(),
       'default_widget' => 'civicrm_entity_reference_default_widget',
       'default_formatter' => 'civicrm_entity_reference_default_formatter',
@@ -30,7 +34,7 @@ function civicrm_entity_reference_field_field_info() {
  * @return array
  */
 function civicrm_entity_reference_field_field_schema($field) {
-  if($field['type'] == 'civicrm_entity_reference'){
+  if ($field['type'] == 'civicrm_entity_reference') {
     $columns = array(
       'target_id' => array(
         'type' => 'int',
@@ -51,10 +55,14 @@ function civicrm_entity_reference_field_field_schema($field) {
  * @param $field
  */
 function civicrm_entity_reference_field_field_create_field($field) {
-  if($field['type'] == 'civicrm_entity_reference') {
+  if ($field['type'] == 'civicrm_entity_reference') {
     // update field_config table record to alternative storage
     db_update('field_config')
-      ->fields(array('storage_type' => 'civicrm_entity_reference_field_storage', 'storage_module' => 'civicrm_entity_reference_field_storage', 'cardinality' => -1))
+      ->fields(array(
+        'storage_type' => 'civicrm_entity_reference_field_storage',
+        'storage_module' => 'civicrm_entity_reference_field_storage',
+        'cardinality' => -1,
+      ))
       ->condition('id', $field['id'])
       ->execute();
     // remove field data and revision tables
@@ -76,7 +84,7 @@ function civicrm_entity_reference_field_field_create_field($field) {
  * @param $form_state
  */
 function civicrm_entity_reference_field_form_field_ui_field_edit_form_alter(&$form, &$form_state) {
-  if($form['#field']['type'] == 'civicrm_entity_reference') {
+  if ($form['#field']['type'] == 'civicrm_entity_reference') {
     // field settings mods
     // Commenting our for now, for cases like location block on events, there is only one value, maybe it doesn't make sense to force 'Unlimited'
     //$form['field']['cardinality']['#default_value'] = -1;
@@ -88,7 +96,7 @@ function civicrm_entity_reference_field_form_field_ui_field_edit_form_alter(&$fo
       //$form['instance']['widget']['settings']['type_settings']['delete_references']['#default_value'] = 1;
       //$form['instance']['widget']['settings']['type_settings']['delete_references']['#disabled'] = TRUE;
       // Does it make sense to have the "add existing entities?" functionality, disabling it for now
-      if(isset($form['instance']['widget']['settings']['type_settings']['allow_existing'])){
+      if (isset($form['instance']['widget']['settings']['type_settings']['allow_existing'])) {
         $form['instance']['widget']['settings']['type_settings']['allow_existing']['#default_value'] = 0;
         $form['instance']['widget']['settings']['type_settings']['allow_existing']['#disabled'] = TRUE;
       }
@@ -113,7 +121,7 @@ function civicrm_entity_reference_field_field_settings_form($field, $instance, $
   $civicrm_entities = _civicrm_entity_enabled_entities();
 
   $entities = array();
-  foreach($civicrm_entities as $drupal_name => $civicrm_name){
+  foreach ($civicrm_entities as $drupal_name => $civicrm_name) {
     $entities[$civicrm_name] = ucwords(str_replace('_', ' ', $civicrm_name));
   }
 
@@ -148,7 +156,13 @@ function civicrm_entity_reference_field_field_settings_form($field, $instance, $
     '#default_value' => $settings['host_source_id'],
     '#description' => t('Host Entity property which value is used query target entity table.'),
     // want to automate choices for this setting in the future
-    '#options' => array ('id' => 'ID',  'loc_block_id' => 'Location Block ID (CiviCRM Event Entity)', 'address_id' => 'Address ID (Location Block Entity)', 'email_id' => 'Email ID (Location Block Entity)', 'phone_id' => 'Phone ID (Location Block Entity)')
+    '#options' => array(
+      'id' => 'ID',
+      'loc_block_id' => 'Location Block ID (CiviCRM Event Entity)',
+      'address_id' => 'Address ID (Location Block Entity)',
+      'email_id' => 'Email ID (Location Block Entity)',
+      'phone_id' => 'Phone ID (Location Block Entity)',
+    ),
   );
 
   return $form;
@@ -163,7 +177,7 @@ function civicrm_entity_reference_field_field_settings_form($field, $instance, $
  * @param $form_state
  * @return mixed
  */
-function civicrm_entity_reference_field_target_entity_type_ajax_callback(&$form, $form_state){
+function civicrm_entity_reference_field_target_entity_type_ajax_callback(&$form, $form_state) {
   $entity_type = $form_state['values']['field']['settings']['target_entity_type'];
   $target_id_column_options = _civicrm_entity_reference_field_get_target_id_column_options($entity_type);
   $form['field']['settings']['target_id_column']['#options'] = $target_id_column_options;
@@ -183,8 +197,8 @@ function _civicrm_entity_reference_field_get_target_id_column_options($entity_ty
     'api_action' => "create",
   ));
 
-  foreach ($result['values'] as $prop => $data){
-    if(strpos($prop, 'id') !== FALSE){
+  foreach ($result['values'] as $prop => $data) {
+    if (strpos($prop, 'id') !== FALSE) {
       $options[$prop] = $data['title'];
     }
   }
@@ -260,7 +274,7 @@ function civicrm_entity_reference_field_field_widget_form(&$form, &$form_state, 
       $widget = $orig_element + array(
           '#type' => 'textfield',
           '#default_value' => isset($items[$delta]['target_id']) ? $items[$delta]['target_id'] : NULL,
-      );
+        );
       $widget['#title'] = t('Target ID');
       $widget['#weight'] = 0;
       $element['target_id'] = $widget;
@@ -278,21 +292,21 @@ function civicrm_entity_reference_field_field_formatter_info() {
     'civicrm_entity_reference_default_formatter' => array( // Machine name of the formatter
       'label' => t('Referenced ID'),
       'field types' => array('civicrm_entity_reference'),
-      'settings'  => array( // Array of the settings we'll create
+      'settings' => array( // Array of the settings we'll create
         //'data_display' => 'display_en_us',
       ),
     ),
     'civicrm_entity_reference_entity_label_formatter' => array( // Machine name of the formatter
       'label' => t('Label'),
       'field types' => array('civicrm_entity_reference'),
-      'settings'  => array( // Array of the settings we'll create
+      'settings' => array( // Array of the settings we'll create
         'link_to_entity' => 0,
       ),
     ),
     'civicrm_entity_reference_entity_formatter' => array( // Machine name of the formatter
       'label' => t('Rendered Entity'),
       'field types' => array('civicrm_entity_reference'),
-      'settings'  => array( // Array of the settings we'll create
+      'settings' => array( // Array of the settings we'll create
         'view_mode' => 'default',
       ),
     ),
@@ -309,7 +323,7 @@ function civicrm_entity_reference_field_field_formatter_info() {
  * @param $form_state
  * @return array
  */
-function civicrm_entity_reference_field_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state){
+function civicrm_entity_reference_field_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
   if ($field['type'] == 'civicrm_entity_reference') {
     $display = $instance['display'][$view_mode];
     $settings = $display['settings'];
@@ -339,7 +353,7 @@ function civicrm_entity_reference_field_field_formatter_settings_form($field, $i
       '#return_value' => 1,
     );
 
-    if ($display['type'] == 'civicrm_entity_reference_entity_formatter'){
+    if ($display['type'] == 'civicrm_entity_reference_entity_formatter') {
       $element['link_to_entity']['#access'] = FALSE;
     }
     elseif ($display['type'] == 'civicrm_entity_reference_entity_label_formatter') {
@@ -361,7 +375,7 @@ function civicrm_entity_reference_field_field_formatter_settings_form($field, $i
  * @return string
  */
 function civicrm_entity_reference_field_field_formatter_settings_summary($field, $instance, $view_mode) {
-  if($field['type'] == 'civicrm_entity_reference') {
+  if ($field['type'] == 'civicrm_entity_reference') {
     $display = $instance['display'][$view_mode];
     $settings = $display['settings'];
     $summary = '';
@@ -467,7 +481,10 @@ function civicrm_entity_reference_field_field_formatter_view($entity_type, $enti
         static $depth = 0;
         $depth++;
         if ($depth > 20) {
-          throw new EntityReferenceRecursiveRenderingException(t('Recursive rendering detected when rendering entity @entity_type(@entity_id). Aborting rendering.', array('@entity_type' => $entity_type, '@entity_id' => $item['target_id'])));
+          throw new EntityReferenceRecursiveRenderingException(t('Recursive rendering detected when rendering entity @entity_type(@entity_id). Aborting rendering.', array(
+            '@entity_type' => $entity_type,
+            '@entity_id' => $item['target_id'],
+          )));
         }
         $entity_to_render = $item['entity'];
         unset($entity_to_render->content);
@@ -523,21 +540,21 @@ function civicrm_entity_reference_field_field_formatter_view($entity_type, $enti
  * @param $objectId
  * @param $objectRef
  */
-function civicrm_entity_reference_field_civicrm_post($op, $objectName, $objectId, &$objectRef){
+function civicrm_entity_reference_field_civicrm_post($op, $objectName, $objectId, &$objectRef) {
   if ($op == 'create' || $op == 'delete' || $op == 'edit') {
     $civicrm_entity_reference_fields = db_select('field_config', 'fc')
       ->fields('fc', array('field_name', 'id'))
       ->condition('type', 'civicrm_entity_reference')
       ->execute();
-    while ($record = $civicrm_entity_reference_fields->fetchAssoc()){
-      $field =  field_info_field_by_id($record['id']);
+    while ($record = $civicrm_entity_reference_fields->fetchAssoc()) {
+      $field = field_info_field_by_id($record['id']);
       $civicrm_entity_type = ltrim(strtolower(preg_replace('/[A-Z]/', '_$0', $objectName)), '_');
       if ($field['settings']['target_entity_type'] == $civicrm_entity_type) {
-          $instances = db_select('field_config_instance', 'fi')
-            ->fields('fi', array('id', 'entity_type'))
-            ->condition('field_id', $record['id'])
-            ->execute();
-        while ($instance = $instances->fetchAssoc()){
+        $instances = db_select('field_config_instance', 'fi')
+          ->fields('fi', array('id', 'entity_type'))
+          ->condition('field_id', $record['id'])
+          ->execute();
+        while ($instance = $instances->fetchAssoc()) {
           //clear the cache of entity
           if (!empty($field['settings']['target_id_column'])) {
             $host_id_to_clear = $objectRef->{$field['settings']['target_id_column']};
@@ -564,19 +581,19 @@ function civicrm_entity_reference_field_civicrm_post($op, $objectName, $objectId
  * @param $context
  */
 function civicrm_entity_reference_field_field_widget_form_alter(&$element, &$form_state, $context) {
-  if($context['field']['type'] == 'civicrm_entity_reference') {
-    if($context['instance']['widget']['type'] == 'inline_entity_form_single') {
-      if($form_state['op'] == 'create'){
+  if ($context['field']['type'] == 'civicrm_entity_reference') {
+    if ($context['instance']['widget']['type'] == 'inline_entity_form_single') {
+      if ($form_state['op'] == 'create') {
         unset($element['form']);
       }
     }
-    elseif($context['instance']['widget']['type'] == 'inline_entity_form') {
-      if($form_state['op'] == 'create'){
+    elseif ($context['instance']['widget']['type'] == 'inline_entity_form') {
+      if ($form_state['op'] == 'create') {
         $element['actions']['ief_add']['#disabled'] = TRUE;
       }
     }
-    elseif($context['instance']['widget']['type'] == 'civicrm_entity_reference_default_widget') {
-      if($form_state['op'] == 'create'){
+    elseif ($context['instance']['widget']['type'] == 'civicrm_entity_reference_default_widget') {
+      if ($form_state['op'] == 'create') {
         $element['#disabled'] = TRUE;
       }
     }
@@ -596,8 +613,8 @@ function civicrm_entity_reference_field_inline_entity_form_entity_form_alter(&$e
 
   $field_info = array();
 
-  foreach($entity_form['#parents'] as $key => $parent) {
-    if(strpos($parent, 'field_') === 0) {
+  foreach ($entity_form['#parents'] as $key => $parent) {
+    if (strpos($parent, 'field_') === 0) {
       $field = field_info_field($parent);
       $instances = db_select('field_config_instance', 'fi')
         ->fields('fi', array('id'))
@@ -613,7 +630,7 @@ function civicrm_entity_reference_field_inline_entity_form_entity_form_alter(&$e
     }
   }
 
-  if(!empty($field_info) && $field_info['type'] == 'civicrm_entity_reference') {
+  if (!empty($field_info) && $field_info['type'] == 'civicrm_entity_reference') {
     // Generally you want to set the target_id_column to the host_id_prop
     $target_id_column = isset($field_info['settings']['target_id_column']) ? $field_info['settings']['target_id_column'] : '';
     $host_id_prop = isset($field_info['settings']['host_source_id']) ? $field_info['settings']['host_source_id'] : '';
@@ -635,8 +652,12 @@ function civicrm_entity_reference_field_inline_entity_form_entity_form_alter(&$e
       }
     }
     // special handling of address fields on location blocks, because in this case the contact_id is not required
-    $contact_id_entities = array('civicrm_address', 'civicrm_email', 'civicrm_phone');
-    if($host_entity_type == 'civicrm_loc_block' && in_array($entity_form['#entity_type'], $contact_id_entities)) {
+    $contact_id_entities = array(
+      'civicrm_address',
+      'civicrm_email',
+      'civicrm_phone',
+    );
+    if ($host_entity_type == 'civicrm_loc_block' && in_array($entity_form['#entity_type'], $contact_id_entities)) {
       $entity_form['contact_id']['#required'] = FALSE;
       $entity_form['contact_id']['#default_value'] = 1;
       $entity_form['contact_id']['#disabled'] = TRUE;
@@ -659,12 +680,12 @@ function civicrm_entity_reference_field_inline_entity_form_entity_form_alter(&$e
  * @param $type
  */
 function civicrm_entity_reference_field_entity_presave($entity, $type) {
-  if($type == 'civicrm_loc_block' || $type == 'civicrm_event') {
-    foreach($entity as $key => $value) {
-      if(strpos($key, 'field_') === 0) {
+  if ($type == 'civicrm_loc_block' || $type == 'civicrm_event') {
+    foreach ($entity as $key => $value) {
+      if (strpos($key, 'field_') === 0) {
         $field = field_info_field($key);
-        if($field['type'] == 'civicrm_entity_reference') {
-          if($type == 'civicrm_loc_block') {
+        if ($field['type'] == 'civicrm_entity_reference') {
+          if ($type == 'civicrm_loc_block') {
             switch ($field['settings']['target_entity_type']) {
               case 'address':
                 $entity->{$field['settings']['host_source_id']} = $entity->{$key}[LANGUAGE_NONE][0]['target_id'];
@@ -691,7 +712,7 @@ function civicrm_entity_reference_field_entity_presave($entity, $type) {
                 break;
             }
           }
-          elseif($type == 'civicrm_event' && $field['settings']['target_entity_type'] == 'loc_block') {
+          elseif ($type == 'civicrm_event' && $field['settings']['target_entity_type'] == 'loc_block') {
             $entity->{$field['settings']['host_source_id']} = $entity->{$key}[LANGUAGE_NONE][0]['target_id'];
           }
         }

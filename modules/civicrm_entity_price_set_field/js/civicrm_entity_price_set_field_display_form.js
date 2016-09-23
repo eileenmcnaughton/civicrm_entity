@@ -1,9 +1,8 @@
-jQuery(document).ready(function($) {
+jQuery(document).ready(function ($) {
 
 });
 
-(function($, Drupal)
-{
+(function ($, Drupal) {
 
 
 }(jQuery, Drupal));

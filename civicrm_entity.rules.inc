@@ -30,7 +30,7 @@ function civicrm_entity_rules_data_info() {
     // I don't think these are being 'kept'.
     $fields = civicrm_api($civicrm_entity, 'getfields', array(
       'version' => 3,
-      'action' => 'create'
+      'action' => 'create',
     ));
     foreach ($fields['values'] as $fieldname => $field_specs) {
       if (!empty($field_specs['type']) && $field_specs['type'] == 1) {
@@ -234,7 +234,10 @@ function civicrm_entity_rules_condition_info() {
         'form_alter' => 'rules_action_type_form_alter',
       ),
       'provides' => array(
-        'entity_fetched' => array('type' => 'list', 'label' => t('Fetched CiviCRM entity list (being ignored?)')),
+        'entity_fetched' => array(
+          'type' => 'list',
+          'label' => t('Fetched CiviCRM entity list (being ignored?)'),
+        ),
       ),
       'base' => 'civicrm_entity_query',
     ),
@@ -340,7 +343,7 @@ function civicrm_entity_rules_action_info() {
         ),
       ),
       'group' => t('CiviCRM'),
-      'base' => 'civicrm_entity_action_create_user'
+      'base' => 'civicrm_entity_action_create_user',
     ),
     'civicrm_entity_action_load_create_user' => array(
       'label' => t('Create or Load Linked Drupal User Account'),
@@ -366,7 +369,7 @@ function civicrm_entity_rules_action_info() {
         'civicrm_user' => array(
           'label' => t('Created or Loaded Drupal User'),
           'type' => 'user',
-        )
+        ),
       ),
       'group' => t('CiviCRM'),
       'base' => 'civicrm_entity_action_load_create_user',
@@ -407,7 +410,10 @@ function civicrm_entity_rules_action_info() {
         'form_alter' => 'rules_action_type_form_alter',
       ),
       'provides' => array(
-        'entity_fetched' => array('type' => 'list', 'label' => t('Fetched CiviCRM entity list')),
+        'entity_fetched' => array(
+          'type' => 'list',
+          'label' => t('Fetched CiviCRM entity list'),
+        ),
       ),
       'base' => 'civicrm_entity_query',
     ),
@@ -424,13 +430,13 @@ function civicrm_entity_rules_action_info() {
           'label' => t('email'),
           'type' => 'email',
           'optional' => TRUE,
-        )
+        ),
       ),
       'provides' => array(
         'civicrm_contact' => array(
           'label' => t('Created or Loaded CiviCRM Contact'),
           'type' => 'civicrm_contact',
-        )
+        ),
       ),
       'group' => t('CiviCRM'),
       'base' => 'civicrm_entity_action_load_create_contact',
@@ -555,7 +561,7 @@ function _civicrm_entity_rules_access() {
  * @param $info
  * @param $arg3
  * @return
-*/
+ */
 function _civicrm_entity_rules_attach_options($fieldname, $info, $arg3) {
   return $info['property defaults']['options list'];
 }

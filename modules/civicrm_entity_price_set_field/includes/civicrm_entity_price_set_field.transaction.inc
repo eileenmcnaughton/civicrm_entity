@@ -11,7 +11,7 @@ function civicrm_entity_price_set_field_get_processor_handler_info($id = NULL) {
     // Calling all modules implementing hook_hook_name and
     // Returning results than pushing them into the $result array:
     $result = module_invoke($module, 'civicrm_entity_price_set_field_processor_info');
-    foreach($result as $id => $r) {
+    foreach ($result as $id => $r) {
       if (!empty($r['callback'])) {
         $results[$id] = $result;
       }
@@ -44,10 +44,10 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
   $total['total'] = 0.00;
   //calculate the total, each line item and its total, and each "fee amount" (sum of all line items for a participant)
   // TODO, when is participant_count something other than 0?
-  if(!empty($entity->is_monetary)) {
+  if (!empty($entity->is_monetary)) {
     foreach ($form_state['contacts'] as $id => $contact) {
       $total['fee_amounts'][$id] = 0.00;
-      if(!empty($contact['price_set'])) {
+      if (!empty($contact['price_set'])) {
         foreach ($contact['price_set'] as $pf_id => $value) {
           $line_item = array();
           $line_item['price_field_id'] = $pf_id;
@@ -55,7 +55,8 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
 
           if (!empty($price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->financial_type_id)) {
             $line_item['financial_type_id'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->financial_type_id;
-          } elseif (!empty($entity->financial_type_id)) {
+          }
+          elseif (!empty($entity->financial_type_id)) {
             $line_item['financial_type_id'] = $entity->financial_type_id;
           }
           switch ($price_set_data['price_fields'][$pf_id]['pf_entity']->html_type) {
@@ -170,7 +171,7 @@ function _civicrm_entity_price_set_field_run_cc_transaction($display, $price_set
  */
 function civicrm_entity_price_set_field_civicrm_entity_price_set_field_processor_info() {
   return array(
-    'dummy' => array (
+    'dummy' => array(
       'payment_processor_type' => 'Dummy',
       'callback' => 'civicrm_entity_price_set_field_transact_payment_processing',
     ),
@@ -218,12 +219,12 @@ function civicrm_entity_price_set_field_transact_payment_processing($display, $p
     'source' => 'CiviCRM Entity Price Set Field -- Event Registration',
   );
 
-  if(!empty($display['settings']['test_transaction'])) {
+  if (!empty($display['settings']['test_transaction'])) {
     $params['is_test'] = 1;
   }
   $result = _civicrm_entity_price_set_field_api_transact_call($params);
 
-  if(!empty($result['error'])) {
+  if (!empty($result['error'])) {
     drupal_set_message($result['error']);
     return FALSE;
   }
@@ -243,12 +244,11 @@ function _civicrm_entity_price_set_field_api_transact_call($params) {
   $result = array();
   try {
     $api_contribution = civicrm_api3('Contribution', 'transact', $params);
-  }
-  catch (CiviCRM_API3_Exception $e) {
+  } catch (CiviCRM_API3_Exception $e) {
     return array('error' => $e->getMessage());
   }
 
-  if(!empty($api_contribution['values'][0])) {
+  if (!empty($api_contribution['values'][0])) {
     $result['contribution'] = new CivicrmEntity($api_contribution['values'][0], 'civicrm_contribution');
   }
 

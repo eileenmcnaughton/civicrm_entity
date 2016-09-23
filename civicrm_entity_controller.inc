@@ -5,7 +5,7 @@
  */
 class CivicrmEntityController extends EntityAPIController {
 
- public function __construct($entityType) {
+  public function __construct($entityType) {
     parent::__construct($entityType);
   }
 
@@ -72,8 +72,7 @@ class CivicrmEntityController extends EntityAPIController {
           // we can't rely on civicrm api accepting the 'IN' => array(1,5,6) for all entities
           $queried_entities += $this->loadEntities(array('id' => $id));
         }
-      }
-      catch (Exception $e) {
+      } catch (Exception $e) {
         watchdog('civicrm_entity', 'Failed to load ' . $this->entityInfo['description'], $conditions);
       }
     }
@@ -131,23 +130,33 @@ class CivicrmEntityController extends EntityAPIController {
 
       // temporary hack for activity saving issues
       // https://www.drupal.org/node/2736153
-      if($this->entityType == 'civicrm_activity' && isset($entity->campaign_id) && $entity->campaign_id == 0){
+      if ($this->entityType == 'civicrm_activity' && isset($entity->campaign_id) && $entity->campaign_id == 0) {
         $entity->campaign_id = NULL;
       }
 
       $params = get_object_vars($entity);
 
-      $params_to_unset = array('is_new', 'rdf_mapping', 'original', 'submit', 'form_build_id', 'form_token', 'form_id', 'op', 'changed');
-      foreach($params as $key => $value){
+      $params_to_unset = array(
+        'is_new',
+        'rdf_mapping',
+        'original',
+        'submit',
+        'form_build_id',
+        'form_token',
+        'form_id',
+        'op',
+        'changed',
+      );
+      foreach ($params as $key => $value) {
         // unset some drupal form stuff
-        if(in_array($key, $params_to_unset)) {
+        if (in_array($key, $params_to_unset)) {
           unset($params[$key]);
         }
         // unset the drupal fields
-        if(strpos($key, 'field_') === 0) {
+        if (strpos($key, 'field_') === 0) {
           unset($params[$key]);
         }
-        if ( substr($key, 0, 7) === 'custom_' && empty($entity->original->{$key}) && empty($value)   ) {
+        if (substr($key, 0, 7) === 'custom_' && empty($entity->original->{$key}) && empty($value)) {
           unset($params[$key]);
         }
       }
@@ -156,14 +165,16 @@ class CivicrmEntityController extends EntityAPIController {
       $params['sequential'] = 1;
 
       if ($entity->is_new) {
-        if(isset($params['id'])) unset($params['id']);
+        if (isset($params['id'])) {
+          unset($params['id']);
+        }
         $result = civicrm_api(substr($this->entityType, 8), 'create', $params);
       }
       else {
         $result = civicrm_api(substr($this->entityType, 8), 'create', $params);
       }
 
-      if(isset($entity->is_new)) {
+      if (isset($entity->is_new)) {
         $is_new = $entity->is_new;
         unset($entity->is_new);
       }
@@ -171,7 +182,7 @@ class CivicrmEntityController extends EntityAPIController {
       unset($entity->original);
 
       if (!civicrm_error($result)) {
-        if($is_new) {
+        if ($is_new) {
           $entity->id = $result['values'][0]['id'];
           $this->invoke('insert', $entity);
         }
@@ -185,8 +196,7 @@ class CivicrmEntityController extends EntityAPIController {
         return new CivicrmEntity(array_keys($result['values']), $this->entityType);
       }
       throw new Exception($result['error_message']);
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
       watchdog_exception($this->entityType, $e);
       throw $e;
     }
@@ -196,8 +206,8 @@ class CivicrmEntityController extends EntityAPIController {
     if (!civicrm_initialize()) {
       throw new Exception('civicrm inaccessible');
     }
-    $entities = entity_load($this->entityType,$ids);
-    foreach($ids as $id) {
+    $entities = entity_load($this->entityType, $ids);
+    foreach ($ids as $id) {
       $params['version'] = 3;
       $params['id'] = $id;
 
@@ -210,12 +220,11 @@ class CivicrmEntityController extends EntityAPIController {
 
         if (!civicrm_error($result)) {
           field_attach_delete($this->entityType, $entity);
-           // $this->invoke('delete', $entity);
+          // $this->invoke('delete', $entity);
           return;
         }
         throw new Exception($result['error_message']);
-      }
-      catch (Exception $e) {
+      } catch (Exception $e) {
         watchdog_exception($this->entityType, $e);
         throw $e;
       }
@@ -224,7 +233,7 @@ class CivicrmEntityController extends EntityAPIController {
 
   public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
     $entity->content = $content;
-    $build = parent::buildContent($entity,$view_mode,$langcode,$content);
+    $build = parent::buildContent($entity, $view_mode, $langcode, $content);
     $langcode = isset($langcode) ? $langcode : $GLOBALS['language_content']->language;
 
     // Add in fields.
@@ -239,17 +248,18 @@ class CivicrmEntityController extends EntityAPIController {
     $temp_build = $entity->content;
     unset($entity->content);
 
-    foreach($temp_build as $key => $value) {
+    foreach ($temp_build as $key => $value) {
       $build[$key] = $value;
     }
 
-    if(module_exists('ds')) {
+    if (module_exists('ds')) {
       $layout = ds_get_layout($this->entityType, $this->entityType, $view_mode);
       if (!empty($layout['css']) && empty($layout['settings']['layout_disable_css'])) {
         // Add css file.
         if (isset($layout['module']) && $layout['module'] == 'panels') {
           $build['#attached']['css'][] = $layout['path'] . '/' . $layout['panels']['css'];
-        } else {
+        }
+        else {
           $build['#attached']['css'][] = $layout['path'] . '/' . $layout['layout'] . '.css';
         }
       }
@@ -292,7 +302,7 @@ class CivicrmEntityController extends EntityAPIController {
 
     // merge the two together
     $new_civicrm_entities = array();
-    foreach($civicrm_entities['values'] as $id => $entity){
+    foreach ($civicrm_entities['values'] as $id => $entity) {
       $new_civicrm_entities[$id] = array_merge($entity, $civicrm_entities2['values'][$id]);
       // unset anything not in the return array (if you wanted to) but why?
       /*foreach($new_civicrm_entities[$id] as $key => $value){

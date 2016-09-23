@@ -50,7 +50,7 @@ function hook_civicrm_entity_supported_info(&$civicrm_entity_info) {
     ),
     'theme' => array(
       'template' => 'civicrm-phone',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -59,7 +59,11 @@ function hook_civicrm_entity_supported_info(&$civicrm_entity_info) {
           'target' => 'civicrm_contact',
         ),
       ),
-      'option fields' => array('location_type_id', 'mobile_provider_id', 'phone_type_id'),
+      'option fields' => array(
+        'location_type_id',
+        'mobile_provider_id',
+        'phone_type_id',
+      ),
       'boolean fields' => array('is_primary', 'is_billing',),
     ),
   );
