@@ -304,6 +304,7 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
     $field_name = $entity_form['#parents'][0] ;
     $ief_id = $entity_form['#ief_id'];
     $op = $entity_form['#op'];
+    civicrm_initialize();
     $civicrm_entity_fields = civicrm_api(substr_replace($entity_type,'', 0, 8),  'getfields', array(
       'version' => 3,
       'action' => 'create',

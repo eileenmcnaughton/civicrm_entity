@@ -36,6 +36,10 @@
   margin-top:0.5em;
 }
 
+.civicrm-entity-price-set-field-cc-block {
+  clear:left;
+}
+
 .civicrm-entity-price-set-field-cc-block .form-item {
   margin-bottom:0.25em;
 }
