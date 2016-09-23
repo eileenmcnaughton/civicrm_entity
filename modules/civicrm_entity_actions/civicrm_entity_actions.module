@@ -43,8 +43,9 @@ function civicrm_entity_actions_action_info() {
 
 function civicrm_entity_actions_activity_assign_action(&$object, $context = array()) {
   civicrm_api3('activity', 'create', array(
-    'id' => $object->id,
-    'assignee_contact_id' => $context['state']['entity_id'])
+      'id' => $object->id,
+      'assignee_contact_id' => $context['state']['entity_id'],
+    )
   );
 }
 
@@ -54,13 +55,13 @@ function civicrm_entity_actions_activity_assign_action(&$object, $context = arra
  * @return multitype:string unknown
  */
 
-function civicrm_entity_actions_activity_assign_action_form( $context = array()) {
+function civicrm_entity_actions_activity_assign_action_form($context = array()) {
   $entities = _civicrm_entity_enabled_entities();
   $entity = $entities[$context['entity_type']];
   $form[$entity]['assignee_contact_id'] = array(
-      '#type' => 'entityreference',
-      '#title' => t('Assign To'),
-      '#era_entity_type' => 'civicrm_contact',
+    '#type' => 'entityreference',
+    '#title' => t('Assign To'),
+    '#era_entity_type' => 'civicrm_contact',
   );
   return $form;
 }
@@ -83,12 +84,13 @@ function civicrm_entity_actions_activity_assign_action_submit($form, $form_state
  */
 
 function civicrm_entity_actions_activity_unassign_action(&$object, $context = array()) {
-  if(!civicrm_initialize()) {
+  if (!civicrm_initialize()) {
     return;
   }
   civicrm_api3('activity', 'create', array(
-    'id' => $object->id,
-    'deleteActivityAssignment' => TRUE)
+      'id' => $object->id,
+      'deleteActivityAssignment' => TRUE,
+    )
   );
 }
 
@@ -113,7 +115,7 @@ function civicrm_entity_actions_contact_add_to_group_action(&$object, $context =
  * @return multitype:string unknown
  */
 
-function civicrm_entity_actions_contact_add_to_group_action_form( $context = array()) {
+function civicrm_entity_actions_contact_add_to_group_action_form($context = array()) {
   $form['civicrm_contact']['group_id'] = array(
     '#type' => 'entityreference',
     '#title' => t('Add To Group'),
@@ -140,10 +142,10 @@ function civicrm_entity_actions_contact_add_to_group_action_submit($form, $form_
 
 function civicrm_entity_actions_contact_remove_from_group_action(&$object, $context = array()) {
   civicrm_api3('group_contact', 'create', array(
-  'contact_id' => $object->id,
-  'group_id' => $context['state']['entity_id'],
-  'status' => 'Removed',
-  )
+      'contact_id' => $object->id,
+      'group_id' => $context['state']['entity_id'],
+      'status' => 'Removed',
+    )
   );
 }
 
@@ -153,11 +155,11 @@ function civicrm_entity_actions_contact_remove_from_group_action(&$object, $cont
  * @return multitype:string unknown
  */
 
-function civicrm_entity_actions_contact_remove_from_group_action_form( $context = array()) {
+function civicrm_entity_actions_contact_remove_from_group_action_form($context = array()) {
   $form['civicrm_contact']['group_id'] = array(
-      '#type' => 'entityreference',
-      '#title' => t('Remove From'),
-      '#era_entity_type' => 'civicrm_group',
+    '#type' => 'entityreference',
+    '#title' => t('Remove From'),
+    '#era_entity_type' => 'civicrm_group',
   );
   return $form;
 }
@@ -180,9 +182,9 @@ function civicrm_entity_actions_contact_remove_from_group_action_submit($form, $
 
 function civicrm_entity_actions_contact_add_entity_tag_action(&$object, $context = array()) {
   civicrm_api3('entity_tag', 'create', array(
-    'contact_id' => $object->id,
-    'tag_id' => $context['state']['entity_id'],
-  )
+      'contact_id' => $object->id,
+      'tag_id' => $context['state']['entity_id'],
+    )
   );
 }
 
@@ -192,11 +194,11 @@ function civicrm_entity_actions_contact_add_entity_tag_action(&$object, $context
  * @return multitype:string unknown
  */
 
-function civicrm_entity_actions_contact_add_entity_tag_action_form( $context = array()) {
+function civicrm_entity_actions_contact_add_entity_tag_action_form($context = array()) {
   $form['civicrm_contact']['tag_id'] = array(
-      '#type' => 'entityreference',
-      '#title' => t('Add Tag'),
-      '#era_entity_type' => 'civicrm_tag',
+    '#type' => 'entityreference',
+    '#title' => t('Add Tag'),
+    '#era_entity_type' => 'civicrm_tag',
   );
   return $form;
 }

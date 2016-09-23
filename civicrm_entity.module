@@ -13,7 +13,7 @@ module_load_include('inc', 'civicrm_entity', 'civicrm_entity.default_form');
  *
  * @return array
  */
-function civicrm_entity_menu(){
+function civicrm_entity_menu() {
   $items = array();
   $items['admin/structure/civicrm-entity'] = array(
     'title' => t('CiviCRM Entity'),
@@ -51,7 +51,7 @@ function civicrm_entity_menu_alter(&$items) {
         if (isset($bundle_info['admin'])) {
           // Get the base path and access.
           $path = $bundle_info['admin']['path'];
-          if(isset($items[$path . '/fields'])) {
+          if (isset($items[$path . '/fields'])) {
             $items[$path] = $items[$path . '/fields'];
             $items[$path]['type'] = MENU_NORMAL_ITEM;
             $items[$path]['title'] = $entity_info['label'];
@@ -75,7 +75,10 @@ function civicrm_entity_autocomplete($entity_type, $string = '') {
     switch ($entity_type) {
       case 'Contact':
         $result = db_select('civicrm_' . strtolower($entity_type))
-          ->fields('civicrm_' . strtolower($entity_type), array('id', 'display_name'))
+          ->fields('civicrm_' . strtolower($entity_type), array(
+            'id',
+            'display_name',
+          ))
           ->condition('display_name', db_like($string) . '%', 'LIKE')
           ->range(0, 10)
           ->execute();
@@ -100,7 +103,7 @@ function civicrm_entity_permission() {
     'administer CiviCRM Entity' => array(
       'title' => t('Administer CiviCRM Entity'),
       'restrict access' => TRUE,
-    )
+    ),
   );
 }
 
@@ -119,14 +122,14 @@ function civicrm_entity_theme() {
 
   foreach ($civicrm_entity_info as $drupal_entity => $data) {
     $dashkey = str_replace('_', '-', $drupal_entity);
-    if(isset($data['theme'])) {
+    if (isset($data['theme'])) {
       $themes[$drupal_entity] = array(
         'render element' => 'elements',
       );
-      if(isset($data['theme']['template'])) {
+      if (isset($data['theme']['template'])) {
         $themes[$drupal_entity]['template'] = $data['theme']['template'];
       }
-      if(isset($data['theme']['path'])) {
+      if (isset($data['theme']['path'])) {
         $themes[$drupal_entity]['path'] = $data['theme']['path'];
       }
     }
@@ -142,12 +145,14 @@ function civicrm_entity_theme() {
  * @param $id
  * @return mixed
  */
-function civicrm_entity_loader_load($id, $entity_type){
+function civicrm_entity_loader_load($id, $entity_type) {
   $entity = entity_load_single($entity_type, $id);
-  if($entity) {
+  if ($entity) {
     return $entity;
   }
-  else return $id;
+  else {
+    return $id;
+  }
 
 }
 
@@ -162,12 +167,12 @@ function civicrm_entity_loader_load($id, $entity_type){
  * @return bool
  */
 function civicrm_entity_access($op, $entity, $account, $entity_type) {
-  if(is_null($account)){
+  if (is_null($account)) {
     global $user;
     $account = $user;
   }
   // now handles update as a separate op to permission
-  return (user_access('administer CiviCRM') || civicrm_entity_op_access($op, $entity_type, $entity, $account) );
+  return (user_access('administer CiviCRM') || civicrm_entity_op_access($op, $entity_type, $entity, $account));
 }
 
 
@@ -181,21 +186,21 @@ function civicrm_entity_access($op, $entity, $account, $entity_type) {
  * @return TRUE|FALSE
  */
 function  civicrm_entity_op_access($op, $entity_type, $entity = NULL, $account = NULL) {
-  if(is_null($account)){
+  if (is_null($account)) {
     global $user;
     $account = $user;
   }
 
   $civicrm_entity_info = civicrm_entity_get_supported_entity_info();
 
-  if(isset($civicrm_entity_info[$entity_type]['permissions'][$op])) {
+  if (isset($civicrm_entity_info[$entity_type]['permissions'][$op])) {
     $permissions = $civicrm_entity_info[$entity_type]['permissions'][$op];
 
-    if(!empty($civicrm_entity_info[$entity_type]['permissions']['access callback'])){
+    if (!empty($civicrm_entity_info[$entity_type]['permissions']['access callback'])) {
       $access_callback = $civicrm_entity_info[$entity_type]['permissions']['access callback'];
       return call_user_func($access_callback, $op, $entity_type, $entity, $account, $permissions);
     }
-    elseif(!empty($permissions)) {
+    elseif (!empty($permissions)) {
       if (is_array($permissions)) {
         if (count($permissions)) {
           foreach ($permissions as $permission) {
@@ -205,9 +210,13 @@ function  civicrm_entity_op_access($op, $entity_type, $entity = NULL, $account =
           }
           return TRUE;
         }
-        else return user_access('administer CiviCRM', $account);
+        else {
+          return user_access('administer CiviCRM', $account);
+        }
       }
-      else return user_access($permissions, $account);
+      else {
+        return user_access($permissions, $account);
+      }
     }
   }
   return user_access('administer CiviCRM', $account);
@@ -312,7 +321,7 @@ function civicrm_entity_get_field_type($field_spec) {
     case CRM_Utils_Type::T_CCNUM:
     case CRM_Utils_Type::T_EMAIL:
     case CRM_Utils_Type::T_URL:
-      return array('type' => 'text','field_type' => 'text');
+      return array('type' => 'text', 'field_type' => 'text');
 
     case CRM_Utils_Type::T_DATE:
     case CRM_Utils_Type::T_TIME:
@@ -397,7 +406,7 @@ function civicrm_entity_entity_info() {
  * @param null $entity_type
  * @return array|void
  */
-function civicrm_entity_get_supported_entity_info($entity_type = NULL){
+function civicrm_entity_get_supported_entity_info($entity_type = NULL) {
   // Use the advanced drupal_static() pattern, since this is called very often.
   static $drupal_static_fast;
   if (!isset($drupal_static_fast)) {
@@ -421,7 +430,8 @@ function civicrm_entity_get_supported_entity_info($entity_type = NULL){
             CRM_Core_DAO::$_nullObject,
             'civicrm_entity_supported_info'
           );
-        } else {
+        }
+        else {
           CRM_Utils_Hook::singleton()->invoke(1, $civicrm_entity_info,
             CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject,
             'civicrm_entity_supported_info'
@@ -446,7 +456,7 @@ function civicrm_entity_get_supported_entity_info($entity_type = NULL){
  *
  * @return array
  */
-function civicrm_entity_supported_entities_info(){
+function civicrm_entity_supported_entities_info() {
   $civicrm_entity_info = array();
   $civicrm_entity_info['civicrm_activity'] = array(
     'civicrm entity name' => 'activity',
@@ -460,7 +470,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-activity',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -489,19 +499,29 @@ function civicrm_entity_supported_entities_info(){
           'target' => 'civicrm_activity',
         ),
       ),
-      'option fields' => array('activity_type_id', 'status_id', 'medium_id', 'priority_id',),
-      'boolean fields' => array('is_auto', 'is_current_revision', 'is_test', 'is_deleted',),
+      'option fields' => array(
+        'activity_type_id',
+        'status_id',
+        'medium_id',
+        'priority_id',
+      ),
+      'boolean fields' => array(
+        'is_auto',
+        'is_current_revision',
+        'is_test',
+        'is_deleted',
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_action_schedule'] = array(
     'civicrm entity name' => 'action_schedule',
     'label property' => 'name',
     'permissions' => array(
-        'view' => array(),
-        'edit' => array(),
-        'update' => array(),
-        'create' => array(),
-        'delete' => array(),
+      'view' => array(),
+      'edit' => array(),
+      'update' => array(),
+      'create' => array(),
+      'delete' => array(),
     ),
   );
   $civicrm_entity_info['civicrm_address'] = array(
@@ -516,7 +536,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-address',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -533,7 +553,12 @@ function civicrm_entity_supported_entities_info(){
           'target' => 'civicrm_contact',
         ),
       ),
-      'option fields' => array('location_type_id', 'county_id', 'state_province_id', 'country_id',),
+      'option fields' => array(
+        'location_type_id',
+        'county_id',
+        'state_province_id',
+        'country_id',
+      ),
       'boolean fields' => array('is_primary', 'is_billing',),
     ),
   );
@@ -549,7 +574,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-campaign',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
   );
   $civicrm_entity_info['civicrm_case'] = array(
@@ -560,11 +585,14 @@ function civicrm_entity_supported_entities_info(){
       'edit' => array('access all cases and activities'),
       'update' => array('access all cases and activities'),
       'create' => array('add cases', 'access all cases and activities'),
-      'delete' => array('delete in CiviCase', 'access all cases and activities'),
+      'delete' => array(
+        'delete in CiviCase',
+        'access all cases and activities',
+      ),
     ),
     'theme' => array(
       'template' => 'civicrm-case',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'option fields' => array('case_type_id', 'status_id',),
@@ -583,7 +611,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-contact',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -592,8 +620,24 @@ function civicrm_entity_supported_entities_info(){
           'target' => 'civicrm_contact',
         ),
       ),
-      'option fields' => array('preferred_communication_method', 'prefix_id', 'suffix_id', 'communication_style_id', 'gender_id',),
-      'boolean fields' => array('is_deceased', 'do_not_email', 'do_not_phone', 'do_not_sms', 'do_not_trade', 'do_not_mail', 'is_opt_out', 'is_deleted', 'contact_is_deleted',),
+      'option fields' => array(
+        'preferred_communication_method',
+        'prefix_id',
+        'suffix_id',
+        'communication_style_id',
+        'gender_id',
+      ),
+      'boolean fields' => array(
+        'is_deceased',
+        'do_not_email',
+        'do_not_phone',
+        'do_not_sms',
+        'do_not_trade',
+        'do_not_mail',
+        'is_opt_out',
+        'is_deleted',
+        'contact_is_deleted',
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_contribution'] = array(
@@ -604,11 +648,15 @@ function civicrm_entity_supported_entities_info(){
       'edit' => array('edit contributions', 'administer CiviCRM'),
       'update' => array('edit contributions', 'administer CiviCRM'),
       'create' => array('edit contributions', 'administer CiviCRM'),
-      'delete' => array('edit contributions', 'delete in CiviContribute', 'administer CiviCRM'),
+      'delete' => array(
+        'edit contributions',
+        'delete in CiviContribute',
+        'administer CiviCRM',
+      ),
     ),
     'theme' => array(
-       'template' => 'civicrm-contribution',
-       'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'template' => 'civicrm-contribution',
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -622,7 +670,7 @@ function civicrm_entity_supported_entities_info(){
         ),
       ),
       'option fields' => array('financial_type_id', 'contribution_status_id',),
-      'boolean fields' => array('is_test', 'is_pay_later', ),
+      'boolean fields' => array('is_test', 'is_pay_later',),
     ),
   );
   $civicrm_entity_info['civicrm_contribution_page'] = array(
@@ -637,7 +685,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-contribution-page',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -647,9 +695,22 @@ function civicrm_entity_supported_entities_info(){
         ),
       ),
       'option fields' => array('financial_type_id', 'currency',),
-      'boolean fields' => array('is_credit_card_only', 'is_monetary', 'is_recur', 'is_confirm_enabled', 'is_recur_interval',
-        'is_recur_installments', 'is_pay_later', 'is_partial_payment', 'is_allow_other_amount', 'is_for_organization',
-        'is_email_receipt', 'is_active', 'is_share', 'is_billing_required',),
+      'boolean fields' => array(
+        'is_credit_card_only',
+        'is_monetary',
+        'is_recur',
+        'is_confirm_enabled',
+        'is_recur_interval',
+        'is_recur_installments',
+        'is_pay_later',
+        'is_partial_payment',
+        'is_allow_other_amount',
+        'is_for_organization',
+        'is_email_receipt',
+        'is_active',
+        'is_share',
+        'is_billing_required',
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_country'] = array(
@@ -664,10 +725,10 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-country',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
-      'boolean fields' => array('is_province_abbreviated', ),
+      'boolean fields' => array('is_province_abbreviated',),
     ),
   );
   $civicrm_entity_info['civicrm_email'] = array(
@@ -682,7 +743,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-email',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -696,7 +757,12 @@ function civicrm_entity_supported_entities_info(){
         ),
       ),
       'option fields' => array('location_type_id',),
-      'boolean fields' => array('is_primary', 'is_billing', 'on_hold', 'is_bulkmail', ),
+      'boolean fields' => array(
+        'is_primary',
+        'is_billing',
+        'on_hold',
+        'is_bulkmail',
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_entity_tag'] = array(
@@ -711,7 +777,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-entity-tag',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -734,7 +800,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-entity-financial-trxn',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -757,10 +823,10 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-financial-trxn',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
-      'option fields' => array('status_id', ),
+      'option fields' => array('status_id',),
       'link fields' => array(
         array(
           'link_field' => 'payment_processor_id',
@@ -783,10 +849,10 @@ function civicrm_entity_supported_entities_info(){
       ),
       'theme' => array(
         'template' => 'civicrm-financial-type',
-        'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+        'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
       ),
       'display suite' => array(
-        'boolean fields' => array('is_reserved', 'is_active', 'is_deductible', ),
+        'boolean fields' => array('is_reserved', 'is_active', 'is_deductible',),
       ),
     );
   }
@@ -803,7 +869,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-event',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -820,10 +886,28 @@ function civicrm_entity_supported_entities_info(){
           'target' => 'civicrm_event',
         ),
       ),
-      'option fields' => array('event_type_id', 'financial_type_id', 'default_role_id',),
-      'boolean fields' => array('is_public', 'is_pay_later', 'is_online_registration', 'is_monetary', 'is_map', 'is_active',
-        'is_show_location', 'is_partial_payment', 'is_multiple_registrations', 'allow_same_participant_emails', 'has_waitlist',
-        'requires_approval', 'is_template', 'is_share', 'is_confirm_enabled',),
+      'option fields' => array(
+        'event_type_id',
+        'financial_type_id',
+        'default_role_id',
+      ),
+      'boolean fields' => array(
+        'is_public',
+        'is_pay_later',
+        'is_online_registration',
+        'is_monetary',
+        'is_map',
+        'is_active',
+        'is_show_location',
+        'is_partial_payment',
+        'is_multiple_registrations',
+        'allow_same_participant_emails',
+        'has_waitlist',
+        'requires_approval',
+        'is_template',
+        'is_share',
+        'is_confirm_enabled',
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_group'] = array(
@@ -838,7 +922,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-group',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -874,7 +958,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-grant',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -887,7 +971,11 @@ function civicrm_entity_supported_entities_info(){
           'target' => 'civicrm_contact',
         ),
       ),
-      'option fields' => array('status_id', 'financial_type_id', 'grant_type_id',),
+      'option fields' => array(
+        'status_id',
+        'financial_type_id',
+        'grant_type_id',
+      ),
       'boolean fields' => array('grant_report_received',),
     ),
   );
@@ -903,7 +991,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-line-item',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -938,7 +1026,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-loc-block',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -982,7 +1070,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-membership',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -1010,11 +1098,15 @@ function civicrm_entity_supported_entities_info(){
       'edit' => array('access CiviMember', 'access CiviContribute'),
       'update' => array('access CiviMember', 'access CiviContribute'),
       'create' => array('access CiviMember', 'access CiviContribute'),
-      'delete' => array('delete in CiviMember', 'access CiviMember', 'access CiviContribute'),
+      'delete' => array(
+        'delete in CiviMember',
+        'access CiviMember',
+        'access CiviContribute',
+      ),
     ),
     'theme' => array(
       'template' => 'civicrm-membership-payment',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -1039,11 +1131,15 @@ function civicrm_entity_supported_entities_info(){
       'edit' => array('access CiviMember', 'administer CiviCRM'),
       'update' => array('access CiviMember', 'administer CiviCRM'),
       'create' => array('access CiviMember', 'administer CiviCRM'),
-      'delete' => array('delete in CiviMember', 'access CiviMember', 'administer CiviCRM'),
+      'delete' => array(
+        'delete in CiviMember',
+        'access CiviMember',
+        'administer CiviCRM',
+      ),
     ),
     'theme' => array(
       'template' => 'civicrm-membership-type',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -1072,7 +1168,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-note',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -1095,7 +1191,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-participant',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -1136,11 +1232,10 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-participant-status-type',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
-      'link fields' => array(
-      ),
+      'link fields' => array(),
       'option fields' => array('visibility_id'),
       'boolean fields' => array('is_reserved', 'is_active', 'is_counted',),
     ),
@@ -1157,7 +1252,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-participant-payment',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -1184,7 +1279,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-payment-processor',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -1209,11 +1304,10 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-payment-processor-type',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
-      'link fields' => array(
-      ),
+      'link fields' => array(),
       'option fields' => array(),
       'boolean fields' => array('is_active', 'is_default',),
     ),
@@ -1230,7 +1324,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-phone',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -1239,7 +1333,11 @@ function civicrm_entity_supported_entities_info(){
           'target' => 'civicrm_contact',
         ),
       ),
-      'option fields' => array('location_type_id', 'mobile_provider_id', 'phone_type_id'),
+      'option fields' => array(
+        'location_type_id',
+        'mobile_provider_id',
+        'phone_type_id',
+      ),
       'boolean fields' => array('is_primary', 'is_billing',),
     ),
   );
@@ -1254,7 +1352,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-pledge',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
   );
   $civicrm_entity_info['civicrm_pledge_payment'] = array(
@@ -1268,7 +1366,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-pledge-payment',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
   );
   $civicrm_entity_info['civicrm_price_set'] = array(
@@ -1282,7 +1380,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-price-set',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'boolean fields' => array('is_active', 'is_quick_config', 'is_reserved',),
@@ -1299,7 +1397,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-price-field',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -1309,7 +1407,12 @@ function civicrm_entity_supported_entities_info(){
         ),
       ),
       'option fields' => array('visibility_id',),
-      'boolean fields' => array('is_enter_qty', 'is_display_amounts', 'is_active', 'is_required',),
+      'boolean fields' => array(
+        'is_enter_qty',
+        'is_display_amounts',
+        'is_active',
+        'is_required',
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_price_field_value'] = array(
@@ -1323,7 +1426,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-price-field-value',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -1351,12 +1454,10 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-recurring-entity',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
-      'link fields' => array(
-
-      ),
+      'link fields' => array(),
       'option fields' => array(),
       'boolean fields' => array(),
     ),
@@ -1373,7 +1474,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-relationship',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -1398,7 +1499,11 @@ function civicrm_entity_supported_entities_info(){
           'target' => 'civicrm_relationship_type',
         ),
       ),
-      'boolean fields' => array('is_active', 'is_permission_a_b', 'is_permission_b_a',),
+      'boolean fields' => array(
+        'is_active',
+        'is_permission_a_b',
+        'is_permission_b_a',
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_relationship_type'] = array(
@@ -1413,7 +1518,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-relationship-type',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'option fields' => array('contact_sub_type_a', 'contact_sub_type_b',),
@@ -1432,7 +1537,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-survey',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -1450,7 +1555,12 @@ function civicrm_entity_supported_entities_info(){
         ),
       ),
       'option fields' => array('activity_type_id',),
-      'boolean fields' => array('is_active', 'is_default', 'bypass_confirm', 'is_share'),
+      'boolean fields' => array(
+        'is_active',
+        'is_default',
+        'bypass_confirm',
+        'is_share',
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_tag'] = array(
@@ -1465,7 +1575,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-tag',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -1497,7 +1607,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-custom-field',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -1506,7 +1616,13 @@ function civicrm_entity_supported_entities_info(){
           'target' => 'civicrm_custom_group',
         ),
       ),
-      'boolean fields' => array('is_view', 'is_active', 'is_required', 'is_searchable', 'is_search_range',),
+      'boolean fields' => array(
+        'is_view',
+        'is_active',
+        'is_required',
+        'is_searchable',
+        'is_search_range',
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_custom_group'] = array(
@@ -1521,7 +1637,7 @@ function civicrm_entity_supported_entities_info(){
     ),
     'theme' => array(
       'template' => 'civicrm-custom-group',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -1534,7 +1650,13 @@ function civicrm_entity_supported_entities_info(){
           'target' => 'civicrm_membership_type',
         ),
       ),
-      'boolean fields' => array('is_multiple', 'is_active', 'collapse_display', 'collapse_adv_display', 'is_reserved',),
+      'boolean fields' => array(
+        'is_multiple',
+        'is_active',
+        'collapse_display',
+        'collapse_adv_display',
+        'is_reserved',
+      ),
     ),
   );
   return $civicrm_entity_info;
@@ -1552,8 +1674,8 @@ function civicrm_entity_supported_entities_info(){
 function _civicrm_entity_enabled_entities() {
   $civicrm_entity_info = civicrm_entity_get_supported_entity_info();
   $whitelist = array();
-  foreach($civicrm_entity_info as $drupal_entity => $data){
-    if(isset($data['civicrm entity name'])) {
+  foreach ($civicrm_entity_info as $drupal_entity => $data) {
+    if (isset($data['civicrm entity name'])) {
       $whitelist[$drupal_entity] = $data['civicrm entity name'];
     }
   }
@@ -1602,8 +1724,8 @@ function _civicrm_enabled_entity_alter_whitelist(&$whitelist) {
 function _civicrm_entity_labels($entity) {
   $civicrm_entity_info = civicrm_entity_get_supported_entity_info();
   $labels = array();
-  foreach($civicrm_entity_info as $drupal_entity => $data){
-    if(isset($data['label property']) && $data['label property'] != '') {
+  foreach ($civicrm_entity_info as $drupal_entity => $data) {
+    if (isset($data['label property']) && $data['label property'] != '') {
       $labels[$drupal_entity] = $data['label property'];
     }
   }
@@ -1701,7 +1823,7 @@ function civicrm_entity_field_extra_fields_alter(&$info) {
   $entities = _civicrm_entity_enabled_entities();
   foreach ($entities as $drupal_entity => $civicrm_entity) {
     $properties[$drupal_entity]['properties'] = _civicrm_entity_getproperties($civicrm_entity, 'property_info');
-    if(!empty($info[$drupal_entity][$drupal_entity]['display'])) {
+    if (!empty($info[$drupal_entity][$drupal_entity]['display'])) {
       foreach ($info[$drupal_entity][$drupal_entity]['display'] as $name => $props) {
         $info[$drupal_entity][$drupal_entity]['form'][$name] = $props;
       }
@@ -1767,47 +1889,47 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
       }
 
       // add field description to metadata
-      if(!empty($field_specs['description'])) {
+      if (!empty($field_specs['description'])) {
         $info[$fieldname]['description'] = $field_specs['description'];
       }
 
       // add field maxlength to metadata
-      if(!empty($field_specs['maxlength'])) {
+      if (!empty($field_specs['maxlength'])) {
         $info[$fieldname]['maxlength'] = $field_specs['maxlength'];
       }
 
       // add field text_length to metadata
-      if(!empty($field_specs['text_length'])) {
+      if (!empty($field_specs['text_length'])) {
         // just use the entity maxlength instead of creating another index
         $info[$fieldname]['maxlength'] = $field_specs['text_length'];
       }
 
       // add field size to metadata
-      if(!empty($field_specs['size'])) {
+      if (!empty($field_specs['size'])) {
         $info[$fieldname]['size'] = $field_specs['size'];
       }
 
       // add field dataPattern to metadata
-      if(!empty($field_specs['dataPattern'])) {
+      if (!empty($field_specs['dataPattern'])) {
         $info[$fieldname]['dataPattern'] = $field_specs['dataPattern'];
       }
 
       // add field is_view to metadata
-      if(!empty($field_specs['is_view'])) {
+      if (!empty($field_specs['is_view'])) {
         $info[$fieldname]['is_view'] = $field_specs['is_view'];
       }
 
       // add field default value to metadata
-      if(isset($field_specs['default_value'])) {
+      if (isset($field_specs['default_value'])) {
         $info[$fieldname]['default_value'] = $field_specs['default_value'];
       }
 
       // add field rows to metadata
-      if(isset($field_specs['rows'])) {
+      if (isset($field_specs['rows'])) {
         $info[$fieldname]['rows'] = $field_specs['rows'];
       }
       // add field rows to metadata
-      if(isset($field_specs['cols'])) {
+      if (isset($field_specs['cols'])) {
         $info[$fieldname]['cols'] = $field_specs['cols'];
       }
 
@@ -1828,7 +1950,7 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
             $info[$fieldname]['granularity'] = array(
               'hour',
               'minute',
-              'second'
+              'second',
             );
           case 12:
             $info[$fieldname]['granularity'] = array(
@@ -1837,7 +1959,7 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
               'day',
               'hour',
               'minute',
-              'second'
+              'second',
             );
         }
       }
@@ -1848,7 +1970,7 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
       }
 
       //widget code
-      $info[$fieldname]['widget'] = civicrm_entity_get_field_widget($field_specs,$civicrm_entity);
+      $info[$fieldname]['widget'] = civicrm_entity_get_field_widget($field_specs, $civicrm_entity);
 
       // We will add contact as a related entity for FK references to
       // contact. This could be expanded to all FKs e.g event_id in
@@ -1920,25 +2042,25 @@ function civicrm_entity_get_field_widget($field_spec, $civicrm_entity) {
   $widget = array();
 
   if (isset($field_spec['name']) && $field_spec['name'] == 'id') {
-    $widget =  array('widget' => 'hidden');
+    $widget = array('widget' => 'hidden');
   }
 
-  if(!isset($field_spec['type'])) {
+  if (!isset($field_spec['type'])) {
     $widget = array('widget' => 'hidden');
   }
   $field_type = 'standard';
   // "normal" properties
-  if(isset($field_spec['html']['type'])){
+  if (isset($field_spec['html']['type'])) {
     $html_type = $field_spec['html']['type'];
     $field_type = 'standard';
   }
   // custom fields
-  elseif(isset($field_spec['html_type'])){
+  elseif (isset($field_spec['html_type'])) {
     $html_type = $field_spec['html_type'];
     $field_type = 'custom';
   }
 
-  if(isset($html_type)) {
+  if (isset($html_type)) {
     switch ($html_type) {
       case 'Text':
         $widget = array(
@@ -1967,8 +2089,8 @@ function civicrm_entity_get_field_widget($field_spec, $civicrm_entity) {
         );
         break;
       case 'CheckBox':
-        $options =  civicrm_entity_get_field_options($field_spec['name'], $civicrm_entity);
-        if($field_type == 'custom' && count($options) > 1){
+        $options = civicrm_entity_get_field_options($field_spec['name'], $civicrm_entity);
+        if ($field_type == 'custom' && count($options) > 1) {
           $widget = array(
             'widget' => 'checkboxes',
             'civicrm_field_type' => $field_type,
@@ -1990,7 +2112,7 @@ function civicrm_entity_get_field_widget($field_spec, $civicrm_entity) {
         break;
       case 'TextArea':
         //if(!empty($field_spec['description']) && strpos($field_spec['description'], 'Text and html allowed.') !== FALSE) {
-        if(0 == 1) {
+        if (0 == 1) {
           $widget = array(
             'widget' => 'text_format',
             'civicrm_field_type' => $field_type,
@@ -2012,20 +2134,20 @@ function civicrm_entity_get_field_widget($field_spec, $civicrm_entity) {
     }
   }
   else {
-    $widget = array('widget' =>'textfield');
+    $widget = array('widget' => 'textfield');
   }
 
   // some date field handling
   if (isset($field_spec['type'])) {
-    switch($field_spec['type']) {
+    switch ($field_spec['type']) {
       case 4:
-        $widget = array('widget' => 'date_select','format' => 'Y:m:d');
+        $widget = array('widget' => 'date_select', 'format' => 'Y:m:d');
         break;
       case 8:
-        $widget = array('widget' => 'date_select','format' => 'H:i:s');
+        $widget = array('widget' => 'date_select', 'format' => 'H:i:s');
         break;
       case 12:
-        $widget = array('widget' => 'date_select','format' => 'Y:m:d H:i:s');
+        $widget = array('widget' => 'date_select', 'format' => 'Y:m:d H:i:s');
         break;
     }
   }
@@ -2033,21 +2155,48 @@ function civicrm_entity_get_field_widget($field_spec, $civicrm_entity) {
   // FK Reference field handling
   if (!empty($field_spec['FKApiName'])) {
     $widget_subtype = civicrm_entity_fk_entities_to_produce_widget_for($field_spec['FKApiName']);
-    if ($widget_subtype){
-      $widget = array('widget' => 'civi_fk_reference', 'subtype' => $widget_subtype, 'entity' => $field_spec['FKApiName']);
+    if ($widget_subtype) {
+      $widget = array(
+        'widget' => 'civi_fk_reference',
+        'subtype' => $widget_subtype,
+        'entity' => $field_spec['FKApiName'],
+      );
     }
   }
 
   // some one off handle for properties of some entities that don't provide html type information
-  $entities_to_alter = array('address', 'phone', 'email', 'relationship', 'membership_type', 'activity');
-  if(in_array(strtolower($civicrm_entity), $entities_to_alter)) {
-    $checkbox_fields = array ('is_primary', 'is_billing', 'on_hold', 'is_bulk_mail', 'is_active', 'is_permission_a_b', 'is_permission_b_a', 'is_deleted');
-    if(in_array($field_spec['name'], $checkbox_fields)){
-      $widget = array('widget' => 'checkbox', 'civicrm_field_type' => 'standard');
+  $entities_to_alter = array(
+    'address',
+    'phone',
+    'email',
+    'relationship',
+    'membership_type',
+    'activity',
+  );
+  if (in_array(strtolower($civicrm_entity), $entities_to_alter)) {
+    $checkbox_fields = array(
+      'is_primary',
+      'is_billing',
+      'on_hold',
+      'is_bulk_mail',
+      'is_active',
+      'is_permission_a_b',
+      'is_permission_b_a',
+      'is_deleted',
+    );
+    if (in_array($field_spec['name'], $checkbox_fields)) {
+      $widget = array(
+        'widget' => 'checkbox',
+        'civicrm_field_type' => 'standard',
+      );
     }
   }
-  if($field_spec['name'] == 'relationship_type_id' && $civicrm_entity == 'membership_type'){
-    $widget = array('widget' => 'civi_fk_reference', 'subtype' => civicrm_entity_fk_entities_to_produce_widget_for('RelationshipType'), 'entity' => 'RelationshipType');
+  if ($field_spec['name'] == 'relationship_type_id' && $civicrm_entity == 'membership_type') {
+    $widget = array(
+      'widget' => 'civi_fk_reference',
+      'subtype' => civicrm_entity_fk_entities_to_produce_widget_for('RelationshipType'),
+      'entity' => 'RelationshipType',
+    );
   }
 
   return $widget;
@@ -2059,21 +2208,20 @@ function civicrm_entity_get_field_widget($field_spec, $civicrm_entity) {
  * @param $civicrm_entity
  * @return array
  */
-function _civicrm_entity_get_entities_list($civicrm_entity){
+function _civicrm_entity_get_entities_list($civicrm_entity) {
   civicrm_initialize();
-  try{
+  try {
     $result = civicrm_api3($civicrm_entity, 'get', array(
       'options' => array('limit' => 100),
     ));
-  }
-  catch(CiviCRM_API3_Exception $e){
+  } catch (CiviCRM_API3_Exception $e) {
     return array('');
   }
   $entities = array();
 
-  if($result['count']) {
-    foreach($result['values'] as $id => $data){
-      switch($civicrm_entity) {
+  if ($result['count']) {
+    foreach ($result['values'] as $id => $data) {
+      switch ($civicrm_entity) {
         case 'RelationshipType':
           $entities[$id] = $data['label_a_b'] . ' / ' . $data['label_b_a'];
           break;
@@ -2097,11 +2245,15 @@ function _civicrm_entity_get_entities_list($civicrm_entity){
  * @param $civicrm_entity
  * @return array
  */
-function civicrm_entity_get_field_options($field_name, $civicrm_entity){
-  $result = civicrm_api($civicrm_entity, 'getoptions', array('sequential'=>1,'version' => 3, 'field' => $field_name));
+function civicrm_entity_get_field_options($field_name, $civicrm_entity) {
+  $result = civicrm_api($civicrm_entity, 'getoptions', array(
+    'sequential' => 1,
+    'version' => 3,
+    'field' => $field_name,
+  ));
   $options = array(NULL => '- No Value -');
-  if(!$result['is_error']) {
-    foreach($result['values'] as $option) {
+  if (!$result['is_error']) {
+    foreach ($result['values'] as $option) {
       $options[$option['key']] = $option['value'];
     }
   }
@@ -2114,15 +2266,15 @@ function civicrm_entity_get_field_options($field_name, $civicrm_entity){
  * @return array
  */
 function civicrm_entity_fk_entities_to_produce_widget_for($entity_type) {
- switch ($entity_type) {
-   case 'Campaign':
-     return 'select';
-   case 'Contact':
-     return 'autocomplete';
-   case 'RelationshipType':
-     return 'select';
-   case 'FinancialType':
-     return 'select';
+  switch ($entity_type) {
+    case 'Campaign':
+      return 'select';
+    case 'Contact':
+      return 'autocomplete';
+    case 'RelationshipType':
+      return 'select';
+    case 'FinancialType':
+      return 'select';
   }
   return FALSE;
 }
@@ -2136,7 +2288,6 @@ function _civicrm_entity_chained_fks() {
     'CRM_Event_DAO_Event' => 'event',
   );
 }
-
 
 
 /**
@@ -2157,8 +2308,10 @@ function _civicrm_entity_get_title($field_specs, $entity_type = '') {
     if (array_key_exists('label', $field_specs)) {
       $label_field = 'label';
     }
-    else if (array_key_exists('name', $field_specs)) {
-      $label_field = 'name';
+    else {
+      if (array_key_exists('name', $field_specs)) {
+        $label_field = 'name';
+      }
     }
   }
 
@@ -2186,15 +2339,15 @@ function civicrm_entity_civicrm_contact_label_callback($entity, $entity_type) {
   // drupal_alter('civicrm_entity_contact_label', $label, $entity);
   if (isset($entity->email) && !empty($entity->email)) {
     $label = t('!label <!email>', array(
-        '!label' => $label,
-        '!email' => $entity->email
-      ));
+      '!label' => $label,
+      '!email' => $entity->email,
+    ));
   }
   elseif (isset($entity->phone) && !empty($entity->phone)) {
     $label = t('!label <!phone>', array(
-        '!label' => $label,
-        '!phone' => $entity->phone
-      ));
+      '!label' => $label,
+      '!phone' => $entity->phone,
+    ));
   }
   return $label;
 }
@@ -2217,13 +2370,13 @@ function civicrm_entity_civicrm_contact_label_callback($entity, $entity_type) {
  * @return object
  */
 function civicrm_entity_metadata_civicrm_entity_get_properties($data, $options, $name, $type, $info) {
-  if(isset($info['property_info']['entity']) && isset($data->$info['property_info']['field'])) {
+  if (isset($info['property_info']['entity']) && isset($data->$info['property_info']['field'])) {
     $entity = civicrm_api($info['property_info']['entity'], 'get', array(
-        'version' => 3,
-        'id' => $data->$info['property_info']['field'],
-        'sequential' => 1,
+      'version' => 3,
+      'id' => $data->$info['property_info']['field'],
+      'sequential' => 1,
     ));
-    return (object)$entity['values'][0];
+    return (object) $entity['values'][0];
   }
 }
 
@@ -2333,7 +2486,7 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
   // @TODO What happens if they don't have an email at this point?
   // An email is a pre-requisite for a Drupal account, so the action
   // fails if they don't have an email.
-  $contact['display_name'] = trim(preg_replace("/[^A-Za-z0-9 ]/", '', truncate_utf8($contact['display_name'],60)));
+  $contact['display_name'] = trim(preg_replace("/[^A-Za-z0-9 ]/", '', truncate_utf8($contact['display_name'], 60)));
   $params = array(
     'name' => $contact['display_name'],
     'mail' => $contact['email'],
@@ -2426,9 +2579,9 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
  */
 function civicrm_entity_query($type, $property, $value, $limit) {
   $return = entity_load($type, FALSE, array(
-      $property => $value,
-      'options' => array('limit' => $limit)
-    ));
+    $property => $value,
+    'options' => array('limit' => $limit),
+  ));
   return array('entity_fetched' => array_values($return));
 }
 
@@ -2488,8 +2641,7 @@ function civicrm_entity_action_load_create_user($entity, $is_active = 0, $notify
 function civicrm_entity_action_load_create_contact($user, $email = NULL) {
   try {
     return civicrm_entity_action_load_contact($user);
-  }
-  catch (CiviCRM_API3_Exception $e) {
+  } catch (CiviCRM_API3_Exception $e) {
     $ufMatch = CRM_Core_BAO_UFMatch::synchronizeUFMatch($user, $user->uid, ($email ? $email : $user->mail), 'Drupal', FALSE, 'Individual');
     $entities = entity_load('civicrm_contact', array($ufMatch->contact_id));
     return array('civicrm_contact' => reset($entities));
@@ -2510,7 +2662,7 @@ function civicrm_entity_action_load_contact($user) {
   $contact_id = civicrm_api3('uf_match', 'getvalue', array(
     'uf_id' => $user->uid,
     'return' => 'contact_id',
-    'domain_id' => CRM_Core_Config::domainID()
+    'domain_id' => CRM_Core_Config::domainID(),
   ));
   $entities = entity_load('civicrm_contact', array($contact_id));
   return array('civicrm_contact' => reset($entities));
@@ -2567,7 +2719,7 @@ function civicrm_entity_contact_get_location_element($entity, &$contact, $locati
   $params = array(
     'contact_id' => $contact->id,
     'sequential' => 1,
-    'on_hold' => 0
+    'on_hold' => 0,
   );
   if ($location_type_id) {
     $params['location_type_id'] = $location_type_id;
@@ -2591,18 +2743,18 @@ function civicrm_entity_contact_get_location_element($entity, &$contact, $locati
  */
 function civicrm_entity_contact_send_email($contact, $subject, $message_text, $message_html, $from = NULL) {
   $email = civicrm_api3('email', 'get', array(
-      'contact_id' => $contact->id,
-      'is_primary' => 1,
-      'on_hold' => 0,
-      'sequential' => 1
-    ));
+    'contact_id' => $contact->id,
+    'is_primary' => 1,
+    'on_hold' => 0,
+    'sequential' => 1,
+  ));
   if (!$email['count']) {
     watchdog('civicrm_entity_rules', 'no email could be sent to !contact_id', array('!contact_id' => $contact->id));
   }
   $params = array();
   $params['from'] = !empty($from) ? str_replace(array(
     "\r",
-    "\n"
+    "\n",
   ), '', $from) : 'Admin';
   $params['toEmail'] = $email['values'][0]['email'];
   $params['subject'] = $subject;
@@ -2610,12 +2762,12 @@ function civicrm_entity_contact_send_email($contact, $subject, $message_text, $m
   $params['html'] = $message_html;
   CRM_Utils_Mail::send($params);
   civicrm_api3('activity', 'create', array(
-      'activity_type_id' => 'Email',
-      'source_contact_id' => $contact->id,
-      'target_contact_id' => $contact->id,
-      'subject' => $subject,
-      'details' => $message_html
-    ));
+    'activity_type_id' => 'Email',
+    'source_contact_id' => $contact->id,
+    'target_contact_id' => $contact->id,
+    'subject' => $subject,
+    'details' => $message_html,
+  ));
 }
 
 /**
@@ -2630,7 +2782,7 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
   if ($op == 'delete') {
     $entity_type = '';
     $valid_entities = _civicrm_entity_enabled_entities();
-    switch($objectName) {
+    switch ($objectName) {
       case 'Individual':
       case 'Household':
       case 'Organization':
@@ -2640,13 +2792,14 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
         $entity_type = 'civicrm_' . _civicrm_entity_get_entity_name_from_camel($objectName);
         break;
     }
-    if(isset($valid_entities[$entity_type])) {
+    if (isset($valid_entities[$entity_type])) {
       $entity = entity_load_single($entity_type, $id);
       field_attach_delete($entity_type, $entity);
     }
 
   }
 }
+
 /**
  * Implement the post hook and fire the corresponding rules event.
  *
@@ -2690,8 +2843,8 @@ function civicrm_entity_civicrm_post($op, $object_name, $object_id, &$object_ref
      *  changed.
      */
     case 'delete':
-      if($entity_name == 'contact') {
-        if($object_ref->is_deleted == 1) {
+      if ($entity_name == 'contact') {
+        if ($object_ref->is_deleted == 1) {
           $event_name = 'civicrm_' . $entity_name . "_{$op}";
         }
         else {
@@ -2831,15 +2984,15 @@ function civicrm_entity_contact_user_get($data, array $options, $name, $type, $i
     return;
   }
   $domain_id = civicrm_api('domain', 'getvalue', array(
-      'version' => 3,
-      'return' => 'id',
-      'current_domain' => TRUE,
+    'version' => 3,
+    'return' => 'id',
+    'current_domain' => TRUE,
   ));
   $uf_info = civicrm_api('uf_match', 'getsingle', array(
-      'version' => 3,
-      'return' => 'uf_id',
-      'contact_id' => $data->contact_id,
-      'domain_id' => $domain_id,
+    'version' => 3,
+    'return' => 'uf_id',
+    'contact_id' => $data->contact_id,
+    'domain_id' => $domain_id,
   ));
   if (!empty($uf_info['uf_id'])) {
     $entity = entity_load('user', array($uf_info['uf_id']));
@@ -2862,8 +3015,8 @@ function civicrm_entity_contact_user_get($data, array $options, $name, $type, $i
  * @return null|void
  */
 function civicrm_entity_contact_user_set(&$data, $name, $value, $langcode, $type, $info) {
-  if(!is_null($data->id)){
-    if($user = user_load($value)){
+  if (!is_null($data->id)) {
+    if ($user = user_load($value)) {
       if (!module_exists('civicrm') || !function_exists('civicrm_initialize')) {
         return;
       }
@@ -2871,16 +3024,16 @@ function civicrm_entity_contact_user_set(&$data, $name, $value, $langcode, $type
         return;
       }
       $domain_id = civicrm_api('domain', 'getvalue', array(
-          'version' => 3,
-          'return' => 'id',
-          'current_domain' => TRUE,
+        'version' => 3,
+        'return' => 'id',
+        'current_domain' => TRUE,
       ));
       $uf_info = civicrm_api('uf_match', 'create', array(
-          'version' => 3,
-          'contact_id' => $data->id,
-          'uf_id' => $user->uid,
-          'uf_name' => $user->name,
-          'domain_id' => $domain_id,
+        'version' => 3,
+        'contact_id' => $data->id,
+        'uf_id' => $user->uid,
+        'uf_name' => $user->name,
+        'domain_id' => $domain_id,
       ));
       if (!$uf_info['is_error']) {
         $data->civi_user = $user;
@@ -2937,10 +3090,10 @@ function civicrm_entity_rules_action_entity_create_info_alter(&$element_info, Ru
       // Prefix parameter names to avoid name clashes with existing parameters.
       $element_info['parameter']['param_' .
       $name] = array_intersect_key($info, array_flip(array(
-            'type',
-            'label',
-            'description'
-          )));
+        'type',
+        'label',
+        'description',
+      )));
       $element_info['parameter']['param_' .
       $name]['options list'] = $child->optionsList() ? 'rules_action_entity_parameter_options_list' : FALSE;
       $element_info['parameter']['param_' .
@@ -2980,8 +3133,7 @@ function civicrm_entity_rules_action_entity_create_info_alter(&$element_info, Ru
     if (($bundleKey = $wrapper->entityKey('bundle')) &&
       isset($element->settings['param_' . $bundleKey])
     ) {
-      $element_info['provides']['entity_created']['bundle'] = $element->settings[
-      'param_' . $bundleKey];
+      $element_info['provides']['entity_created']['bundle'] = $element->settings['param_' . $bundleKey];
     }
   }
 }
@@ -2992,17 +3144,17 @@ function civicrm_entity_rules_action_entity_create_info_alter(&$element_info, Ru
  * @param $entity
  */
 function civicrm_entity_get_custom_fields($entity, $types = array(
-    'Integer' => 'integer',
-    'String' => 'text',
-    'Date' => 'date'
-  )) {
+  'Integer' => 'integer',
+  'String' => 'text',
+  'Date' => 'date',
+)) {
   if (!civicrm_initialize()) {
     return array();
   }
   $fields = civicrm_api3($entity, 'getfields', array(
-      'action' => 'create',
-      'getoptions' => TRUE
-    ));
+    'action' => 'create',
+    'getoptions' => TRUE,
+  ));
   $fields = $fields['values'];
   foreach ($fields as $field_name => $field) {
     if (substr($field_name, 0, 7) != 'custom_' ||
@@ -3022,8 +3174,8 @@ function civicrm_entity_get_custom_fields($entity, $types = array(
  * Loads UI controller and generates view pages for civicrm entities
  *
  * @param integer $id
- * @param string  $entity_type
- * @param string  $view_mode
+ * @param string $entity_type
+ * @param string $view_mode
  *
  * @return string content
  */
@@ -3031,19 +3183,19 @@ function civicrm_entity_get_custom_fields($entity, $types = array(
 function civicrm_entity_page_view($entity, $entity_type) {
   $content = "";
 
-  if(!empty($entity->id)){
+  if (!empty($entity->id)) {
     $id = $entity->id;
   }
-  elseif(!is_object($entity) && is_numeric($entity)){
+  elseif (!is_object($entity) && is_numeric($entity)) {
     $id = $entity;
   }
 
   if (!empty($entity) && is_object($entity)) {
-    if($entity_type == 'civicrm_contact') {
+    if ($entity_type == 'civicrm_contact') {
       //for some reason the is_deleted column of the contact record is coming to the entity
       // as contact_is_deleted ...special handling to have the page value set properly
       $entity->is_deleted = $entity->contact_is_deleted;
-     }
+    }
     $content_array = entity_view($entity_type, array($entity->id => $entity));
     $content = drupal_render($content_array);
   }
@@ -3073,18 +3225,18 @@ function civicrm_entity_ds_field_format_summary($field) {
 /**
  * Implementes hook_form_alter()
  */
-function civicrm_entity_form_alter(&$form, &$form_state, $form_id){
+function civicrm_entity_form_alter(&$form, &$form_state, $form_id) {
 // For the manage display form, add a submit handler to make display suite custom civicrm "field" settings stick
-  if($form_id == 'field_ui_display_overview_form') {
+  if ($form_id == 'field_ui_display_overview_form') {
     if (!civicrm_initialize(TRUE)) {
-       return;
+      return;
     }
     $entities = _civicrm_entity_enabled_entities();
     $entity_type = $form['#entity_type'];
-    if(array_key_exists($entity_type,$entities)) {
+    if (array_key_exists($entity_type, $entities)) {
       $submits = array();
       $submits[] = '_civicrm_entity_manage_display_submit';
-      foreach($form['#submit'] as $submit_callback){
+      foreach ($form['#submit'] as $submit_callback) {
         $submits[] = $submit_callback;
       }
       $form['#submit'] = $submits;
@@ -3094,14 +3246,14 @@ function civicrm_entity_form_alter(&$form, &$form_state, $form_id){
 
   // for the manage fields form, if display suite forms is enabled, add a validation handler
   // that enforces that the entity API required fields are set to be on the form
-  if($form_id == 'field_ui_field_overview_form' && module_exists('ds_forms') && !empty($form['#ds_layout'])) {
+  if ($form_id == 'field_ui_field_overview_form' && module_exists('ds_forms') && !empty($form['#ds_layout'])) {
     $entities = _civicrm_entity_enabled_entities();
     $entity_type = $form['#entity_type'];
-    if(array_key_exists($entity_type,$entities)) {
+    if (array_key_exists($entity_type, $entities)) {
       $entity_props = entity_get_property_info($entity_type);
-      foreach($entity_props['properties'] as $property => $info){
-        if(!empty($info['required'])) {
-          $form['fields'][$property]['label']['#markup'] = '<span class="form-required" title="This field is required.">* </span>' . '<span title="This field is required.">' .$form['fields'][$property]['label']['#markup'] . '</span>';
+      foreach ($entity_props['properties'] as $property => $info) {
+        if (!empty($info['required'])) {
+          $form['fields'][$property]['label']['#markup'] = '<span class="form-required" title="This field is required.">* </span>' . '<span title="This field is required.">' . $form['fields'][$property]['label']['#markup'] . '</span>';
         }
       }
       $form['#validate'][] = '_civicrm_entity_manage_display_suite_forms_validate';
@@ -3118,11 +3270,11 @@ function civicrm_entity_form_alter(&$form, &$form_state, $form_id){
  * @see civicrm_entity_form_alter().
  */
 function _civicrm_entity_manage_display_submit(&$form, &$form_state) {
-  if($form_state['values']['additional_settings']['layout']!=''){
+  if ($form_state['values']['additional_settings']['layout'] != '') {
     $entity_type = $form['#entity_type'];
     $bundle = $form['#bundle'];
     $bundle_settings = field_bundle_settings($entity_type, $bundle);
-    foreach($bundle_settings['extra_fields']['display'] as $key => $field) {
+    foreach ($bundle_settings['extra_fields']['display'] as $key => $field) {
       $form_state['values']['fields'][$key]['type'] = 'visible';
     }
   }
@@ -3142,8 +3294,8 @@ function _civicrm_entity_manage_display_suite_forms_validate(&$form, &$form_stat
   $entity_type = $form['#entity_type'];
   $entity_props = entity_get_property_info($entity_type);
 
-  foreach($entity_props['properties'] as $property => $info){
-    if(!empty($info['required']) && (empty($form_state['values']['fields'][$property]['region']) || $form_state['values']['fields'][$property]['region'] == 'hidden')) {
+  foreach ($entity_props['properties'] as $property => $info) {
+    if (!empty($info['required']) && (empty($form_state['values']['fields'][$property]['region']) || $form_state['values']['fields'][$property]['region'] == 'hidden')) {
 
       form_set_error('fields][' . $property, $info['label'] . ' property is required by CiviCRM API to be included on this form.');
 
@@ -3163,14 +3315,14 @@ function _civicrm_entity_manage_display_suite_forms_validate(&$form, &$form_stat
  */
 function civicrm_entity_ds_fields_info($entity_type) {
   $fields = array();
-   if (!civicrm_initialize(TRUE)) {
+  if (!civicrm_initialize(TRUE)) {
     return;
   }
-  $properties = _civicrm_entity_getproperties(substr($entity_type,8), 'property_info');
+  $properties = _civicrm_entity_getproperties(substr($entity_type, 8), 'property_info');
   $civicrm_entity_info = civicrm_entity_get_supported_entity_info($entity_type);
 
   // Basic wrapper and class settings for all CiviCRM properties, also makes the label visibility work
-  foreach($properties as $name => $settings) {
+  foreach ($properties as $name => $settings) {
     $fields[$entity_type][$name] = array(
       'title' => $settings['label'],
       'field_type' => 2,
@@ -3178,10 +3330,16 @@ function civicrm_entity_ds_fields_info($entity_type) {
       'file' => drupal_get_path('module', 'civicrm_entity') . '/civicrm_entity.ds.inc',
       'properties' => array(
         'settings' => array(
-          'wrapper' => array('type' => 'textfield', 'description' => t('Eg: h1, h2, p')),
-          'class' => array('type' => 'textfield', 'description' => t('Put a class on the wrapper. Eg: block-title')),
+          'wrapper' => array(
+            'type' => 'textfield',
+            'description' => t('Eg: h1, h2, p'),
+          ),
+          'class' => array(
+            'type' => 'textfield',
+            'description' => t('Put a class on the wrapper. Eg: block-title'),
+          ),
         ),
-       'default' => array('wrapper' => 'div', 'class' => 'civicrm-field'),
+        'default' => array('wrapper' => 'div', 'class' => 'civicrm-field'),
       ),
     );
     // could do some date formatter logic all at one here
@@ -3191,14 +3349,14 @@ function civicrm_entity_ds_fields_info($entity_type) {
     }*/
   }
 
-  if(isset($civicrm_entity_info['display suite'])){
-    if(isset($civicrm_entity_info['display suite']['link fields']) && count($civicrm_entity_info['display suite']['link fields'])){
+  if (isset($civicrm_entity_info['display suite'])) {
+    if (isset($civicrm_entity_info['display suite']['link fields']) && count($civicrm_entity_info['display suite']['link fields'])) {
       _civicrm_entity_link_addformatters($entity_type, $civicrm_entity_info['display suite']['link fields'], $fields);
     }
-    if(isset($civicrm_entity_info['display suite']['option fields']) && count($civicrm_entity_info['display suite']['option fields'])){
+    if (isset($civicrm_entity_info['display suite']['option fields']) && count($civicrm_entity_info['display suite']['option fields'])) {
       _civicrm_entity_option_addformatters($entity_type, $civicrm_entity_info['display suite']['option fields'], $fields);
     }
-    if(isset($civicrm_entity_info['display suite']['boolean fields']) && count($civicrm_entity_info['display suite']['boolean fields'])){
+    if (isset($civicrm_entity_info['display suite']['boolean fields']) && count($civicrm_entity_info['display suite']['boolean fields'])) {
       _civicrm_entity_yesno_addformatters($entity_type, $civicrm_entity_info['display suite']['boolean fields'], $fields);
     }
   }
