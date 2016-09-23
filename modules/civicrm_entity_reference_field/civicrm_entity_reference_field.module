@@ -148,7 +148,7 @@ function civicrm_entity_reference_field_field_settings_form($field, $instance, $
     '#default_value' => $settings['host_source_id'],
     '#description' => t('Host Entity property which value is used query target entity table.'),
     // want to automate choices for this setting in the future
-    '#options' => array ('id' => 'ID',  'loc_block_id' => 'Location Block ID (CiviCRM Event Entity)', 'address_id' => 'Address ID (Location Block Entity)')
+    '#options' => array ('id' => 'ID',  'loc_block_id' => 'Location Block ID (CiviCRM Event Entity)', 'address_id' => 'Address ID (Location Block Entity)', 'email_id' => 'Email ID (Location Block Entity)', 'phone_id' => 'Phone ID (Location Block Entity)')
   );
 
   return $form;
