@@ -16,7 +16,10 @@ function civicrm_entity_contact_assign_rel_type_list_field_field_info() {
     'civicrm_entity_contact_assign_relationship_type_list_field' => array(
       'label' => t('CiviCRM Entity Contact Assign Relationship Type List'),
       'description' => t('Provides a widget for adding/removing a contacts relationships to a configured target contact.'),
-      'settings' => array('target_contact_b' => '', 'relationship_types' => array()),
+      'settings' => array(
+        'target_contact_b' => '',
+        'relationship_types' => array(),
+      ),
       'instance_settings' => array(),
       'default_widget' => 'civicrm_entity_contact_assign_relationship_type_list_field_default_widget',
       'default_formatter' => 'civicrm_entity_contact_assign_relationship_type_list_field_default_formatter',
@@ -35,7 +38,7 @@ function civicrm_entity_contact_assign_rel_type_list_field_field_info() {
  * @param $form_state
  */
 function civicrm_entity_contact_assign_rel_type_list_field_form_field_ui_field_edit_form_alter(&$form, &$form_state) {
-  if($form['#field']['type'] == 'civicrm_entity_contact_assign_relationship_type_list_field') {
+  if ($form['#field']['type'] == 'civicrm_entity_contact_assign_relationship_type_list_field') {
     // field settings mods
     $form['field']['cardinality']['#default_value'] = 1;
     $form['field']['cardinality']['#disabled'] = TRUE;
@@ -52,12 +55,12 @@ function civicrm_entity_contact_assign_rel_type_list_field_form_field_ui_field_e
  * @param $form
  * @param $form_state
  */
-function civicrm_entity_contact_assign_rel_type_list_field_form_field_ui_field_overview_form_alter(&$form, &$form_state){
+function civicrm_entity_contact_assign_rel_type_list_field_form_field_ui_field_overview_form_alter(&$form, &$form_state) {
   if ($form['#entity_type'] != 'civicrm_contact') {
     unset($form['fields']['_add_new_field']['type']['#options']['civicrm_entity_contact_assign_relationship_type_list_field']);
 
-    foreach($form['fields']['_add_existing_field']['field_name']['#options'] as $field_name => $description){
-      if(strpos($description, 'CiviCRM Entity Contact Assign Relationship Type List') !== FALSE) {
+    foreach ($form['fields']['_add_existing_field']['field_name']['#options'] as $field_name => $description) {
+      if (strpos($description, 'CiviCRM Entity Contact Assign Relationship Type List') !== FALSE) {
         unset($form['fields']['_add_existing_field']['field_name']['#options'][$field_name]);
       }
     }
@@ -82,13 +85,12 @@ function civicrm_entity_contact_assign_rel_type_list_field_field_settings_form($
       'is_active' => 1,
     ));
     $relationship_types = array();
-    if ($result['count']){
+    if ($result['count']) {
       foreach ($result['values'] as $id => $relationship_type) {
         $relationship_types[$id] = $relationship_type['description'];
       }
     }
-  }
-  catch (CiviCRM_API3_Exception $e) {
+  } catch (CiviCRM_API3_Exception $e) {
     $relationship_types = array();
   }
 
@@ -124,7 +126,7 @@ function civicrm_entity_contact_assign_rel_type_list_field_field_settings_form($
  * @param $age
  */
 function civicrm_entity_contact_assign_rel_type_list_field_field_load($entity_type, $entities, $field, $instances, $langcode, &$items, $age) {
-  if($entity_type == 'civicrm_contact') {
+  if ($entity_type == 'civicrm_contact') {
     $relationship_type_ids = array_keys($field['settings']['relationship_types']);
     $contact_b_id = $field['settings']['target_contact_b'];
     civicrm_initialize();
@@ -136,18 +138,17 @@ function civicrm_entity_contact_assign_rel_type_list_field_field_load($entity_ty
           'contact_id_b' => $contact_b_id,
           'is_active' => 1,
         ));
-      }
-      catch(CiviCRM_API3_Exception $e) {
+      } catch (CiviCRM_API3_Exception $e) {
         continue;
       }
       $api_contact_relationships = array();
-      foreach($result['values'] as $relationship_id => $data) {
-        if (in_array($data['relationship_type_id'], $relationship_type_ids)){
+      foreach ($result['values'] as $relationship_id => $data) {
+        if (in_array($data['relationship_type_id'], $relationship_type_ids)) {
           $api_contact_relationships[] = $data['relationship_type_id'];
         }
       }
-      foreach($relationship_type_ids as $relationship_type_id) {
-        if(in_array($relationship_type_id, $api_contact_relationships)) {
+      foreach ($relationship_type_ids as $relationship_type_id) {
+        if (in_array($relationship_type_id, $api_contact_relationships)) {
           $items[$entity_id][0]['relationship_types'][$relationship_type_id] = $relationship_type_id;
         }
         else {
@@ -169,9 +170,9 @@ function civicrm_entity_contact_assign_rel_type_list_field_field_load($entity_ty
  * @param $items
  */
 function civicrm_entity_contact_assign_rel_type_list_field_field_insert($entity_type, $entity, $field, $instance, $langcode, &$items) {
-  if($entity_type == 'civicrm_contact') {
-    if(!empty($items[0]['relationship_types'])) {
-      if(!empty($entity->id)) {
+  if ($entity_type == 'civicrm_contact') {
+    if (!empty($items[0]['relationship_types'])) {
+      if (!empty($entity->id)) {
         $contact_a_id = $entity->id;
         _civicrm_entity_contact_assign_rel_type_list_field_process_field_items($contact_a_id, $field, $items);
       }
@@ -190,9 +191,9 @@ function civicrm_entity_contact_assign_rel_type_list_field_field_insert($entity_
  * @param $items
  */
 function civicrm_entity_contact_assign_rel_type_list_field_field_update($entity_type, $entity, $field, $instance, $langcode, &$items) {
-  if($entity_type == 'civicrm_contact') {
-    if(!empty($items[0]['relationship_types'])) {
-      if(!empty($entity->id)) {
+  if ($entity_type == 'civicrm_contact') {
+    if (!empty($items[0]['relationship_types'])) {
+      if (!empty($entity->id)) {
         $contact_a_id = $entity->id;
         _civicrm_entity_contact_assign_rel_type_list_field_process_field_items($contact_a_id, $field, $items);
       }
@@ -234,15 +235,15 @@ function civicrm_entity_contact_assign_rel_type_list_field_field_widget_info() {
  * @return bool
  */
 function civicrm_entity_contact_assign_rel_type_list_field_field_is_empty($item, $field) {
-  if(!empty($item['relationship_types'])){
-    if(is_array($item['relationship_types'])) {
+  if (!empty($item['relationship_types'])) {
+    if (is_array($item['relationship_types'])) {
       foreach ($item['relationship_types'] as $id => $value) {
         if ($value) {
           return FALSE;
         }
       }
     }
-    elseif($item['relationship_types']) {
+    elseif ($item['relationship_types']) {
       return FALSE;
     }
   }
@@ -258,7 +259,7 @@ function civicrm_entity_contact_assign_rel_type_list_field_field_widget_form(&$f
   $options = _civicrm_entity_contact_assign_rel_type_list_field_get_field_settings_relationship_types($field);
 
   $values = array();
-  if(!empty($items[$delta]['relationship_types'])) {
+  if (!empty($items[$delta]['relationship_types'])) {
     foreach ($items[$delta]['relationship_types'] as $contact_b_id => $value) {
       $values[$contact_b_id] = $value;
     }
@@ -270,7 +271,7 @@ function civicrm_entity_contact_assign_rel_type_list_field_field_widget_form(&$f
           '#type' => 'checkboxes',
           '#default_value' => $values,
           '#options' => $options,
-      );
+        );
       $widget['#title'] = $instance['label'];
       $widget['#weight'] = 0;
       $element['relationship_types'] = $widget;
@@ -278,7 +279,7 @@ function civicrm_entity_contact_assign_rel_type_list_field_field_widget_form(&$f
     case 'civicrm_entity_contact_assign_relationship_type_list_field_radios_widget':
       $default_value = 0;
       foreach ($values as $relationship_type_id => $value) {
-        if($value) {
+        if ($value) {
           $default_value = $relationship_type_id;
           break;
         }
@@ -306,7 +307,7 @@ function civicrm_entity_contact_assign_rel_type_list_field_field_formatter_info(
     'civicrm_entity_contact_assign_relationship_type_list_field_default_formatter' => array( // Machine name of the formatter
       'label' => t('List Relationships'),
       'field types' => array('civicrm_entity_contact_assign_relationship_type_list_field'),
-      'settings'  => array( // Array of the settings we'll create
+      'settings' => array( // Array of the settings we'll create
         'link_to_relationships' => 0,
       ),
     ),
@@ -323,7 +324,7 @@ function civicrm_entity_contact_assign_rel_type_list_field_field_formatter_info(
  * @param $form_state
  * @return array
  */
-function civicrm_entity_contact_assign_rel_type_list_field_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state){
+function civicrm_entity_contact_assign_rel_type_list_field_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
   if ($field['type'] == 'civicrm_entity_contact_assign_relationship_type_list_field') {
     $display = $instance['display'][$view_mode];
     $settings = $display['settings'];
@@ -348,7 +349,7 @@ function civicrm_entity_contact_assign_rel_type_list_field_field_formatter_setti
  * @return string
  */
 function civicrm_entity_contact_assign_rel_type_list_field_field_formatter_settings_summary($field, $instance, $view_mode) {
-  if($field['type'] == 'civicrm_entity_contact_assign_relationship_type_list_field') {
+  if ($field['type'] == 'civicrm_entity_contact_assign_relationship_type_list_field') {
     $display = $instance['display'][$view_mode];
     $settings = $display['settings'];
     $summary = '';
@@ -373,7 +374,7 @@ function civicrm_entity_contact_assign_rel_type_list_field_field_formatter_view(
       $output_as_link = !empty($settings['link_to_relationships']) ? 1 : 0;
       $contact_b_id = $field['settings']['target_contact_b'];
       foreach ($items as $delta => $item) {
-        $markup ='';
+        $markup = '';
         foreach ($item['relationship_types'] as $relationship_type_id => $value) {
           if ($value) {
             try {
@@ -396,7 +397,8 @@ function civicrm_entity_contact_assign_rel_type_list_field_field_formatter_view(
             if ($output_as_link) {
               $relationship_path = 'civicrm-relationship' . '/' . $relationship_id;
               $markup .= '<div class="civicrm-relationship-item">' . l($relationship_type_result, $relationship_path) . '</div>';
-            } else {
+            }
+            else {
               $markup .= '<div class="civicrm-relationship-item">' . $relationship_type_result . '</div>';
             }
           }
@@ -422,14 +424,14 @@ function civicrm_entity_contact_assign_rel_type_list_field_field_formatter_view(
  * @param $objectId
  * @param $objectRef
  */
-function civicrm_entity_contact_assign_rel_type_list_field_civicrm_post($op, $objectName, $objectId, &$objectRef){
+function civicrm_entity_contact_assign_rel_type_list_field_civicrm_post($op, $objectName, $objectId, &$objectRef) {
   if ($objectName == 'Relationship' && ($op == 'create' || $op == 'delete' || $op == 'edit')) {
     $fields = db_select('field_config', 'fc')
       ->fields('fc', array('id'))
       ->condition('type', 'civicrm_entity_contact_assign_relationship_type_list_field')
       ->execute();
     $contact_a_id = $objectRef->contact_id_a;
-    if($fields->rowCount()) {
+    if ($fields->rowCount()) {
       cache_clear_all('field:civicrm_contact:' . $contact_a_id, 'cache_field');
     }
   }
@@ -445,11 +447,11 @@ function civicrm_entity_contact_assign_rel_type_list_field_civicrm_post($op, $ob
 function _civicrm_entity_contact_assign_rel_type_list_field_process_field_items($contact_a_id, $field, &$items) {
   $field_settings_relationship_types = array_keys(_civicrm_entity_contact_assign_rel_type_list_field_get_field_settings_relationship_types($field));
   $contact_b_id = $field['settings']['target_contact_b'];
-  if(!is_array($items[0]['relationship_types'])) {
+  if (!is_array($items[0]['relationship_types'])) {
     $set_value = $items[0]['relationship_types'];
     $items[0]['relationship_types'] = array();
     foreach ($field_settings_relationship_types as $relationship_type_id) {
-      if($relationship_type_id == $set_value) {
+      if ($relationship_type_id == $set_value) {
         $items[0]['relationship_types'][$relationship_type_id] = $set_value;
       }
       else {
@@ -481,7 +483,7 @@ function _civicrm_entity_contact_assign_rel_type_list_field_process_field_items(
  * @param $field
  * @return array
  */
-function _civicrm_entity_contact_assign_rel_type_list_field_get_field_settings_relationship_types($field){
+function _civicrm_entity_contact_assign_rel_type_list_field_get_field_settings_relationship_types($field) {
   civicrm_initialize();
 
   $relationship_types = array();
@@ -492,8 +494,7 @@ function _civicrm_entity_contact_assign_rel_type_list_field_get_field_settings_r
         'id' => $rtid,
       ));
       $relationship_types[$id] = $result;
-    }
-    catch (CiviCRM_API3_Exception $e) {
+    } catch (CiviCRM_API3_Exception $e) {
       continue;
     }
   }
@@ -517,11 +518,10 @@ function _civicrm_entity_contact_assign_rel_type_list_field_contact_has_relation
       'relationship_type_id' => $relationship_type_id,
       'is_active' => 1,
     ));
-  }
-  catch (CiviCRM_API3_Exception $e) {
+  } catch (CiviCRM_API3_Exception $e) {
     return FALSE;
   }
-  if($result['count']) {
+  if ($result['count']) {
     return TRUE;
   }
   else {
@@ -547,8 +547,7 @@ function _civicrm_entity_contact_assign_rel_type_list_field_add_contact_relation
       'is_active' => 1,
       'start_date' => $start_date,
     ));
-  }
-  catch (CiviCRM_API3_Exception $e) {
+  } catch (CiviCRM_API3_Exception $e) {
 
   }
 }
@@ -582,8 +581,7 @@ function _civicrm_entity_contact_assign_rel_type_list_field_remove_contact_relat
     }
 
     $result = civicrm_api3('Relationship', 'create', $params);
-  }
-  catch (CiviCRM_API3_Exception $e) {
+  } catch (CiviCRM_API3_Exception $e) {
 
   }
 }

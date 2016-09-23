@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @TODO Document this class.
  */
@@ -18,12 +19,13 @@ class CivicrmEntity extends Entity {
     // Set initial values.
     foreach ($values as $key => $value) {
       // this is a bit of a hack around the fact we are casting to this to construct it
-      if(stristr($key, "\0")) {
+      if (stristr($key, "\0")) {
         continue;
       }
       $this->$key = $value;
     }
   }
+
   /**
    * Please document this function.
    */

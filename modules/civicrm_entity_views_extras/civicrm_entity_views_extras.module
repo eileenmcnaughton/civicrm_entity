@@ -21,7 +21,6 @@ function civicrm_entity_views_extras_views_data() {
   );
 
 
-
   //----------------------------------------------------------------
   // CIVICRM Price Set Entity - FIELDS
   //----------------------------------------------------------------
@@ -110,7 +109,7 @@ function civicrm_entity_views_extras_views_data() {
       'handler' => 'views_handler_relationship',
       'label' => t('Price Field'),
       'title' => t('Price Field'),
-      'base' =>   'civicrm_price_field',
+      'base' => 'civicrm_price_field',
       'base field' => 'price_set_id',
       'relationship field' => 'id',
     ),

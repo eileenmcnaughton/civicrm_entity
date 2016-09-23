@@ -2,7 +2,7 @@
 
 function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
   if ($op == 'edit' || $op == 'delete') {
-    if(!is_object($entity)) {
+    if (!is_object($entity)) {
       drupal_set_title('No ' . $entity_type . ' with id:' . $entity);
       return $form;
     }
@@ -29,8 +29,8 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
 
     field_attach_form($entity_type, $entity, $form, $form_state);
 
-    if ($op == 'edit'){
-      if(is_object($entity)) {
+    if ($op == 'edit') {
+      if (is_object($entity)) {
         $entity->original = clone $entity;
       }
     }
@@ -49,11 +49,11 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
         continue;
       }
       else {
-        if (isset($info['widget']['widget'])){
+        if (isset($info['widget']['widget'])) {
           $form[$name] = array(
-              '#type' => $info['widget']['widget'],
-              '#title' => $info['label'],
-              '#description' => !empty($info['description']) ? $info['description'] : '',
+            '#type' => $info['widget']['widget'],
+            '#title' => $info['label'],
+            '#description' => !empty($info['description']) ? $info['description'] : '',
           );
 
           // set api required fields to be required on form
@@ -62,8 +62,8 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
           }
 
           // FK Reference field handling
-          if($form[$name]['#type'] == 'civi_fk_reference'){
-            switch($info['widget']['subtype']){
+          if ($form[$name]['#type'] == 'civi_fk_reference') {
+            switch ($info['widget']['subtype']) {
               case 'autocomplete':
                 $form[$name]['#type'] = 'textfield';
                 $form[$name]['#autocomplete_path'] = 'civicrm-entity/autocomplete/' . $info['widget']['entity'];
@@ -79,11 +79,11 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
           }
 
           // Handle default value
-          if($op == 'edit') {
+          if ($op == 'edit') {
             $form[$name]['#default_value'] = $child->value();
           }
-          elseif($op == 'create') {
-            if(isset($info['default_value'])){
+          elseif ($op == 'create') {
+            if (isset($info['default_value'])) {
               $form[$name]['#default_value'] = $info['default_value'];
             }
             else {
@@ -92,17 +92,17 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
           }
 
           // set the #size and #maxlength FAPI properties if the #type is a textfield
-          if($form[$name]['#type'] == 'textfield') {
-            if(!empty($info['size'])) {
+          if ($form[$name]['#type'] == 'textfield') {
+            if (!empty($info['size'])) {
               $form[$name]['#size'] = $info['size'];
             }
-            if(!empty($info['maxlength'])) {
+            if (!empty($info['maxlength'])) {
               $form[$name]['#maxlength'] = $info['maxlength'];
             }
           }
 
           //set rows and cols if available for textarea or text_format
-          if($form[$name]['#type'] == 'textarea' || $form[$name]['#type'] == 'text_format') {
+          if ($form[$name]['#type'] == 'textarea' || $form[$name]['#type'] == 'text_format') {
             // set rows value if not empty
             if (!empty($info['rows'])) {
               $form[$name]['#rows'] = $info['rows'];
@@ -114,7 +114,7 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
 
           //set the options for select options, radios, and checkboxes
           if ($form[$name]['#type'] == 'select') {
-            if(!empty($info['widget']['options'])) {
+            if (!empty($info['widget']['options'])) {
               $form[$name]['#options'] = $info['widget']['options'];
               if (!empty($info['required'])) {
                 if (isset($form[$name]['#options'][''])) {
@@ -123,18 +123,18 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
               }
             }
           }
-          elseif ($form[$name]['#type'] == 'radios'){
+          elseif ($form[$name]['#type'] == 'radios') {
             $form[$name]['#options'] = $info['widget']['options'];
-            if(!empty($info['required'])) {
-              if(isset($form[$name]['#options'][''])) {
+            if (!empty($info['required'])) {
+              if (isset($form[$name]['#options'][''])) {
                 unset($form[$name]['#options']['']);
               }
             }
           }
-          elseif ($form[$name]['#type'] == 'checkboxes'){
-            if($op == 'edit') {
+          elseif ($form[$name]['#type'] == 'checkboxes') {
+            if ($op == 'edit') {
               $value = $child->value();
-              if(!empty($value)) {
+              if (!empty($value)) {
                 foreach ($info['widget']['options'] as $key => $label) {
                   if (in_array($key, $value)) {
                     $default_values[] = $key;
@@ -146,15 +146,15 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
                 $form[$name]['#default_value'] = array('');
               }
             }
-            elseif($op == 'create') {
-              if(isset($info['default_value'])){
+            elseif ($op == 'create') {
+              if (isset($info['default_value'])) {
                 $form[$name]['#default_value'] = explode(CRM_Core_DAO::VALUE_SEPARATOR, $form[$name]['#default_value']);
               }
             }
 
             $form[$name]['#options'] = $info['widget']['options'];
-            if(!empty($info['required'])) {
-              if(isset($form[$name]['#options'][''])) {
+            if (!empty($info['required'])) {
+              if (isset($form[$name]['#options'][''])) {
                 unset($form[$name]['#options']['']);
               }
             }
@@ -162,7 +162,7 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
           // Date field handling, check for date_api module to use date select widget
           // else fallback to textfield
           elseif ($form[$name]['#type'] == 'date_select') {
-            if (module_exists('date_api')){
+            if (module_exists('date_api')) {
               $form[$name]['#format'] = $info['widget']['format'];
             }
             else {
@@ -171,21 +171,21 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
           }
 
           // contact special handling
-          if ($entity_type=='civicrm_contact') {
+          if ($entity_type == 'civicrm_contact') {
             //for some reason the is_deleted column of the contact record is coming to the entity
             // as contact_is_deleted ...special handling to have the form value set properly
             if ($name == 'is_deleted') {
               $form[$name]['#default_value'] = isset($entity->contact_is_deleted) ? $entity->contact_is_deleted : 0;
             }
-            if($name == 'contact_type'){
+            if ($name == 'contact_type') {
               $form[$name]['#ajax'] = array(
                 'event' => 'change',
                 'wrapper' => 'contact-subtype-wrapper',
                 'callback' => '_civicrm_entity_form_contact_subtype_ajax_callback',
                 'method' => 'replace',
-               );
+              );
             }
-            if($name == 'contact_sub_type') {
+            if ($name == 'contact_sub_type') {
               $contact_type = !empty($form['contact_type']['#default_value']) ? $form['contact_type']['#default_value'] : 'Individual';
               $form[$name]['#type'] = 'select';
               $form[$name]['#options'] = _civicrm_entity_form_contact_get_subtypes($contact_type);
@@ -197,17 +197,17 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
           }
 
           // event special handling
-          if ($entity_type=='civicrm_event') {
-            if($name == 'thankyou_text' || $name == 'thankyou_footer_text') {
+          if ($entity_type == 'civicrm_event') {
+            if ($name == 'thankyou_text' || $name == 'thankyou_footer_text') {
               //$form[$name]['#type'] = 'text_format';
             }
-            if($name == 'event_type_id') {
+            if ($name == 'event_type_id') {
               $form[$name]['#required'] = TRUE;
             }
           }
 
           // make sure to disable id field, and any custom field with is_view = 1
-          if($name == 'id' || !empty($info['is_view'])) {
+          if ($name == 'id' || !empty($info['is_view'])) {
             $form[$name]['#disabled'] = TRUE;
           }
 
@@ -216,9 +216,9 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
     } // end foreach
 
     $form['actions'] = array(
-        '#type' => 'container',
-        '#attributes' => array('class' => array('form-actions')),
-        '#weight' => 400,
+      '#type' => 'container',
+      '#attributes' => array('class' => array('form-actions')),
+      '#weight' => 400,
     );
 
     $form['#validate'] = array();
@@ -234,24 +234,24 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
     }
 
     $form['actions']['submit'] = array(
-        '#type' => 'submit',
-        '#value' => t('Save'),
-        '#submit' => $submit + array(),
+      '#type' => 'submit',
+      '#value' => t('Save'),
+      '#submit' => $submit + array(),
     );
   } //end if op is add or edit
 
   if ($op == 'delete') {
 
     $form['delete_markup'] = array(
-        '#type' => 'markup',
-        '#markup' => '<div></strong>' . t('Are you sure you want to delete ') .
-            $entity_type . " id: " . $entity->id . '</strong></div>',
+      '#type' => 'markup',
+      '#markup' => '<div></strong>' . t('Are you sure you want to delete ') .
+        $entity_type . " id: " . $entity->id . '</strong></div>',
     );
 
     $form['actions'] = array(
-        '#type' => 'container',
-        '#attributes' => array('class' => array('form-actions')),
-        '#weight' => 400,
+      '#type' => 'container',
+      '#attributes' => array('class' => array('form-actions')),
+      '#weight' => 400,
     );
 
     $form['#validate'] = array();
@@ -262,15 +262,15 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
     // handler to preserve any submit handlers added by a form callback_wrapper.
 
     $form['actions']['cancel'] = array(
-        '#type' => 'submit',
-        '#value' => t('Cancel'),
-        '#submit' => array('civicrm_entity_delete_form_cancel_submit'),
+      '#type' => 'submit',
+      '#value' => t('Cancel'),
+      '#submit' => array('civicrm_entity_delete_form_cancel_submit'),
     );
 
     $form['actions']['submit'] = array(
-        '#type' => 'submit',
-        '#value' => t('Delete'),
-        '#submit' => $form['#submit'],
+      '#type' => 'submit',
+      '#value' => t('Delete'),
+      '#submit' => $form['#submit'],
     );
 
     $title = 'Delete ' . ucwords(str_replace("_", " ", $entity_type)) . ": " . entity_label($entity_type, $entity) . " (id:" . $entity->id . ")";;
@@ -293,20 +293,20 @@ function civicrm_entity_form_validate(&$form, &$form_state) {
 
   // validate civicrm data
   $entity_metadata_info = entity_get_property_info($entity_type);
-  foreach($entity_metadata_info['properties'] as $name => $info) {
-    if(!empty($info['type'])) {
+  foreach ($entity_metadata_info['properties'] as $name => $info) {
+    if (!empty($info['type'])) {
       // integer validation
       if ($info['type'] == 'integer') {
         //text field validation
         if (isset($form[$name]['#type']) && $form[$name]['#type'] == 'textfield') {
-          if (isset($form_state['values'][$name]) && strlen($form_state['values'][$name]) && (string)(int)$form_state['values'][$name] !== (string)$form_state['values'][$name]) {
+          if (isset($form_state['values'][$name]) && strlen($form_state['values'][$name]) && (string) (int) $form_state['values'][$name] !== (string) $form_state['values'][$name]) {
             form_set_error($name, t('Value must be an integer. e.g (1, 154, 0)'));
           }
         }
       }
       // number validation
       // money validation
-      elseif($info['type'] == 'decimal') {
+      elseif ($info['type'] == 'decimal') {
         //text field validation
         if (isset($form[$name]['#type']) && $form[$name]['#type'] == 'textfield') {
           if (isset($form_state['values'][$name]) && strlen($form_state['values'][$name]) && !is_numeric($form_state['values'][$name])) {
@@ -329,7 +329,7 @@ function civicrm_entity_form_validate(&$form, &$form_state) {
       }
     }
     elseif ($form_state['values']['contact_type'] == 'Household') {
-      if (!isset($form['household_name'])){
+      if (!isset($form['household_name'])) {
         form_set_error('contact_type', t('Household contact type, form must include the household name field.'));
       }
       elseif (empty($form_state['values']['household_name'])) {
@@ -337,7 +337,7 @@ function civicrm_entity_form_validate(&$form, &$form_state) {
       }
     }
     elseif ($form_state['values']['contact_type'] == 'Organization') {
-      if (!isset($form['organization_name'])){
+      if (!isset($form['organization_name'])) {
         form_set_error('contact_type', t('Organization contact type, form must include the organization name field.'));
       }
       elseif (empty($form_state['values']['organization_name'])) {
@@ -360,19 +360,19 @@ function civicrm_entity_form_submit(&$form, &$form_state) {
   $entity_type = $form['#entity_type'];
   $entity = $form['#entity'];
   civicrm_initialize();
-  $civicrm_entity_fields = civicrm_api(substr_replace($entity_type,'', 0, 8),  'getfields', array(
+  $civicrm_entity_fields = civicrm_api(substr_replace($entity_type, '', 0, 8), 'getfields', array(
     'version' => 3,
     'action' => 'create',
   ));
 
   foreach ($form_state['values'] as $key => $value) {
     //need to convert checkbox values to a consumable format for checkboxes custom fields
-    if(substr($key, 0, 7) == 'custom_'){
-      if($civicrm_entity_fields['values'][$key]['html_type'] == 'CheckBox'){
-        if(is_array($value)) {
+    if (substr($key, 0, 7) == 'custom_') {
+      if ($civicrm_entity_fields['values'][$key]['html_type'] == 'CheckBox') {
+        if (is_array($value)) {
           $stored_value = array();
-          foreach($value as $option => $checkbox_value){
-            if($checkbox_value) {
+          foreach ($value as $option => $checkbox_value) {
+            if ($checkbox_value) {
               $stored_value[] = $option;
             }
           }
@@ -384,7 +384,7 @@ function civicrm_entity_form_submit(&$form, &$form_state) {
         $entity->{$key} = $value;
       }
 
-      if(!empty($civicrm_entity_fields['values'][$key]['is_view'])) {
+      if (!empty($civicrm_entity_fields['values'][$key]['is_view'])) {
         unset($entity->{$key});
       }
 
@@ -406,12 +406,12 @@ function civicrm_entity_form_submit(&$form, &$form_state) {
   $wrapper->save();
 
   $t_args = array(
-      '%label' => entity_label($entity_type, $entity),
+    '%label' => entity_label($entity_type, $entity),
   );
 
   $destination = drupal_get_destination();
   $request_path = request_path();
-  if(isset($destination['destination']) && $destination['destination'] != '' && $destination['destination'] != $request_path ) {
+  if (isset($destination['destination']) && $destination['destination'] != '' && $destination['destination'] != $request_path) {
     $form_state['redirect'] = $destination['destination'];
   }
   else {
@@ -439,7 +439,7 @@ function civicrm_entity_delete_form_submit(&$form, &$form_state) {
   $wrapper->delete();
   $destination = drupal_get_destination();
   $request_path = request_path();
-  if(isset($destination['destination']) && $destination['destination'] != '' && $destination['destination'] != $request_path ) {
+  if (isset($destination['destination']) && $destination['destination'] != '' && $destination['destination'] != $request_path) {
     $form_state['redirect'] = $destination['destination'];
   }
   else {
@@ -459,7 +459,7 @@ function civicrm_entity_delete_form_cancel_submit(&$form, &$form_state) {
 
   $destination = drupal_get_destination();
   $request_path = request_path();
-  if(isset($destination['destination']) && $destination['destination'] != '' && $destination['destination'] != $request_path ) {
+  if (isset($destination['destination']) && $destination['destination'] != '' && $destination['destination'] != $request_path) {
     $form_state['redirect'] = $destination['destination'];
   }
   else {
@@ -496,13 +496,12 @@ function _civicrm_entity_form_contact_get_subtypes($contact_type) {
       'is_active' => 1,
     ));
     $contact_subtypes = array('' => '- None - ');
-    if($result['count']) {
+    if ($result['count']) {
       foreach ($result['values'] as $id => $subtype) {
         $contact_subtypes[$subtype['name']] = $subtype['label'];
       }
     }
-  }
-  catch (CiviCRM_API3_Exception $e) {
+  } catch (CiviCRM_API3_Exception $e) {
     $contact_subtypes = array('' => '- None - ');
   }
   return $contact_subtypes;

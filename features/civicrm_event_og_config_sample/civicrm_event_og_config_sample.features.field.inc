@@ -35,8 +35,7 @@ function civicrm_event_og_config_sample_field_default_fields() {
       ),
       'locked' => '0',
       'module' => 'text',
-      'settings' => array(
-      ),
+      'settings' => array(),
       'translatable' => '0',
       'type' => 'text_with_summary',
     ),
