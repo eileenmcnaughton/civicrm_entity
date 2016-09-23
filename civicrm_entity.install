@@ -6,34 +6,39 @@
  */
 
 /**
- *  Implements hook_uninstall()
+ * Implements hook_uninstall()
  *
+ * Delete each entity individually as we don't have functions available after module disable.
  */
 function civicrm_entity_uninstall() {
-  // We have to do each entity individually because we don't have the functions in the module file available after module disable
-  field_attach_delete_bundle('civicrm_activity', 'civicrm_activity');
-  field_attach_delete_bundle('civicrm_action_schedule', 'civicrm_action_schedule');
-  field_attach_delete_bundle('civicrm_address', 'civicrm_address');
-  field_attach_delete_bundle('civicrm_campaign', 'civicrm_campaign');
-  field_attach_delete_bundle('civicrm_contact', 'civicrm_contact');
-  field_attach_delete_bundle('civicrm_contribution', 'civicrm_contribution');
-  field_attach_delete_bundle('civicrm_contribution_page', 'civicrm_contribution_page');
-  field_attach_delete_bundle('civicrm_email', 'civicrm_email');
-  field_attach_delete_bundle('civicrm_entity_tag', 'civicrm_entity_tag');
-  field_attach_delete_bundle('civicrm_financial_type', 'civicrm_financial_type');
-  field_attach_delete_bundle('civicrm_event', 'civicrm_event');
-  field_attach_delete_bundle('civicrm_group', 'civicrm_group');
-  field_attach_delete_bundle('civicrm_grant', 'civicrm_grant');
-  field_attach_delete_bundle('civicrm_membership', 'civicrm_membership');
-  field_attach_delete_bundle('civicrm_membership_type', 'civicrm_membership_type');
-  field_attach_delete_bundle('civicrm_participant', 'civicrm_participant');
-  field_attach_delete_bundle('civicrm_phone', 'civicrm_phone');
-  field_attach_delete_bundle('civicrm_price_set', 'civicrm_price_set');
-  field_attach_delete_bundle('civicrm_price_field', 'civicrm_price_field');
-  field_attach_delete_bundle('civicrm_price_field_value', 'civicrm_price_field_value');
-  field_attach_delete_bundle('civicrm_relationship', 'civicrm_relationship');
-  field_attach_delete_bundle('civicrm_relationship_type', 'civicrm_relationship_type');
-  field_attach_delete_bundle('civicrm_tag', 'civicrm_tag');
+  $remove_fields = array(
+    'civicrm_activity',
+    'civicrm_action_schedule',
+    'civicrm_address',
+    'civicrm_campaign',
+    'civicrm_contact',
+    'civicrm_contribution',
+    'civicrm_contribution_page',
+    'civicrm_email',
+    'civicrm_entity_tag',
+    'civicrm_financial_type',
+    'civicrm_event',
+    'civicrm_group',
+    'civicrm_grant',
+    'civicrm_membership',
+    'civicrm_membership_type',
+    'civicrm_participant',
+    'civicrm_phone',
+    'civicrm_price_set',
+    'civicrm_price_field',
+    'civicrm_price_field_value',
+    'civicrm_relationship',
+    'civicrm_relationship_type',
+    'civicrm_tag',
+  );
+  foreach ($remove_fields as $remove_field) {
+    field_attach_delete_bundle($remove_field, $remove_field);
+  }
 }
 
 /**
@@ -42,8 +47,6 @@ function civicrm_entity_uninstall() {
  * Set weight higher than CiviCRM.
  *
  * @TODO Actually check what CiviCRM's weight should be.
- *
- * @TODO Shouldn't this be in .install?
  */
 function civicrm_entity_enable() {
   db_query("UPDATE {system} SET weight = 110 WHERE name = 'civicrm_entity'");
