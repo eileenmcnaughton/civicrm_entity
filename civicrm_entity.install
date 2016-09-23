@@ -43,8 +43,6 @@ function civicrm_entity_uninstall() {
  * Set weight higher than CiviCRM.
  *
  * @TODO Actually check what CiviCRM's weight should be.
- *
- * @TODO Shouldn't this be in .install?
  */
 function civicrm_entity_enable() {
   db_query("UPDATE {system} SET weight = 110 WHERE name = 'civicrm_entity'");
