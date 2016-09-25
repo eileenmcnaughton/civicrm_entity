@@ -1,5 +1,0 @@
-name = CiviCRM Entity Reference Field Storage
-description = "Consider Experimental. Provide CiviCRM entity reference field storage infrastructure using CiviCRM API"
-dependencies[] = civicrm_entity
-package = CiviCRM Entity
-core = 7.x
