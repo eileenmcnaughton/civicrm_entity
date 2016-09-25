@@ -8,7 +8,7 @@
 /**
  *  Implements hook_uninstall()
  *
- */ 
+ */
 function civicrm_entity_uninstall() {
   drupal_load('module', 'civicrm_entity');
   $civicrm_entity_info = civicrm_entity_get_supported_entity_info();
@@ -16,8 +16,8 @@ function civicrm_entity_uninstall() {
     field_attach_delete_bundle($entity_type, $entity_type);
   }
 }
-  
- 
+
+
 /**
  * Implements hook_enable().
  *

@@ -4,9 +4,7 @@
  *
  * @return multitype:multitype:string boolean NULL
  */
-
 function civicrm_entity_actions_action_info() {
-
   return array(
     'civicrm_entity_actions_activity_assign_action' => array(
       'label' => t('Assign Activity'),
@@ -40,7 +38,6 @@ function civicrm_entity_actions_action_info() {
  * @param unknown $object
  * @param array $context
  */
-
 function civicrm_entity_actions_activity_assign_action(&$object, $context = array()) {
   civicrm_api3('activity', 'create', array(
       'id' => $object->id,
@@ -54,7 +51,6 @@ function civicrm_entity_actions_activity_assign_action(&$object, $context = arra
  * @param array $context
  * @return multitype:string unknown
  */
-
 function civicrm_entity_actions_activity_assign_action_form($context = array()) {
   $entities = _civicrm_entity_enabled_entities();
   $entity = $entities[$context['entity_type']];
@@ -72,7 +68,6 @@ function civicrm_entity_actions_activity_assign_action_form($context = array()) 
  * @param unknown $form_state
  * @return multitype:NULL
  */
-
 function civicrm_entity_actions_activity_assign_action_submit($form, $form_state) {
   return array('state' => $form_state['values']['assignee_contact_id']);
 }
@@ -82,7 +77,6 @@ function civicrm_entity_actions_activity_assign_action_submit($form, $form_state
  * @param unknown $object
  * @param array $context
  */
-
 function civicrm_entity_actions_activity_unassign_action(&$object, $context = array()) {
   if (!civicrm_initialize()) {
     return;
@@ -99,7 +93,6 @@ function civicrm_entity_actions_activity_unassign_action(&$object, $context = ar
  * @param unknown $object
  * @param array $context
  */
-
 function civicrm_entity_actions_contact_add_to_group_action(&$object, $context = array()) {
   civicrm_api3('group_contact', 'create', array(
       'contact_id' => $object->id,
@@ -114,7 +107,6 @@ function civicrm_entity_actions_contact_add_to_group_action(&$object, $context =
  * @param array $context
  * @return multitype:string unknown
  */
-
 function civicrm_entity_actions_contact_add_to_group_action_form($context = array()) {
   $form['civicrm_contact']['group_id'] = array(
     '#type' => 'entityreference',
@@ -129,7 +121,6 @@ function civicrm_entity_actions_contact_add_to_group_action_form($context = arra
  * @param array $context
  * @return multitype:string unknown
  */
-
 function civicrm_entity_actions_contact_add_to_group_action_submit($form, $form_state) {
   return array('state' => $form_state['values']['group_id']);
 }
@@ -139,7 +130,6 @@ function civicrm_entity_actions_contact_add_to_group_action_submit($form, $form_
  * @param unknown $object
  * @param array $context
  */
-
 function civicrm_entity_actions_contact_remove_from_group_action(&$object, $context = array()) {
   civicrm_api3('group_contact', 'create', array(
       'contact_id' => $object->id,
@@ -154,7 +144,6 @@ function civicrm_entity_actions_contact_remove_from_group_action(&$object, $cont
  * @param array $context
  * @return multitype:string unknown
  */
-
 function civicrm_entity_actions_contact_remove_from_group_action_form($context = array()) {
   $form['civicrm_contact']['group_id'] = array(
     '#type' => 'entityreference',
@@ -169,7 +158,6 @@ function civicrm_entity_actions_contact_remove_from_group_action_form($context =
  * @param array $context
  * @return multitype:string unknown
  */
-
 function civicrm_entity_actions_contact_remove_from_group_action_submit($form, $form_state) {
   return array('state' => $form_state['values']['group_id']);
 }
@@ -179,7 +167,6 @@ function civicrm_entity_actions_contact_remove_from_group_action_submit($form, $
  * @param unknown $object
  * @param array $context
  */
-
 function civicrm_entity_actions_contact_add_entity_tag_action(&$object, $context = array()) {
   civicrm_api3('entity_tag', 'create', array(
       'contact_id' => $object->id,
@@ -193,7 +180,6 @@ function civicrm_entity_actions_contact_add_entity_tag_action(&$object, $context
  * @param array $context
  * @return multitype:string unknown
  */
-
 function civicrm_entity_actions_contact_add_entity_tag_action_form($context = array()) {
   $form['civicrm_contact']['tag_id'] = array(
     '#type' => 'entityreference',
@@ -208,7 +194,6 @@ function civicrm_entity_actions_contact_add_entity_tag_action_form($context = ar
  * @param array $context
  * @return multitype:string unknown
  */
-
 function civicrm_entity_actions_contact_add_entity_tag_action_submit($form, $form_state) {
   return array('state' => $form_state['values']['tag_id']);
 }
