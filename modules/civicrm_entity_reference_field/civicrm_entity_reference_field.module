@@ -28,50 +28,6 @@ function civicrm_entity_reference_field_field_info() {
 }
 
 /**
- * Implements hook_field_schema().
- *
- * @param $field
- * @return array
- */
-function civicrm_entity_reference_field_field_schema($field) {
-  if ($field['type'] == 'civicrm_entity_reference') {
-    $columns = array(
-      'target_id' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-    );
-    return array(
-      'columns' => $columns,
-    );
-  }
-}
-
-/**
- * Implements hook_field_create_field().
- *
- * Update fields of type 'civicrm_entity_reference' to use the 'civicrm_entity_reference_storage' storage type and module
- *
- * @param $field
- */
-function civicrm_entity_reference_field_field_create_field($field) {
-  if ($field['type'] == 'civicrm_entity_reference') {
-    // update field_config table record to alternative storage
-    db_update('field_config')
-      ->fields(array(
-        'storage_type' => 'civicrm_entity_reference_field_storage',
-        'storage_module' => 'civicrm_entity_reference_field_storage',
-        'cardinality' => -1,
-      ))
-      ->condition('id', $field['id'])
-      ->execute();
-    // remove field data and revision tables
-    db_drop_table('field_data_' . $field['field_name']);
-    db_drop_table('field_revision_' . $field['field_name']);
-  }
-}
-
-/**
  * Implements hook_form_FORMID_alter().
  *
  * form id : field_ui_field_edit_form
@@ -203,6 +159,49 @@ function _civicrm_entity_reference_field_get_target_id_column_options($entity_ty
     }
   }
   return $options;
+}
+
+/**
+ * Implements hook_field_load().
+ *
+ * @param $entity_type
+ * @param $entities
+ * @param $field
+ * @param $instances
+ * @param $langcode
+ * @param $items
+ * @param $age
+ */
+function civicrm_entity_reference_field_field_load($entity_type, $entities, $field, $instances, $langcode, &$items, $age) {
+  if (!civicrm_initialize()) {
+    return;
+  }
+  foreach ($entities as $id => $entity) {
+    if (!empty($entity->{$field['settings']['host_source_id']})) {
+      try {
+        $params = array(
+          $field['settings']['target_id_column'] => $entity->{$field['settings']['host_source_id']},
+        );
+        $is_primary_entities = array('address', 'phone', 'email');
+
+        if (in_array($field['settings']['target_entity_type'], $is_primary_entities)) {
+          $params['options'] = array('sort' => 'is_primary DESC');
+        }
+        $result = civicrm_api3($field['settings']['target_entity_type'], 'get', $params);
+      } catch (CiviCRM_API3_Exception $e) {
+        $error = $e->getMessage();
+        drupal_set_message($error, 'error');
+        continue;
+      }
+      if ($result['count']) {
+        $delta = 0;
+        foreach ($result['values'] as $target_id => $data) {
+          $items[$id][$delta]['target_id'] = $target_id;
+          $delta += 1;
+        }
+      }
+    }
+  }
 }
 
 /**
@@ -661,6 +660,7 @@ function civicrm_entity_reference_field_inline_entity_form_entity_form_alter(&$e
       $entity_form['contact_id']['#required'] = FALSE;
       $entity_form['contact_id']['#default_value'] = 1;
       $entity_form['contact_id']['#disabled'] = TRUE;
+      $entity_form['contact_id']['#description'] = t('The value of 1 for this field is only a placeholder and will be set to NULL on save.');
     }
 
   }
