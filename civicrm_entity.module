@@ -379,7 +379,7 @@ function civicrm_entity_entity_info() {
       ),
       'view modes' => array(
         'full' => array(
-          'label' => t('Default'),
+          'label' => t('Full'),
           'custom settings' => TRUE,
         ),
       ),
@@ -407,39 +407,23 @@ function civicrm_entity_entity_info() {
  * @return array|void
  */
 function civicrm_entity_get_supported_entity_info($entity_type = NULL) {
-  // Use the advanced drupal_static() pattern, since this is called very often.
-  static $drupal_static_fast;
-  if (!isset($drupal_static_fast)) {
-    $drupal_static_fast['civicrm_entity_supported_info'] = &drupal_static(__FUNCTION__);
-  }
-  $civicrm_entity_info = &$drupal_static_fast['civicrm_entity_supported_info'];
+  $civicrm_entity_info = civicrm_entity_supported_entities_info();
 
-  if (empty($civicrm_entity_info)) {
-    if ($cache = cache_get("civicrm_entity_supported_info")) {
-      $civicrm_entity_info = $cache->data;
+  if (civicrm_initialize()) {
+    $codeVersion = explode('.', CRM_Utils_System::version());
+    // if db.ver < code.ver, time to upgrade
+    if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.5) >= 0) {
+      CRM_Utils_Hook::singleton()->invoke(1, $civicrm_entity_info,
+        CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject,
+        CRM_Core_DAO::$_nullObject,
+        'civicrm_entity_supported_info'
+      );
     }
     else {
-      $civicrm_entity_info = civicrm_entity_supported_entities_info();
-
-      if (civicrm_initialize()) {
-        $codeVersion = explode('.', CRM_Utils_System::version());
-        // if db.ver < code.ver, time to upgrade
-        if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.5) >= 0) {
-          CRM_Utils_Hook::singleton()->invoke(1, $civicrm_entity_info,
-            CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject,
-            CRM_Core_DAO::$_nullObject,
-            'civicrm_entity_supported_info'
-          );
-        }
-        else {
-          CRM_Utils_Hook::singleton()->invoke(1, $civicrm_entity_info,
-            CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject,
-            'civicrm_entity_supported_info'
-          );
-        }
-      }
-
-      cache_set("civicrm_entity_supported_info", $civicrm_entity_info);
+      CRM_Utils_Hook::singleton()->invoke(1, $civicrm_entity_info,
+        CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject,
+        'civicrm_entity_supported_info'
+      );
     }
   }
 
@@ -3182,7 +3166,6 @@ function civicrm_entity_get_custom_fields($entity, $types = array(
 
 function civicrm_entity_page_view($entity, $entity_type) {
   $content = "";
-
   if (!empty($entity->id)) {
     $id = $entity->id;
   }
