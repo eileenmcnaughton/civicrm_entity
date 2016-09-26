@@ -39,6 +39,7 @@ function civicrm_entity_actions_action_info() {
  * @param array $context
  */
 function civicrm_entity_actions_activity_assign_action(&$object, $context = array()) {
+  $object->assignee_contact_id = array($context['state']['entity_id']);
   civicrm_api3('activity', 'create', array(
       'id' => $object->id,
       'assignee_contact_id' => $context['state']['entity_id'],
@@ -81,6 +82,7 @@ function civicrm_entity_actions_activity_unassign_action(&$object, $context = ar
   if (!civicrm_initialize()) {
     return;
   }
+  $object->assignee_contact_id = array();
   civicrm_api3('activity', 'create', array(
       'id' => $object->id,
       'deleteActivityAssignment' => TRUE,
