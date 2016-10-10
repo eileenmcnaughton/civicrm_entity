@@ -2043,6 +2043,14 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
     if (!empty($field_specs['type']) &&
       array_key_exists($field_specs['type'], $types)
     ) {
+
+      //custom fields should be handled by name and not number for compatibility with export
+      if (substr($fieldname, 0, 7) == 'custom_'
+          and isset($field_specs['column_name'])) {
+        $fieldname = 'custom_' . $field_specs['column_name'];
+        $custom_field = true;
+      }
+
       //determine the label of the field
       $label = _civicrm_entity_get_title($field_specs);
       $info[$fieldname] = array(
@@ -2050,6 +2058,7 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
         'type' => $types[$field_specs['type']],
         'sanitize' => 'check_plain',
         'setter callback' => 'entity_property_verbatim_set',
+        'custom_field' => isset($custom_field),
       );
 
       if (!empty($field_specs['api.required']) || !empty($field_specs['is_required'])) {
@@ -3387,7 +3396,7 @@ function civicrm_entity_rules_action_entity_create_info_alter(&$element_info, Ru
 
 /**
  * Gets the custom fields for a CiviCRM entity
- *
+ * custom fields should be handled by name and not number for compatibility with export
  * @param $entity
  * @return array
  */
@@ -3404,17 +3413,17 @@ function civicrm_entity_get_custom_fields($entity, $types = array(
     'getoptions' => TRUE,
   ));
   $fields = $fields['values'];
+  $custom_fields = array();
   foreach ($fields as $field_name => $field) {
-    if (substr($field_name, 0, 7) != 'custom_' ||
-      !in_array($field['data_type'], array_keys($types))
+    if (substr($field_name, 0, 7) == 'custom_'
+        and in_array($field['data_type'], array_keys($types))
     ) {
-      unset($fields[$field_name]);
-    }
-    else {
-      $fields[$field_name]['type'] = $types[$field['data_type']];
+      $fieldname = $field['column_name'];
+      $custom_fields[$fieldname] = $field;
+      $custom_fields[$fieldname]['type'] = $types[$field['data_type']];
     }
   }
-  return $fields;
+  return $custom_fields;
 }
 
 

@@ -398,15 +398,14 @@ function civicrm_entity_form_submit(&$form, &$form_state) {
   $entity_type = $form['#entity_type'];
   $entity = $form['#entity'];
   civicrm_initialize();
-  $civicrm_entity_fields = civicrm_api(substr_replace($entity_type, '', 0, 8), 'getfields', array(
-    'version' => 3,
-    'action' => 'create',
-  ));
+  $civicrm_entity_fields = _civicrm_entity_getproperties(substr_replace($entity_type, '', 0, 8));
 
   foreach ($form_state['values'] as $key => $value) {
-    //need to convert checkbox values to a consumable format for checkboxes custom fields
     if (substr($key, 0, 7) == 'custom_') {
-      if ($civicrm_entity_fields['values'][$key]['html_type'] == 'CheckBox') {
+      //need to convert custom fields to schema fields name
+      $schema_field = $civicrm_entity_fields[$key]['schema field'];
+    //need to convert checkbox values to a consumable format for checkboxes custom fields
+      if ($civicrm_entity_fields[$key]['widget']['widget'] == 'checkbox') {
         if (is_array($value)) {
           $stored_value = array();
           foreach ($value as $option => $checkbox_value) {
@@ -414,7 +413,7 @@ function civicrm_entity_form_submit(&$form, &$form_state) {
               $stored_value[] = $option;
             }
           }
-          $entity->{$key} = !empty($stored_value) ? $stored_value : array('');
+          $entity->{$schema_field} = !empty($stored_value) ? $stored_value : array('');
         }
 
       }
@@ -422,11 +421,11 @@ function civicrm_entity_form_submit(&$form, &$form_state) {
         if (is_array($value) && isset($value['value'])) {
           $value = $value['value'];
         }
-        $entity->{$key} = $value;
+        $entity->{$schema_field} = $value;
       }
 
-      if (!empty($civicrm_entity_fields['values'][$key]['is_view'])) {
-        unset($entity->{$key});
+      if (!empty($civicrm_entity_fields[$key]['is_view'])) {
+        unset($entity->{$schema_field});
       }
 
     }

@@ -352,10 +352,7 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
     $ief_id = $entity_form['#ief_id'];
     $op = $entity_form['#op'];
     civicrm_initialize();
-    $civicrm_entity_fields = civicrm_api(substr_replace($entity_type, '', 0, 8), 'getfields', array(
-      'version' => 3,
-      'action' => 'create',
-    ));
+    $civicrm_entity_fields = _civicrm_entity_getproperties(substr_replace($entity_type, '', 0, 8));
     if ($op == 'edit') {
 
 
@@ -363,7 +360,7 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
         if (isset($form_state['values'][$field_name]['und']['entities'][$k]['form'])) {
           foreach ($form_state['values'][$field_name]['und']['entities'][$k]['form'] as $key => $value) {
             if (substr($key, 0, 7) == 'custom_') {
-              if ($civicrm_entity_fields['values'][$key]['html_type'] == 'CheckBox') {
+              if ($civicrm_entity_fields[$key]['widget']['widget'] == 'checkbox') {
                 if (is_array($value)) {
                   $stored_value = array();
                   foreach ($value as $option => $checkbox_value) {
@@ -384,7 +381,7 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
 
               }
 
-              if (!empty($civicrm_entity_fields['values'][$key]['is_view'])) {
+              if (!empty($civicrm_entity_fields[$key]['is_view'])) {
                 unset($entity_array['entity']->{$key});
               }
 
@@ -414,7 +411,7 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
       $entity = $form_state['entity'];
       foreach ($form_state['values'][$field_name]['und']['form'] as $key => $value) {
         if (substr($key, 0, 7) == 'custom_') {
-          if ($civicrm_entity_fields['values'][$key]['html_type'] == 'CheckBox') {
+          if ($civicrm_entity_fields[$key]['widget']['widget'] == 'checkbox') {
             if (is_array($value)) {
               $stored_value = array();
               foreach ($value as $option => $checkbox_value) {
@@ -434,7 +431,7 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
             $entity->{$key} = $value;
           }
 
-          if (!empty($civicrm_entity_fields['values'][$key]['is_view'])) {
+          if (!empty($civicrm_entity_fields[$key]['is_view'])) {
             unset($entity->{$key});
           }
 
