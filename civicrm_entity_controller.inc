@@ -161,6 +161,13 @@ class CivicrmEntityController extends EntityAPIController {
         }
       }
 
+      // special handling for relationships, empty case_id throws api exception
+      if($this->entityType == 'civicrm_relationship') {
+        if(isset($params['case_id']) && ($params['case_id'] == '' || is_null($params['case_id']))) {
+          unset($params['case_id']);
+        }
+      }
+
       $params['version'] = 3;
       $params['sequential'] = 1;
 

@@ -62,6 +62,29 @@ function civicrm_entity_reference_field_form_field_ui_field_edit_form_alter(&$fo
 }
 
 /**
+ * Implements hook_form_FORMID_alter().
+ *
+ * form id : field_ui_field_overview_form
+ *
+ * Only allow creation of civicrm_entity_reference field  for civicrm entities
+ *
+ * @param $form
+ * @param $form_state
+ */
+function civicrm_entity_reference_field_form_field_ui_field_overview_form_alter(&$form, &$form_state) {
+  $civicrm_entities = array_keys(_civicrm_entity_enabled_entities());
+  if (!in_array($form['#entity_type'], $civicrm_entities)) {
+    unset($form['fields']['_add_new_field']['type']['#options']['civicrm_entity_reference']);
+
+    foreach ($form['fields']['_add_existing_field']['field_name']['#options'] as $field_name => $description) {
+      if (strpos($description, 'CiviCRM Entity Reference:') !== FALSE) {
+        unset($form['fields']['_add_existing_field']['field_name']['#options'][$field_name]);
+      }
+    }
+  }
+}
+
+/**
  * Implements hook_field_settings_form().
  *
  * @param $field
