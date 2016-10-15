@@ -243,7 +243,7 @@ function civicrm_entity_views_data_alter($data) {
  * @param $schema
  */
 function civicrm_entity_schema_alter(&$schema) {
-  $schema_entities = _civicrm_entity_enabled_entities();;
+  $schema_entities = _civicrm_entity_enabled_entities();
   foreach ($schema_entities as $drupal_entity => $civicrm_entity) {
     $schema[$drupal_entity] = civicrm_entity_get_schema($drupal_entity);
   }

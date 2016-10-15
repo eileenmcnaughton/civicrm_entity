@@ -3,4 +3,5 @@ description = "Provides Views Relationships and other handlers for CiviCRM Entit
 dependencies[] = civicrm_entity
 dependencies[] = views
 package = CiviCRM Entity
+version = 1.0
 core = 7.x

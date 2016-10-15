@@ -4,4 +4,5 @@ dependencies[] = civicrm
 dependencies[] = civicrm_entity
 dependencies[] = entityreference_autocomplete
 package = CiviCRM Entity
+version = 1.0-beta1
 core = 7.x
