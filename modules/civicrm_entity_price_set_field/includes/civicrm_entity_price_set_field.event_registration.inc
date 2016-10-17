@@ -357,14 +357,22 @@ function _civicrm_entity_price_set_field_setup_event_registration_form_fapi(&$fo
         ),
       ),
     );
-    $form['registration_form']['registration_cc_block']['name_on_card'] = array(
+    $form['registration_form']['registration_cc_block']['first_name_on_card'] = array(
       '#type' => 'textfield',
-      '#title' => 'Name on card',
-      '#description' => 'Name as it appears on card. Required.',
+      '#title' => 'First Name',
+      '#description' => 'First name as it appears on card. Required.',
       '#default_value' => '',
       '#size' => 36,
       '#maxlength' => 100,
       '#prefix' => '<h3>Credit Card Information</h3><div class="name-and-number-section">',
+    );
+    $form['registration_form']['registration_cc_block']['last_name_on_card'] = array(
+      '#type' => 'textfield',
+      '#title' => 'Last Name',
+      '#description' => 'Last name as it appears on card. Required.',
+      '#default_value' => '',
+      '#size' => 36,
+      '#maxlength' => 100,
     );
     $form['registration_form']['registration_cc_block']['cc_number'] = array(
       '#type' => 'textfield',
@@ -1035,8 +1043,11 @@ function theme_civicrm_entity_price_set_field_price_field_display_form_thank_you
  */
 function civicrm_entity_price_set_field_display_form_event_validate($form, $form_state) {
   if (isset($form_state['values']['registration_form']['pay_later']) && $form_state['values']['registration_form']['pay_later'] == 0) {
-    if (empty($form_state['values']['registration_form']['registration_cc_block']['name_on_card'])) {
-      form_set_error('registration_form][registration_cc_block][name_on_card', 'Name on card field required.');
+    if (empty($form_state['values']['registration_form']['registration_cc_block']['first_name_on_card'])) {
+      form_set_error('registration_form][registration_cc_block][first_name_on_card', 'First name on card field required.');
+    }
+    if (empty($form_state['values']['registration_form']['registration_cc_block']['last_name_on_card'])) {
+      form_set_error('registration_form][registration_cc_block][first_name_on_card', 'Last name on card field required.');
     }
     if (empty($form_state['values']['registration_form']['registration_cc_block']['cc_number'])) {
       form_set_error('registration_form][registration_cc_block][cc_number', 'Credit card number required.');
