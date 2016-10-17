@@ -184,7 +184,7 @@ function civicrm_entity_price_set_field_civicrm_entity_price_set_field_processor
       'callback' => 'civicrm_entity_price_set_field_transact_payment_processing',
     ),
     'paypal' => array(
-      'payment_processor_type' => 'PayflowPro',
+      'payment_processor_type' => 'Pay Pal',
       'callback' => 'civicrm_entity_price_set_field_transact_payment_processing',
     ),
     'iats' => array(
