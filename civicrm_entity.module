@@ -74,21 +74,38 @@ function civicrm_entity_autocomplete($entity_type, $string = '') {
   if ($string) {
     switch ($entity_type) {
       case 'Contact':
-        $result = db_select('civicrm_' . strtolower($entity_type))
-          ->fields('civicrm_' . strtolower($entity_type), array(
-            'id',
-            'display_name',
-          ))
-          ->condition('display_name', db_like($string) . '%', 'LIKE')
-          ->range(0, 10)
-          ->execute();
-        foreach ($result as $contact) {
-          $matches[$contact->id] = check_plain($contact->display_name);
-        }
+        $matches = _civicrm_entity_db_select($entity_type, $string, 'display_name');
+        break;
+      case 'Event':
+        $matches = _civicrm_entity_db_select($entity_type, $string, 'title');
         break;
     }
   }
   drupal_json_output($matches);
+}
+
+/**
+ * Utility function to do db_select for FK reference autocomplete widgets
+ *
+ * @param $entity_type
+ * @param $string
+ * @param $condition_column
+ * @return array
+ */
+function _civicrm_entity_db_select($entity_type, $string, $condition_column) {
+  $matches = array();
+  $result = db_select('civicrm_' . strtolower($entity_type))
+    ->fields('civicrm_' . strtolower($entity_type), array(
+      'id',
+      $condition_column,
+    ))
+    ->condition($condition_column, db_like($string) . '%', 'LIKE')
+    ->range(0, 10)
+    ->execute();
+  foreach ($result as $record) {
+    $matches[$record->id] = check_plain($record->{$condition_column});
+  }
+  return $matches;
 }
 
 /**
@@ -488,6 +505,7 @@ function civicrm_entity_supported_entities_info() {
         'status_id',
         'medium_id',
         'priority_id',
+        'engagement_level',
       ),
       'boolean fields' => array(
         'is_auto',
@@ -626,7 +644,7 @@ function civicrm_entity_supported_entities_info() {
   );
   $civicrm_entity_info['civicrm_contribution'] = array(
     'civicrm entity name' => 'contribution',
-    'label property' => 'contribution_source',
+    'label property' => 'source',
     'permissions' => array(
       'view' => array('access CiviContribute', 'administer CiviCRM'),
       'edit' => array('edit contributions', 'administer CiviCRM'),
@@ -652,8 +670,16 @@ function civicrm_entity_supported_entities_info() {
           'link_field' => 'contact_id',
           'target' => 'civicrm_contact',
         ),
+        array(
+          'link_field' => 'payment_processor',
+          'target' => 'civicrm_payment_processor',
+        ),
+        array(
+          'link_field' => 'id',
+          'target' => 'civicrm_contribution',
+        ),
       ),
-      'option fields' => array('financial_type_id', 'contribution_status_id',),
+      'option fields' => array('financial_type_id', 'contribution_status_id', 'payment_instrument_id'),
       'boolean fields' => array('is_test', 'is_pay_later',),
     ),
   );
@@ -1070,6 +1096,10 @@ function civicrm_entity_supported_entities_info() {
           'link_field' => 'owner_membership_id',
           'target' => 'civicrm_membership',
         ),
+        array(
+          'link_field' => 'id',
+          'target' => 'civicrm_membership',
+        ),
       ),
       'option fields' => array('membership_type_id', 'status_id',),
       'boolean fields' => array('is_test', 'is_pay_later', 'is_override',),
@@ -1197,7 +1227,7 @@ function civicrm_entity_supported_entities_info() {
         ),
         array(
           'link_field' => 'registered_by_id',
-          'target' => 'civicrm_contact',
+          'target' => 'civicrm_participant',
         ),
       ),
       'option fields' => array('status_id', 'role_id',),
@@ -2095,8 +2125,7 @@ function civicrm_entity_get_field_widget($field_spec, $civicrm_entity) {
         );
         break;
       case 'TextArea':
-        //if(!empty($field_spec['description']) && strpos($field_spec['description'], 'Text and html allowed.') !== FALSE) {
-        if (0 == 1) {
+        if(!empty($field_spec['description']) && strpos($field_spec['description'], 'Text and html allowed.') !== FALSE) {
           $widget = array(
             'widget' => 'text_format',
             'civicrm_field_type' => $field_type,
@@ -2147,6 +2176,13 @@ function civicrm_entity_get_field_widget($field_spec, $civicrm_entity) {
       );
     }
   }
+  if($civicrm_entity == 'participant' && $field_spec['name'] == 'event_id') {
+    $widget = array(
+      'widget' => 'civi_fk_reference',
+      'subtype' => 'select',
+      'entity' => 'Event',
+    );
+  }
 
   // some one off handle for properties of some entities that don't provide html type information
   $entities_to_alter = array(
@@ -2175,6 +2211,7 @@ function civicrm_entity_get_field_widget($field_spec, $civicrm_entity) {
       );
     }
   }
+
   if ($field_spec['name'] == 'relationship_type_id' && $civicrm_entity == 'membership_type') {
     $widget = array(
       'widget' => 'civi_fk_reference',
@@ -2183,6 +2220,21 @@ function civicrm_entity_get_field_widget($field_spec, $civicrm_entity) {
     );
   }
 
+  if($civicrm_entity == 'activity' && $field_spec['name'] == 'result') {
+    $widget = array(
+      'widget' => 'select',
+      'civicrm_field_type' => $field_type,
+    );
+    $widget['options'] = civicrm_entity_get_field_options($field_spec['name'], $civicrm_entity);
+  }
+
+  if ($civicrm_entity == 'contact' && $field_spec['name'] == 'communication_style_id') {
+    $widget = array(
+      'widget' => 'select',
+      'civicrm_field_type' => $field_type,
+    );
+    $widget['options'] = civicrm_entity_get_field_options($field_spec['name'], $civicrm_entity);
+  }
   return $widget;
 }
 
@@ -2212,9 +2264,13 @@ function _civicrm_entity_get_entities_list($civicrm_entity) {
         case 'FinancialType':
           $entities[$id] = $data['name'];
           break;
-
         case 'Campaign':
           $entities[$id] = $data['title'];
+          break;
+        case 'Event':
+          if(empty($data['is_template'])) {
+            $entities[$id] = $data['event_title'];
+          }
           break;
       }
     }
@@ -2251,12 +2307,11 @@ function civicrm_entity_get_field_options($field_name, $civicrm_entity) {
  */
 function civicrm_entity_fk_entities_to_produce_widget_for($entity_type) {
   switch ($entity_type) {
-    case 'Campaign':
-      return 'select';
     case 'Contact':
+    case 'Event':
       return 'autocomplete';
+    case 'Campaign':
     case 'RelationshipType':
-      return 'select';
     case 'FinancialType':
       return 'select';
   }
@@ -3181,12 +3236,19 @@ function civicrm_entity_page_view($entity, $entity_type) {
     }
     $content_array = entity_view($entity_type, array($entity->id => $entity));
     $content = drupal_render($content_array);
+    $label = entity_label($entity_type, $entity);
   }
   else {
     $content = '<p>No ' . $entity_type . ' record found for id: ' . $id . '</p>';
   }
-  $formatted_entity_title = ucwords(str_replace('_', ' ', $entity_type));
-  drupal_set_title($formatted_entity_title . ' ' . $id);
+  if(!empty($label) && ($entity_type == 'civicrm_event' || $entity_type == 'civicrm_contact' || $entity_type == 'civicrm_group')) {
+    drupal_set_title($label);
+  }
+  else {
+    $formatted_entity_title = ucwords(str_replace('_', ' ', $entity_type));
+    drupal_set_title($formatted_entity_title . ' ' . $id);
+  }
+
 
   return $content;
 }

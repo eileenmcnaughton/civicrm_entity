@@ -126,8 +126,13 @@ function _civicrm_entity_link_addformatters($entity_type, $link_fields, &$fields
  * @return mixed
  */
 function _civicrm_entity_get_entity_label($entity_type, $id) {
-  $wrapper = entity_metadata_wrapper($entity_type, $id);
-  return $wrapper->label();
+  if($entity_type != 'civicrm_participant') {
+    $wrapper = entity_metadata_wrapper($entity_type, $id);
+    return $wrapper->label();
+  }
+  else {
+    return $id;
+  }
 }
 
 /**
@@ -178,11 +183,12 @@ function _civicrm_entity_participant_get_formatted_values(&$field, $wrapper, $en
   switch ($field['field_name']) {
     case 'role_id':
     case 'status_id':
-    case 'registered_date':
+    case 'register_date':
     case 'source':
     case 'fee_currency':
     case 'is_pay_later':
     case 'registered_by_id':
+    case 'fee_amount':
     case 'is_test':
       return $entity->{'participant_' . $field['field_name']};
     case 'fee_level':

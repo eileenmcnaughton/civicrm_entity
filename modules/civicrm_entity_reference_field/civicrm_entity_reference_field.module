@@ -118,7 +118,7 @@ function civicrm_entity_reference_field_field_settings_form($field, $instance, $
     ),
   );
 
-  $target_id_column_options = _civicrm_entity_reference_field_get_target_id_column_options($settings['target_entity_type']);
+  $target_id_column_options =  _civicrm_entity_reference_field_get_target_id_column_options($settings['target_entity_type']);
 
   $form['target_id_column'] = array(
     '#type' => 'select',
@@ -128,7 +128,9 @@ function civicrm_entity_reference_field_field_settings_form($field, $instance, $
     '#options' => $target_id_column_options,
     '#prefix' => '<div id="target-id-column-wrapper">',
     '#suffix' => '</div>',
+    '#validated' => TRUE,
   );
+
   $form['host_source_id'] = array(
     '#type' => 'select',
     '#title' => t('Host Source Column'),
@@ -156,10 +158,11 @@ function civicrm_entity_reference_field_field_settings_form($field, $instance, $
  * @param $form_state
  * @return mixed
  */
-function civicrm_entity_reference_field_target_entity_type_ajax_callback(&$form, $form_state) {
+function civicrm_entity_reference_field_target_entity_type_ajax_callback(&$form, &$form_state) {
   $entity_type = $form_state['values']['field']['settings']['target_entity_type'];
   $target_id_column_options = _civicrm_entity_reference_field_get_target_id_column_options($entity_type);
   $form['field']['settings']['target_id_column']['#options'] = $target_id_column_options;
+  $form['field']['settings']['target_id_column']['#default_value'] = 'id';
   return $form['field']['settings']['target_id_column'];
 }
 
@@ -578,9 +581,8 @@ function civicrm_entity_reference_field_civicrm_post($op, $objectName, $objectId
           ->execute();
         while ($instance = $instances->fetchAssoc()) {
           //clear the cache of entity
-          if (!empty($field['settings']['target_id_column'])) {
-            $host_id_to_clear = $objectRef->{$field['settings']['target_id_column']};
-            cache_clear_all('field:' . $instance['entity_type'] . ':' . $host_id_to_clear, 'cache_field');
+          if (!empty($field['settings']['target_id_column']) && isset($objectRef->{$field['settings']['target_id_column']})) {
+            cache_clear_all('field:' . $instance['entity_type'] . ':' . $objectRef->{$field['settings']['target_id_column']}, 'cache_field');
           }
         }
       }

@@ -102,6 +102,7 @@ class CivicrmEntityController extends EntityAPIController {
       }
       $entities = $passed_ids;
     }
+
     return $entities;
   }
 
@@ -323,9 +324,13 @@ class CivicrmEntityController extends EntityAPIController {
       foreach ($new_civicrm_entities as $id => $civicrm_entity) {
         // @TODO improve this casting.
         $entities[$id] = new CivicrmEntity($civicrm_entity, $this->entityType);
+        if($this->entityType == 'civicrm_contribution') {
+          $entities[$id]->source = $entities[$id]->contribution_source;
+        }
       }
       return $entities;
     }
+
     return $entities;
   }
 

@@ -64,6 +64,26 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
 
           if ($op == 'edit') {
             $entity_form[$name]['#default_value'] = $child->value();
+            if($entity_type == 'civicrm_participant') {
+              if ($name == 'status_id' && !empty($entity->participant_status_id)) {
+                $entity_form[$name]['#default_value'] = $entity->participant_status_id;
+              }
+              if ($name == 'role_id' && !empty($entity->participant_role_id)) {
+                $entity_form[$name]['#default_value'] = $entity->participant_role_id;
+              }
+              if ($name == 'source' && !empty($entity->participant_source)) {
+                $entity_form[$name]['#default_value'] = $entity->participant_source;
+              }
+              if ($name == 'register_date' && !empty($entity->participant_register_date)) {
+                $entity_form[$name]['#default_value'] = $entity->participant_register_date;
+              }
+              if ($name == 'registered_by_id' && !empty($entity->participant_registered_by_id)) {
+                $entity_form[$name]['#default_value'] = $entity->participant_registered_by_id;
+              }
+              if ($name == 'fee_amount' && !empty($entity->participant_fee_amount)) {
+                $entity_form[$name]['#default_value'] = $entity->participant_fee_amount;
+              }
+            }
           }
           elseif ($op == 'create' || $op == 'add') {
             if (isset($info['default_value'])) {
@@ -86,12 +106,15 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
 
           //set rows and cols if available for textarea or text_format
           if ($entity_form[$name]['#type'] == 'textarea' || $entity_form[$name]['#type'] == 'text_format') {
+            if($entity_form[$name]['#type'] == 'text_format') {
+              $entity_form[$name]['#format'] = 'full_html';
+            }
             // set rows value if not empty
             if (!empty($info['rows'])) {
-              $form[$name]['#rows'] = $info['rows'];
+              $entity_form[$name]['#rows'] = $info['rows'];
             }
             if (!empty($info['cols'])) {
-              $form[$name]['#cols'] = $info['cols'];
+              $entity_form[$name]['#cols'] = $info['cols'];
             }
           }
 
@@ -146,7 +169,11 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
           // else fallback to textfield
           elseif ($entity_form[$name]['#type'] == 'date_select') {
             if (module_exists('date_api')) {
+              if(module_exists('date_popup')) {
+                $entity_form[$name]['#type'] = 'date_popup';
+              }
               $entity_form[$name]['#format'] = $info['widget']['format'];
+              $entity_form[$name]['#date_year_range'] = '-115:+10';
             }
             else {
               $entity_form[$name]['#type'] = 'textfield';
@@ -168,7 +195,7 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
               );
             }
             if ($name == 'contact_sub_type') {
-              $contact_type = !empty($form['contact_type']['#default_value']) ? $entity_form['contact_type']['#default_value'] : 'Individual';
+              $contact_type = !empty($entity_form['contact_type']['#default_value']) ? $entity_form['contact_type']['#default_value'] : 'Individual';
               $entity_form[$name]['#type'] = 'select';
               $entity_form[$name]['#options'] = _civicrm_entity_form_contact_get_subtypes($contact_type);
               $entity_form[$name]['#prefix'] = '<div id="contact-subtype-wrapper">';
@@ -181,13 +208,13 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
           // event special handling
           if ($entity_type == 'civicrm_event') {
             //if($name == 'thankyou_text' || $name == 'thankyou_footer_text') {
-            //  $form[$name]['#type'] = 'text_format';
+            //  $entity_form[$name]['#type'] = 'text_format';
             // }
             if ($name == 'event_type_id') {
-              $form[$name]['#required'] = TRUE;
+              $entity_form[$name]['#required'] = TRUE;
             }
             if ($name == 'default_role_id') {
-              $form[$name]['#required'] = TRUE;
+              $entity_form[$name]['#required'] = TRUE;
             }
           }
 
@@ -209,22 +236,42 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
     $op = $entity_form['#op'];
 
     if ($op == 'edit') {
-      foreach ($form_state['inline_entity_form'][$ief_id]['entities'] as $delta => $entity_array) {
+      //dsm($form_state);
+      foreach ($form_state['inline_entity_form'][$ief_id]['entities'] as $delta => &$entity_array) {
         if (isset($form_state['values'][$field_name]['und']['entities'][$delta]['form'])) {
           //$entity = $entity_array['entity'];
           foreach ($form_state['values'][$field_name]['und']['entities'][$delta]['form'] as $key => $value) {
             //$entity->{$key} = $value;
-            $entity_array['entity']->{$key} = $value;
+            if(!is_array($value)) {
+              $entity_array['entity']->{$key} = $value;
+            }
+            else {
+              if(isset($value['value'])) {
+                $entity_array['entity']->{$key} = $value['value'];
+              }
+              else {
+                $entity_array['entity']->{$key} = $value;
+              }
+            }
           }
           // field_attach_form_validate($entity_type, $entity, $entity_form, $form_state);
         }
       }
+
     }
     elseif ($op == 'create' || $op == 'add') {
       $entity = $form_state['entity'];
 
       foreach ($form_state['values'][$field_name]['und']['form'] as $key => $value) {
-        $entity->{$key} = $value;
+        if(!is_array($value)) {
+          $entity->{$key} = $value;
+        }
+        elseif(isset($value['value'])) {
+          $entity->{$key} = $value['value'];
+        }
+        else {
+          $entity->{$key} = $value;
+        }
       }
 
     }
@@ -312,9 +359,8 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
     if ($op == 'edit') {
 
 
-      foreach ($form_state['inline_entity_form'][$ief_id]['entities'] as $k => $entity_array) {
+      foreach ($form_state['inline_entity_form'][$ief_id]['entities'] as $k => &$entity_array) {
         if (isset($form_state['values'][$field_name]['und']['entities'][$k]['form'])) {
-          $entity = $entity_array['entity'];
           foreach ($form_state['values'][$field_name]['und']['entities'][$k]['form'] as $key => $value) {
             if (substr($key, 0, 7) == 'custom_') {
               if ($civicrm_entity_fields['values'][$key]['html_type'] == 'CheckBox') {
@@ -325,31 +371,40 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
                       $stored_value[] = $option;
                     }
                   }
-                  $entity->{$key} = !empty($stored_value) ? $stored_value : array('');
+                  $entity_array['entity']->{$key} = !empty($stored_value) ? $stored_value : array('');
                 }
 
               }
               else {
-                $entity->{$key} = $value;
+                if (is_array($value) && isset($value['value'])) {
+                  $value = $value['value'];
+                  $form_state['values'][$field_name]['und']['entities'][$k]['form'][$key] = $value;
+                }
+                $entity_array['entity']->{$key} = $value;
+
               }
 
               if (!empty($civicrm_entity_fields['values'][$key]['is_view'])) {
-                unset($entity->{$key});
+                unset($entity_array['entity']->{$key});
               }
 
             }
             else {
-              $entity->{$key} = $value;
+              if (is_array($value) && isset($value['value'])) {
+                $value = $value['value'];
+                $form_state['values'][$field_name]['und']['entities'][$k]['form'][$key] = $value;
+              }
+              $entity_array['entity']->{$key} = $value;
             }
           }
 
-          if ($entity->is_new = isset($entity->is_new) ? $entity->is_new : 0) {
-            $entity->created = time();
+          if ($entity_array['entity']->is_new = isset($entity_array['entity']->is_new) ? $entity_array['entity']->is_new : 0) {
+            $entity_array['entity']->created = time();
           }
-          $entity->changed = time();
+          $entity_array['entity']->changed = time();
 
           //$wrapper = entity_metadata_wrapper($entity_type, $entity);
-          field_attach_submit($entity_type, $entity, $entity_form, $form_state);
+          field_attach_submit($entity_type, $entity_array['entity'], $entity_form, $form_state);
 
         }
       }
@@ -372,6 +427,10 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
 
           }
           else {
+            if (is_array($value) && isset($value['value'])) {
+              $value = $value['value'];
+              $form_state['values'][$field_name]['und']['form'][$key] = $value;
+            }
             $entity->{$key} = $value;
           }
 
@@ -381,6 +440,10 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
 
         }
         else {
+          if (is_array($value) && isset($value['value'])) {
+            $value = $value['value'];
+            $form_state['values'][$field_name]['und']['form'][$key] = $value;
+          }
           $entity->{$key} = $value;
         }
       }

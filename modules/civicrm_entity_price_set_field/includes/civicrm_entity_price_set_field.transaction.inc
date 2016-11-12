@@ -184,7 +184,11 @@ function civicrm_entity_price_set_field_civicrm_entity_price_set_field_processor
       'callback' => 'civicrm_entity_price_set_field_transact_payment_processing',
     ),
     'paypal' => array(
-      'payment_processor_type' => 'PayflowPro',
+      'payment_processor_type' => 'Pay Pal',
+      'callback' => 'civicrm_entity_price_set_field_transact_payment_processing',
+    ),
+    'iats' => array(
+      'payment_processor_type' => 'iATS Payments Credit Card',
       'callback' => 'civicrm_entity_price_set_field_transact_payment_processing',
     ),
   );
@@ -210,6 +214,7 @@ function civicrm_entity_price_set_field_transact_payment_processing($display, $p
     'total_amount' => $form_state['transaction']['total'],
     'contact_id' => $contacts[0]->id,
     'payment_processor' => $processor->id,
+    'payment_processor_id' => $processor->id,
     'credit_card_number' => $form_state['registration_cc_block']['cc_number'],
     'cvv2' => $form_state['registration_cc_block']['cvv'],
     'month' => $form_state['registration_cc_block']['cc_exp']['month'],
@@ -217,7 +222,11 @@ function civicrm_entity_price_set_field_transact_payment_processing($display, $p
     'invoice_id' => md5(uniqid(rand(), TRUE)),
     'skipLineItem' => 1,
     'source' => 'CiviCRM Entity Price Set Field -- Event Registration',
+    'billing_first_name' => $form_state['registration_cc_block']['first_name_on_card'],
+    'billing_last_name' => $form_state['registration_cc_block']['last_name_on_card'],
   );
+
+  $params['currency'] = $params['currencyID'] = !empty($entity->currency) ? $entity->currency : 'USD';
 
   if (!empty($display['settings']['test_transaction'])) {
     $params['is_test'] = 1;
