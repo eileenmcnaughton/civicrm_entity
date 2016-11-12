@@ -2536,20 +2536,21 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
   if (empty($contact['display_name'])) {
     $contact['display_name'] = $contact['email'];
   }
-
-  switch ($username_format) {
-    case 'firstlast':
-      $params['name'] = str_replace(' ', '', $params['name']);
-      break;
-
-    case 'first.last':
-      $params['name'] = str_replace(' ', '.', $params['name']);
-      break;
-
-    case 'email':
-      $params['name'] = $params['email'];
-      break;
-
+  else {
+    switch ($username_format) {
+      case 'first last':
+        $params['name'] = $contact['display_name'];
+        break;
+      case 'firstlast':
+        $params['name'] = str_replace(' ', '', $contact['display_name']);
+        break;
+      case 'first.last':
+        $params['name'] = str_replace(' ', '.', $contact['display_name']);
+        break;
+      case 'email':
+        $params['name'] = $params['email'];
+        break;
+    }
   }
 
   // Check if the requested username is available.
@@ -2605,6 +2606,19 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
   }
 
   return array('civicrm_user' => $user_object);
+}
+
+/**
+ * Callback for username format options list, Create Linked Drupal User Account Rules action
+ */
+function _civicrm_entity_options_username_format($field, $instance, $entity_type, $entity) {
+  $options = array(
+    'first last' => t('First Last'),
+    'firstlast' => t('FirstLast'),
+    'first.last' => t('First.Last'),
+    'email' => 'Use E-mail Address',
+  );
+  return $options;
 }
 
 /**
