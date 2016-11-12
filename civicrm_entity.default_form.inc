@@ -61,7 +61,6 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
             $form[$name]['#required'] = TRUE;
           }
 
-          // FK Reference field handling
           if ($form[$name]['#type'] == 'civi_fk_reference') {
             switch ($info['widget']['subtype']) {
               case 'autocomplete':
@@ -71,6 +70,9 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
               case 'select':
                 $form[$name]['#type'] = 'select';
                 $form[$name]['#options'] = !empty($entity_form[$name]['#required']) ? _civicrm_entity_get_entities_list($info['widget']['entity']) : array(NULL => 'None') + _civicrm_entity_get_entities_list($info['widget']['entity']);
+                if($info['widget']['entity'] == 'Event') {
+                  array_shift($form[$name]['#options']);
+                }
                 break;
               default:
                 $form[$name]['#type'] = 'textfield';
@@ -81,6 +83,26 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
           // Handle default value
           if ($op == 'edit') {
             $form[$name]['#default_value'] = $child->value();
+            if($entity_type == 'civicrm_participant') {
+              if ($name == 'status_id' && !empty($entity->participant_status_id)) {
+                $form[$name]['#default_value'] = $entity->participant_status_id;
+              }
+              if ($name == 'role_id' && !empty($entity->participant_role_id)) {
+                $form[$name]['#default_value'] = $entity->participant_role_id;
+              }
+              if ($name == 'source' && !empty($entity->participant_source)) {
+                $form[$name]['#default_value'] = $entity->participant_source;
+              }
+              if ($name == 'register_date' && !empty($entity->participant_register_date)) {
+                $form[$name]['#default_value'] = $entity->participant_register_date;
+              }
+              if ($name == 'registered_by_id' && !empty($entity->participant_registered_by_id)) {
+                $form[$name]['#default_value'] = $entity->participant_registered_by_id;
+              }
+              if ($name == 'fee_amount' && !empty($entity->participant_fee_amount)) {
+                $form[$name]['#default_value'] = $entity->participant_fee_amount;
+              }
+            }
           }
           elseif ($op == 'create') {
             if (isset($info['default_value'])) {
@@ -103,6 +125,9 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
 
           //set rows and cols if available for textarea or text_format
           if ($form[$name]['#type'] == 'textarea' || $form[$name]['#type'] == 'text_format') {
+            if($form[$name]['#type'] == 'text_format') {
+              $form[$name]['#format'] = 'full_html';
+            }
             // set rows value if not empty
             if (!empty($info['rows'])) {
               $form[$name]['#rows'] = $info['rows'];
@@ -163,7 +188,11 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
           // else fallback to textfield
           elseif ($form[$name]['#type'] == 'date_select') {
             if (module_exists('date_api')) {
+              if(module_exists('date_popup')) {
+                $form[$name]['#type'] = 'date_popup';
+              }
               $form[$name]['#format'] = $info['widget']['format'];
+              $form[$name]['#date_year_range'] = '-115:+10';
             }
             else {
               $form[$name]['#type'] = 'textfield';
@@ -199,7 +228,8 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
           // event special handling
           if ($entity_type == 'civicrm_event') {
             if ($name == 'thankyou_text' || $name == 'thankyou_footer_text') {
-              //$form[$name]['#type'] = 'text_format';
+              $form[$name]['#type'] = 'text_format';
+              $form[$name]['format'] = 'full_html';
             }
             if ($name == 'event_type_id') {
               $form[$name]['#required'] = TRUE;
@@ -288,7 +318,15 @@ function civicrm_entity_form_validate(&$form, &$form_state) {
   $entity_type = $form['#entity_type'];
 
   foreach ($form_state['values'] as $key => $value) {
-    $entity->{$key} = $value;
+    if(!is_array($value)) {
+      $entity->{$key} = $value;
+    }
+    elseif(isset($value['value'])) {
+      $entity->{$key} = $value['value'];
+    }
+    else {
+      $entity->{$key} = $value;
+    }
   }
 
   // validate civicrm data
@@ -381,6 +419,9 @@ function civicrm_entity_form_submit(&$form, &$form_state) {
 
       }
       else {
+        if (is_array($value) && isset($value['value'])) {
+          $value = $value['value'];
+        }
         $entity->{$key} = $value;
       }
 
@@ -390,6 +431,9 @@ function civicrm_entity_form_submit(&$form, &$form_state) {
 
     }
     else {
+      if (is_array($value) && isset($value['value'])) {
+        $value = $value['value'];
+      }
       $entity->{$key} = $value;
     }
   }

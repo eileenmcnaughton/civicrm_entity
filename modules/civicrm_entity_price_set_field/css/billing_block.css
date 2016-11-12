@@ -68,11 +68,12 @@
     display: inline-block;
     vertical-align: middle;
 }
-
-.civicrm-entity-price-set-field-cc-block .name-and-number-section {
-    float: left;
-    vertical-align: middle;
-    margin-right: 1.5em;
+@media (min-width:640px) {
+    .civicrm-entity-price-set-field-cc-block .name-and-number-section {
+        float: left;
+        vertical-align: middle;
+        margin-right: 1.5em;
+    }
 }
 
 .civicrm-entity-price-set-field-cc-block .expiration-and-cvv-section {
