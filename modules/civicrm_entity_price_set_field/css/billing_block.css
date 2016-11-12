@@ -1,12 +1,3 @@
-#civicrm-event-form .field-type-civicrm-entity-price-set-field,
-#civicrm-event-form .field-type-civicrm-entity-price-set-field table{
-    max-width:100%;
-}
-
-#civicrm-event-form .field-type-civicrm-entity-price-set-field table input.form-text {
-    width:98%;
-}
-
 .civicrm-entity-price-set-field-registration-form .form-submit {
     clear: left;
     display: block;
