@@ -49,8 +49,6 @@ function _civicrm_entity_price_set_field_setup_price_set_fapi(&$form, &$form_sta
       }
       else {
         switch ($price_field['pf_entity']->html_type) {
-          case 'Text':
-
           case 'Radio':
             $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#type'] = 'radios';
             //$default_value = array();
