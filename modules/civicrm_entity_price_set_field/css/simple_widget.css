@@ -6,3 +6,7 @@
 #civicrm-event-form .field-type-civicrm-entity-price-set-field table input.form-text {
     width:98%;
 }
+
+#civicrm-event-form .field-type-civicrm-entity-price-set-field table td:nth-child(4) input.form-text {
+    width:80px;
+}

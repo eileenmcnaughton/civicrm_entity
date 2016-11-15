@@ -390,7 +390,7 @@ function civicrm_entity_entity_info() {
           'label' => t('CiviCRM @entity', array('@entity' => ucwords($civicrm_entity))),
           'admin' => array(
             'path' => 'admin/structure/civicrm-entity/' . $drupal_entity,
-            'access arguments' => array('administer CiviCRM'),
+            'access arguments' => array('administer CiviCRM Entity'),
           ),
         ),
       ),

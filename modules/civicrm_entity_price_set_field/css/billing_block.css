@@ -14,7 +14,7 @@
 
 .civicrm-entity-price-set-field-participant-form .form-item {
     margin-bottom: 0.25em;
-    float: left;
+  /*  float: left; */
 }
 
 .civicrm-entity-price-set-field-participant-form:after {

@@ -7,6 +7,10 @@
 
 module_load_include('inc', 'civicrm_entity_price_set_field', 'includes/civicrm_entity_price_set_field.event_registration');
 module_load_include('inc', 'civicrm_entity_price_set_field', 'includes/civicrm_entity_price_set_field.transaction');
+module_load_include('inc', 'civicrm_entity_price_set_field', 'includes/civicrm_entity_price_set_field.profile');
+module_load_include('inc', 'civicrm_entity_price_set_field', 'includes/civicrm_entity_price_set_field.price_set');
+module_load_include('inc', 'civicrm_entity_price_set_field', 'includes/civicrm_entity_price_set_field.confirmation_page');
+module_load_include('inc', 'civicrm_entity_price_set_field', 'includes/civicrm_entity_price_set_field.thank_you_page');
 
 /**
  * Implements hook_field_info().
