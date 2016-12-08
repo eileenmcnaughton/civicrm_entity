@@ -143,6 +143,7 @@ function civicrm_entity_reference_field_field_settings_form($field, $instance, $
       'address_id' => 'Address ID (Location Block Entity)',
       'email_id' => 'Email ID (Location Block Entity)',
       'phone_id' => 'Phone ID (Location Block Entity)',
+      'uf_group_id' => 'UFGroup ID (UFJoin Entity)',
     ),
   );
 

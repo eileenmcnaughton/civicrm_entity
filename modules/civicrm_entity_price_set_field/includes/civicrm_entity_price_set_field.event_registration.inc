@@ -252,11 +252,12 @@ function _civicrm_entity_price_set_field_setup_event_registration_form_fapi(&$fo
 
   //Fetch event profiles
   $main_profiles = $add_profiles = array();
-  $main_profiles = _civicrm_entity_price_set_field_get_event_profiles($form_state['event']->id);
-  if (!empty($form_state['event']->is_multiple_registrations)) {
-    $add_profiles = _civicrm_entity_price_set_field_get_event_profiles($form_state['event']->id, 'CiviEvent_Additional');
+  if (module_exists('civicrm_entity_profile')) {
+    $main_profiles = _civicrm_entity_profile_get_profiles('civicrm_event', $form_state['event']->id, 'CiviEvent');
+    if (!empty($form_state['event']->is_multiple_registrations)) {
+      $add_profiles = _civicrm_entity_profile_get_profiles('civicrm_event', $form_state['event']->id, 'CiviEvent_Additional');
+    }
   }
-
   foreach ($form_state['contacts'] as $count => $contact) {
     if ($count) {
       $form['registration_form']['contacts'][$count]['heading'] = array(
@@ -277,6 +278,7 @@ function _civicrm_entity_price_set_field_setup_event_registration_form_fapi(&$fo
         ),
       ),
     );
+
     if($count == 0) {
       $profile_list = $main_profiles;
     }
@@ -285,7 +287,7 @@ function _civicrm_entity_price_set_field_setup_event_registration_form_fapi(&$fo
     }
     if(count($profile_list)) {
       foreach ($profile_list as $profile_id) {
-        $profile_title = _civicrm_entity_price_set_field_get_profile_title($profile_id);
+        $profile_title = _civicrm_entity_profile_get_profile_title($profile_id);
         // setup profile container
         $form['registration_form']['contacts'][$count]['contact_info']['profile-' . $profile_id] = array(
           '#type' => 'container',
@@ -300,9 +302,9 @@ function _civicrm_entity_price_set_field_setup_event_registration_form_fapi(&$fo
           $form['registration_form']['contacts'][$count]['contact_info']['profile-' . $profile_id]['#prefix'] = '<h3>' . $profile_title . '</h3>';
         }
         // Save profile metadata for future use
-        $form_state['profiles']['profile-' . $profile_id] = _civicrm_entity_price_set_field_get_profile_metadata($profile_id, 'event');
+        $form_state['profiles']['profile-' . $profile_id] = _civicrm_entity_profile_get_profile_metadata($profile_id, 'event');
         // Get profile FAPI
-        $profile_fapi = _civicrm_entity_price_set_field_generate_profile_fapi($profile_id, 'event');
+        $profile_fapi = _civicrm_entity_profile_generate_profile_fapi($profile_id, 'event');
 
         if (!empty($profile_fapi)) {
           // add profile FAPI to main form
@@ -533,7 +535,7 @@ function civicrm_entity_price_set_field_display_form_event_submit($form, &$form_
             $profile_id = array_keys($first_profile);
             $pids = explode(',', $profile_id);
             $pid = $pids[1];
-            $submitted_result = _civicrm_entity_price_set_field_process_profile_submitted_data($pid, $first_profile['profile']);
+            $submitted_result = _civicrm_entity_profile_process_profile_submitted_data($pid, $first_profile['profile']);
             if(!empty($submitted_result)) {
               $form_state['contacts'][0] = $submitted_result;
               $form_state['first_profile_submitted'] = 1;
@@ -611,10 +613,10 @@ function _civicrm_entity_price_set_field_process_event_registration(&$form_state
       }
 
       if(!empty($contact->id)) {
-        $submit_result = _civicrm_entity_price_set_field_process_profile_submitted_data($pid, $profile_data['profile'], $contact->id);
+        $submit_result = _civicrm_entity_profile_process_profile_submitted_data($pid, $profile_data['profile'], $contact->id);
       }
       else {
-        $submit_result = _civicrm_entity_price_set_field_process_profile_submitted_data($pid, $profile_data['profile']);
+        $submit_result = _civicrm_entity_profile_process_profile_submitted_data($pid, $profile_data['profile']);
       }
       if(!empty($submit_result)) {
         $form_state['contacts'][$count] = $contact;

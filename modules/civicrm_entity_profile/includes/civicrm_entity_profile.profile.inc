@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * CiviCRM Entity Price Set Field, Profile Form generation and processing
+ * CiviCRM Entity Profile, Profile Form generation and processing, utility functions
  */
 
 
@@ -12,7 +12,7 @@
  * @param string $type
  * @return array
  */
-function _civicrm_entity_price_set_field_get_profile_metadata($profile_id, $type = 'event') {
+function _civicrm_entity_profile_get_profile_metadata($profile_id, $type = 'event') {
   try {
     $fields_api_result = civicrm_api3('Profile', 'getfields', array(
       'api_action' => "submit",
@@ -46,18 +46,16 @@ function _civicrm_entity_price_set_field_get_profile_metadata($profile_id, $type
  * @param $profile_id
  * @return array
  */
-function _civicrm_entity_price_set_field_generate_profile_fapi($profile_id, $type = 'event') {
+function _civicrm_entity_profile_generate_profile_fapi($profile_id, $type = 'event') {
   if (!civicrm_initialize()) {
     return array();
   }
-  $fields =_civicrm_entity_price_set_field_get_profile_metadata($profile_id, 'event');
+  $fields =_civicrm_entity_profile_get_profile_metadata($profile_id, 'event');
   $contact_entities = array('contact', 'address', 'phone', 'email', 'website');
   $form = array();
   if (count($fields)) {
     foreach ($fields as $field) {
       $widget_info = civicrm_entity_get_field_widget($field, $field['entity']);
-      //dsm($field['name']);
-      //dsm($widget_info);
       if (!empty($widget_info['widget'])) {
         // type
         $form[$field['name']]['#type'] = $widget_info['widget'];
@@ -77,7 +75,6 @@ function _civicrm_entity_price_set_field_generate_profile_fapi($profile_id, $typ
         }
       }
     }
-    //dsm($form);
   }
   return $form;
 }
@@ -91,7 +88,7 @@ function _civicrm_entity_price_set_field_generate_profile_fapi($profile_id, $typ
  *
  * @return bool|array
  */
-function _civicrm_entity_price_set_field_process_profile_submitted_data($profile_id, $submitted_data, $contact_id = 0) {
+function _civicrm_entity_profile_process_profile_submitted_data($profile_id, $submitted_data, $contact_id = 0) {
   try {
     $params = array(
       'sequential' => 1,
@@ -104,7 +101,6 @@ function _civicrm_entity_price_set_field_process_profile_submitted_data($profile
       $params['contact_id'] = $contact_id;
     }
     $result = civicrm_api3('Profile', 'submit', $params);
-    dsm($result);
     if(!empty($result['values']['id'])) {
       $contact = entity_load_single('civicrm_contact', $result['values']['id']);
       return $contact;
@@ -119,37 +115,61 @@ function _civicrm_entity_price_set_field_process_profile_submitted_data($profile
   }
 }
 
+
 /**
  * Gets the profiles for an event
  *
- * @param $event_id
+ * @param $entity_type
+ * @param $id
  * @param $type
  * @return array
  */
-function _civicrm_entity_price_set_field_get_event_profiles($event_id, $type = 'CiviEvent') {
-  if (!civicrm_initialize(TRUE)) {
+function _civicrm_entity_profile_get_ufjoins($entity_type, $id, $type = 'CiviEvent') {
+  $uf_join_query = new EntityFieldQuery();
+  $uf_join_results = $uf_join_query->entityCondition('entity_type', 'civicrm_uf_join')
+    //->propertyCondition('is_active', 1)
+    ->propertyCondition('module', $type)
+    ->propertyCondition('entity_table', $entity_type)
+    ->propertyCondition('entity_id', $id)
+    ->propertyOrderBy('weight')
+    ->execute();
+
+  if(!empty($uf_join_results['civicrm_uf_join']) && count($uf_join_results['civicrm_uf_join'])) {
+
+    return array_keys($uf_join_results['civicrm_uf_join']);
+  }
+  else {
     return array();
   }
+}
+
+
+/**
+ * Gets the profiles (uf_group) for an entity
+ *
+ * @param $entity_type
+ * @param $id
+ * @param $type
+ * @return array
+ */
+function _civicrm_entity_profile_get_profiles($entity_type, $id, $type) {
   $profiles = array();
-  try {
-    $uf_joins = civicrm_api3('UFJoin', 'get', array(
-      'sequential' => 1,
-      'is_active' => 1,
-      'module' => $type,
-      'entity_table' => "civicrm_event",
-      'entity_id' => $event_id,
-      'options' => array('sort' => "weight"),
-    ));
-    if ($uf_joins['count']) {
-      foreach ($uf_joins['values'] as $index => $uf_join) {
-        $profiles[] = $uf_join['uf_group_id'];
-      }
+  $uf_join_query = new EntityFieldQuery();
+  $uf_join_results = $uf_join_query->entityCondition('entity_type', 'civicrm_uf_join')
+    ->propertyCondition('is_active', 1)
+    ->propertyCondition('module', $type)
+    ->propertyCondition('entity_table', $entity_type)
+    ->propertyCondition('entity_id', $id)
+    ->propertyOrderBy('weight')
+    ->execute();
+
+  if(!empty($uf_join_results['civicrm_uf_join'])) {
+    $uf_joins = entity_load('civicrm_uf_join', array_keys($uf_join_results['civicrm_uf_join']));
+    foreach($uf_joins as $id => $uf_join) {
+      $profiles[] = $uf_join->uf_group_id;
     }
-    return $profiles;
   }
-  catch (CiviCRM_API3_Exception $e) {
-    return array();
-  }
+  return $profiles;
 }
 
 /**
@@ -158,20 +178,10 @@ function _civicrm_entity_price_set_field_get_event_profiles($event_id, $type = '
  * @param $profile_id
  * @return string
  */
-function _civicrm_entity_price_set_field_get_profile_title($profile_id) {
-  if (!civicrm_initialize()) {
-    return '';
-  }
-  try {
-    $result = civicrm_api3('UFGroup', 'get', array(
-      'sequential' => 1,
-      'id' => $profile_id,
-    ));
-    if($result['count']) {
-      return $result['values'][0]['title'];
-    }
-  }
-  catch (CiviCRM_API3_Exception $e) {
+function _civicrm_entity_profile_get_profile_title($profile_id) {
+  $uf_group = entity_load_single('civicrm_uf_group', $profile_id);
+  if(!empty($uf_group->title)) {
+    return $uf_group->title;
   }
   return '';
 }
@@ -182,22 +192,31 @@ function _civicrm_entity_price_set_field_get_profile_title($profile_id) {
  * @param $profile_id
  * @return array
  */
-function _civicrm_entity_price_set_field_get_profile_entity_types($profile_id) {
-  if (!civicrm_initialize()) {
-    return array();
-  }
-  try {
-    $result = civicrm_api3('UFGroup', 'get', array(
-      'sequential' => 1,
-      'id' => $profile_id,
-    ));
-    if($result['count']) {
-      $group_type = $result['values'][0]['group_type'];
-      return explode(',', $group_type);
-    }
-  }
-  catch (CiviCRM_API3_Exception $e) {
+function _civicrm_entity_profile_get_profile_entity_types($profile_id) {
+  $uf_group = entity_load_single('civicrm_uf_group', $profile_id);
+  if(!empty($uf_group->group_type)) {
+    return !empty($uf_group->group_type) ? explode(',', $uf_group->group_type) : array();
   }
   return array();
 }
 
+/**
+ * Utility function to build an array of Profile (civicrm_uf_group) titles, keyed by entity id
+ *
+ * @return array
+ */
+function _civicrm_entity_profile_get_profiles_for_options_list() {
+  $uf_group_query = new EntityFieldQuery();
+  $uf_group_results = $uf_group_query->entityCondition('entity_type', 'civicrm_uf_group')
+    ->propertyCondition('is_active', 1)
+    ->propertyOrderBy('title')
+    ->execute();
+  $options = array('' => '- None -');
+  if(!empty($uf_group_results['civicrm_uf_group'])) {
+    $uf_groups = entity_load('civicrm_uf_group', array_keys($uf_group_results['civicrm_uf_group']));
+    foreach($uf_groups as $id => $uf_group) {
+      $options[$id] = $uf_group->title;
+    }
+  }
+  return $options;
+}

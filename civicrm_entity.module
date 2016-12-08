@@ -1673,6 +1673,7 @@ function civicrm_entity_supported_entities_info() {
       ),
     ),
   );
+
   return $civicrm_entity_info;
 }
 
@@ -2409,13 +2410,15 @@ function civicrm_entity_civicrm_contact_label_callback($entity, $entity_type) {
  * @return object
  */
 function civicrm_entity_metadata_civicrm_entity_get_properties($data, $options, $name, $type, $info) {
-  if (isset($info['property_info']['entity']) && isset($data->$info['property_info']['field'])) {
-    $entity = civicrm_api($info['property_info']['entity'], 'get', array(
+  if (isset($info['property_info']['entity']) && isset($data->{$info['property_info']['field']})) {
+    /*$entity = civicrm_api($info['property_info']['entity'], 'get', array(
       'version' => 3,
       'id' => $data->$info['property_info']['field'],
       'sequential' => 1,
     ));
-    return (object) $entity['values'][0];
+    return (object) $entity['values'][0];*/
+
+    return entity_load_single('civicrm_' . $info['property_info']['entity'], $data->{$info['property_info']['field']});
   }
 }
 
@@ -3299,6 +3302,9 @@ function civicrm_entity_form_alter(&$form, &$form_state, $form_id) {
         $submits[] = $submit_callback;
       }
       $form['#submit'] = $submits;
+      if($entity_type == 'civicrm_contact' && !empty($form['fields']['civi_user'])) {
+       $form['fields']['civi_user']['human_name']['#markup'] = 'Drupal User (broken, do not display';
+      }
     }
 
   }
@@ -3355,9 +3361,7 @@ function _civicrm_entity_manage_display_suite_forms_validate(&$form, &$form_stat
 
   foreach ($entity_props['properties'] as $property => $info) {
     if (!empty($info['required']) && (empty($form_state['values']['fields'][$property]['region']) || $form_state['values']['fields'][$property]['region'] == 'hidden')) {
-
       form_set_error('fields][' . $property, $info['label'] . ' property is required by CiviCRM API to be included on this form.');
-
     }
   }
 

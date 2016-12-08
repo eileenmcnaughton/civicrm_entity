@@ -7,7 +7,6 @@
 
 module_load_include('inc', 'civicrm_entity_price_set_field', 'includes/civicrm_entity_price_set_field.event_registration');
 module_load_include('inc', 'civicrm_entity_price_set_field', 'includes/civicrm_entity_price_set_field.transaction');
-module_load_include('inc', 'civicrm_entity_price_set_field', 'includes/civicrm_entity_price_set_field.profile');
 module_load_include('inc', 'civicrm_entity_price_set_field', 'includes/civicrm_entity_price_set_field.price_set');
 module_load_include('inc', 'civicrm_entity_price_set_field', 'includes/civicrm_entity_price_set_field.confirmation_page');
 module_load_include('inc', 'civicrm_entity_price_set_field', 'includes/civicrm_entity_price_set_field.thank_you_page');
@@ -124,6 +123,32 @@ function civicrm_entity_price_set_field_field_settings_form($field, $instance, $
 }
 
 /**
+ * Implements hook_field_widget_info_alter().
+ *
+ * @param $info
+ */
+function civicrm_entity_price_set_field_field_widget_info_alter(&$info) {
+  $info['inline_entity_form']['field types'][] = 'civicrm_entity_price_set_field';
+  $info['inline_entity_form_single']['field types'][] = 'civicrm_entity_price_set_field';
+}
+
+
+/**
+ * Implements hook_inline_entity_form_settings_alter().
+ *
+ * @param $settings
+ * @param $field
+ * @param $instance
+ */
+function civicrm_entity_price_set_field_inline_entity_form_settings_alter(&$settings, $field, $instance) {
+  if ($field['type'] == 'civicrm_entity_price_set_field') {
+    $settings['entity_type'] = 'civicrm_price_set';
+    $settings['column'] = 'price_set_id';
+    $settings['bundles'] = array('civicrm_price_set');
+  }
+}
+
+/**
  * Implements hook_field_load().
  *
  * @param $entity_type
@@ -164,6 +189,7 @@ function civicrm_entity_price_set_field_field_is_empty($item, $field) {
   if (empty($item['price_set_id']) && !is_numeric($item['price_set_id'])) {
     return TRUE;
   }
+
   return FALSE;
 }
 
@@ -1006,28 +1032,5 @@ function civicrm_entity_price_set_field_field_formatter_view($entity_type, $enti
 
 
   return $element;
-}
-
-/**
- * Implements hook_civicrm_post().
- *
- * Here we need to clear the field cache if the price set is changed in the event/contribution page
- *
- * @param $op
- * @param $objectName
- * @param $objectId
- * @param $objectRef
- */
-function civicrm_entity_price_set_field_civicrm_post($op, $objectName, $objectId, &$objectRef) {
-  //dsm($objectName);
-  /*if ($objectName == 'PriceSet' && ($op == 'create' || $op == 'delete' || $op == 'edit')) {
-    $civicrm_entity_reference_fields = db_select('field_config', 'fc')
-      ->fields('fc', array('id'))
-      ->condition('type', 'civicrm_entity_price_set_field')
-      ->execute();
-    if($civicrm_entity_reference_fields->rowCount()) {
-      cache_clear_all('field:civicrm_contact:' . $objectRef[0], 'cache_field');
-    }
-  }*/
 }
 

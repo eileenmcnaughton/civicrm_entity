@@ -62,7 +62,7 @@ function theme_civicrm_entity_price_set_field_price_field_display_form_thank_you
       foreach($contact['contact_info'] as $profile_id => $profile) {
         $pids = explode('-', $profile_id);
         $pid = $pids[1];
-        $html .= '<h4>' . _civicrm_entity_price_set_field_get_profile_title($pid) . ':</h4>';
+        $html .= '<h4>' . _civicrm_entity_profile_get_profile_title($pid) . ':</h4>';
         if (count($contact['contact_info'][$profile_id]['profile'])) {
           foreach ($contact['contact_info'][$profile_id]['profile'] as $name => $value) {
             $html .= '<div class="profile-field"><span class="field-label">' . $vars['profiles'][$profile_id][$name]['title'] . ':</span> <span class="field-item>">' . $value . '</span></div>';
