@@ -244,7 +244,6 @@ function civicrm_entity_profile_field_is_empty($item, $field) {
  */
 function civicrm_entity_profile_field_load($entity_type, $entities, $field, $instances, $langcode, &$items, $age) {
   $supported_entities = array('civicrm_event', 'civicrm_contribution_page');
-
   if (in_array($entity_type, $supported_entities)) {
       foreach ($entities as $id => $entity) {
         if ($entity_type == 'civicrm_event') {
