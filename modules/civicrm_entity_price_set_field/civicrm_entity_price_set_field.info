@@ -3,4 +3,4 @@ description = "Provides CiviCRM Entity Price Set Field Type.  Provides a widget 
 dependencies[] = civicrm_entity_profile
 package = CiviCRM Entity
 core = 7.x
-version = 1.0-alpha1
+version = 1.0-alpha2

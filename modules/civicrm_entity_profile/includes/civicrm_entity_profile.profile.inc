@@ -38,6 +38,7 @@ function _civicrm_entity_profile_get_profile_metadata($profile_id, $type = 'even
     }
     return $fields;
   }
+  return array();
 }
 
 /**
@@ -50,7 +51,7 @@ function _civicrm_entity_profile_generate_profile_fapi($profile_id, $type = 'eve
   if (!civicrm_initialize()) {
     return array();
   }
-  $fields =_civicrm_entity_profile_get_profile_metadata($profile_id, 'event');
+  $fields =_civicrm_entity_profile_get_profile_metadata($profile_id, $type);
   $contact_entities = array('contact', 'address', 'phone', 'email', 'website');
   $form = array();
   if (count($fields)) {
