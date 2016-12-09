@@ -71,7 +71,7 @@ function civicrm_entity_profile_civicrm_entity_supported_info(&$civicrm_entity_i
     ),
     'theme' => array(
       'template' => 'civicrm-uf-field',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
+      'path' => drupal_get_path('module', 'civicrm_entity_profile') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -104,7 +104,7 @@ function civicrm_entity_profile_civicrm_entity_supported_info(&$civicrm_entity_i
     ),
     'theme' => array(
       'template' => 'civicrm-uf-group',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
+      'path' => drupal_get_path('module', 'civicrm_entity_profile') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -135,7 +135,7 @@ function civicrm_entity_profile_civicrm_entity_supported_info(&$civicrm_entity_i
     ),
     'theme' => array(
       'template' => 'civicrm-uf-join',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
+      'path' => drupal_get_path('module', 'civicrm_entity_profile') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
