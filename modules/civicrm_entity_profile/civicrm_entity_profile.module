@@ -121,6 +121,9 @@ function civicrm_entity_profile_civicrm_entity_supported_info(&$civicrm_entity_i
         'is_cms_user',
         'is_proximity_search',
       ),
+      'date fields' => array(
+        'created_date',
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_uf_join'] = array(
