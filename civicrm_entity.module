@@ -664,6 +664,10 @@ function civicrm_entity_supported_entities_info() {
         'birth_date',
         'deceased_date',
       ),
+      'timestamp fields' => array(
+        'created_date',
+        'modified_date',
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_contribution'] = array(
@@ -999,6 +1003,10 @@ function civicrm_entity_supported_entities_info() {
         ),
       ),
       'boolean fields' => array('is_active', 'is_hidden', 'is_reserved',),
+      'timestamp fields' => array(
+        'cached_date',
+        'refresh_date',
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_grant'] = array(
@@ -3518,6 +3526,9 @@ function civicrm_entity_ds_fields_info($entity_type) {
     }
     if (isset($civicrm_entity_info['display suite']['date fields']) && count($civicrm_entity_info['display suite']['date fields'])) {
       _civicrm_entity_date_addformatters($entity_type, $civicrm_entity_info['display suite']['date fields'], $fields);
+    }
+    if (isset($civicrm_entity_info['display suite']['timestamp fields']) && count($civicrm_entity_info['display suite']['timestamp fields'])) {
+      _civicrm_entity_timestamp_addformatters($entity_type, $civicrm_entity_info['display suite']['timestamp fields'], $fields);
     }
   }
 

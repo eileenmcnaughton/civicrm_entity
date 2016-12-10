@@ -5,7 +5,7 @@
  */
 
 /**
- * Form callback for
+ * Form callback for event registration form
  *
  * @param $form
  * @param $form_state
@@ -590,7 +590,7 @@ function civicrm_entity_price_set_field_display_form_event_submit($form, &$form_
 }
 
 /**
- * Process event registration (after successful cc transation if appropriate)
+ * Process event registration (after successful cc transition if appropriate)
  *
  * @param $form_state
  */
@@ -720,7 +720,7 @@ function _civicrm_entity_price_set_field_process_event_registration(&$form_state
 }
 
 /**
- * Validation Handler for the civicrm entity price set event registration form display
+ * Validation Handler for the CiviCRM entity price set event registration form display
  *
  * @param $form
  * @param $form_state
@@ -927,6 +927,8 @@ function civicrm_entity_price_set_field_event_registration_form_register_as_anot
 
 /**
  * Utility function to handle contact create/update
+ *
+ * @deprecated
  *
  * @param $action
  * @param $count

@@ -702,4 +702,3 @@ function _civicrm_entity_profile_remove_button_submit_handler($form, &$form_stat
 
   $form_state['rebuild'] = TRUE;
 }
-

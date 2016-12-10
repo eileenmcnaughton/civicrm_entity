@@ -4,7 +4,14 @@
  * CiviCRM Entity Price Set Field, Credit Card Transaction code
  */
 
-
+/**
+ * CiviCRM Entity Price Set Field Get Processor Info
+ *
+ * Sets up info and alter hooks to gather payment processor handlers
+ *
+ * @param null $id
+ * @return array
+ */
 function civicrm_entity_price_set_field_get_processor_handler_info($id = NULL) {
   $results = array();
   foreach (module_implements('civicrm_entity_price_set_field_processor_info') as $module) {
