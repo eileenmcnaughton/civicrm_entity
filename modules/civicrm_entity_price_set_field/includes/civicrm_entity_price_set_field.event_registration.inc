@@ -5,7 +5,7 @@
  */
 
 /**
- * Form callback for
+ * Form callback for event registration form
  *
  * @param $form
  * @param $form_state
@@ -250,6 +250,14 @@ function _civicrm_entity_price_set_field_setup_event_registration_form_fapi(&$fo
     ),
   );
 
+  //Fetch event profiles
+  $main_profiles = $add_profiles = array();
+  if (module_exists('civicrm_entity_profile')) {
+    $main_profiles = _civicrm_entity_profile_get_profiles('civicrm_event', $form_state['event']->id, 'CiviEvent');
+    if (!empty($form_state['event']->is_multiple_registrations)) {
+      $add_profiles = _civicrm_entity_profile_get_profiles('civicrm_event', $form_state['event']->id, 'CiviEvent_Additional');
+    }
+  }
   foreach ($form_state['contacts'] as $count => $contact) {
     if ($count) {
       $form['registration_form']['contacts'][$count]['heading'] = array(
@@ -260,8 +268,63 @@ function _civicrm_entity_price_set_field_setup_event_registration_form_fapi(&$fo
     if (!empty($data)) {
       _civicrm_entity_price_set_field_setup_price_set_fapi($form, $form_state, $default_values, 'registration_form', $count);
     }
-    // setup contact fields
+
+    // setup profiles
     $form['registration_form']['contacts'][$count]['contact_info'] = array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => array(
+          'civicrm-entity-price-set-field-participant-form',
+        ),
+      ),
+    );
+
+    if($count == 0) {
+      $profile_list = $main_profiles;
+    }
+    else {
+      $profile_list = $add_profiles;
+    }
+    if(count($profile_list)) {
+      foreach ($profile_list as $profile_id) {
+        $profile_title = _civicrm_entity_profile_get_profile_title($profile_id);
+        // setup profile container
+        $form['registration_form']['contacts'][$count]['contact_info']['profile-' . $profile_id] = array(
+          '#type' => 'container',
+          '#attributes' => array(
+            'class' => array(
+              'civicrm-entity-price-set-field-profile',
+            ),
+          ),
+        );
+        // Title for the form set
+        if (!empty($profile_title)) {
+          $form['registration_form']['contacts'][$count]['contact_info']['profile-' . $profile_id]['#prefix'] = '<h3>' . $profile_title . '</h3>';
+        }
+        // Save profile metadata for future use
+        $form_state['profiles']['profile-' . $profile_id] = _civicrm_entity_profile_get_profile_metadata($profile_id, 'event');
+        // Get profile FAPI
+        $profile_fapi = _civicrm_entity_profile_generate_profile_fapi($profile_id, 'event');
+
+        if (!empty($profile_fapi)) {
+          // add profile FAPI to main form
+          $form['registration_form']['contacts'][$count]['contact_info']['profile-' . $profile_id]['profile'] = $profile_fapi;
+
+          // Setup default values
+          foreach ($form['registration_form']['contacts'][$count]['contact_info']['profile-' . $profile_id]['profile'] as $name => $field_fapi) {
+            if (!empty($default_values['contacts'][$count]['contact_info']['profile-' . $profile_id]['profile'][$name])) {
+              $form['registration_form']['contacts'][$count]['contact_info']['profile-' . $profile_id]['profile'][$name]['#default_value'] = $default_values['contacts'][$count]['contact_info']['profile-' . $profile_id]['profile'][$name];
+            } elseif (!empty($form_state['contacts'][$count]->{$name})) {
+              $form['registration_form']['contacts'][$count]['contact_info']['profile-' . $profile_id]['profile'][$name]['#default_value'] = $form_state['contacts'][$count]->{$name};
+            } else {
+              $form['registration_form']['contacts'][$count]['contact_info']['profile-' . $profile_id]['profile'][$name]['#default_value'] = '';
+            }
+          }
+        }
+      }
+    }
+    // setup contact fields
+    /*$form['registration_form']['contacts'][$count]['contact_info'] = array(
       '#type' => 'container',
       '#attributes' => array(
         'class' => array(
@@ -301,7 +364,7 @@ function _civicrm_entity_price_set_field_setup_event_registration_form_fapi(&$fo
       else {
         $form['registration_form']['contacts'][$count]['contact_info'][$name]['#default_value'] = '';
       }
-    }
+    }*/
 
     if ($count) {
       $form['registration_form']['contacts'][$count]['remove_participant'] = array(
@@ -438,65 +501,6 @@ function _civicrm_entity_price_set_field_setup_event_registration_form_fapi(&$fo
 }
 
 /**
- * Helper function to setup event confirmation page FAPI
- *
- * @param $form
- * @param $form_state
- */
-function _civicrm_entity_price_set_field_setup_event_confirmation_page_fapi(&$form, &$form_state) {
-  $form['confirmation_page'] = array(
-    '#type' => 'container',
-    '#attributes' => array(
-      'class' => array(
-        'civicrm-entity-price-set-field-confirmation-page',
-      ),
-    ),
-    '#tree' => TRUE,
-  );
-  $markup = theme('civicrm_entity_price_set_field_price_field_display_form_confirmation_page', array(
-      'form_data' => $form_state['storage']['registration_form'],
-      'civicrm_event',
-      'entity' => $form_state['event'],
-      'price_set_data' => $form_state['price_set_data'],
-      'heading' => !empty($form_state['event']->confirm_title) ? $form_state['event']->confirm_title : 'Confirmation Page',
-    )
-  );
-  $form['confirmation_page']['message'] = array(
-    '#type' => 'markup',
-    '#markup' => $markup,
-  );
-}
-
-/**
- * Helper function to setup thank you page FAPI
- *
- * @param $form
- * @param $form_state
- */
-function _civicrm_entity_price_set_field_setup_event_thank_you_page_fapi(&$form, &$form_state) {
-  $form['thank_you_page'] = array(
-    '#type' => 'container',
-    '#attributes' => array(
-      'class' => array(
-        'civicrm-entity-price-set-field-thank-you-page',
-      ),
-    ),
-  );
-  $markup = theme('civicrm_entity_price_set_field_price_field_display_form_thank_you_page', array(
-      'form_data' => $form_state['storage']['registration_form'],
-      'civicrm_event',
-      'entity' => $form_state['event'],
-      'price_set_data' => $form_state['price_set_data'],
-      'heading' => !empty($form_state['event']->confirm_title) ? $form_state['event']->thankyou_title : 'Thank You Page',
-    )
-  );
-  $form['thank_you_page']['message'] = array(
-    '#type' => 'markup',
-    '#markup' => $markup,
-  );
-}
-
-/**
  * Submit handler for event registration form 'Register' button
  *
  * @param $form
@@ -521,13 +525,33 @@ function civicrm_entity_price_set_field_display_form_event_submit($form, &$form_
         $form_state['storage']['registration_form']['transaction']['total'] > 0
       ) {
         if (empty($form_state['storage']['registration_form']['pay_later'])) {
-          _civicrm_entity_price_set_field_display_form_create_update_contact('first', 0, $form_state);
-          $transact_result = _civicrm_entity_price_set_field_run_cc_transaction($form_state['display_settings'], $data, 'civicrm_event', $event, $form_state['contacts'], $form_state['storage']['registration_form']);
-          if ($transact_result !== FALSE && !empty($transact_result['contribution']) && is_object($transact_result['contribution'])) {
-            $form_state['contribution'] = $transact_result['contribution'];
+
+          // submit profile here?
+          //_civicrm_entity_price_set_field_display_form_create_update_contact('first', 0, $form_state);
+
+          // if first contact is new, doesn't have an id, then execute the first profile submit for the first contact?
+          if(empty($form_state['contacts'][0]->id)) {
+            $first_profile = reset($form_state['storage']['registration_form']['contacts'][0]['contact_info']);
+            $profile_id = array_keys($first_profile);
+            $pids = explode(',', $profile_id);
+            $pid = $pids[1];
+            $submitted_result = _civicrm_entity_profile_process_profile_submitted_data($pid, $first_profile['profile']);
+            if(!empty($submitted_result)) {
+              $form_state['contacts'][0] = $submitted_result;
+              $form_state['first_profile_submitted'] = 1;
+            }
+            else {
+              $success = FALSE;
+            }
           }
-          else {
-            $success = FALSE;
+
+          if($success) {
+            $transact_result = _civicrm_entity_price_set_field_run_cc_transaction($form_state['display_settings'], $data, 'civicrm_event', $event, $form_state['contacts'], $form_state['storage']['registration_form']);
+            if ($transact_result !== FALSE && !empty($transact_result['contribution']) && is_object($transact_result['contribution'])) {
+              $form_state['contribution'] = $transact_result['contribution'];
+            } else {
+              $success = FALSE;
+            }
           }
         }
         else {
@@ -566,211 +590,11 @@ function civicrm_entity_price_set_field_display_form_event_submit($form, &$form_
 }
 
 /**
- * Utility function to handle contact create/update
- *
- * @param $action
- * @param $count
- * @param $form_state
- * @throws CiviCRM_API3_Exception
- * @throws EntityMetadataWrapperException
- */
-function _civicrm_entity_price_set_field_display_form_create_update_contact($action, $count, &$form_state) {
-  if (!empty($form_state['contacts'][$count]->is_new) || !empty($form_state['contacts'][$count]->is_new_temp)) {
-    civicrm_initialize();
-    $params = array(
-      'match' => array(
-        'contact_type' => 'Individual',
-        'first_name' => $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['first_name'],
-        'last_name' => $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['last_name'],
-        'email' => $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['email'],
-      ),
-    );
-    if (!empty($form_state['storage']['registration_form']['contacts'][$count]['contact_info']['phone'])) {
-      $params['match']['phone'] = $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['phone'];
-    }
-    if (!empty($form_state['event']->dedupe_rule_group_id)) {
-      $params['dedupe_rule_id'] = $form_state['event']->dedupe_rule_group_id;
-    }
-    $result = civicrm_api3('Contact', 'duplicatecheck', $params);
-    if ($result['count']) {
-      $dupe_contact_ids = array_keys($result['values']);
-      $form_state['contacts'][$count] = entity_load_single('civicrm_contact', reset($dupe_contact_ids));
-      $form_state['contacts'][$count]->is_new_temp = TRUE;
-    }
-    else {
-      $contact = new CivicrmEntity(array(
-        'first_name' => $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['first_name'],
-        'last_name' => $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['last_name'],
-        'email' => $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['email'],
-        'contact_type' => 'Individual',
-      ), 'civicrm_contact');
-      if (!empty($form_state['storage']['registration_form']['contacts'][$count]['contact_info']['phone'])) {
-        $contact->phone = $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['phone'];
-      }
-      $contact->source = 'Created VIA CiviCRM Entity Price Set Field Display Form';
-      $contact_wrapper = entity_metadata_wrapper('civicrm_contact', $contact);
-      $contact_wrapper->save();
-      $form_state['contacts'][$count] = $contact_wrapper->value();
-      $form_state['contacts'][$count]->is_new_temp = TRUE;
-      if ($count == 0 && empty($form_state['storage']['registration_form']['register_as_another'])) {
-        global $user;
-        if ($user->uid) {
-          $form_state['contacts'][$count]->uid = $user->uid;
-        }
-      }
-    }
-  }
-  elseif ((empty($form_state['contacts'][$count]->is_new) && empty($form_state['contacts'][$count]->is_new_temp)) && $action == 'other') {
-
-    $form_state['contacts'][$count]->first_name = $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['first_name'];
-    $form_state['contacts'][$count]->last_name = $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['last_name'];
-    $form_state['contacts'][$count]->email = $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['email'];
-    $form_state['contacts'][$count]->phone = $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['phone'];
-    $contact_wrapper = entity_metadata_wrapper('civicrm_contact', $form_state['contacts'][$count]);
-    $contact_wrapper->save();
-    $form_state['contacts'][$count] = $contact_wrapper->value();
-
-    if ($count == 0 && !empty($form_state['contacts'][$count]->uid)) {
-      civicrm_initialize();
-      $result = civicrm_api3('UFMatch', 'get', array(
-        'sequential' => 1,
-        'uf_id' => $form_state['contacts'][$count]->uid,
-      ));
-      if ($result['count'] == 0) {
-        $result = civicrm_api3('UFMatch', 'create', array(
-          'sequential' => 1,
-          'uf_id' => $form_state['contacts'][$count]->uid,
-          'contact_id' => $form_state['contacts'][$count],
-          'uf_name' => $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['email'],
-        ));
-      }
-    }
-
-  }
-}
-
-/**
- * Submit handler for event confirmation page back button
- *
- * @param $form
- * @param $form_state
- */
-function _civicrm_entity_price_set_field_event_confirmation_page_back_submit($form, &$form_state) {
-  $form_state['step']--;
-  $form_state['rebuild'] = TRUE;
-}
-
-/**
- * Submit handler for the event registration add participant button
- *
- * @param $form
- * @param $form_state
- */
-function _civicrm_entity_price_set_field_event_registration_add_participant_submit($form, &$form_state) {
-  $contact = new CivicrmEntity(array('is_new' => TRUE), 'civicrm_contact');
-  $form_state['contacts'][count($form_state['contacts'])] = $contact;
-  $form_state['rebuild'] = TRUE;
-}
-
-
-/**
- * Submit handler for the event registration remove participant button
- *
- * @param $form
- * @param $form_state
- */
-function _civicrm_entity_price_set_field_event_registration_remove_participant_submit($form, &$form_state) {
-  $count = $form_state['triggering_element']['#contact_count'];
-  unset($form_state['contacts'][$count]);
-  if (isset($form_state['storage']['registration_form']['contacts'][$count])) {
-    unset($form_state['storage']['registration_form']['contacts'][$count]);
-  }
-  $form_state['rebuild'] = TRUE;
-}
-
-/**
- * Ajax callback for Event Registration form / pages
- *
- * @param $form
- * @param $form_state
- * @return mixed
- */
-function civicrm_entity_price_set_field_event_registration_form_ajax_callback($form, &$form_state) {
-  $commands = array();
-
-  $commands[] = ajax_command_html('#civicrm-price-set-field-event-registration', render($form));
-  $commands[] = ajax_command_prepend('#civicrm-price-set-field-event-registration', '<div id="messages">' . theme('status_messages') . '</div>');
-  $commands[] = array(
-    'command' => 'afterPriceSetDisplayFormAjaxReplaceCallback',
-  );
-  return array('#type' => 'ajax', '#commands' => $commands);
-}
-
-/**
- * Ajax callback for Event registration form, Register as another user checkbox
- *
- * @param $form
- * @param $form_state
- * @return array
- */
-function civicrm_entity_price_set_field_event_registration_form_register_as_another_ajax_callback(&$form, &$form_state) {
-  if (!empty($form_state['values']['registration_form']['register_as_another'])) {
-
-    $form_state['input']['registration_form']['contacts'][0]['contact_info']['first_name'] = '';
-    $form_state['input']['registration_form']['contacts'][0]['contact_info']['last_name'] = '';
-    $form_state['input']['registration_form']['contacts'][0]['contact_info']['email'] = '';
-    $form_state['input']['registration_form']['contacts'][0]['contact_info']['phone'] = '';
-
-    $form_state['contacts'][0] = new CivicrmEntity(array('is_new' => 1), 'civicrm_contact');
-
-    global $user;
-    if ($user->uid) {
-      $form_state['contacts'][0]->uid = $user->uid;
-    }
-  }
-  else {
-    global $user;
-    if ($user->uid && empty($default_values['register_as_another'])) {
-      $contact = civicrm_entity_user_contact_get($user, array(), '', '', '');
-      if ($contact) {
-        $form_state['contacts'][0] = $contact;
-        $form_state['input']['registration_form']['contacts'][0]['contact_info']['first_name'] = !empty($contact->first_name) ? $contact->first_name : '';
-        $form_state['input']['registration_form']['contacts'][0]['contact_info']['last_name'] = !empty($contact->last_name) ? $contact->last_name : '';
-        $form_state['input']['registration_form']['contacts'][0]['contact_info']['email'] = !empty($contact->email) ? $contact->email : '';;
-        $form_state['input']['registration_form']['contacts'][0]['contact_info']['phone'] = !empty($contact->phone) ? $contact->phone : '';;
-      }
-      else {
-        $form_state['contacts'][0] = array(
-          new CivicrmEntity(array(
-            'is_new' => 1,
-            'uid' => $user->uid,
-          ), 'civicrm_contact'),
-        );
-      }
-    }
-    else {
-      $form_state['contacts'][0] = new CivicrmEntity(array('is_new' => 1), 'civicrm_contact');
-    }
-  }
-  $form_state['rebuild'] = TRUE;
-
-
-  $commands = array();
-  $to_render = drupal_rebuild_form($form['#form_id'], $form_state, $form);
-  $commands[] = ajax_command_html('#civicrm-price-set-field-event-registration', render($to_render));
-  $commands[] = ajax_command_prepend('#civicrm-price-set-field-event-registration', '<div id="messages">' . theme('status_messages') . '</div>');
-  $commands[] = array(
-    'command' => 'afterPriceSetDisplayFormAjaxReplaceCallback',
-  );
-  return array('#type' => 'ajax', '#commands' => $commands);
-}
-
-/**
- * Process event registration (after successful cc transation if appropriate)
+ * Process event registration (after successful cc transition if appropriate)
  *
  * @param $form_state
  */
-function _civicrm_entity_price_set_field_process_event_registration($form_state) {
+function _civicrm_entity_price_set_field_process_event_registration(&$form_state) {
   $form_state['participants'] = array();
   if (empty($form_state['contribution'])) {
     $form_state['contribution'] = NULL;
@@ -779,7 +603,28 @@ function _civicrm_entity_price_set_field_process_event_registration($form_state)
   $line_items = array();
 
   foreach ($form_state['contacts'] as $count => $contact) {
-    _civicrm_entity_price_set_field_display_form_create_update_contact('other', $count, $form_state);
+    //_civicrm_entity_price_set_field_display_form_create_update_contact('other', $count, $form_state);
+    $submitted_count = 0;
+    foreach($form_state['storage']['registration_form']['contacts'][$count]['contact_info'] as $profile_id => $profile_data) {
+      $pids = explode('-', $profile_id);
+      $pid = $pids[1];
+      if($submitted_count == 0 && !empty($form_state['first_profile_submitted'])) {
+        continue;
+      }
+
+      if(!empty($contact->id)) {
+        $submit_result = _civicrm_entity_profile_process_profile_submitted_data($pid, $profile_data['profile'], $contact->id);
+      }
+      else {
+        $submit_result = _civicrm_entity_profile_process_profile_submitted_data($pid, $profile_data['profile']);
+      }
+      if(!empty($submit_result)) {
+        $form_state['contacts'][$count] = $contact;
+      }
+
+      $submitted_count += 1;
+    }
+
     try {
       $params = array(
         'is_new' => TRUE,
@@ -875,179 +720,18 @@ function _civicrm_entity_price_set_field_process_event_registration($form_state)
 }
 
 /**
- * Helper function to add price set FAPI elements on form
- *
- * @param $form
- * @param $form_state
- * @param $default_values
- * @param $parent
- * @param $contact_id
- */
-function _civicrm_entity_price_set_field_setup_price_set_fapi(&$form, &$form_state, $default_values, $parent, $count) {
-  $data = $form_state['price_set_data'];
-  if (!empty($data)) {
-    $form[$parent]['contacts'][$count]['price_set'] = array(
-      '#type' => 'container',
-      '#attributes' => array(
-        'class' => array(
-          'civicrm-price-set',
-        ),
-      ),
-    );
-    foreach ($data['price_fields'] as $pf_id => $price_field) {
-      $form[$parent]['contacts'][$count]['price_set'][$pf_id] = array(
-        '#type' => 'container',
-        '#attributes' => array(
-          'class' => array(
-            'civicrm-price-field',
-            'price-field-type-' . drupal_html_class(strtolower($price_field['pf_entity']->html_type)),
-          ),
-        ),
-      );
-
-      $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values'] = array();
-      $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#title'] = t($price_field['pf_entity']->label);
-
-      if (!empty($price_field['pf_entity']->is_required)) {
-        $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#required'] = TRUE;
-
-      };
-
-      if ($price_field['pf_entity']->html_type == 'Text') {
-        $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#type'] = 'textfield';
-      }
-      else {
-        switch ($price_field['pf_entity']->html_type) {
-          case 'Radio':
-            $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#type'] = 'radios';
-            $default_value = array();
-            break;
-          case 'Select':
-            $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#type'] = 'select';
-            $default_value = '';
-            break;
-          case 'CheckBox':
-            $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#type'] = 'checkboxes';
-            $default_value = array();
-            break;
-        }
-        $options = array();
-        foreach ($price_field['price_field_values'] as $id => $price_field_value) {
-          $options[$id] = $price_field_value->label . ' $' . $price_field_value->amount;
-          if (!empty($price_field_value->is_default)) {
-            if (is_array($default_value)) {
-              $default_value[$id] = $id;
-            }
-            else {
-              $default_value = $id;
-            }
-          }
-        }
-        $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#options'] = $options;
-        if (empty($default_values['contacts'][$count]['price_set'][$pf_id]['price_field_values'])) {
-          $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#default_value'] = $default_value;
-        }
-        else {
-          $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#default_value'] = $default_values['contacts'][$count]['price_set'][$pf_id]['price_field_values'];
-        }
-      }
-    }
-  }
-}
-
-/**
- * Theme function for Display Form -- Confirmation Page
- *
- * @param $vars
- * @return string
- */
-function theme_civicrm_entity_price_set_field_price_field_display_form_confirmation_page($vars) {
-  $html = '<h3 class="confirmation-title">' . $vars['heading'] . '</h3>';
-  if (!empty($vars['entity']->confirm_text)) {
-    $html .= $vars['entity']->confirm_text;
-  }
-
-  $header = array(
-    'fee' => 'Fee',
-    'name' => 'Name',
-    'email' => 'Email',
-    'phone' => 'Phone',
-  );
-  $rows = array();
-  foreach ($vars['form_data']['contacts'] as $id => $contact) {
-    $rows[$id]['data']['fee'] = '$' . number_format($vars['form_data']['transaction']['fee_amounts'][$id], 2);
-    $rows[$id]['data']['name'] = implode(' ', array(
-      $contact['contact_info']['first_name'],
-      $contact['contact_info']['last_name'],
-    ));
-    $rows[$id]['data']['email'] = $contact['contact_info']['email'];
-    $rows[$id]['data']['phone'] = $contact['contact_info']['phone'];
-  }
-  $html .= '<h4>' . 'Registering participants:' . '</h4>';
-  $html .= theme('table', array('header' => $header, 'rows' => $rows));
-
-  $html .= '<h4 class="total"><strong class="label">Total: </strong>' . '$' . number_format($vars['form_data']['transaction']['total'], 2) . '</h4>';
-
-  if (!empty($vars['entity']->confirm_footer_text)) {
-    $html .= $vars['entity']->confirm_footer_text;
-  }
-
-  return $html;
-}
-
-/**
- * Theme function for Display Form -- Thank you page
- *
- * @param $vars
- * @return string
- */
-function theme_civicrm_entity_price_set_field_price_field_display_form_thank_you_page($vars) {
-  $html = '<h3>' . $vars['heading'] . '</h3>';
-  if (!empty($vars['entity']->thankyou_text)) {
-    $html .= $vars['entity']->thankyou_text;
-  }
-
-  $header = array(
-    'fee' => 'Fee',
-    'name' => 'Name',
-    'email' => 'Email',
-    'phone' => 'Phone',
-  );
-  $rows = array();
-  foreach ($vars['form_data']['contacts'] as $id => $contact) {
-    $rows[$id]['data']['fee'] = '$' . number_format($vars['form_data']['transaction']['fee_amounts'][$id], 2);
-    $rows[$id]['data']['name'] = implode(' ', array(
-      $contact['contact_info']['first_name'],
-      $contact['contact_info']['last_name'],
-    ));
-    $rows[$id]['data']['email'] = $contact['contact_info']['email'];
-    $rows[$id]['data']['phone'] = $contact['contact_info']['phone'];
-  }
-  $html .= '<h4>' . 'Registered participants:' . '</h4>';
-  $html .= theme('table', array('header' => $header, 'rows' => $rows));
-
-  $html .= '<h4 class="total"><strong class="label">Total: </strong>' . '$' . number_format($vars['form_data']['transaction']['total'], 2) . '</h4>';
-
-  if (!empty($vars['entity']->thankyou_footer_text)) {
-    $html .= $vars['entity']->thankyou_footer_text;
-  }
-
-  return $html;
-}
-
-/**
- * Validation Handler for the civicrm entity price set event registration form display
+ * Validation Handler for the CiviCRM entity price set event registration form display
  *
  * @param $form
  * @param $form_state
  */
 function civicrm_entity_price_set_field_display_form_event_validate($form, $form_state) {
-  if (isset($form_state['values']['registration_form']['pay_later']) && $form_state['values']['registration_form']['pay_later'] == 0) {
+  if ($form_state['step'] == 1 && empty($form_state['values']['registration_form']['pay_later'])) {
     if (empty($form_state['values']['registration_form']['registration_cc_block']['first_name_on_card'])) {
       form_set_error('registration_form][registration_cc_block][first_name_on_card', 'First name on card field required.');
     }
     if (empty($form_state['values']['registration_form']['registration_cc_block']['last_name_on_card'])) {
-      form_set_error('registration_form][registration_cc_block][first_name_on_card', 'Last name on card field required.');
+      form_set_error('registration_form][registration_cc_block][last_name_on_card', 'Last name on card field required.');
     }
     if (empty($form_state['values']['registration_form']['registration_cc_block']['cc_number'])) {
       form_set_error('registration_form][registration_cc_block][cc_number', 'Credit card number required.');
@@ -1102,5 +786,234 @@ function civicrm_entity_price_set_field_event_form_additional_validation(&$form,
     if (empty($form_state['values']['payment_processor'])) {
       form_set_error('payment_processor', 'Payment Processor is required when the event is a paid event.');
     }
+  }
+}
+
+/**
+ * Submit handler for event confirmation page back button
+ *
+ * @param $form
+ * @param $form_state
+ */
+function _civicrm_entity_price_set_field_event_confirmation_page_back_submit($form, &$form_state) {
+  $form_state['step']--;
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * Submit handler for the event registration add participant button
+ *
+ * @param $form
+ * @param $form_state
+ */
+function _civicrm_entity_price_set_field_event_registration_add_participant_submit($form, &$form_state) {
+  $contact = new CivicrmEntity(array('is_new' => TRUE), 'civicrm_contact');
+  $form_state['contacts'][count($form_state['contacts'])] = $contact;
+  $form_state['rebuild'] = TRUE;
+}
+
+
+/**
+ * Submit handler for the event registration remove participant button
+ *
+ * @param $form
+ * @param $form_state
+ */
+function _civicrm_entity_price_set_field_event_registration_remove_participant_submit($form, &$form_state) {
+  $count = $form_state['triggering_element']['#contact_count'];
+  unset($form_state['contacts'][$count]);
+  if (isset($form_state['storage']['registration_form']['contacts'][$count])) {
+    unset($form_state['storage']['registration_form']['contacts'][$count]);
+  }
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * Ajax callback for Event Registration form / pages
+ *
+ * @param $form
+ * @param $form_state
+ * @return mixed
+ */
+function civicrm_entity_price_set_field_event_registration_form_ajax_callback($form, &$form_state) {
+  $commands = array();
+
+  $commands[] = ajax_command_html('#civicrm-price-set-field-event-registration', render($form));
+  $commands[] = ajax_command_prepend('#civicrm-price-set-field-event-registration', '<div id="messages">' . theme('status_messages') . '</div>');
+  $commands[] = array(
+    'command' => 'afterPriceSetDisplayFormAjaxReplaceCallback',
+  );
+  return array('#type' => 'ajax', '#commands' => $commands);
+}
+
+/**
+ * Ajax callback for Event registration form, Register as another user checkbox
+ *
+ * @param $form
+ * @param $form_state
+ * @return array
+ */
+function civicrm_entity_price_set_field_event_registration_form_register_as_another_ajax_callback(&$form, &$form_state) {
+  if (!empty($form_state['values']['registration_form']['register_as_another'])) {
+    if(count($form_state['input']['registration_form']['contacts'][0]['contact_info'])) {
+      foreach ($form_state['input']['registration_form']['contacts'][0]['contact_info'] as $profile => $fapi) {
+        if(count($form_state['input']['registration_form']['contacts'][0]['contact_info'][$profile]['profile'])) {
+          foreach ($form_state['input']['registration_form']['contacts'][0]['contact_info'][$profile]['profile'] as $name => $value) {
+            $form_state['input']['registration_form']['contacts'][0]['contact_info'][$profile]['profile'][$name] = '';
+          }
+        }
+      }
+    }
+    /*-- hard coded contact info code
+    $form_state['input']['registration_form']['contacts'][0]['contact_info']['first_name'] = '';
+    $form_state['input']['registration_form']['contacts'][0]['contact_info']['last_name'] = '';
+    $form_state['input']['registration_form']['contacts'][0]['contact_info']['email'] = '';
+    $form_state['input']['registration_form']['contacts'][0]['contact_info']['phone'] = '';
+    */
+    $form_state['contacts'][0] = new CivicrmEntity(array('is_new' => 1), 'civicrm_contact');
+    global $user;
+    if ($user->uid) {
+      $form_state['contacts'][0]->uid = $user->uid;
+    }
+  }
+  else {
+    global $user;
+    if ($user->uid && empty($default_values['register_as_another'])) {
+      $contact = civicrm_entity_user_contact_get($user, array(), '', '', '');
+      if ($contact) {
+        $form_state['contacts'][0] = $contact;
+        if (count($form_state['input']['registration_form']['contacts'][0]['contact_info'])) {
+          foreach ($form_state['input']['registration_form']['contacts'][0]['contact_info'] as $profile => $fapi) {
+            if(count($form_state['input']['registration_form']['contacts'][0]['contact_info'][$profile]['profile'])) {
+              foreach ($form_state['input']['registration_form']['contacts'][0]['contact_info'][$profile]['profile'] as $name => $value) {
+                $form_state['input']['registration_form']['contacts'][0]['contact_info'][$profile]['profile'][$name] = !empty($contact->{$name}) ? $contact->{$name} : '';
+              }
+            }
+          }
+        }
+        /* -- hard coded contact info code
+        $form_state['input']['registration_form']['contacts'][0]['contact_info']['first_name'] = !empty($contact->first_name) ? $contact->first_name : '';
+        $form_state['input']['registration_form']['contacts'][0]['contact_info']['last_name'] = !empty($contact->last_name) ? $contact->last_name : '';
+        $form_state['input']['registration_form']['contacts'][0]['contact_info']['email'] = !empty($contact->email) ? $contact->email : '';
+        $form_state['input']['registration_form']['contacts'][0]['contact_info']['phone'] = !empty($contact->phone) ? $contact->phone : '';
+        */
+      }
+      else {
+        $form_state['contacts'][0] = array(
+          new CivicrmEntity(array(
+            'is_new' => 1,
+            'uid' => $user->uid,
+          ), 'civicrm_contact'),
+        );
+      }
+    }
+    else {
+      $form_state['contacts'][0] = new CivicrmEntity(array('is_new' => 1), 'civicrm_contact');
+    }
+  }
+  $form_state['rebuild'] = TRUE;
+
+
+  $commands = array();
+  $to_render = drupal_rebuild_form($form['#form_id'], $form_state, $form);
+  $commands[] = ajax_command_html('#civicrm-price-set-field-event-registration', render($to_render));
+  $commands[] = ajax_command_prepend('#civicrm-price-set-field-event-registration', '<div id="messages">' . theme('status_messages') . '</div>');
+  $commands[] = array(
+    'command' => 'afterPriceSetDisplayFormAjaxReplaceCallback',
+  );
+  return array('#type' => 'ajax', '#commands' => $commands);
+}
+
+
+/**
+ * Utility function to handle contact create/update
+ *
+ * @deprecated
+ *
+ * @param $action
+ * @param $count
+ * @param $form_state
+ * @throws CiviCRM_API3_Exception
+ * @throws EntityMetadataWrapperException
+ */
+function _civicrm_entity_price_set_field_display_form_create_update_contact($action, $count, &$form_state) {
+  /**
+   *
+   *
+   * Function needs reworking or replacement for use of profiles
+   *
+   *
+   */
+  if (!empty($form_state['contacts'][$count]->is_new) || !empty($form_state['contacts'][$count]->is_new_temp)) {
+    civicrm_initialize();
+    $params = array(
+      'match' => array(
+        'contact_type' => 'Individual',
+        'first_name' => $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['first_name'],
+        'last_name' => $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['last_name'],
+        'email' => $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['email'],
+      ),
+    );
+    if (!empty($form_state['storage']['registration_form']['contacts'][$count]['contact_info']['phone'])) {
+      $params['match']['phone'] = $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['phone'];
+    }
+    if (!empty($form_state['event']->dedupe_rule_group_id)) {
+      $params['dedupe_rule_id'] = $form_state['event']->dedupe_rule_group_id;
+    }
+    $result = civicrm_api3('Contact', 'duplicatecheck', $params);
+    if ($result['count']) {
+      $dupe_contact_ids = array_keys($result['values']);
+      $form_state['contacts'][$count] = entity_load_single('civicrm_contact', reset($dupe_contact_ids));
+      $form_state['contacts'][$count]->is_new_temp = TRUE;
+    }
+    else {
+      $contact = new CivicrmEntity(array(
+        'first_name' => $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['first_name'],
+        'last_name' => $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['last_name'],
+        'email' => $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['email'],
+        'contact_type' => 'Individual',
+      ), 'civicrm_contact');
+      if (!empty($form_state['storage']['registration_form']['contacts'][$count]['contact_info']['phone'])) {
+        $contact->phone = $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['phone'];
+      }
+      $contact->source = 'Created VIA CiviCRM Entity Price Set Field Display Form';
+      $contact_wrapper = entity_metadata_wrapper('civicrm_contact', $contact);
+      $contact_wrapper->save();
+      $form_state['contacts'][$count] = $contact_wrapper->value();
+      $form_state['contacts'][$count]->is_new_temp = TRUE;
+      if ($count == 0 && empty($form_state['storage']['registration_form']['register_as_another'])) {
+        global $user;
+        if ($user->uid) {
+          $form_state['contacts'][$count]->uid = $user->uid;
+        }
+      }
+    }
+  }
+  elseif ((empty($form_state['contacts'][$count]->is_new) && empty($form_state['contacts'][$count]->is_new_temp)) && $action == 'other') {
+
+    $form_state['contacts'][$count]->first_name = $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['first_name'];
+    $form_state['contacts'][$count]->last_name = $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['last_name'];
+    $form_state['contacts'][$count]->email = $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['email'];
+    $form_state['contacts'][$count]->phone = $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['phone'];
+    $contact_wrapper = entity_metadata_wrapper('civicrm_contact', $form_state['contacts'][$count]);
+    $contact_wrapper->save();
+    $form_state['contacts'][$count] = $contact_wrapper->value();
+
+    if ($count == 0 && !empty($form_state['contacts'][$count]->uid)) {
+      civicrm_initialize();
+      $result = civicrm_api3('UFMatch', 'get', array(
+        'sequential' => 1,
+        'uf_id' => $form_state['contacts'][$count]->uid,
+      ));
+      if ($result['count'] == 0) {
+        $result = civicrm_api3('UFMatch', 'create', array(
+          'sequential' => 1,
+          'uf_id' => $form_state['contacts'][$count]->uid,
+          'contact_id' => $form_state['contacts'][$count],
+          'uf_name' => $form_state['storage']['registration_form']['contacts'][$count]['contact_info']['email'],
+        ));
+      }
+    }
+
   }
 }

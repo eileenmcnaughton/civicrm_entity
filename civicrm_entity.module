@@ -390,7 +390,7 @@ function civicrm_entity_entity_info() {
           'label' => t('CiviCRM @entity', array('@entity' => ucwords($civicrm_entity))),
           'admin' => array(
             'path' => 'admin/structure/civicrm-entity/' . $drupal_entity,
-            'access arguments' => array('administer CiviCRM'),
+            'access arguments' => array('administer CiviCRM Entity'),
           ),
         ),
       ),
@@ -513,6 +513,9 @@ function civicrm_entity_supported_entities_info() {
         'is_test',
         'is_deleted',
       ),
+      'date fields' => array(
+        'activity_date_time',
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_action_schedule'] = array(
@@ -524,6 +527,11 @@ function civicrm_entity_supported_entities_info() {
       'update' => array(),
       'create' => array(),
       'delete' => array(),
+    ),
+    'display suite' => array(
+      'date fields' => array(
+        'absolute_date',
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_address'] = array(
@@ -578,6 +586,14 @@ function civicrm_entity_supported_entities_info() {
       'template' => 'civicrm-campaign',
       'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
+    'display suite' => array(
+      'date fields' => array(
+        'start_date',
+        'end_date',
+        'created_date',
+        'last_modified_date',
+      ),
+    ),
   );
   $civicrm_entity_info['civicrm_case'] = array(
     'civicrm entity name' => 'case',
@@ -599,6 +615,10 @@ function civicrm_entity_supported_entities_info() {
     'display suite' => array(
       'option fields' => array('case_type_id', 'status_id',),
       'boolean fields' => array('is_deleted',),
+      'date fields' => array(
+        'start_date',
+        'end_date',
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_contact'] = array(
@@ -639,6 +659,14 @@ function civicrm_entity_supported_entities_info() {
         'is_opt_out',
         'is_deleted',
         'contact_is_deleted',
+      ),
+      'date fields' => array(
+        'birth_date',
+        'deceased_date',
+      ),
+      'timestamp fields' => array(
+        'created_date',
+        'modified_date',
       ),
     ),
   );
@@ -681,6 +709,12 @@ function civicrm_entity_supported_entities_info() {
       ),
       'option fields' => array('financial_type_id', 'contribution_status_id', 'payment_instrument_id'),
       'boolean fields' => array('is_test', 'is_pay_later',),
+      'date fields' => array(
+        'cancel_date',
+        'receipt_date',
+        'thankyou_date',
+        'receive_date',
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_contribution_page'] = array(
@@ -720,6 +754,11 @@ function civicrm_entity_supported_entities_info() {
         'is_active',
         'is_share',
         'is_billing_required',
+      ),
+      'date fields' => array(
+        'start_date',
+        'end_date',
+        'created_date',
       ),
     ),
   );
@@ -842,6 +881,9 @@ function civicrm_entity_supported_entities_info() {
           'link_field' => 'payment_processor_id',
           'target' => 'civicrm_payment_processor',
         ),
+        'date fields' => array(
+          'trxn_date',
+        ),
       ),
     ),
   );
@@ -918,6 +960,13 @@ function civicrm_entity_supported_entities_info() {
         'is_share',
         'is_confirm_enabled',
       ),
+      'date fields' => array(
+        'start_date',
+        'end_date',
+        'registration_start_date',
+        'registration_end_date',
+        'created_date'
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_group'] = array(
@@ -954,6 +1003,10 @@ function civicrm_entity_supported_entities_info() {
         ),
       ),
       'boolean fields' => array('is_active', 'is_hidden', 'is_reserved',),
+      'timestamp fields' => array(
+        'cached_date',
+        'refresh_date',
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_grant'] = array(
@@ -987,6 +1040,12 @@ function civicrm_entity_supported_entities_info() {
         'grant_type_id',
       ),
       'boolean fields' => array('grant_report_received',),
+      'date fields' => array(
+        'application_received_date',
+        'decision_date',
+        'money_transfer_date',
+        'grant_due_date',
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_line_item'] = array(
@@ -1103,6 +1162,11 @@ function civicrm_entity_supported_entities_info() {
       ),
       'option fields' => array('membership_type_id', 'status_id',),
       'boolean fields' => array('is_test', 'is_pay_later', 'is_override',),
+      'date fields' => array(
+        'start_date',
+        'end_date',
+        'join_date',
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_membership_payment'] = array(
@@ -1191,6 +1255,9 @@ function civicrm_entity_supported_entities_info() {
           'target' => 'civicrm_contact',
         ),
       ),
+      'date fields' => array(
+        'modified_date',
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_participant'] = array(
@@ -1232,6 +1299,9 @@ function civicrm_entity_supported_entities_info() {
       ),
       'option fields' => array('status_id', 'role_id',),
       'boolean fields' => array('is_test', 'is_pay_later', 'must_wait',),
+      'date fields' => array(
+        'register_date',
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_participant_status_type'] = array(
@@ -1368,6 +1438,16 @@ function civicrm_entity_supported_entities_info() {
       'template' => 'civicrm-pledge',
       'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
+    'display suite' => array(
+      'date fields' => array(
+        'start_date',
+        'end_date',
+        'cancel_date',
+        'modified_date',
+        'created_date',
+        'acknowledge_date',
+      ),
+    ),
   );
   $civicrm_entity_info['civicrm_pledge_payment'] = array(
     'civicrm entity name' => 'pledge_payment',
@@ -1381,6 +1461,12 @@ function civicrm_entity_supported_entities_info() {
     'theme' => array(
       'template' => 'civicrm-pledge-payment',
       'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
+    ),
+    'display suite' => array(
+      'date fields' => array(
+        'scheduled_date',
+        'reminder_date',
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_price_set'] = array(
@@ -1426,6 +1512,10 @@ function civicrm_entity_supported_entities_info() {
         'is_display_amounts',
         'is_active',
         'is_required',
+      ),
+      'date fields' => array(
+        'active_on',
+        'expire_on',
       ),
     ),
   );
@@ -1518,6 +1608,10 @@ function civicrm_entity_supported_entities_info() {
         'is_permission_a_b',
         'is_permission_b_a',
       ),
+      'date fields' => array(
+        'start_date',
+        'end_date',
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_relationship_type'] = array(
@@ -1575,6 +1669,10 @@ function civicrm_entity_supported_entities_info() {
         'bypass_confirm',
         'is_share',
       ),
+      'date fields' => array(
+        'created_date',
+        'last_modified_date',
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_tag'] = array(
@@ -1607,6 +1705,9 @@ function civicrm_entity_supported_entities_info() {
         ),
       ),
       'boolean fields' => array('is_reserved', 'is_tagset', 'is_selectable',),
+      'date fields' => array(
+        'created_date',
+      ),
     ),
   );
   $civicrm_entity_info['civicrm_custom_field'] = array(
@@ -1671,8 +1772,12 @@ function civicrm_entity_supported_entities_info() {
         'collapse_adv_display',
         'is_reserved',
       ),
+      'date fields' => array(
+        'created_date',
+      ),
     ),
   );
+
   return $civicrm_entity_info;
 }
 
@@ -2409,13 +2514,15 @@ function civicrm_entity_civicrm_contact_label_callback($entity, $entity_type) {
  * @return object
  */
 function civicrm_entity_metadata_civicrm_entity_get_properties($data, $options, $name, $type, $info) {
-  if (isset($info['property_info']['entity']) && isset($data->$info['property_info']['field'])) {
-    $entity = civicrm_api($info['property_info']['entity'], 'get', array(
+  if (isset($info['property_info']['entity']) && isset($data->{$info['property_info']['field']})) {
+    /*$entity = civicrm_api($info['property_info']['entity'], 'get', array(
       'version' => 3,
       'id' => $data->$info['property_info']['field'],
       'sequential' => 1,
     ));
-    return (object) $entity['values'][0];
+    return (object) $entity['values'][0];*/
+
+    return entity_load_single('civicrm_' . $info['property_info']['entity'], $data->{$info['property_info']['field']});
   }
 }
 
@@ -3226,13 +3333,11 @@ function civicrm_entity_get_custom_fields($entity, $types = array(
 /**
  * Loads UI controller and generates view pages for civicrm entities
  *
- * @param integer $id
+ * @param $entity
  * @param string $entity_type
- * @param string $view_mode
  *
  * @return string content
  */
-
 function civicrm_entity_page_view($entity, $entity_type) {
   $content = "";
   if (!empty($entity->id)) {
@@ -3299,6 +3404,9 @@ function civicrm_entity_form_alter(&$form, &$form_state, $form_id) {
         $submits[] = $submit_callback;
       }
       $form['#submit'] = $submits;
+      if($entity_type == 'civicrm_contact' && !empty($form['fields']['civi_user'])) {
+       $form['fields']['civi_user']['human_name']['#markup'] = 'Drupal User (broken, do not display';
+      }
     }
 
   }
@@ -3355,9 +3463,7 @@ function _civicrm_entity_manage_display_suite_forms_validate(&$form, &$form_stat
 
   foreach ($entity_props['properties'] as $property => $info) {
     if (!empty($info['required']) && (empty($form_state['values']['fields'][$property]['region']) || $form_state['values']['fields'][$property]['region'] == 'hidden')) {
-
       form_set_error('fields][' . $property, $info['label'] . ' property is required by CiviCRM API to be included on this form.');
-
     }
   }
 
@@ -3418,9 +3524,16 @@ function civicrm_entity_ds_fields_info($entity_type) {
     if (isset($civicrm_entity_info['display suite']['boolean fields']) && count($civicrm_entity_info['display suite']['boolean fields'])) {
       _civicrm_entity_yesno_addformatters($entity_type, $civicrm_entity_info['display suite']['boolean fields'], $fields);
     }
+    if (isset($civicrm_entity_info['display suite']['date fields']) && count($civicrm_entity_info['display suite']['date fields'])) {
+      _civicrm_entity_date_addformatters($entity_type, $civicrm_entity_info['display suite']['date fields'], $fields);
+    }
+    if (isset($civicrm_entity_info['display suite']['timestamp fields']) && count($civicrm_entity_info['display suite']['timestamp fields'])) {
+      _civicrm_entity_timestamp_addformatters($entity_type, $civicrm_entity_info['display suite']['timestamp fields'], $fields);
+    }
   }
 
   if (isset($fields[$entity_type])) {
     return array($entity_type => $fields[$entity_type]);
   }
 }
+

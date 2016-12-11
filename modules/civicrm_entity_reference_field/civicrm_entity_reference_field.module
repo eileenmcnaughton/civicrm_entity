@@ -143,6 +143,7 @@ function civicrm_entity_reference_field_field_settings_form($field, $instance, $
       'address_id' => 'Address ID (Location Block Entity)',
       'email_id' => 'Email ID (Location Block Entity)',
       'phone_id' => 'Phone ID (Location Block Entity)',
+      'uf_group_id' => 'UFGroup ID (UFJoin Entity)',
     ),
   );
 
@@ -227,6 +228,38 @@ function civicrm_entity_reference_field_field_load($entity_type, $entities, $fie
         }
       }
     }
+  }
+}
+
+/**
+ * Implements hook_field_insert().
+ *
+ * @param $entity_type
+ * @param $entity
+ * @param $field
+ * @param $instance
+ * @param $langcode
+ * @param $items
+ */
+function civicrm_entity_reference_field_field_insert($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  foreach ($items as $delta => $item) {
+    unset($items[$delta]);
+  }
+}
+
+/**
+ * Implements hook_field_update().
+ *
+ * @param $entity_type
+ * @param $entity
+ * @param $field
+ * @param $instance
+ * @param $langcode
+ * @param $items
+ */
+function civicrm_entity_reference_field_field_update($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  foreach ($items as $delta => $item) {
+    unset($items[$delta]);
   }
 }
 

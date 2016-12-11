@@ -7,6 +7,9 @@
 
 module_load_include('inc', 'civicrm_entity_price_set_field', 'includes/civicrm_entity_price_set_field.event_registration');
 module_load_include('inc', 'civicrm_entity_price_set_field', 'includes/civicrm_entity_price_set_field.transaction');
+module_load_include('inc', 'civicrm_entity_price_set_field', 'includes/civicrm_entity_price_set_field.price_set');
+module_load_include('inc', 'civicrm_entity_price_set_field', 'includes/civicrm_entity_price_set_field.confirmation_page');
+module_load_include('inc', 'civicrm_entity_price_set_field', 'includes/civicrm_entity_price_set_field.thank_you_page');
 
 /**
  * Implements hook_field_info().
@@ -120,6 +123,32 @@ function civicrm_entity_price_set_field_field_settings_form($field, $instance, $
 }
 
 /**
+ * Implements hook_field_widget_info_alter().
+ *
+ * @param $info
+ */
+function civicrm_entity_price_set_field_field_widget_info_alter(&$info) {
+  $info['inline_entity_form']['field types'][] = 'civicrm_entity_price_set_field';
+  $info['inline_entity_form_single']['field types'][] = 'civicrm_entity_price_set_field';
+}
+
+
+/**
+ * Implements hook_inline_entity_form_settings_alter().
+ *
+ * @param $settings
+ * @param $field
+ * @param $instance
+ */
+function civicrm_entity_price_set_field_inline_entity_form_settings_alter(&$settings, $field, $instance) {
+  if ($field['type'] == 'civicrm_entity_price_set_field') {
+    $settings['entity_type'] = 'civicrm_price_set';
+    $settings['column'] = 'price_set_id';
+    $settings['bundles'] = array('civicrm_price_set');
+  }
+}
+
+/**
  * Implements hook_field_load().
  *
  * @param $entity_type
@@ -160,6 +189,7 @@ function civicrm_entity_price_set_field_field_is_empty($item, $field) {
   if (empty($item['price_set_id']) && !is_numeric($item['price_set_id'])) {
     return TRUE;
   }
+
   return FALSE;
 }
 
@@ -550,6 +580,7 @@ function _civicrm_entity_price_set_field_prepare_simple_widget($price_set_id, $i
  */
 function civicrm_entity_price_set_field_field_widget_form_alter(&$element, &$form_state, $context) {
   if ($context['instance']['widget']['type'] == 'civicrm_entity_price_set_field_simple_widget') {
+    $element['#attached']['css'][] = drupal_get_path('module', 'civicrm_entity_price_set_field') . '/css/simple_widget.css';
     $price_set_id = $element['price_set_id']['#value'];
     // need these form state checks because of all the ajax
     // setup, or reuse the data
@@ -617,7 +648,7 @@ function civicrm_entity_price_set_field_field_widget_form_alter(&$element, &$for
         );
         $element['price_set']['price_field'][$id]['is_default'] = array(
           '#type' => 'radio',
-          '#title' => 'Default?',
+          '#title' => '',
           '#return_value' => 1,
           '#default_value' => $price_field_value->is_default,
         );
@@ -725,7 +756,7 @@ function theme_civicrm_entity_price_set_field_price_field_drag_components($vars)
     'weight' => t('Weight'),
     'label' => t('Label'),
     'amount' => t('Amount'),
-    'is_default' => t('Default Choice'),
+    'is_default' => t('Default'),
     'remove_row' => t('Delete'),
   );
 
@@ -1001,28 +1032,5 @@ function civicrm_entity_price_set_field_field_formatter_view($entity_type, $enti
 
 
   return $element;
-}
-
-/**
- * Implements hook_civicrm_post().
- *
- * Here we need to clear the field cache if the price set is changed in the event/contribution page
- *
- * @param $op
- * @param $objectName
- * @param $objectId
- * @param $objectRef
- */
-function civicrm_entity_price_set_field_civicrm_post($op, $objectName, $objectId, &$objectRef) {
-  //dsm($objectName);
-  /*if ($objectName == 'PriceSet' && ($op == 'create' || $op == 'delete' || $op == 'edit')) {
-    $civicrm_entity_reference_fields = db_select('field_config', 'fc')
-      ->fields('fc', array('id'))
-      ->condition('type', 'civicrm_entity_price_set_field')
-      ->execute();
-    if($civicrm_entity_reference_fields->rowCount()) {
-      cache_clear_all('field:civicrm_contact:' . $objectRef[0], 'cache_field');
-    }
-  }*/
 }
 

@@ -161,6 +161,7 @@ function civicrm_entity_contact_group_assign_field_field_insert($entity_type, $e
       if (!empty($entity->id)) {
         $contact_id = $entity->id;
         _civicrm_entity_contact_group_assign_field_process_field_items($contact_id, $field, $items);
+        unset($items[0]);
       }
     }
   }
@@ -182,6 +183,7 @@ function civicrm_entity_contact_group_assign_field_field_update($entity_type, $e
       if (!empty($entity->id)) {
         $contact_id = $entity->id;
         _civicrm_entity_contact_group_assign_field_process_field_items($contact_id, $field, $items);
+        unset($items[0]);
       }
     }
   }
