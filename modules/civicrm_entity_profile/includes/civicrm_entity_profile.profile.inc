@@ -24,7 +24,7 @@ function _civicrm_entity_profile_get_profile_metadata($profile_id, $type = 'even
     return array();
   }
   $fields = array();
-  $event_allowed_entities = array('contact', 'address', 'phone', 'email', 'website');
+  $event_allowed_entities = array('contact', 'address', 'phone', 'email', 'website', 'participant');
   $contact_entities = array('contact', 'address', 'phone', 'email', 'website');
 
   if (!$fields_api_result['is_error'] && $fields_api_result['count']) {
@@ -60,6 +60,25 @@ function _civicrm_entity_profile_generate_profile_fapi($profile_id, $type = 'eve
       if (!empty($widget_info['widget'])) {
         // type
         $form[$field['name']]['#type'] = $widget_info['widget'];
+        if ($widget_info['widget'] == 'date_select' || $widget_info == 'date_popup') {
+          if (module_exists('date_popup')) {
+            $form[$field['name']]['#type'] = 'date_popup';
+          }
+          if (!empty($widget_info['format'])) {
+            $form[$field['name']]['#date_format'] = $widget_info['format'];
+          }
+          /*if (!empty($field['date_format'])) {
+            $form[$field['name']]['#date_format'] = $field['date_format'];
+          }
+          if (!empty($field['time_format'])) {
+            if(!empty($form[$field['name']]['#date_format'])) {
+              $form[$field['name']]['#date_format'] .= ' ' . $field['time_format'];
+            }
+            else {
+              $form[$field['name']]['#date_format'] = $field['time_format'];
+            }
+          }*/
+        }
         //name
         $form[$field['name']]['#title'] = $field['title'];
         // options

@@ -590,7 +590,7 @@ function civicrm_entity_price_set_field_display_form_event_submit($form, &$form_
 }
 
 /**
- * Process event registration (after successful cc transition if appropriate)
+ * Process event registration (after successful cc transaction if appropriate)
  *
  * @param $form_state
  */
@@ -726,6 +726,7 @@ function _civicrm_entity_price_set_field_process_event_registration(&$form_state
  * @param $form_state
  */
 function civicrm_entity_price_set_field_display_form_event_validate($form, $form_state) {
+  // cc card block validation
   if ($form_state['step'] == 1 && empty($form_state['values']['registration_form']['pay_later'])) {
     if (empty($form_state['values']['registration_form']['registration_cc_block']['first_name_on_card'])) {
       form_set_error('registration_form][registration_cc_block][first_name_on_card', 'First name on card field required.');
@@ -744,6 +745,18 @@ function civicrm_entity_price_set_field_display_form_event_validate($form, $form
     }
     elseif (!is_numeric($form_state['values']['registration_form']['registration_cc_block']['cvv'])) {
       form_set_error('registration_form][registration_cc_block][cvv', 'CVV must be numeric.');
+    }
+  }
+  // price set field text widget validation
+  if ($form_state['step'] == 1) {
+    foreach ($form_state['price_set_data']['price_fields'] as $pf_id => $pf_data) {
+      if ($pf_data['pf_entity']->html_type == 'Text') {
+        foreach ($form_state['values']['registration_form']['contacts'] as $index => $submitted_values) {
+          if (!empty($submitted_values['price_set'][$pf_id]['price_field_values']) && !is_numeric($submitted_values['price_set'][$pf_id]['price_field_values'])) {
+            form_set_error ("registration_form][contacts][$index][price_set][$pf_id][price_field_values", 'Must be numeric.');
+          }
+        }
+      }
     }
   }
 }
