@@ -649,6 +649,7 @@ function civicrm_entity_supported_entities_info() {
         'communication_style_id',
         'gender_id',
         'country_id',
+        'state_province_id',
       ),
       'boolean fields' => array(
         'is_deceased',
