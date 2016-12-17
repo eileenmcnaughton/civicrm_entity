@@ -449,6 +449,50 @@ function _civicrm_entity_price_set_field_get_relevant_entities($price_set_id) {
 }
 
 /**
+ * Utility function to load the price set and child entities.  This method clones the entity objects so the registration form can alter the values
+ *
+ * @param $price_set_id
+ * @return bool|array
+ */
+function _civicrm_entity_price_set_field_get_relevant_entities_clone($price_set_id) {
+  $data = array();
+  $price_set = clone entity_load_single('civicrm_price_set', $price_set_id);
+  if ($price_set) {
+    $data['price_set'] = $price_set;
+    $price_field_query = new EntityFieldQuery();
+    $price_field_result = $price_field_query->entityCondition('entity_type', 'civicrm_price_field')
+      ->propertyCondition('price_set_id', $price_set_id)
+      ->propertyOrderBy('weight', 'ASC')
+      ->execute();
+    $data['price_fields'] = array();
+    if (!empty($price_field_result['civicrm_price_field'])) {
+      foreach ($price_field_result['civicrm_price_field'] as $id => $pf_id) {
+        $data['price_fields'][$id]['price_field_id'] = $id;
+        $data['price_fields'][$id]['pf_entity'] = clone entity_load_single('civicrm_price_field', $id);
+        $data['price_fields'][$id]['price_field_values'] = array();
+
+        $price_field_value_query = new EntityFieldQuery();
+        $price_field_value_result = $price_field_value_query->entityCondition('entity_type', 'civicrm_price_field_value')
+          ->propertyCondition('price_field_id', $id)
+          ->propertyOrderBy('weight', 'ASC')
+          ->execute();
+        if (!empty($price_field_value_result['civicrm_price_field_value'])) {
+          foreach ($price_field_value_result['civicrm_price_field_value'] as $id2 => $pfv_id) {
+            $data['price_fields'][$id]['price_field_values'][$id2] = clone entity_load_single('civicrm_price_field_value', $id2);
+          }
+        }
+      }
+    }
+  }
+  else {
+    return FALSE;
+  }
+  return $data;
+}
+
+
+
+/**
  * Helper function to setup data structure for price set, price field, price field values, for an event
  *
  * @return array

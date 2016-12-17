@@ -13,6 +13,9 @@
  * @return array
  */
 function _civicrm_entity_profile_get_profile_metadata($profile_id, $type = 'event') {
+  if(!civicrm_initialize()) {
+    return array();
+  }
   try {
     $fields_api_result = civicrm_api3('Profile', 'getfields', array(
       'api_action' => "submit",
@@ -42,6 +45,30 @@ function _civicrm_entity_profile_get_profile_metadata($profile_id, $type = 'even
 }
 
 /**
+ * Function to determine the entity type of a profile, if mixed, return FALSE
+ *
+ * @param $profile_id
+ * @return bool|string
+ */
+function _civicrm_entity_profile_determine_profile_entity($profile_id) {
+  $contact_entities = array('contact', 'address', 'phone', 'email', 'website');
+  $fields = _civicrm_entity_profile_get_profile_metadata($profile_id);
+  $first_entity = '';
+  foreach ($fields as $name => $field) {
+    if (empty($first_entity)) {
+      $first_entity = in_array($field['entity'], $contact_entities) ? 'contact' : $field['entity'];
+    }
+    else {
+      $next_entity = in_array($field['entity'], $contact_entities) ? 'contact' : $field['entity'];
+      if($next_entity != $first_entity) {
+        return FALSE;
+      }
+    }
+  }
+  return $first_entity;
+}
+
+/**
  * Generates the FAPI for an individual CiviCRM Profile
  *
  * @param $profile_id
@@ -64,20 +91,17 @@ function _civicrm_entity_profile_generate_profile_fapi($profile_id, $type = 'eve
           if (module_exists('date_popup')) {
             $form[$field['name']]['#type'] = 'date_popup';
           }
-          if (!empty($widget_info['format'])) {
-            $form[$field['name']]['#date_format'] = $widget_info['format'];
-          }
-          /*if (!empty($field['date_format'])) {
-            $form[$field['name']]['#date_format'] = $field['date_format'];
+          if (!empty($field['date_format'])) {
+            $form[$field['name']]['#date_format'] = 'Y-m-d';
           }
           if (!empty($field['time_format'])) {
             if(!empty($form[$field['name']]['#date_format'])) {
-              $form[$field['name']]['#date_format'] .= ' ' . $field['time_format'];
+              $form[$field['name']]['#date_format'] .= ' H:i:s';
             }
             else {
-              $form[$field['name']]['#date_format'] = $field['time_format'];
+              $form[$field['name']]['#date_format'] = 'H:i:s';
             }
-          }*/
+          }
         }
         //name
         $form[$field['name']]['#title'] = $field['title'];
@@ -108,7 +132,7 @@ function _civicrm_entity_profile_generate_profile_fapi($profile_id, $type = 'eve
  *
  * @return bool|array
  */
-function _civicrm_entity_profile_process_profile_submitted_data($profile_id, $submitted_data, $contact_id = 0) {
+function _civicrm_entity_profile_process_profile_submitted_data($profile_id, $submitted_data, $entity_type = 'contact', $contact_id = 0) {
   try {
     $params = array(
       'sequential' => 1,
@@ -121,9 +145,19 @@ function _civicrm_entity_profile_process_profile_submitted_data($profile_id, $su
       $params['contact_id'] = $contact_id;
     }
     $result = civicrm_api3('Profile', 'submit', $params);
-    if(!empty($result['values']['id'])) {
-      $contact = entity_load_single('civicrm_contact', $result['values']['id']);
-      return $contact;
+
+    if(!empty($result['id'])) {
+      switch($entity_type) {
+        case 'contact':
+            $contact = entity_load_single('civicrm_contact', $result['id']);
+            return $contact;
+        case 'participant':
+          if (!empty($result['values'][$contact_id]['api.participant.create']['id'])) {
+            $participant = entity_load_single('civicrm_participant', $result['values'][$contact_id]['api.participant.create']['id']);
+            return $participant;
+          }
+          else return FALSE;
+      }
     }
     else {
       return FALSE;
