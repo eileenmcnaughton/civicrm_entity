@@ -142,7 +142,7 @@ function civicrm_entity_discount_field_field_widget_info() {
  * @return bool
  */
 function civicrm_entity_discount_field_field_is_empty($item, $field) {
-  if (empty($item['price_field_id']) && empty($item['discount']) && empty($item['discount_type']) && empty($item['rid'])) {
+  if(empty($item['price_field_id'])) {
     return TRUE;
   }
   return FALSE;
@@ -155,8 +155,6 @@ function civicrm_entity_discount_field_field_widget_form(&$form, &$form_state, $
   $orig_element = $element;
   switch ($instance['widget']['type']) {
     case 'civicrm_entity_discount_field_default_widget':
-      dsm($items);
-      dsm($form);
       $event_id = $form['#entity']->id;
       $query = db_select('civicrm_price_set_entity', 'pce');
       $price_set_id = $query->fields('pce', array('price_set_id'))
@@ -465,4 +463,24 @@ function civicrm_entity_discount_field_field_formatter_view($entity_type, $entit
       break;
   }
   return $element;
+}
+
+/**
+ * Implements hook_civicrm_entity_price_set_field_registration_form_price_set_data_alter().
+ *
+ * @param $price_set_data
+ * @param $context
+ */
+function civicrm_entity_discount_field_civicrm_entity_price_set_field_registration_form_price_set_data_alter(&$price_set_data, $context) {
+  if($context['entity_type'] == 'civicrm_event') {
+    if (!empty($price_set_data['price_fields'])) {
+      foreach ($price_set_data['price_fields'] as $pf_id => $pf_data) {
+        if (!empty($pf_data['price_field_values'])) {
+          foreach ($pf_data['price_field_values'] as $pfv_id => $pfv_data) {
+            //$price_set_data['price_fields'][$pf_id]['price_field_values'][$pfv_id]->amount = $price_set_data['price_fields'][$pf_id]['price_field_values'][$pfv_id]->amount / 2;
+          }
+        }
+      }
+    }
+  }
 }

@@ -108,25 +108,13 @@ function civicrm_entity_price_set_field_display_form_event($form, &$form_state) 
           if ($user->uid && empty($default_values['register_as_another'])) {
             $contact = civicrm_entity_user_contact_get($user, array(), '', '', '');
             if ($contact) {
-              $already_registered_query = new EntityFieldQuery();
-              $already_registered_query_result = $already_registered_query->entityCondition('entity_type', 'civicrm_participant')
-                ->propertyCondition('contact_id', $contact->id)
-                ->propertyCondition('event_id', $event->id)
-                ->execute();
-              if (!empty($already_registered_query_result['civicrm_participant']) && count($already_registered_query_result['civicrm_participant'])) {
+              $already_registered = _civicrm_entity_price_set_field_get_participant_count_for_event($event->id, $contact->id);
+              if (!empty($already_registered)) {
                 drupal_set_message('You have already registered for this event.', 'status', FALSE);
-
-
-                // here we should enable "Register as new Contact" and disable field?????
-                // or disable the register button until the checkbox is checked......
-
-
-
-
+                $form_state['main_registrant_already_registered'] = TRUE;
               }
             }
           }
-
           // setup registration form
           _civicrm_entity_price_set_field_setup_event_registration_form_fapi($form, $form_state, $default_values);
           break;
@@ -231,7 +219,7 @@ function _civicrm_entity_price_set_field_setup_event_registration_form_fapi(&$fo
 
   global $user;
   if (empty($default_values['register_as_another'])) {
-    if ($user->uid) {
+    if ($user->uid && empty($form_state['main_registrant_already_registered'])) {
       $contact = civicrm_entity_user_contact_get($user, array(), '', '', '');
       if ($contact) {
         $form_state['contacts'][0] = $contact;
@@ -244,7 +232,7 @@ function _civicrm_entity_price_set_field_setup_event_registration_form_fapi(&$fo
   }
   else {
     $form_state['contacts'][0] = new CivicrmEntity(array('is_new' => 1), 'civicrm_contact');
-    if ($user->uid) {
+    if ($user->uid && empty($form_state['main_registrant_already_registered'])) {
       $form_state['contacts'][0]->uid = $user->uid;
     }
   }
@@ -262,11 +250,16 @@ function _civicrm_entity_price_set_field_setup_event_registration_form_fapi(&$fo
   );
 
   if (!empty($form_state['contacts'][0]->uid)) {
-    $form['registration_form']['register_as_another']['#default_value'] = !empty($default_values['register_as_another']) ? $default_values['register_as_another'] : 0;
-    $form['registration_form']['register_as_another']['#description'] = 'You are logged in.  Leaving this box unchecked will use your contact information for this registration.';
+      $form['registration_form']['register_as_another']['#default_value'] = !empty($default_values['register_as_another']) ? $default_values['register_as_another'] : 0;
+      $form['registration_form']['register_as_another']['#description'] = 'You are logged in.  Leaving this box unchecked will use your contact information for this registration.';
   }
   else {
-    $form['registration_form']['register_as_another']['#description'] = '<a href="/user/login">Login</a> if you already have an account.';
+    if(empty($form_state['main_registrant_already_registered'])) {
+      $form['registration_form']['register_as_another']['#description'] = '<a href="/user/login">Login</a> if you already have an account.';
+    }
+    else {
+      $form['registration_form']['register_as_another']['#description'] = 'You are already registered, you can only register for another.';
+    }
     $form['registration_form']['register_as_another']['#default_value'] = 1;
     $form['registration_form']['register_as_another']['#disabled'] = TRUE;
   }
@@ -672,7 +665,7 @@ function civicrm_entity_price_set_field_display_form_event_submit($form, &$form_
 }
 
 /**
- * Process event registration (after successful cc transaction if appropriate)
+ * Process event registration (after contacts deduped and reg status checked, successful cc transaction if paid event)
  *
  * @param $form_state
  */
