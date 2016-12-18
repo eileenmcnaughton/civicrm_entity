@@ -796,7 +796,6 @@ function _civicrm_entity_price_set_field_process_event_registration(&$form_state
   // trigger rule event with all the pertinent data here
   $event_variables = array(
     'event' => $form_state['event'],
-    'contribution' => $form_state['contribution'],
     'contacts' => $form_state['contacts'],
     'participants' => $form_state['participants'],
   );
@@ -812,7 +811,7 @@ function _civicrm_entity_price_set_field_process_event_registration(&$form_state
  */
 function civicrm_entity_price_set_field_display_form_event_validate($form, $form_state) {
   // cc card block validation
-  if ($form_state['step'] == 1 && empty($form_state['values']['registration_form']['pay_later'])) {
+  if ($form_state['step'] == 1 && !empty($form_state['event']->is_monetary) && empty($form_state['values']['registration_form']['pay_later'])) {
     if (empty($form_state['values']['registration_form']['registration_cc_block']['first_name_on_card'])) {
       form_set_error('registration_form][registration_cc_block][first_name_on_card', 'First name on card field required.');
     }

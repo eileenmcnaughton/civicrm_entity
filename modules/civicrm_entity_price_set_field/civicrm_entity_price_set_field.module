@@ -43,10 +43,6 @@ function civicrm_entity_price_set_field_rules_event_info() {
           'type' => 'civicrm_event',
           'label' => t('The event being registered for.'),
         ),
-        'contribution' => array(
-          'type' => 'civicrm_contribution',
-          'label' => t('The contribution record for the event registration.'),
-        ),
         'contacts' => array(
           'type' => 'list<civicrm_contact>',
           'label' => t('Contacts'),
