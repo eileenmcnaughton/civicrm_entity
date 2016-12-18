@@ -711,7 +711,7 @@ function _civicrm_entity_price_set_field_process_event_registration(&$form_state
         'is_new' => TRUE,
         'event_id' => $form_state['event']->id,
         'contact_id' => $form_state['contacts'][$count]->id,
-        'source' => "User Created - CiviCRM Entity Price Set Field Display Form",
+        'source' => "CiviCRM Entity Price Set Field Event Registration Form",
         'role_id' => !empty($form_state['event']->default_role_id) ? $form_state['event']->default_role_id : "Attendee",
         'status_id' => "Registered",
         'register_date' => date('Y-m-d H:i:s'),
