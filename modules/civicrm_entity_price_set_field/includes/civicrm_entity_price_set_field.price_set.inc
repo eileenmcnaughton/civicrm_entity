@@ -14,7 +14,7 @@
  * @param $count
  */
 function _civicrm_entity_price_set_field_setup_price_set_fapi(&$form, &$form_state, $default_values, $parent, $count) {
-  $data = $form_state['price_set_data'];
+  $data = $form_state['price_set_data'][$count];
   if (!empty($data)) {
     $form[$parent]['contacts'][$count]['price_set'] = array(
       '#type' => 'container',

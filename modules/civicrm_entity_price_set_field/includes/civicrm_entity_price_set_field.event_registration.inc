@@ -60,16 +60,25 @@ function civicrm_entity_price_set_field_display_form_event($form, &$form_state) 
       // paid event
       if (!empty($event->is_monetary)) {
         if ($price_set_id) {
-          $form_state['price_set_data'] = _civicrm_entity_price_set_field_get_relevant_entities_clone($price_set_id);
-
-          $context = array(
-            'entity_type' => $host_entity_type,
-            'entity' => $event,
-            'field' => $form_state['field'],
-            'instance' => $form_state['instance'],
-            'display_settings' => $form_state['display_settings'],
-          );
-          drupal_alter('civicrm_entity_price_set_field_registration_form_price_set_data', $form_state['price_set_data'], $context);
+          if (empty($form_state['contacts'])) {
+            $form_state['price_set_data'][0] = _civicrm_entity_price_set_field_get_relevant_entities_clone($price_set_id);
+          }
+          else {
+            foreach ($form_state['contacts'] as $count => $contact) {
+              $form_state['price_set_data'][$count] = _civicrm_entity_price_set_field_get_relevant_entities_clone($price_set_id);
+            }
+          }
+          foreach ($form_state['price_set_data'] as $count => $ps_data) {
+            $context = array(
+              'participant_count' => $count,
+              'entity_type' => $host_entity_type,
+              'entity' => $event,
+              'field' => $form_state['field'],
+              'instance' => $form_state['instance'],
+              'display_settings' => $form_state['display_settings'],
+            );
+            drupal_alter('civicrm_entity_price_set_field_registration_form_price_set_data', $form_state['price_set_data'][$count], $context);
+          }
         }
         else {
           $form['price_set']['message'] = array(
@@ -82,7 +91,14 @@ function civicrm_entity_price_set_field_display_form_event($form, &$form_state) 
       }
       else {
         // free event
-        $form_state['price_set_data'] = array();
+        if (empty($form_state['contacts'])) {
+          $form_state['price_set_data'][0] = array();
+        }
+        else {
+          foreach ($form_state['contacts'] as $count => $contact) {
+            $form_state['price_set_data'][$count] = array();
+          }
+        }
       }
 
       // setup ajax multi step
@@ -198,12 +214,9 @@ function civicrm_entity_price_set_field_display_form_event($form, &$form_state) 
  *
  * @param $form
  * @param $form_state
- * @param $event
- * @param $data
  * @param $default_values
  */
 function _civicrm_entity_price_set_field_setup_event_registration_form_fapi(&$form, &$form_state, $default_values) {
-  $data = $form_state['price_set_data'];
   $event = $form_state['event'];
   $form['registration_form'] = array(
     '#type' => 'container',
@@ -288,7 +301,7 @@ function _civicrm_entity_price_set_field_setup_event_registration_form_fapi(&$fo
         '#markup' => '<h2>' . 'Participant ' . ($count + 1) . '</h2>',
       );
     }
-    if (!empty($data)) {
+    if (!empty($form_state['price_set_data'][$count])) {
       _civicrm_entity_price_set_field_setup_price_set_fapi($form, $form_state, $default_values, 'registration_form', $count);
     }
 
@@ -408,8 +421,8 @@ function _civicrm_entity_price_set_field_setup_event_registration_form_fapi(&$fo
   if (!empty($form_state['event']->is_multiple_registrations) && !empty($additional_participant_profiles_has_contact_entity)) {
     // if max_participants has been reached disable add participant button, will be queried total of participants for event + number of participants being registered already by form
     $registered_count = _civicrm_entity_price_set_field_get_participant_count_for_event($event->id);
-    if (isset($event->max_participants) && (($registered_count + count($form_state['contacts'])) < $event->max_participants)) {
-      $form['registration_form']['add_participant'] = array(
+    if (!isset($event->max_participants) || (isset($event->max_participants) && (($registered_count + count($form_state['contacts'])) < $event->max_participants))) {
+       $form['registration_form']['add_participant'] = array(
         '#type' => 'submit',
         '#value' => t('Add a participant'),
         '#limit_validation_errors' => array(),
@@ -543,7 +556,6 @@ function civicrm_entity_price_set_field_display_form_event_submit($form, &$form_
       break;
     case 2:
       // confirmation page submit
-      $data = $form_state['price_set_data'];
       $event = $form_state['event'];
       $success = TRUE;
 
@@ -616,7 +628,7 @@ function civicrm_entity_price_set_field_display_form_event_submit($form, &$form_
         if (empty($form_state['storage']['registration_form']['pay_later'])) {
           // if we have a main registrant contact id we continue to process the transaction
           if ($success) {
-            $transact_result = _civicrm_entity_price_set_field_run_cc_transaction($form_state['display_settings'], $data, 'civicrm_event', $event, $form_state['contacts'], $form_state['storage']['registration_form']);
+            $transact_result = _civicrm_entity_price_set_field_run_cc_transaction($form_state['display_settings'], $form_state['price_set_data'], 'civicrm_event', $event, $form_state['contacts'], $form_state['storage']['registration_form']);
             if ($transact_result !== FALSE && !empty($transact_result['contribution']) && is_object($transact_result['contribution'])) {
               $form_state['contribution'] = $transact_result['contribution'];
             } else {
@@ -770,12 +782,12 @@ function _civicrm_entity_price_set_field_process_event_registration(&$form_state
             $line_item_params = array(
               'entity_table' => 'civicrm_participant',
               'entity_id' => $form_state['participants'][$count]->id,
-              'label' => $form_state['price_set_data']['price_fields'][$pf_id]['price_field_values'][$price_field_value['price_field_value_id']]->label,
+              'label' => $form_state['price_set_data'][$count]['price_fields'][$pf_id]['price_field_values'][$price_field_value['price_field_value_id']]->label,
               'qty' => $price_field_value['qty'],
               'contribution_id' => $form_state['contribution']->id,
               'price_field_id' => $price_field_value['price_field_id'],
               'price_field_value_id' => $price_field_value['price_field_value_id'],
-              'financial_type_id' => $price_field_value['financial_type_id'],
+              'financial_type_id' => !empty($price_field_value['financial_type_id']) ? $price_field_value['financial_type_id'] : $form_state['event']->financial_type_id,
               'line_total' => $price_field_value['line_total'],
               'unit_price' => $price_field_value['unit_price'],
             );
@@ -833,11 +845,13 @@ function civicrm_entity_price_set_field_display_form_event_validate($form, $form
   }
   // price set field text widget validation
   if ($form_state['step'] == 1) {
-    foreach ($form_state['price_set_data']['price_fields'] as $pf_id => $pf_data) {
-      if ($pf_data['pf_entity']->html_type == 'Text') {
-        foreach ($form_state['values']['registration_form']['contacts'] as $index => $submitted_values) {
-          if (!empty($submitted_values['price_set'][$pf_id]['price_field_values']) && !is_numeric($submitted_values['price_set'][$pf_id]['price_field_values'])) {
-            form_set_error ("registration_form][contacts][$index][price_set][$pf_id][price_field_values", 'Must be numeric.');
+    foreach($form_state['price_set_data'] as $count => $ps_data) {
+      foreach ($form_state['price_set_data'][$count]['price_fields'] as $pf_id => $pf_data) {
+        if ($pf_data['pf_entity']->html_type == 'Text') {
+          foreach ($form_state['values']['registration_form']['contacts'] as $index => $submitted_values) {
+            if (!empty($submitted_values['price_set'][$pf_id]['price_field_values']) && !is_numeric($submitted_values['price_set'][$pf_id]['price_field_values'])) {
+              form_set_error("registration_form][contacts][$index][price_set][$pf_id][price_field_values", 'Must be numeric.');
+            }
           }
         }
       }

@@ -155,29 +155,31 @@ function civicrm_entity_discount_field_field_widget_form(&$form, &$form_state, $
   $orig_element = $element;
   switch ($instance['widget']['type']) {
     case 'civicrm_entity_discount_field_default_widget':
-      $event_id = $form['#entity']->id;
-      $query = db_select('civicrm_price_set_entity', 'pce');
-      $price_set_id = $query->fields('pce', array('price_set_id'))
-        ->condition('entity_table', 'civicrm_event')
-        ->condition('entity_id', $event_id)
-        ->execute()
-        ->fetchField();
       $price_field_options = array('' => '- None -');
-      if (!empty($price_set_id)) {
-        $price_field_query = new EntityFieldQuery();
-        $price_field_result = $price_field_query->entityCondition('entity_type', 'civicrm_price_field')
-          ->propertyCondition('price_set_id', $price_set_id)
-          ->propertyOrderBy('weight', 'ASC')
-          ->execute();
+      if (!empty($form['#entity'])) {
+        $event_id = $form['#entity']->id;
+        $query = db_select('civicrm_price_set_entity', 'pce');
+        $price_set_id = $query->fields('pce', array('price_set_id'))
+          ->condition('entity_table', 'civicrm_event')
+          ->condition('entity_id', $event_id)
+          ->execute()
+          ->fetchField();
+        $price_field_options = array('' => '- None -');
+        if (!empty($price_set_id)) {
+          $price_field_query = new EntityFieldQuery();
+          $price_field_result = $price_field_query->entityCondition('entity_type', 'civicrm_price_field')
+            ->propertyCondition('price_set_id', $price_set_id)
+            ->propertyOrderBy('weight', 'ASC')
+            ->execute();
 
-        if (!empty($price_field_result['civicrm_price_field'])) {
-          foreach ($price_field_result['civicrm_price_field'] as $id => $pf_id) {
-            $pf = entity_load_single('civicrm_price_field', $id);
-            $price_field_options[$id] = $pf->label;
+          if (!empty($price_field_result['civicrm_price_field'])) {
+            foreach ($price_field_result['civicrm_price_field'] as $id => $pf_id) {
+              $pf = entity_load_single('civicrm_price_field', $id);
+              $price_field_options[$id] = $pf->label;
+            }
           }
         }
       }
-
       $pf_id_widget = array();
       $pf_id_widget = $orig_element + array(
           '#type' => 'select',
@@ -472,12 +474,54 @@ function civicrm_entity_discount_field_field_formatter_view($entity_type, $entit
  * @param $context
  */
 function civicrm_entity_discount_field_civicrm_entity_price_set_field_registration_form_price_set_data_alter(&$price_set_data, $context) {
-  if($context['entity_type'] == 'civicrm_event') {
-    if (!empty($price_set_data['price_fields'])) {
-      foreach ($price_set_data['price_fields'] as $pf_id => $pf_data) {
-        if (!empty($pf_data['price_field_values'])) {
-          foreach ($pf_data['price_field_values'] as $pfv_id => $pfv_data) {
-            //$price_set_data['price_fields'][$pf_id]['price_field_values'][$pfv_id]->amount = $price_set_data['price_fields'][$pf_id]['price_field_values'][$pfv_id]->amount / 2;
+  if ($context['entity_type'] == 'civicrm_event' && $context['participant_count'] === 0) {
+    $discount_field_key = '';
+    foreach ($context['entity'] as $key => $value) {
+      if (strpos($key, 'field_') === 0) {
+        $field = field_info_field($key);
+        if ($field['type'] == 'civicrm_entity_discount_field') {
+          $discount_field_key = $key;
+          break;
+        }
+      }
+    }
+    if(!empty($discount_field_key)) {
+      foreach ($context['entity']->{$key}[LANGUAGE_NONE] as $index => $discount_setting) {
+        $apply_discount = 0;
+        if($discount_setting['rid'] >= 0) {
+          global $user;
+          if(array_key_exists($discount_setting['rid'], $user->roles)) {
+            $apply_discount = 1;
+          }
+
+        }
+        else {
+          $apply_discount = 1;
+        }
+
+        if ($apply_discount) {
+          if($discount_setting['discount'] > 0) {
+            switch ($discount_setting['discount_type']) {
+              case 'percentage':
+                if (!empty($price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'])) {
+                  foreach ($price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'] as $pfv_id => $pfv_data) {
+                    $price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'][$pfv_id]->amount = number_format($price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'][$pfv_id]->amount - ($price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'][$pfv_id]->amount * ($discount_setting['discount'] / 100)), 2);
+                  }
+                }
+                break;
+              case 'fixed':
+                if (!empty($price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'])) {
+                  foreach ($price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'] as $pfv_id => $pfv_data) {
+                    if($price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'][$pfv_id]->amount - $discount_setting['discount'] >= 0) {
+                      $price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'][$pfv_id]->amount = number_format($price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'][$pfv_id]->amount - $discount_setting['discount'], 2);
+                    }
+                    else {
+                      $price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'][$pfv_id]->amount = 0;
+                    }
+                  }
+                }
+                break;
+            }
           }
         }
       }

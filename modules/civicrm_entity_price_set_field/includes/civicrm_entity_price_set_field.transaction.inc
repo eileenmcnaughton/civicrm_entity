@@ -60,19 +60,19 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
           $line_item['price_field_id'] = $pf_id;
 
 
-          switch ($price_set_data['price_fields'][$pf_id]['pf_entity']->html_type) {
+          switch ($price_set_data[$id]['price_fields'][$pf_id]['pf_entity']->html_type) {
             case 'Radio':
               if (!empty($value['price_field_values']) && !is_array($value['price_field_values']) && is_numeric($value['price_field_values'])) {
-                $line_item['label'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->label;
+                $line_item['label'] = $price_set_data[$id]['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->label;
 
-                if (!empty($price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->financial_type_id)) {
-                  $line_item['financial_type_id'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->financial_type_id;
+                if (!empty($price_set_data[$id]['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->financial_type_id)) {
+                  $line_item['financial_type_id'] = $price_set_data[$id]['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->financial_type_id;
                 }
                 elseif (!empty($entity->financial_type_id)) {
                   $line_item['financial_type_id'] = $entity->financial_type_id;
                 }
                 $line_item['price_field_value_id'] = $value['price_field_values'];
-                $line_item['unit_price'] = $line_item['line_total'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->amount;
+                $line_item['unit_price'] = $line_item['line_total'] = $price_set_data[$id]['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->amount;
                 $line_item['participant_count'] = 0;
                 $line_item['qty'] = 1;
                 $total['total'] += $line_item['line_total'];
@@ -82,16 +82,16 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
               break;
             case 'Select':
               if (!empty($value['price_field_values']) && !is_array($value['price_field_values']) && is_numeric($value['price_field_values'])) {
-                $line_item['label'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->label;
+                $line_item['label'] = $price_set_data[$id]['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->label;
 
-                if (!empty($price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->financial_type_id)) {
-                  $line_item['financial_type_id'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->financial_type_id;
+                if (!empty($price_set_data[$id]['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->financial_type_id)) {
+                  $line_item['financial_type_id'] = $price_set_data[$id]['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->financial_type_id;
                 }
                 elseif (!empty($entity->financial_type_id)) {
                   $line_item['financial_type_id'] = $entity->financial_type_id;
                 }
                 $line_item['price_field_value_id'] = $value['price_field_values'];
-                $line_item['unit_price'] = $line_item['line_total'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->amount;
+                $line_item['unit_price'] = $line_item['line_total'] = $price_set_data[$id]['price_fields'][$pf_id]['price_field_values'][$value['price_field_values']]->amount;
                 $line_item['participant_count'] = 0;
                 $line_item['qty'] = 1;
                 $total['total'] += $line_item['line_total'];
@@ -104,10 +104,10 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
                 foreach ($value['price_field_values'] as $pfv_id => $v) {
                   if ($v) {
                     $line_item = array();
-                    $line_item['label'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$pfv_id]->label;
+                    $line_item['label'] = $price_set_data[$id]['price_fields'][$pf_id]['price_field_values'][$pfv_id]->label;
 
-                    if (!empty($price_set_data['price_fields'][$pf_id]['price_field_values'][$pfv_id]->financial_type_id)) {
-                      $line_item['financial_type_id'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$pfv_id]->financial_type_id;
+                    if (!empty($price_set_data[$id]['price_fields'][$pf_id]['price_field_values'][$pfv_id]->financial_type_id)) {
+                      $line_item['financial_type_id'] = $price_set_data[$id]['price_fields'][$pf_id]['price_field_values'][$pfv_id]->financial_type_id;
                     }
                     elseif (!empty($entity->financial_type_id)) {
                       $line_item['financial_type_id'] = $entity->financial_type_id;
@@ -115,7 +115,7 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
                     $line_item['price_field_id'] = $pf_id;
                     $line_item['unit_price'] = 0.0;
                     $line_item['price_field_value_id'] = $pfv_id;
-                    $line_item['line_total'] = $line_item['unit_price'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$pfv_id]->amount;
+                    $line_item['line_total'] = $line_item['unit_price'] = $price_set_data[$id]['price_fields'][$pf_id]['price_field_values'][$pfv_id]->amount;
                     $line_item['qty'] = 1;
                     $line_item['participant_count'] = 0;
                     $total['total'] += $line_item['line_total'];
@@ -128,18 +128,18 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
               break;
             case 'Text':
               if (!empty($value['price_field_values']) && !is_array($value['price_field_values']) && is_numeric($value['price_field_values'])) {
-                $pfv_ids = array_keys($price_set_data['price_fields'][$pf_id]['price_field_values']);
+                $pfv_ids = array_keys($price_set_data[$id]['price_fields'][$pf_id]['price_field_values']);
                 $pfv_id = $pfv_ids[0];
-                $line_item['label'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$pfv_id]->label;
+                $line_item['label'] = $price_set_data[$id]['price_fields'][$pf_id]['price_field_values'][$pfv_id]->label;
                 $line_item['price_field_id'] = $pf_id;
                 $line_item['price_field_value_id'] = $pfv_id;
-                $line_item['unit_price'] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$pfv_id]->amount;
+                $line_item['unit_price'] = $price_set_data[$id]['price_fields'][$pf_id]['price_field_values'][$pfv_id]->amount;
                 $line_item['line_total'] = $line_item['unit_price'] * $value['price_field_values'];
                 $line_item['qty'] = $value['price_field_values'];
                 $line_item['participant_count'] = 0;
                 $total['line_items'][$id][$pf_id][$line_item['price_field_value_id']] = $line_item;
                 $total['fee_amounts'][$id] += $line_item['line_total'];
-                $total['fee_levels'][$id] = $price_set_data['price_fields'][$pf_id]['price_field_values'][$pfv_id]->label;
+                $total['fee_levels'][$id] = $price_set_data[$id]['price_fields'][$pf_id]['price_field_values'][$pfv_id]->label;
                 $total['total'] += $line_item['line_total'];
               }
               break;
@@ -151,7 +151,8 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
   }
   // invoke alter hook to let people alter the total
   $context = array(
-    'price_set_data' => $price_set_data,
+    'participant_count' => $id,
+    'price_set_data' => $price_set_data[$id],
     'entity_type' => $entity_type,
     'entity' => $entity,
     'form_state' => $form_state,
