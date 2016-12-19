@@ -486,41 +486,41 @@ function civicrm_entity_discount_field_civicrm_entity_price_set_field_registrati
       }
     }
     if(!empty($discount_field_key)) {
-      foreach ($context['entity']->{$key}[LANGUAGE_NONE] as $index => $discount_setting) {
-        $apply_discount = 0;
-        if($discount_setting['rid'] >= 0) {
-          global $user;
-          if(array_key_exists($discount_setting['rid'], $user->roles)) {
+      if (!empty($context['entity']->{$discount_field_key}[LANGUAGE_NONE])) {
+        foreach ($context['entity']->{$discount_field_key}[LANGUAGE_NONE] as $index => $discount_setting) {
+          $apply_discount = 0;
+          if ($discount_setting['rid'] >= 0) {
+            global $user;
+            if (array_key_exists($discount_setting['rid'], $user->roles)) {
+              $apply_discount = 1;
+            }
+
+          } else {
             $apply_discount = 1;
           }
 
-        }
-        else {
-          $apply_discount = 1;
-        }
-
-        if ($apply_discount) {
-          if($discount_setting['discount'] > 0) {
-            switch ($discount_setting['discount_type']) {
-              case 'percentage':
-                if (!empty($price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'])) {
-                  foreach ($price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'] as $pfv_id => $pfv_data) {
-                    $price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'][$pfv_id]->amount = number_format($price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'][$pfv_id]->amount - ($price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'][$pfv_id]->amount * ($discount_setting['discount'] / 100)), 2);
-                  }
-                }
-                break;
-              case 'fixed':
-                if (!empty($price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'])) {
-                  foreach ($price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'] as $pfv_id => $pfv_data) {
-                    if($price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'][$pfv_id]->amount - $discount_setting['discount'] >= 0) {
-                      $price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'][$pfv_id]->amount = number_format($price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'][$pfv_id]->amount - $discount_setting['discount'], 2);
-                    }
-                    else {
-                      $price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'][$pfv_id]->amount = 0;
+          if ($apply_discount) {
+            if ($discount_setting['discount'] > 0) {
+              switch ($discount_setting['discount_type']) {
+                case 'percentage':
+                  if (!empty($price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'])) {
+                    foreach ($price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'] as $pfv_id => $pfv_data) {
+                      $price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'][$pfv_id]->amount = number_format($price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'][$pfv_id]->amount - ($price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'][$pfv_id]->amount * ($discount_setting['discount'] / 100)), 2);
                     }
                   }
-                }
-                break;
+                  break;
+                case 'fixed':
+                  if (!empty($price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'])) {
+                    foreach ($price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'] as $pfv_id => $pfv_data) {
+                      if ($price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'][$pfv_id]->amount - $discount_setting['discount'] >= 0) {
+                        $price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'][$pfv_id]->amount = number_format($price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'][$pfv_id]->amount - $discount_setting['discount'], 2);
+                      } else {
+                        $price_set_data['price_fields'][$discount_setting['price_field_id']]['price_field_values'][$pfv_id]->amount = 0;
+                      }
+                    }
+                  }
+                  break;
+              }
             }
           }
         }
