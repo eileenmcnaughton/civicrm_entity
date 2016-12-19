@@ -57,6 +57,56 @@ function civicrm_entity_price_set_field_rules_event_info() {
 }
 
 /**
+ * Implements hook_rules_action_info()
+ * Add a Rules Action for subscribing a user to a node.
+ */
+function civicrm_entity_price_set_field_rules_action_info() {
+  return array(
+    'civicrm_entity_price_set_field_send_contribution_receipt' => array(
+      'label' => t('Send Contribution API sendconfirmation'),
+      'group' => t('CiviCRM Entity Price Set Field'),
+      'parameter' => array(
+        'contribution_id' => array(
+          'type' => 'integer',
+          'label' => 'Contribution ID',
+        ),
+        'from' => array(
+          'type' => 'text',
+          'label' => 'From Address',
+        ),
+      ),
+    ),
+  );
+}
+
+/**
+ * Sends confirmation email for a Contribution using CiviCRM API sendconfirmation action
+ *
+ * @param $contribution_id
+ * @param $from_address
+ */
+function civicrm_entity_price_set_field_send_contribution_receipt($contribution_id, $from_address) {
+  if(!civicrm_initialize()) {
+    return;
+  }
+  if(!empty($contribution_id) && $contribution_id > 0 && $from_address != '') {
+    try {
+      $result = civicrm_api3('Contribution', 'sendconfirmation', array(
+        'sequential' => 1,
+        'id' => $contribution_id,
+        'receipt_from_email' => $from_address,
+      ));
+    }
+    catch (CiviCRM_API3_Exception $e) {
+      watchdog('civicrm_entity_price_set_field', 'Contribution Receipt sending failed');
+    }
+  }
+  else {
+    watchdog('civicrm_entity_price_set_field', 'Invalid values for provided parameters.');
+  }
+}
+
+/**
  * Implements hook_form_FORMID_alter().
  *
  * form id : field_ui_field_edit_form
