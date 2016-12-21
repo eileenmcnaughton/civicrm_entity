@@ -14,17 +14,28 @@
  * @param $count
  */
 function _civicrm_entity_price_set_field_setup_price_set_fapi(&$form, &$form_state, $default_values, $parent, $count) {
-  $data = $form_state['price_set_data'];
+  $data = $form_state['price_set_data'][$count];
   if (!empty($data)) {
     $form[$parent]['contacts'][$count]['price_set'] = array(
       '#type' => 'container',
       '#attributes' => array(
         'class' => array(
           'civicrm-price-set',
+          'civicrm-price-set-' . $data['price_set']->id,
         ),
       ),
     );
     foreach ($data['price_fields'] as $pf_id => $price_field) {
+      if (!empty($price_field['pf_entity']->active_on)) {
+        if (time() < strtotime($price_field['pf_entity']->active_on)) {
+          continue;
+        }
+      }
+      if (!empty($price_field['pf_entity']->expire_on)) {
+        if (time() > strtotime($price_field['pf_entity']->expire_on)) {
+          continue;
+        }
+      }
       $form[$parent]['contacts'][$count]['price_set'][$pf_id] = array(
         '#type' => 'container',
         '#attributes' => array(
@@ -37,7 +48,9 @@ function _civicrm_entity_price_set_field_setup_price_set_fapi(&$form, &$form_sta
 
       $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values'] = array();
       $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#title'] = t($price_field['pf_entity']->label);
-
+      if(!empty($price_field['pf_entity']->help_post)) {
+        $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#description'] = t($price_field['pf_entity']->help_post);
+      }
       if (!empty($price_field['pf_entity']->is_required)) {
         $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#required'] = TRUE;
 
@@ -45,7 +58,8 @@ function _civicrm_entity_price_set_field_setup_price_set_fapi(&$form, &$form_sta
 
       if ($price_field['pf_entity']->html_type == 'Text') {
         $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#type'] = 'textfield';
-        $default_value = '';
+        $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#size'] = 7;
+        $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#maxlength'] = 5;
       }
       else {
         switch ($price_field['pf_entity']->html_type) {
@@ -76,12 +90,12 @@ function _civicrm_entity_price_set_field_setup_price_set_fapi(&$form, &$form_sta
           }
         }
         $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#options'] = $options;
-        if (empty($default_values['contacts'][$count]['price_set'][$pf_id]['price_field_values'])) {
-          $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#default_value'] = $default_value;
-        }
-        else {
-          $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#default_value'] = $default_values['contacts'][$count]['price_set'][$pf_id]['price_field_values'];
-        }
+      }
+      if (empty($default_values['contacts'][$count]['price_set'][$pf_id]['price_field_values'])) {
+        $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#default_value'] = $default_value;
+      }
+      else {
+        $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#default_value'] = $default_values['contacts'][$count]['price_set'][$pf_id]['price_field_values'];
       }
     }
   }

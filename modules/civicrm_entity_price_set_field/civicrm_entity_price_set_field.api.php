@@ -70,3 +70,25 @@ function hook_civicrm_entity_price_set_field_calculate_total($total) {
     }
   }
 }
+
+/**
+ * Implements hook_civicrm_entity_price_set_field_registration_form_price_set_data_alter().
+ *
+ * In this example, for events, every price field value for each price field is reduced in price by half
+ *
+ * @param $price_set_data
+ * @param $context
+ */
+function hook_civicrm_entity_price_set_field_registration_form_price_set_data_alter(&$price_set_data, $context) {
+  if($context['entity_type'] == 'civicrm_event') {
+    if (!empty($price_set_data['price_fields'])) {
+      foreach ($price_set_data['price_fields'] as $pf_id => $pf_data) {
+        if (!empty($pf_data['price_field_values'])) {
+          foreach ($pf_data['price_field_values'] as $pfv_id => $pfv_data) {
+            $price_set_data['price_fields'][$pf_id]['price_field_values'][$pfv_id]->amount = $price_set_data['price_fields'][$pf_id]['price_field_values'][$pfv_id]->amount / 2;
+          }
+        }
+      }
+    }
+  }
+}

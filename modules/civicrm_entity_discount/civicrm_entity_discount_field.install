@@ -1,0 +1,45 @@
+<?php
+
+/**
+ * Implements hook_field_schema().
+ *
+ * @param $field
+ * @return array
+ */
+function civicrm_entity_discount_field_field_schema($field) {
+  $columns = array(
+    'price_field_id' => array(
+      'type' => 'int',
+      'not null' => FALSE,
+    ),
+    'discount' => array(
+      'type' => 'float',
+      'not null' => FALSE,
+    ),
+    'discount_type' => array(
+      'type' => 'varchar',
+      'length' => 25,
+      'not null' => FALSE,
+    ),
+    'rid' => array(
+      'type' => 'int',
+      'not null' => FALSE,
+    ),
+  );
+
+  return array(
+    'columns' => $columns,
+    'indexes' => array(
+      'price_field_id' => array('price_field_id'),
+      'discount_type' => array('discount_type'),
+      'rid' => array('rid'),
+      'discount' => array('discount'),
+    ),
+    'foreign keys' => array(
+      'rid' => array(
+        'table' => 'role',
+        'columns' => array('rid' => 'rid'),
+      ),
+    ),
+  );
+}
