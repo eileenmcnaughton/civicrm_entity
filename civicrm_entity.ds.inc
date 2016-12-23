@@ -60,7 +60,7 @@ function _civicrm_entity_render_fields($field) {
 
   if ($field['formatter'] == 'civicrm_date') {
     if (!empty($formatted_value) && !empty($field['formatter_settings']['date type'])) {
-      $formatted_value = format_date(strtotime($formatted_value), $field['formatter_settings']['date type']);
+      $formatted_value = format_date((int)strtotime($formatted_value), $field['formatter_settings']['date type']);
     }
   }
 
@@ -149,7 +149,7 @@ function  _civicrm_entity_date_addformatters($entity_type, $date_fields, &$field
   foreach ($date_fields as $date_field) {
     $fields[$entity_type][$date_field]['properties']['formatters'] = array(
       'default' => 'Default',
-      'civicrm_timestamp' => 'Date',
+      'civicrm_date' => 'Date',
     );
     $fields[$entity_type][$date_field]['properties']['settings']['date type'] = array(
       'type' => 'select',
@@ -174,7 +174,7 @@ function  _civicrm_entity_timestamp_addformatters($entity_type, $date_fields, &$
   foreach ($date_fields as $date_field) {
     $fields[$entity_type][$date_field]['properties']['formatters'] = array(
       'default' => 'Default',
-      'civicrm_date' => 'Date',
+      'civicrm_timestamp' => 'Date',
     );
     $fields[$entity_type][$date_field]['properties']['settings']['date type'] = array(
       'type' => 'select',
