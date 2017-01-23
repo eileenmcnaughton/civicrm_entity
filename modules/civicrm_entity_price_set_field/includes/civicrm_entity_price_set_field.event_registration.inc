@@ -362,13 +362,16 @@ function _civicrm_entity_price_set_field_setup_event_registration_form_fapi(&$fo
           '#type' => 'container',
           '#attributes' => array(
             'class' => array(
-              'civicrm-entity-price-set-field-profile',
+              'civicrm-entity-price-set-field-profile-fapi',
             ),
           ),
+          '#prefix' => '<div class="civicrm-entity-price-set-field-profile">',
+          '#suffix' => '</div>',
+
         );
         // Title for the form set
         if (!empty($profile_title)) {
-          $form['registration_form']['contacts'][$count]['contact_info']['profile-' . $profile_id]['#prefix'] = '<h3>' . $profile_title . '</h3>';
+          $form['registration_form']['contacts'][$count]['contact_info']['profile-' . $profile_id]['#prefix'] = '<div class="civicrm-entity-price-set-field-profile">' . '<h3>' . $profile_title . '</h3>';
         }
         // Save profile metadata for future use
         $form_state['profiles']['profile-' . $profile_id] = _civicrm_entity_profile_get_profile_metadata($profile_id, 'event');
