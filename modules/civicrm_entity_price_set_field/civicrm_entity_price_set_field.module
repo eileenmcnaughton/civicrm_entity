@@ -305,17 +305,19 @@ function _civicrm_entity_price_set_field_process_field_items($entity_type, $enti
     // first check if there is only one empty row, if so then don't do anything
     // if there are more than one row, at least more than one with some values, then start the process
     $abort = TRUE;
-    foreach ($items[0]['price_set']['price_field'] as $id => $values) {
-      if (!empty($values['label']) && !empty($values['amount'])) {
-        $abort = FALSE;
-      }
-      else {
-        unset($items[0]['price_set']['price_field'][$id]);
+    if(count($items[0]['price_set']['price_field'])) {
+      foreach ($items[0]['price_set']['price_field'] as $id => $values) {
+        if (!empty($values['label']) && !empty($values['amount'])) {
+          $abort = FALSE;
+        } else {
+          unset($items[0]['price_set']['price_field'][$id]);
+        }
       }
     }
     if ($abort) {
       return;
     }
+
 
     //fetch event by api to use its values....
     try {
