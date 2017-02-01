@@ -2058,7 +2058,9 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
         $info[$fieldname]['size'] = 'tiny';
       }
       if ($types[$field_specs['type']] == 'datetime') {
+        // why were we unsetting type?
         unset($info[$fieldname]['type']);
+        //$info[$fieldname]['type'] = 'text';
         $info[$fieldname]['mysql_type'] = 'datetime';
         $info[$fieldname]['tz_handling'] = 'site';
         $info[$fieldname]['offset_field'] = '';
@@ -2319,7 +2321,7 @@ function civicrm_entity_get_field_widget($field_spec, $civicrm_entity) {
     }
   }
 
-  if ($field_spec['name'] == 'relationship_type_id' && $civicrm_entity == 'membership_type') {
+  if ($civicrm_entity == 'membership_type' && !empty($field_spec['name']) && $field_spec['name'] == 'relationship_type_id' ) {
     $widget = array(
       'widget' => 'civi_fk_reference',
       'subtype' => civicrm_entity_fk_entities_to_produce_widget_for('RelationshipType'),
@@ -2327,7 +2329,7 @@ function civicrm_entity_get_field_widget($field_spec, $civicrm_entity) {
     );
   }
 
-  if($civicrm_entity == 'activity' && $field_spec['name'] == 'result') {
+  if($civicrm_entity == 'activity' && !empty($field_spec['name']) && $field_spec['name'] == 'result') {
     $widget = array(
       'widget' => 'select',
       'civicrm_field_type' => $field_type,
@@ -2335,7 +2337,7 @@ function civicrm_entity_get_field_widget($field_spec, $civicrm_entity) {
     $widget['options'] = civicrm_entity_get_field_options($field_spec['name'], $civicrm_entity);
   }
 
-  if ($civicrm_entity == 'contact' && $field_spec['name'] == 'communication_style_id') {
+  if ($civicrm_entity == 'contact' && !empty($field_spec['name']) && $field_spec['name'] == 'communication_style_id') {
     $widget = array(
       'widget' => 'select',
       'civicrm_field_type' => $field_type,
