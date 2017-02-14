@@ -2597,6 +2597,18 @@ function civicrm_entity_action_load_user($entity) {
 }
 
 /**
+* replace special characters and remove non alphanumerics
+*/
+
+function cleanLogin($str)
+{
+  $a = array('À', 'Á', 'Â', 'Ã', 'Ä', 'Å', 'Æ', 'Ç', 'È', 'É', 'Ê', 'Ë', 'Ì', 'Í', 'Î', 'Ï', 'Ð', 'Ñ', 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', 'Ø', 'Ù', 'Ú', 'Û', 'Ü', 'Ý', 'ß', 'à', 'á', 'â', 'ã', 'ä', 'å', 'æ', 'ç', 'è', 'é', 'ê', 'ë', 'ì', 'í', 'î', 'ï', 'ñ', 'ò', 'ó', 'ô', 'õ', 'ö', 'ø', 'ù', 'ú', 'û', 'ü', 'ý', 'ÿ', 'Ā', 'ā', 'Ă', 'ă', 'Ą', 'ą', 'Ć', 'ć', 'Ĉ', 'ĉ', 'Ċ', 'ċ', 'Č', 'č', 'Ď', 'ď', 'Đ', 'đ', 'Ē', 'ē', 'Ĕ', 'ĕ', 'Ė', 'ė', 'Ę', 'ę', 'Ě', 'ě', 'Ĝ', 'ĝ', 'Ğ', 'ğ', 'Ġ', 'ġ', 'Ģ', 'ģ', 'Ĥ', 'ĥ', 'Ħ', 'ħ', 'Ĩ', 'ĩ', 'Ī', 'ī', 'Ĭ', 'ĭ', 'Į', 'į', 'İ', 'ı', 'Ĳ', 'ĳ', 'Ĵ', 'ĵ', 'Ķ', 'ķ', 'Ĺ', 'ĺ', 'Ļ', 'ļ', 'Ľ', 'ľ', 'Ŀ', 'ŀ', 'Ł', 'ł', 'Ń', 'ń', 'Ņ', 'ņ', 'Ň', 'ň', 'ŉ', 'Ō', 'ō', 'Ŏ', 'ŏ', 'Ő', 'ő', 'Œ', 'œ', 'Ŕ', 'ŕ', 'Ŗ', 'ŗ', 'Ř', 'ř', 'Ś', 'ś', 'Ŝ', 'ŝ', 'Ş', 'ş', 'Š', 'š', 'Ţ', 'ţ', 'Ť', 'ť', 'Ŧ', 'ŧ', 'Ũ', 'ũ', 'Ū', 'ū', 'Ŭ', 'ŭ', 'Ů', 'ů', 'Ű', 'ű', 'Ų', 'ų', 'Ŵ', 'ŵ', 'Ŷ', 'ŷ', 'Ÿ', 'Ź', 'ź', 'Ż', 'ż', 'Ž', 'ž', 'ſ', 'ƒ', 'Ơ', 'ơ', 'Ư', 'ư', 'Ǎ', 'ǎ', 'Ǐ', 'ǐ', 'Ǒ', 'ǒ', 'Ǔ', 'ǔ', 'Ǖ', 'ǖ', 'Ǘ', 'ǘ', 'Ǚ', 'ǚ', 'Ǜ', 'ǜ', 'Ǻ', 'ǻ', 'Ǽ', 'ǽ', 'Ǿ', 'ǿ');
+  $b = array('A', 'A', 'A', 'A', 'A', 'A', 'AE', 'C', 'E', 'E', 'E', 'E', 'I', 'I', 'I', 'I', 'D', 'N', 'O', 'O', 'O', 'O', 'O', 'O', 'U', 'U', 'U', 'U', 'Y', 's', 'a', 'a', 'a', 'a', 'a', 'a', 'ae', 'c', 'e', 'e', 'e', 'e', 'i', 'i', 'i', 'i', 'n', 'o', 'o', 'o', 'o', 'o', 'o', 'u', 'u', 'u', 'u', 'y', 'y', 'A', 'a', 'A', 'a', 'A', 'a', 'C', 'c', 'C', 'c', 'C', 'c', 'C', 'c', 'D', 'd', 'D', 'd', 'E', 'e', 'E', 'e', 'E', 'e', 'E', 'e', 'E', 'e', 'G', 'g', 'G', 'g', 'G', 'g', 'G', 'g', 'H', 'h', 'H', 'h', 'I', 'i', 'I', 'i', 'I', 'i', 'I', 'i', 'I', 'i', 'IJ', 'ij', 'J', 'j', 'K', 'k', 'L', 'l', 'L', 'l', 'L', 'l', 'L', 'l', 'l', 'l', 'N', 'n', 'N', 'n', 'N', 'n', 'n', 'O', 'o', 'O', 'o', 'O', 'o', 'OE', 'oe', 'R', 'r', 'R', 'r', 'R', 'r', 'S', 's', 'S', 's', 'S', 's', 'S', 's', 'T', 't', 'T', 't', 'T', 't', 'U', 'u', 'U', 'u', 'U', 'u', 'U', 'u', 'U', 'u', 'U', 'u', 'W', 'w', 'Y', 'y', 'Y', 'Z', 'z', 'Z', 'z', 'Z', 'z', 's', 'f', 'O', 'o', 'U', 'u', 'A', 'a', 'I', 'i', 'O', 'o', 'U', 'u', 'U', 'u', 'U', 'u', 'U', 'u', 'U', 'u', 'A', 'a', 'AE', 'ae', 'O', 'o');
+  
+  return strtolower(trim(preg_replace("/[^-A-Za-z0-9._]/", '_', truncate_utf8(str_replace($a, $b, $str), 60))));
+}
+
+/**
  * Given a contact object, load or create then return a drupal user.
  *
  * @param object $contact
@@ -2610,7 +2622,7 @@ function civicrm_entity_action_load_user($entity) {
  * @return object
  *   $user Drupal user object or FALSE.
  */
-function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE, $signin = FALSE, $username_format = 'first last') {
+function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE, $signin = FALSE, $username_format = 'first last', $inf_) {
   if (!is_array($contact)) {
     // Perhaps we should be accepting object rather than array here?
     $contact = (array) $contact;
@@ -2620,56 +2632,81 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
   //
   // Don't think this is a great approach but will use for now - could
   // just create the user but no great support for that yet.
-  if (empty($contact['display_name']) || empty($contact['email'])) {
+  if (empty($contact['display_name']) || empty($contact['email']) || empty($contact['first_name']) || empty($contact['last_name'])) {
     $contact = civicrm_api('contact', 'getsingle', array(
       'version' => 3,
       'id' => $contact['id'],
       'sequential' => 1,
-      'return' => 'email,display_name',
+      'return' => 'email,display_name,first_name,last_name',
     ));
   }
+  
   if (!is_string($contact['email']) && isset($contact['email'][0]->email)) {
     $contact['email'] = $contact['email'][0]->email;
   }
   // @TODO What happens if they don't have an email at this point?
   // An email is a pre-requisite for a Drupal account, so the action
   // fails if they don't have an email.
-  $contact['display_name'] = trim(preg_replace("/[^A-Za-z0-9 ]/", '', truncate_utf8($contact['display_name'], 60)));
+  if (filter_var($contact['email'], FILTER_VALIDATE_EMAIL) === FALSE) {
+     drupal_set_message("Email " . $contact['email'] . " invalid!!" , 'error');
+     watchdog('civicrm_entity', 'Email %mail invalid.', array('%mail' => $contact['email']), WATCHDOG_ERROR);
+     return FALSE;
+  }
+  
   $params = array(
     'name' => $contact['display_name'],
     'mail' => $contact['email'],
     'email' => $contact['email'],
     'init' => $contact['email'],
   );
+  
+  switch ($username_format) {
+   case 'first last':
+      $params['name'] = cleanLogin($contact['first_name'] . " " . $contact['last_name']);
+      break;
+   case 'firstlast':
+      $params['name'] = cleanLogin($contact['first_name'] . " " . $contact['last_name']);
+      break;
+   case 'first.last':
+      $params['name'] = cleanLogin($contact['first_name'] . "." . $contact['last_name']);
+      break;
+   case 'f.last':
+     $params['name'] = cleanLogin(substr($contact['first_name'], 0, 1) . "." . $contact['last_name']);
+     break;
+   case 'email':
+     $params['name'] = $params['email'];
+     break;
+   default:
+     drupal_set_message("username_format " . $username_format . " unknown!!" , 'info');
+     watchdog('civicrm_entity', 'username_format  %format unknown.', array('%format' => $username_format), WATCHDOG_INFO);
+  }
+    
+  
 
   if (empty($contact['display_name'])) {
     $contact['display_name'] = $contact['email'];
   }
-  else {
-    switch ($username_format) {
-      case 'first last':
-        $params['name'] = $contact['display_name'];
-        break;
-      case 'firstlast':
-        $params['name'] = str_replace(' ', '', $contact['display_name']);
-        break;
-      case 'first.last':
-        $params['name'] = str_replace(' ', '.', $contact['display_name']);
-        break;
-      case 'email':
-        $params['name'] = $params['email'];
-        break;
-    }
-  }
-
+  
   // Check if the requested username is available.
   $errors = array();
   $config = CRM_Core_Config::singleton();
-  $config->userSystem->checkUserNameEmailExists($params, $errors);
-  if (!empty($errors)) {
-    foreach ($errors as $error) {
-      drupal_set_message(t($error), 'error');
+  // If username already exists, try appending a numnber
+  for ($ind = 1; $ind <= 10; $ind++) {
+     $config->userSystem->checkUserNameEmailExists($params, $errors);
+     if (!empty($errors)) {
+       foreach ($errors as $error) {
+         drupal_set_message(t($error), 'error');
+         watchdog('civicrm_entity', 'Check name %error.', array('%error' => $error), WATCHDOG_ERROR);
+       }
+       $params['name'] = $params['name'] . "$ind";
     }
+    else {
+       $ind = 0;
+       break;
+    }
+  }
+  // There was errors in the last loop
+  if ($ind !=0 ) {
     return FALSE;
   }
 
@@ -2720,11 +2757,13 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
 /**
  * Callback for username format options list, Create Linked Drupal User Account Rules action
  */
-function _civicrm_entity_options_username_format($field, $instance, $entity_type, $entity) {
+// function _civicrm_entity_options_username_format($field, $instance, $entity_type, $entity) {
+function _civicrm_entity_options_username_format($field, $instance) {
   $options = array(
     'first last' => t('First Last'),
     'firstlast' => t('FirstLast'),
     'first.last' => t('First.Last'),
+    'f.last' => t('F.Last'),
     'email' => 'Use E-mail Address',
   );
   return $options;
