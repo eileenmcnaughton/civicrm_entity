@@ -68,9 +68,11 @@ class CivicrmEntityController extends EntityAPIController {
         if ($conditions) {
           $queried_entities += $this->loadEntities($conditions);
         }
-        foreach ($ids as $id) {
-          // we can't rely on civicrm api accepting the 'IN' => array(1,5,6) for all entities
-          $queried_entities += $this->loadEntities(array('id' => $id));
+        if(!empty($ids)) {
+          foreach ($ids as $id) {
+            // we can't rely on civicrm api accepting the 'IN' => array(1,5,6) for all entities
+            $queried_entities += $this->loadEntities(array('id' => $id));
+          }
         }
       } catch (Exception $e) {
         watchdog('civicrm_entity', 'Failed to load ' . $this->entityInfo['description'], $conditions);
