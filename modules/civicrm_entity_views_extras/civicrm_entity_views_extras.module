@@ -132,8 +132,21 @@ function civicrm_entity_views_extras_views_data() {
   //----------------------------------------------------------------
 
   // Membership
+  $data['civicrm_membership']['civicrm_membership_payment'] = array(
+    'title' => t('CiviCRM Membership Payment'),
+    'help' => t('Relates Membership Payment to Membership'),
+    'real field' => 'id',
+    'relationship' => array(
+      'base' => 'civicrm_membership_payment',
+      'base field' => 'membership_id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Membership Payment'),
+    ),
+  );
+
+
   $data['civicrm_membership_payment']['civicrm_membership'] = array(
-    'title' => t('CiviCRM Member'),
+    'title' => t('CiviCRM Membership'),
     'help' => t('Relates Membership to Membership Payment'),
     'real field' => 'membership_id',
     'relationship' => array(
@@ -155,6 +168,48 @@ function civicrm_entity_views_extras_views_data() {
       'label' => t('CiviCRM Contributions'),
     ),
   );
+
+  //----------------------------------------------------------------
+  // CIVICRM Participant Payment - RELATIONSHIPS
+  //----------------------------------------------------------------
+
+  // Participant
+  $data['civicrm_participant']['civicrm_participant_payment'] = array(
+    'title' => t('CiviCRM Participant Payment'),
+    'help' => t('Relates Participant Payment to Participant'),
+    'real field' => 'id',
+    'relationship' => array(
+      'base' => 'civicrm_participant_payment',
+      'base field' => 'participant_id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Participant Payment'),
+    ),
+  );
+
+  $data['civicrm_participant_payment']['civicrm_participant'] = array(
+    'title' => t('CiviCRM Participant'),
+    'help' => t('Relates Participant to Participant Payment'),
+    'real field' => 'participant_id',
+    'relationship' => array(
+      'base' => 'civicrm_participant',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Participant'),
+    ),
+  );
+  // Contribution
+  $data['civicrm_participant_payment']['civicrm_contribution'] = array(
+    'title' => t('CiviCRM Contributions'),
+    'help' => t('Relates Contribution to Membership Payment'),
+    'real field' => 'contribution_id',
+    'relationship' => array(
+      'base' => 'civicrm_contribution',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Contributions'),
+    ),
+  );
+
 
   //----------------------------------------------------------------
   // CIVICRM Relationship - RELATIONSHIPS
