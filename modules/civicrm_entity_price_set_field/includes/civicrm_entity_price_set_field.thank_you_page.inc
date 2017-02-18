@@ -79,7 +79,7 @@ function theme_civicrm_entity_price_set_field_price_field_display_form_thank_you
     $html .= '<div class="profile-field"><span class="field-label">Participant Total Fees: </span><span class="field-item>">' . '$' . number_format($vars['form_data']['transaction']['fee_amounts'][$id], 2) . '</span></div>';
 
     if (!empty($contact['contact_info']) && count($contact['contact_info'])) {
-      foreach($contact['contact_info'] as $profile_id => $profile) {
+      foreach ($contact['contact_info'] as $profile_id => $profile) {
         $pids = explode('-', $profile_id);
         $pid = $pids[1];
         $html .= '<h4>' . _civicrm_entity_profile_get_profile_title($pid) . ':</h4>';

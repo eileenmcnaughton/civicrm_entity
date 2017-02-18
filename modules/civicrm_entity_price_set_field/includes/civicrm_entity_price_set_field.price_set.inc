@@ -49,7 +49,7 @@ function _civicrm_entity_price_set_field_setup_price_set_fapi(&$form, &$form_sta
 
       $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values'] = array();
       $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#title'] = t($price_field['pf_entity']->label);
-      if(!empty($price_field['pf_entity']->help_post)) {
+      if (!empty($price_field['pf_entity']->help_post)) {
         $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#description'] = t($price_field['pf_entity']->help_post);
       }
       if (!empty($price_field['pf_entity']->is_required)) {

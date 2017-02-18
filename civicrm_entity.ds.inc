@@ -191,7 +191,7 @@ function  _civicrm_entity_timestamp_addformatters($entity_type, $date_fields, &$
  * @return mixed
  */
 function _civicrm_entity_get_entity_label($entity_type, $id) {
-  if($entity_type != 'civicrm_participant') {
+  if ($entity_type != 'civicrm_participant') {
     $wrapper = entity_metadata_wrapper($entity_type, $id);
     return $wrapper->label();
   }

@@ -82,7 +82,7 @@ function civicrm_entity_actions_activity_delete_action($entity, $context = array
  */
 
 function civicrm_entity_actions_activity_assign_action(&$object, $context = array()) {
-  if(!civicrm_initialize()) {
+  if (!civicrm_initialize()) {
     return;
   }
   civicrm_api3('activity', 'create', array(
@@ -126,7 +126,7 @@ function civicrm_entity_actions_activity_assign_action_submit($form, $form_state
  */
 
 function civicrm_entity_actions_activity_unassign_action(&$object, $context = array()) {
-  if(!civicrm_initialize()) {
+  if (!civicrm_initialize()) {
     return;
   }
   civicrm_api3('activity', 'create', array(

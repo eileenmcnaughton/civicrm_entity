@@ -20,7 +20,6 @@ function civicrm_entity_views_extras_views_data() {
     'help' => t("View displays CiviCRM Price Set to Entity mapping info"),
   );
 
-
   //----------------------------------------------------------------
   // CIVICRM Price Set Entity - FIELDS
   //----------------------------------------------------------------
@@ -127,7 +126,6 @@ function civicrm_entity_views_extras_views_data() {
       'label' => t('Price Field Value'),
     ),
   );
-
 
   //----------------------------------------------------------------
   // CIVICRM Membership Payment - RELATIONSHIPS
@@ -255,7 +253,6 @@ function civicrm_entity_views_extras_views_data() {
       'label' => t('CiviCRM Financial Account (To)'),
     ),
   );
-
 
   //----------------------------------------------------------------
   // CIVICRM Payment Processor - RELATIONSHIPS

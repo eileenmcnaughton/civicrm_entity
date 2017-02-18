@@ -13,7 +13,7 @@
  * @return array
  */
 function _civicrm_entity_profile_get_profile_metadata($profile_id, $type = 'event') {
-  if(!civicrm_initialize()) {
+  if (!civicrm_initialize()) {
     return array();
   }
   try {
@@ -33,7 +33,7 @@ function _civicrm_entity_profile_get_profile_metadata($profile_id, $type = 'even
   if (!$fields_api_result['is_error'] && $fields_api_result['count']) {
     foreach ($fields_api_result['values'] as $field) {
       if (!empty($field['entity'])) {
-        if($type == 'event' && !in_array($field['entity'], $event_allowed_entities)) {
+        if ($type == 'event' && !in_array($field['entity'], $event_allowed_entities)) {
           continue;
         }
         $fields[$field['name']] = $field;
@@ -60,7 +60,7 @@ function _civicrm_entity_profile_determine_profile_entity($profile_id) {
     }
     else {
       $next_entity = in_array($field['entity'], $contact_entities) ? 'contact' : $field['entity'];
-      if($next_entity != $first_entity) {
+      if ($next_entity != $first_entity) {
         return FALSE;
       }
     }
@@ -95,7 +95,7 @@ function _civicrm_entity_profile_generate_profile_fapi($profile_id, $type = 'eve
             $form[$field['name']]['#date_format'] = 'Y-m-d';
           }
           if (!empty($field['time_format'])) {
-            if(!empty($form[$field['name']]['#date_format'])) {
+            if (!empty($form[$field['name']]['#date_format'])) {
               $form[$field['name']]['#date_format'] .= ' H:i:s';
             }
             else {
@@ -141,13 +141,13 @@ function _civicrm_entity_profile_process_profile_submitted_data($profile_id, $su
     foreach ($submitted_data as $name => $value) {
       $params[$name] = $value;
     }
-    if($contact_id) {
+    if ($contact_id) {
       $params['contact_id'] = $contact_id;
     }
     $result = civicrm_api3('Profile', 'submit', $params);
 
-    if(!empty($result['id'])) {
-      switch($entity_type) {
+    if (!empty($result['id'])) {
+      switch ($entity_type) {
         case 'contact':
             $contact = entity_load_single('civicrm_contact', $result['id']);
             return $contact;
@@ -164,7 +164,7 @@ function _civicrm_entity_profile_process_profile_submitted_data($profile_id, $su
     }
   }
   catch (CiviCRM_API3_Exception $e) {
-    drupal_set_message($e->getMessage(),'warning');
+    drupal_set_message($e->getMessage(), 'warning');
     return FALSE;
   }
 }
@@ -188,8 +188,7 @@ function _civicrm_entity_profile_get_ufjoins($entity_type, $id, $type = 'CiviEve
     ->propertyOrderBy('weight')
     ->execute();
 
-  if(!empty($uf_join_results['civicrm_uf_join']) && count($uf_join_results['civicrm_uf_join'])) {
-
+  if (!empty($uf_join_results['civicrm_uf_join']) && count($uf_join_results['civicrm_uf_join'])) {
     return array_keys($uf_join_results['civicrm_uf_join']);
   }
   else {
@@ -217,9 +216,9 @@ function _civicrm_entity_profile_get_profiles($entity_type, $id, $type) {
     ->propertyOrderBy('weight')
     ->execute();
 
-  if(!empty($uf_join_results['civicrm_uf_join'])) {
+  if (!empty($uf_join_results['civicrm_uf_join'])) {
     $uf_joins = entity_load('civicrm_uf_join', array_keys($uf_join_results['civicrm_uf_join']));
-    foreach($uf_joins as $id => $uf_join) {
+    foreach ($uf_joins as $id => $uf_join) {
       $profiles[] = $uf_join->uf_group_id;
     }
   }
@@ -234,7 +233,7 @@ function _civicrm_entity_profile_get_profiles($entity_type, $id, $type) {
  */
 function _civicrm_entity_profile_get_profile_title($profile_id) {
   $uf_group = entity_load_single('civicrm_uf_group', $profile_id);
-  if(!empty($uf_group->title)) {
+  if (!empty($uf_group->title)) {
     return $uf_group->title;
   }
   return '';
@@ -248,7 +247,7 @@ function _civicrm_entity_profile_get_profile_title($profile_id) {
  */
 function _civicrm_entity_profile_get_profile_entity_types($profile_id) {
   $uf_group = entity_load_single('civicrm_uf_group', $profile_id);
-  if(!empty($uf_group->group_type)) {
+  if (!empty($uf_group->group_type)) {
     return !empty($uf_group->group_type) ? explode(',', $uf_group->group_type) : array();
   }
   return array();
@@ -266,9 +265,9 @@ function _civicrm_entity_profile_get_profiles_for_options_list() {
     ->propertyOrderBy('title')
     ->execute();
   $options = array('' => '- None -');
-  if(!empty($uf_group_results['civicrm_uf_group'])) {
+  if (!empty($uf_group_results['civicrm_uf_group'])) {
     $uf_groups = entity_load('civicrm_uf_group', array_keys($uf_group_results['civicrm_uf_group']));
-    foreach($uf_groups as $id => $uf_group) {
+    foreach ($uf_groups as $id => $uf_group) {
       $options[$id] = $uf_group->title;
     }
   }

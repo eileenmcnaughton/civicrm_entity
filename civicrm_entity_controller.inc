@@ -68,7 +68,7 @@ class CivicrmEntityController extends EntityAPIController {
         if ($conditions) {
           $queried_entities += $this->loadEntities($conditions);
         }
-        if(!empty($ids)) {
+        if (!empty($ids)) {
           foreach ($ids as $id) {
             // we can't rely on civicrm api accepting the 'IN' => array(1,5,6) for all entities
             $queried_entities += $this->loadEntities(array('id' => $id));
@@ -116,7 +116,7 @@ class CivicrmEntityController extends EntityAPIController {
    * @param DatabaseTransaction $transaction
    *   Optionally a DatabaseTransaction object to use. Allows
    *   overrides to pass in their transaction object.
-   *
+   * @return object
    * @throws Exception
    */
   public function save($entity, DatabaseTransaction $transaction = NULL) {
@@ -165,8 +165,8 @@ class CivicrmEntityController extends EntityAPIController {
       }
 
       // special handling for relationships, empty case_id throws api exception
-      if($this->entityType == 'civicrm_relationship') {
-        if(isset($params['case_id']) && ($params['case_id'] == '' || is_null($params['case_id']))) {
+      if ($this->entityType == 'civicrm_relationship') {
+        if (isset($params['case_id']) && ($params['case_id'] == '' || is_null($params['case_id']))) {
           unset($params['case_id']);
         }
       }
@@ -326,7 +326,7 @@ class CivicrmEntityController extends EntityAPIController {
       foreach ($new_civicrm_entities as $id => $civicrm_entity) {
         // @TODO improve this casting.
         $entities[$id] = new CivicrmEntity($civicrm_entity, $this->entityType);
-        if($this->entityType == 'civicrm_contribution') {
+        if ($this->entityType == 'civicrm_contribution') {
           $entities[$id]->source = $entities[$id]->contribution_source;
         }
       }
@@ -335,6 +335,4 @@ class CivicrmEntityController extends EntityAPIController {
 
     return $entities;
   }
-
-
 }
