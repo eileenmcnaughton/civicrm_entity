@@ -157,5 +157,20 @@ function civicrm_entity_views_extras_views_data() {
       'label' => t('CiviCRM Contributions'),
     ),
   );
+
+  //----------------------------------------------------------------
+  // CIVICRM Relationship - RELATIONSHIPS
+  //----------------------------------------------------------------
+  $data['civicrm_relationship']['civicrm_relationship_type'] = array(
+    'title' => t('CiviCRM Relationship Type'),
+    'help' => t('Relates Relationship Type to Relationships'),
+    'real field' => 'relationship_type_id',
+    'relationship' => array(
+      'base' => 'civicrm_relationship_type',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Relationship Type'),
+    ),
+  );
   return $data;
 }
