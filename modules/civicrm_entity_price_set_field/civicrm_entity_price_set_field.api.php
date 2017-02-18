@@ -80,7 +80,7 @@ function hook_civicrm_entity_price_set_field_calculate_total($total) {
  * @param $context
  */
 function hook_civicrm_entity_price_set_field_registration_form_price_set_data_alter(&$price_set_data, $context) {
-  if($context['entity_type'] == 'civicrm_event') {
+  if ($context['entity_type'] == 'civicrm_event') {
     if (!empty($price_set_data['price_fields'])) {
       foreach ($price_set_data['price_fields'] as $pf_id => $pf_data) {
         if (!empty($pf_data['price_field_values'])) {

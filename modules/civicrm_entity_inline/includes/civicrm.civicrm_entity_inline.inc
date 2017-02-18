@@ -64,7 +64,7 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
 
           if ($op == 'edit') {
             $entity_form[$name]['#default_value'] = $child->value();
-            if($entity_type == 'civicrm_participant') {
+            if ($entity_type == 'civicrm_participant') {
               if ($name == 'status_id' && !empty($entity->participant_status_id)) {
                 $entity_form[$name]['#default_value'] = $entity->participant_status_id;
               }
@@ -106,7 +106,7 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
 
           //set rows and cols if available for textarea or text_format
           if ($entity_form[$name]['#type'] == 'textarea' || $entity_form[$name]['#type'] == 'text_format') {
-            if($entity_form[$name]['#type'] == 'text_format') {
+            if ($entity_form[$name]['#type'] == 'text_format') {
               $entity_form[$name]['#format'] = 'full_html';
             }
             // set rows value if not empty
@@ -169,7 +169,7 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
           // else fallback to textfield
           elseif ($entity_form[$name]['#type'] == 'date_select') {
             if (module_exists('date_api')) {
-              if(module_exists('date_popup')) {
+              if (module_exists('date_popup')) {
                 $entity_form[$name]['#type'] = 'date_popup';
               }
               $entity_form[$name]['#format'] = $info['widget']['format'];
@@ -242,11 +242,11 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
           //$entity = $entity_array['entity'];
           foreach ($form_state['values'][$field_name]['und']['entities'][$delta]['form'] as $key => $value) {
             //$entity->{$key} = $value;
-            if(!is_array($value)) {
+            if (!is_array($value)) {
               $entity_array['entity']->{$key} = $value;
             }
             else {
-              if(isset($value['value'])) {
+              if (isset($value['value'])) {
                 $entity_array['entity']->{$key} = $value['value'];
               }
               else {
@@ -263,10 +263,10 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
       $entity = $form_state['entity'];
 
       foreach ($form_state['values'][$field_name]['und']['form'] as $key => $value) {
-        if(!is_array($value)) {
+        if (!is_array($value)) {
           $entity->{$key} = $value;
         }
-        elseif(isset($value['value'])) {
+        elseif (isset($value['value'])) {
           $entity->{$key} = $value['value'];
         }
         else {

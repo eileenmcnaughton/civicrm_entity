@@ -92,7 +92,7 @@ function civicrm_entity_actions_contact_delete_action($entity, $context = array(
  */
 
 function civicrm_entity_actions_contact_add_to_group_action(&$object, $context = array()) {
-  if(!civicrm_initialize()) {
+  if (!civicrm_initialize()) {
     return;
   }
   civicrm_api3('group_contact', 'create', array(
@@ -135,7 +135,7 @@ function civicrm_entity_actions_contact_add_to_group_action_submit($form, $form_
  */
 
 function civicrm_entity_actions_contact_remove_from_group_action(&$object, $context = array()) {
-  if(!civicrm_initialize()) {
+  if (!civicrm_initialize()) {
     return;
   }
   civicrm_api3('group_contact', 'create', array(
@@ -178,7 +178,7 @@ function civicrm_entity_actions_contact_remove_from_group_action_submit($form, $
  */
 
 function civicrm_entity_actions_contact_add_entity_tag_action(&$object, $context = array()) {
-  if(!civicrm_initialize()) {
+  if (!civicrm_initialize()) {
     return;
   }
   civicrm_api3('entity_tag', 'create', array(
@@ -220,15 +220,17 @@ function civicrm_entity_actions_contact_add_entity_tag_action_submit($form, $for
  */
 
 function civicrm_entity_actions_contact_add_relationship_with_contact_action(&$object, $context = array()) {
-  if(!civicrm_initialize()) {
+  if (!civicrm_initialize()) {
     return;
   }
-  $contact_id_b = null;
+  $contact_id_b = NULL;
   if (!empty($context['state']['contact_id_b_me'])) {
     $contact_id_b = trim(strip_tags(views_embed_view('user_contact', 'block')));;
-  } elseif (!empty($context['state']['contact_id_b_my_team'])) {
+  }
+  elseif (!empty($context['state']['contact_id_b_my_team'])) {
     $contact_id_b = trim(strip_tags(views_embed_view('user_team', 'block')));;
-  } else {
+  }
+  else {
     $contact_id_b = $context['state']['contact_id_b']['entity_id'];
   }
   civicrm_api3('relationship', 'create', array(

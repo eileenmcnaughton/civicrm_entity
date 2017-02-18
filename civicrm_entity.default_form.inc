@@ -3,7 +3,7 @@
 function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
   if ($op == 'edit' || $op == 'delete') {
     if (!is_object($entity)) {
-      drupal_set_title('No ' . $entity_type . ' with id:' . $entity);
+      drupal_set_title(t('No ' . $entity_type . ' with id:' . $entity));
       return $form;
     }
     $form_state['entity'] = $entity;
@@ -70,7 +70,7 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
               case 'select':
                 $form[$name]['#type'] = 'select';
                 $form[$name]['#options'] = !empty($entity_form[$name]['#required']) ? _civicrm_entity_get_entities_list($info['widget']['entity']) : array(NULL => 'None') + _civicrm_entity_get_entities_list($info['widget']['entity']);
-                if($info['widget']['entity'] == 'Event') {
+                if ($info['widget']['entity'] == 'Event') {
                   array_shift($form[$name]['#options']);
                 }
                 break;
@@ -83,7 +83,7 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
           // Handle default value
           if ($op == 'edit') {
             $form[$name]['#default_value'] = $child->value();
-            if($entity_type == 'civicrm_participant') {
+            if ($entity_type == 'civicrm_participant') {
               if ($name == 'status_id' && !empty($entity->participant_status_id)) {
                 $form[$name]['#default_value'] = $entity->participant_status_id;
               }
@@ -125,7 +125,7 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
 
           //set rows and cols if available for textarea or text_format
           if ($form[$name]['#type'] == 'textarea' || $form[$name]['#type'] == 'text_format') {
-            if($form[$name]['#type'] == 'text_format') {
+            if ($form[$name]['#type'] == 'text_format') {
               $form[$name]['#format'] = 'full_html';
             }
             // set rows value if not empty
@@ -188,7 +188,7 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
           // else fallback to textfield
           elseif ($form[$name]['#type'] == 'date_select') {
             if (module_exists('date_api')) {
-              if(module_exists('date_popup')) {
+              if (module_exists('date_popup')) {
                 $form[$name]['#type'] = 'date_popup';
               }
               $form[$name]['#format'] = $info['widget']['format'];
@@ -274,7 +274,7 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
 
     $form['delete_markup'] = array(
       '#type' => 'markup',
-      '#markup' => '<div></strong>' . t('Are you sure you want to delete ') .
+      '#markup' => '<div></strong>' . t('Are you sure you want to delete') . ' ' .
         $entity_type . " id: " . $entity->id . '</strong></div>',
     );
 
@@ -318,10 +318,10 @@ function civicrm_entity_form_validate(&$form, &$form_state) {
   $entity_type = $form['#entity_type'];
 
   foreach ($form_state['values'] as $key => $value) {
-    if(!is_array($value)) {
+    if (!is_array($value)) {
       $entity->{$key} = $value;
     }
-    elseif(isset($value['value'])) {
+    elseif (isset($value['value'])) {
       $entity->{$key} = $value['value'];
     }
     else {
