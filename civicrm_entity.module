@@ -247,7 +247,7 @@ function civicrm_entity_views_data_alter(&$data) {
   $civicrm_entity_types = civicrm_entity_get_supported_entity_info();
   foreach ($civicrm_entity_types as $civicrm_entity_type => $info) {
     foreach ($data[$civicrm_entity_type] as $property => $prop_info) {
-      if(strpos($property, 'custom_') === 0) {
+      if (strpos($property, 'custom_') === 0) {
         unset($data[$civicrm_entity_type][$property]);
       }
     }
@@ -869,6 +869,46 @@ function civicrm_entity_supported_entities_info() {
       ),
     ),
   );
+  $civicrm_entity_info['civicrm_financial_account'] = array(
+    'civicrm entity name' => 'financial_account',
+    'label property' => 'name',
+    'permissions' => array(
+      'view' => array(),
+      'edit' => array(),
+      'update' => array(),
+      'create' => array(),
+      'delete' => array(),
+    ),
+    'theme' => array(
+      'template' => 'civicrm-financial-account',
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
+    ),
+    'display suite' => array(
+      'option fields' => array('financial_account_type_id',),
+      'link fields' => array(
+        array(
+          'link_field' => 'contact_id',
+          'target' => 'civicrm_contact',
+        ),
+        array(
+          'link_field' => 'parent_id',
+          'target' => 'civicrm_financial_account',
+        ),
+      ),
+      'date fields' => array(
+        'trxn_date',
+      ),
+      'boolean fields' => array(
+        'is_header_account',
+        'is_deductible',
+        'is_tax',
+        'is_reserved',
+        'is_active',
+        'is_default',
+      ),
+    ),
+  );
+
   $civicrm_entity_info['civicrm_financial_trxn'] = array(
     'civicrm entity name' => 'financial_trxn',
     'label property' => 'id',
@@ -890,9 +930,9 @@ function civicrm_entity_supported_entities_info() {
           'link_field' => 'payment_processor_id',
           'target' => 'civicrm_payment_processor',
         ),
-        'date fields' => array(
-          'trxn_date',
-        ),
+      ),
+      'date fields' => array(
+        'trxn_date',
       ),
     ),
   );

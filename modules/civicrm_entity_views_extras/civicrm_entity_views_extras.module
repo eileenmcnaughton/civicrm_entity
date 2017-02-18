@@ -188,6 +188,91 @@ function civicrm_entity_views_extras_views_data() {
     ),
   );
 
+  $data['civicrm_contribution']['civicrm_entity_financial_trxn'] = array(
+    'title' => t('CiviCRM Line Items'),
+    'help' => t('Relates Entity Financial Trxn to Contributions'),
+    'real field' => 'id',
+    'relationship' => array(
+      'base' => 'civicrm_entity_financial_trxn',
+      'base field' => 'entity_id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Entity Financial Trxn'),
+    ),
+  );
+
+  //----------------------------------------------------------------
+  // CIVICRM Entity Financial Trxn - RELATIONSHIPS
+  //----------------------------------------------------------------
+
+  $data['civicrm_entity_financial_txrn']['civicrm_financial_trxn'] = array(
+    'title' => t('Financial Trxn'),
+    'help' => t('Relates Financial Trxn to Entity Financial Trxn'),
+    'real field' => 'financial_trxn_id',
+    'relationship' => array(
+      'base' => 'civicrm_financial_trxn',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Financial Txrn'),
+    ),
+  );
+
+  //----------------------------------------------------------------
+  // CIVICRM Financial Trxn - RELATIONSHIPS
+  //----------------------------------------------------------------
+
+  $data['civicrm_financial_txrn']['civicrm_payment_processor'] = array(
+    'title' => t('Payment Processor'),
+    'help' => t('Relates Payment Processor to Financial Trxn'),
+    'real field' => 'payment_processor_id',
+    'relationship' => array(
+      'base' => 'civicrm_payment_processor',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Payment Processor'),
+    ),
+  );
+
+  $data['civicrm_financial_txrn']['civicrm_financial_account_from'] = array(
+    'title' => t('Financial Account (From)'),
+    'help' => t('Relates Financial Trxn to Financial Account (From)'),
+    'real field' => 'from_financial_account_id',
+    'relationship' => array(
+      'base' => 'civicrm_financial_account',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Financial Account (From)'),
+    ),
+  );
+
+  $data['civicrm_financial_txrn']['civicrm_financial_account_to'] = array(
+    'title' => t('Financial Account (To)'),
+    'help' => t('Relates Financial Trxn to Financial Account (To)'),
+    'real field' => 'to_financial_account_id',
+    'relationship' => array(
+      'base' => 'civicrm_financial_account',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Financial Account (To)'),
+    ),
+  );
+
+
+  //----------------------------------------------------------------
+  // CIVICRM Payment Processor - RELATIONSHIPS
+  //----------------------------------------------------------------
+
+  $data['civicrm_payment_processor']['civicrm_payment_processor_type'] = array(
+    'title' => t('Payment Processor type'),
+    'help' => t('Relates Payment Processor Type to Payment Processor'),
+    'real field' => 'payment_processor_type_id',
+    'relationship' => array(
+      'base' => 'civicrm_payment_processor_type',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Payment Processor Type'),
+    ),
+  );
+
   //----------------------------------------------------------------
   // CIVICRM Line Items - RELATIONSHIPS
   //----------------------------------------------------------------
