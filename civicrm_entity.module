@@ -242,9 +242,16 @@ function  civicrm_entity_op_access($op, $entity_type, $entity = NULL, $account =
 /**
  * Implements hook_views_data_alter().
  */
-function civicrm_entity_views_data_alter($data) {
-
-
+function civicrm_entity_views_data_alter(&$data) {
+  // unset auto-generated custom field views handlers due to civicrm_entity entity metadata coming from API getfields call
+  $civicrm_entity_types = civicrm_entity_get_supported_entity_info();
+  foreach ($civicrm_entity_types as $civicrm_entity_type => $info) {
+    foreach ($data[$civicrm_entity_type] as $property => $prop_info) {
+      if(strpos($property, 'custom_') === 0) {
+        unset($data[$civicrm_entity_type][$property]);
+      }
+    }
+  }
 }
 
 
