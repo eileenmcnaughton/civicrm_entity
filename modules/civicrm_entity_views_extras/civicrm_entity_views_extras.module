@@ -172,5 +172,48 @@ function civicrm_entity_views_extras_views_data() {
       'label' => t('CiviCRM Relationship Type'),
     ),
   );
+
+  //----------------------------------------------------------------
+  // CIVICRM Contributions - RELATIONSHIPS
+  //----------------------------------------------------------------
+  $data['civicrm_contribution']['civicrm_line_item'] = array(
+    'title' => t('CiviCRM Line Items'),
+    'help' => t('Relates Line Items to Contributions'),
+    'real field' => 'id',
+    'relationship' => array(
+      'base' => 'civicrm_line_item',
+      'base field' => 'contribution_id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Line Items'),
+    ),
+  );
+
+  //----------------------------------------------------------------
+  // CIVICRM Line Items - RELATIONSHIPS
+  //----------------------------------------------------------------
+  $data['civicrm_line_item']['civicrm_price_field'] = array(
+    'title' => t('CiviCRM Price Fields'),
+    'help' => t('Relates Price Fields to Line Items'),
+    'real field' => 'price_field_id',
+    'relationship' => array(
+      'base' => 'civicrm_price_field',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Price Field'),
+    ),
+  );
+
+  $data['civicrm_line_item']['civicrm_price_field_value'] = array(
+    'title' => t('CiviCRM Price Field Value'),
+    'help' => t('Relates Price Field Values to Line Items'),
+    'real field' => 'price_field_value_id',
+    'relationship' => array(
+      'base' => 'civicrm_price_field_value',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Price Field Value'),
+    ),
+  );
+
   return $data;
 }
