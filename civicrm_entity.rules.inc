@@ -508,6 +508,44 @@ function civicrm_entity_rules_action_info() {
     'base' => 'civicrm_entity_contact_send_email',
   );
 
+  $actions['civicrm_entity_rules_action_assign_contact_to_group'] = array(
+    'label' => t('Assign CiviCRM Contact to Group'),
+    'group' => t('CiviCRM Contact'),
+    'parameter' => array(
+      'contact' => array (
+        'type' => 'civicrm_contact',
+        'label' => t('CiviCRM Contact'),
+        'description' => t('CiviCRM Contact entity'),
+        'wrapped' => TRUE,
+      ),
+      'group_id' => array (
+        'type' => 'list<text>',
+        'label' => t('CiviCRM Group'),
+        'description' => t('Choose a group(s) to assign the contact to.'),
+        'options list' => 'civicrm_entity_rules_assign_contact_group_options_list',
+      ),
+    ),
+  );
+
+  $actions['civicrm_entity_rules_action_unassign_contact_to_group'] = array(
+    'label' => t('Unassign CiviCRM Contact from Group'),
+    'group' => t('CiviCRM Contact'),
+    'parameter' => array(
+      'contact' => array (
+        'type' => 'civicrm_contact',
+        'label' => t('CiviCRM Contact'),
+        'description' => t('CiviCRM Contact entity'),
+        'wrapped' => TRUE,
+      ),
+      'group_id' => array (
+        'type' => 'list<text>',
+        'label' => t('CiviCRM Group'),
+        'description' => t('Choose a group(s) to unassign the contact from.'),
+        'options list' => 'civicrm_entity_rules_assign_contact_group_options_list',
+      ),
+    ),
+  );
+
   return $actions;
 }
 

@@ -3017,6 +3017,87 @@ function civicrm_entity_contact_send_email($contact, $subject, $message_text, $m
 }
 
 /**
+ * Callback for Assign CiviCRM Contact to Group Rules action
+ *
+ * @param $contact
+ * @param $group_ids
+ */
+function civicrm_entity_rules_action_assign_contact_to_group($contact, $group_ids) {
+  if(!civicrm_initialize()) {
+    return;
+  }
+  try {
+    foreach ($group_ids AS $key => $group) {
+      $contact_id = $contact->id->value();
+      $params = array(
+        'sequential' => 1,
+        'contact_id' => $contact_id,
+        'group_id' => $group,
+      );
+      $get_result = civicrm_api3('GroupContact', 'Get', $params);
+      if(!$get_result['count']) {
+        $params = array(
+          'contact_id' => $contact_id,
+          'group_id' => $group,
+        );
+        $create_result = civicrm_api3('GroupContact', 'Create', $params);
+      }
+    }
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    watchdog('civicrm_entity', t('Error assigning contact to groups via Assign CiviCRM Contact to Group rule'));
+  }
+}
+
+/**
+ * Callback for Assign CiviCRM Contact to Group Rules action
+ *
+ * @param $contact
+ * @param $group_ids
+ */
+function civicrm_entity_rules_action_unassign_contact_to_group($contact, $group_ids) {
+  if(!civicrm_initialize()) {
+    return;
+  }
+  try {
+    foreach ($group_ids AS $key => $group) {
+      $contact_id = $contact->id->value();
+      $params = array(
+        'contact_id' => $contact_id,
+        'group_id' => $group,
+      );
+      $delete_result = civicrm_api3('GroupContact', 'delete', $params);
+    }
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    watchdog('civicrm_entity', t('Error unassigning contact to groups via Assign CiviCRM Contact from Group rule'));
+  }
+}
+
+/**
+ * Callback for Assign CiviCRM Contact to Group Rules action, Group selection options list
+ *
+ * @return array
+ */
+function civicrm_entity_rules_assign_contact_group_options_list() {
+  $group_query = new EntityFieldQuery();
+  $groups = $group_query->entityCondition('entity_type', 'civicrm_group')
+    ->propertyCondition('is_active', 1)
+    ->propertyOrderBy('title', 'ASC')
+    ->execute();
+
+  $options = array();
+  if(count($groups['civicrm_group'])) {
+    $group_entities = entity_load('civicrm_group', array_keys($groups['civicrm_group']));
+
+    foreach ($group_entities AS $key => $group) {
+      $options[$key] = $group->title;
+    }
+  }
+  return $options;
+}
+
+/**
  * Implement the pre hook and delete Drupal field data when civicrm deletes an entity.
  *
  * @param $op
