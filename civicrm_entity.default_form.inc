@@ -445,9 +445,38 @@ function civicrm_entity_form_submit(&$form, &$form_state) {
   $entity->changed = time();
 
   $wrapper = entity_metadata_wrapper($entity_type, $entity);
-  field_attach_submit($entity_type, $entity, $form, $form_state);
 
-  $wrapper->save();
+    //in creation, do we need to save the wrapper first ?
+    $target_id_columns = array();
+    if ($entity->is_new) {
+      foreach ($form as $key => $form_field) {
+        if (strpos($key, 'field_') === 0) {
+          $field = field_info_field($key);
+          $ief_id = $form_field['und']['#ief_id'];
+          $host_entity_type = $form_state['inline_entity_form'][$ief_id]['instance']['entity_type'];
+          if ($host_entity_type == $entity_type) {
+            $target_id_columns[$key] = array($field['settings']['host_source_id'] => $field['settings']['target_id_column']);
+          }
+        }
+      }
+    }
+    if (!empty($target_id_columns)) {
+      $wrapper->save();
+      foreach($target_id_columns as $key => $target_id_column) {
+        $host_id = key($target_id_column);
+        $target_id = reset($target_id_column);
+        $ief_id = $form[$key]['und']['#ief_id'];
+        $entity_bundle = array_search(
+          $form_state['inline_entity_form'][$ief_id]['settings']['entity_type'],
+          $form_state['inline_entity_form'][$ief_id]['settings']['bundles']);
+        $form_state['inline_entity_form'][$ief_id]['entities'][$entity_bundle]['entity']->$target_id
+          = $entity->$host_id;
+      }
+      field_attach_submit($entity_type, $entity, $form, $form_state);
+    } else {
+      field_attach_submit($entity_type, $entity, $form, $form_state);
+      $wrapper->save();
+    }
 
   $t_args = array(
     '%label' => entity_label($entity_type, $entity),
