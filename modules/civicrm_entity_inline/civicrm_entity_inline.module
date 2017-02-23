@@ -24,6 +24,7 @@ function civicrm_entity_inline_entity_info_alter(&$entity_info) {
 function civicrm_entity_inline_inline_entity_form_entity_form_alter(&$entity_form, &$form_state) {
   $form_id = $form_state['build_info']['form_id'] . '_ief_' . $entity_form['#entity_type'] . '_' . $entity_form['#bundle'];
   $entity_form['#form_id'] = $form_id;
+
   drupal_alter(array('form', 'form_' . $form_id, 'form_' . $form_state['build_info']['base_form_id']),
     $entity_form, $form_state, $form_id);
 }
