@@ -3017,7 +3017,7 @@ function civicrm_entity_contact_send_email($contact, $subject, $message_text, $m
 }
 
 /**
- * Callback for Assign CiviCRM Contact to Group Rules action
+ * Callback for Unassign CiviCRM Contact from Group Rules action
  *
  * @param $contact
  * @param $group_ids
