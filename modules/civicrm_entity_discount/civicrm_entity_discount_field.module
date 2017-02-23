@@ -156,7 +156,7 @@ function civicrm_entity_discount_field_field_widget_form(&$form, &$form_state, $
   switch ($instance['widget']['type']) {
     case 'civicrm_entity_discount_field_default_widget':
       $price_field_options = array('' => '- None -');
-      if (!empty($form['#entity'])) {
+      if (!empty($form['#entity']->id)) {
         $event_id = $form['#entity']->id;
         $query = db_select('civicrm_price_set_entity', 'pce');
         $price_set_id = $query->fields('pce', array('price_set_id'))
