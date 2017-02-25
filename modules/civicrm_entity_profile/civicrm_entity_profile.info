@@ -1,0 +1,6 @@
+name = CiviCRM Entity Profile
+description = "Provides CiviCRM Entity Profile Integration, and field type."
+dependencies[] = civicrm_entity
+package = CiviCRM Entity
+version = 1.0
+core = 7.x

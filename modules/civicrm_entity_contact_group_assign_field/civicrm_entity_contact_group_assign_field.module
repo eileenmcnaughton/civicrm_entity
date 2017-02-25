@@ -1,0 +1,533 @@
+<?php
+
+/**
+ * @file
+ * Provide CiviCRM Entity Contact Group Assign Field Type.  Provides a widget for adding/removing a contact to a selected list of groups.
+ */
+
+/**
+ * Implements hook_field_info().
+ *
+ * @return array
+ */
+function civicrm_entity_contact_group_assign_field_field_info() {
+  return array(
+    'civicrm_entity_contact_group_assign_field' => array(
+      'label' => t('CiviCRM Entity Contact Group Assign'),
+      'description' => t('This field provides a widget for adding/removing a contact to a selected list of groups.'),
+      'settings' => array('groups' => array()),
+      'instance_settings' => array(),
+      'default_widget' => 'civicrm_entity_contact_group_assign_field_default_widget',
+      'default_formatter' => 'civicrm_entity_contact_group_assign_field_default_formatter',
+    ),
+  );
+}
+
+/**
+ * Implements hook_form_FORMID_alter().
+ *
+ * form id : field_ui_field_edit_form
+ *
+ * Alter Field Settings form to set cardinality to 1 and disable the select widget
+ *
+ * @param $form
+ * @param $form_state
+ */
+function civicrm_entity_contact_group_assign_field_form_field_ui_field_edit_form_alter(&$form, &$form_state) {
+  if ($form['#field']['type'] == 'civicrm_entity_contact_group_assign_field') {
+    // field settings mods
+    $form['field']['cardinality']['#default_value'] = 1;
+    $form['field']['cardinality']['#disabled'] = TRUE;
+  }
+}
+
+/**
+ * Implements hook_form_FORMID_alter().
+ *
+ * form id : field_ui_field_overview_form
+ *
+ * Only allow creation of civicrm_entity_contact_group_assign_fields to civicrm_contact entity type
+ *
+ * @param $form
+ * @param $form_state
+ */
+function civicrm_entity_contact_group_assign_field_form_field_ui_field_overview_form_alter(&$form, &$form_state) {
+  if ($form['#entity_type'] != 'civicrm_contact') {
+    unset($form['fields']['_add_new_field']['type']['#options']['civicrm_entity_contact_group_assign_field']);
+
+    foreach ($form['fields']['_add_existing_field']['field_name']['#options'] as $field_name => $description) {
+      if (strpos($description, 'CiviCRM Entity Contact Group Assign') !== FALSE) {
+        unset($form['fields']['_add_existing_field']['field_name']['#options'][$field_name]);
+      }
+    }
+  }
+}
+
+
+/**
+ * Implements hook_field_settings_form().
+ *
+ * @param $field
+ * @param $instance
+ * @param $has_data
+ */
+function civicrm_entity_contact_group_assign_field_field_settings_form($field, $instance, $has_data) {
+  $defaults = field_info_field_settings($field['type']);
+  $settings = array_merge($defaults, $field['settings']);
+
+  civicrm_initialize();
+  try {
+    $result = civicrm_api3('Group', 'get', array(
+      'is_active' => 1,
+    ));
+    $groups = array();
+    if ($result['count']) {
+      foreach ($result['values'] as $id => $group) {
+        $groups[$id] = $group['title'];
+      }
+    }
+  } catch (CiviCRM_API3_Exception $e) {
+    $groups = array();
+  }
+
+  $form['groups'] = array(
+    '#type' => 'select',
+    '#title' => t('Groups'),
+    '#multiple' => TRUE,
+    '#default_value' => $settings['groups'],
+    '#description' => t('Groups to include for this field '),
+    '#options' => $groups,
+  );
+
+  return $form;
+}
+
+/**
+ * Implements hook_field_load().
+ *
+ * @param $entity_type
+ * @param $entities
+ * @param $field
+ * @param $instances
+ * @param $langcode
+ * @param $items
+ * @param $age
+ */
+function civicrm_entity_contact_group_assign_field_field_load($entity_type, $entities, $field, $instances, $langcode, &$items, $age) {
+  if ($entity_type == 'civicrm_contact') {
+    $field_group_ids = array_keys($field['settings']['groups']);
+    civicrm_initialize();
+    foreach ($entities as $entity_id => $entity) {
+      $contact_id = $entity->contact_id;
+      try {
+        $result = civicrm_api3('GroupContact', 'get', array(
+          'contact_id' => $contact_id,
+        ));
+      } catch (CiviCRM_API3_Exception $e) {
+        continue;
+      }
+      $api_contact_groups = array();
+      foreach ($result['values'] as $group_contact_id => $data) {
+        if (in_array($data['group_id'], $field_group_ids)) {
+          $api_contact_groups[] = $data['group_id'];
+        }
+      }
+      foreach ($field_group_ids as $group_id) {
+        if (in_array($group_id, $api_contact_groups)) {
+          $items[$entity_id][0]['groups'][$group_id] = $group_id;
+        }
+        else {
+          $items[$entity_id][0]['groups'][$group_id] = 0;
+        }
+      }
+
+    }
+  }
+}
+
+/**
+ * Implements hook_field_insert().
+ *
+ * @param $entity_type
+ * @param $entity
+ * @param $field
+ * @param $instance
+ * @param $langcode
+ * @param $items
+ */
+function civicrm_entity_contact_group_assign_field_field_insert($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  if ($entity_type == 'civicrm_contact') {
+    if (!empty($items[0]['groups'])) {
+      if (!empty($entity->id)) {
+        $contact_id = $entity->id;
+        _civicrm_entity_contact_group_assign_field_process_field_items($contact_id, $field, $items);
+        unset($items[0]);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_field_update().
+ *
+ * @param $entity_type
+ * @param $entity
+ * @param $field
+ * @param $instance
+ * @param $langcode
+ * @param $items
+ */
+function civicrm_entity_contact_group_assign_field_field_update($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  if ($entity_type == 'civicrm_contact') {
+    if (!empty($items[0]['groups'])) {
+      if (!empty($entity->id)) {
+        $contact_id = $entity->id;
+        _civicrm_entity_contact_group_assign_field_process_field_items($contact_id, $field, $items);
+        unset($items[0]);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_field_widget_info().
+ */
+function civicrm_entity_contact_group_assign_field_field_widget_info() {
+  return array(
+    'civicrm_entity_contact_group_assign_field_checkboxes_widget' => array(
+      'label' => t('Checkboxes'),
+      'field types' => array('civicrm_entity_contact_group_assign_field'),
+      'settings' => array(),
+      'behaviors' => array(
+        'multiple values' => FIELD_BEHAVIOR_DEFAULT,
+        'default value' => FIELD_BEHAVIOR_DEFAULT,
+      ),
+    ),
+    'civicrm_entity_contact_group_assign_field_radios_widget' => array(
+      'label' => t('Radios'),
+      'field types' => array('civicrm_entity_contact_group_assign_field'),
+      'settings' => array(),
+      'behaviors' => array(
+        'multiple values' => FIELD_BEHAVIOR_DEFAULT,
+        'default value' => FIELD_BEHAVIOR_DEFAULT,
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_is_empty().
+ *
+ * @param $item
+ * @param $field
+ * @return bool
+ */
+function civicrm_entity_contact_group_assign_field_field_is_empty($item, $field) {
+  if (empty($item['groups'])) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * Implements hook_field_widget_form().
+ */
+function civicrm_entity_contact_group_assign_field_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+  $orig_element = $element;
+
+  $options = _civicrm_entity_contact_group_assign_field_get_field_settings_groups($field);
+
+  $values = array();
+  if (!empty($items[$delta]['groups'])) {
+    foreach ($items[$delta]['groups'] as $group_id => $value) {
+      $values[$group_id] = $value;
+    }
+  }
+  switch ($instance['widget']['type']) {
+    case 'civicrm_entity_contact_group_assign_field_checkboxes_widget':
+      $widget = array();
+      $widget = $orig_element + array(
+          '#type' => 'checkboxes',
+          '#default_value' => $values,
+          '#options' => $options,
+        );
+      //just have field label?
+      $widget['#title'] = $instance['label'];
+      $widget['#weight'] = 0;
+      $element['groups'] = $widget;
+      break;
+    case 'civicrm_entity_contact_group_assign_field_radios_widget':
+      $default_value = 0;
+      foreach ($values as $group_id => $value) {
+        if ($value) {
+          $default_value = $group_id;
+          break;
+        }
+      }
+      $widget = array();
+      $widget = $orig_element + array(
+          '#type' => 'radios',
+          '#default_value' => $default_value,
+          '#options' => $options,
+        );
+      //just have field label?
+      $widget['#title'] = $instance['label'];
+      $widget['#weight'] = 0;
+      $element['groups'] = $widget;
+      break;
+  }
+  return $element;
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function civicrm_entity_contact_group_assign_field_field_formatter_info() {
+  return array(
+    'civicrm_entity_contact_group_assign_field_default_formatter' => array( // Machine name of the formatter
+      'label' => t('List Groups'),
+      'field types' => array('civicrm_entity_contact_group_assign_field'),
+      'settings' => array( // Array of the settings we'll create
+        'link_to_groups' => 0,
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_settings_form().
+ *
+ * @param $field
+ * @param $instance
+ * @param $view_mode
+ * @param $form
+ * @param $form_state
+ * @return array
+ */
+function civicrm_entity_contact_group_assign_field_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+  if ($field['type'] == 'civicrm_entity_contact_group_assign_field') {
+    $display = $instance['display'][$view_mode];
+    $settings = $display['settings'];
+    $element = array();
+
+    $element['link_to_groups'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Output groups as links to entities'),
+      '#default_value' => isset($settings['link_to_groups']) ? $settings['link_to_groups'] : 0,
+      '#return_value' => 1,
+    );
+    return $element;
+  }
+}
+
+/**
+ * Implements hook_field_formatter_settings_summary().
+ *
+ * @param $field
+ * @param $instance
+ * @param $view_mode
+ * @return string
+ */
+function civicrm_entity_contact_group_assign_field_field_formatter_settings_summary($field, $instance, $view_mode) {
+  if ($field['type'] == 'civicrm_entity_contact_group_assign_field') {
+    $display = $instance['display'][$view_mode];
+    $settings = $display['settings'];
+    $summary = '';
+    if ($display['type'] == 'civicrm_entity_contact_group_assign_field_default_formatter') {
+      $summary = t('Link to group: @data', array(
+        '@data' => !empty($settings['link_to_groups']) ? 'Yes' : 'No',
+      ));
+    }
+    return $summary;
+  }
+}
+
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function civicrm_entity_contact_group_assign_field_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  $settings = $display['settings'];
+  switch ($display['type']) {
+    case 'civicrm_entity_contact_group_assign_field_default_formatter':
+      $output_as_link = !empty($settings['link_to_groups']) ? 1 : 0;
+      foreach ($items as $delta => $item) {
+        $markup = '';
+        foreach ($item['groups'] as $group_id => $value) {
+          if ($value) {
+            try {
+              $result = civicrm_api3('Group', 'getvalue', array(
+                'return' => "title",
+                'id' => $group_id,
+              ));
+
+            } catch (CiviCRM_API3_Exception $e) {
+              continue;
+            }
+            $group_text = $result;
+            if ($output_as_link) {
+              $group_path = 'civicrm-group' . '/' . $group_id;
+              $markup .= '<div class="civicrm-group-item">' . l($group_text, $group_path) . '</div>';
+            }
+            else {
+              $markup .= '<div class="civicrm-group-item">' . $group_text . '</div>';
+            }
+          }
+        }
+        $element[$delta] = array(
+          '#markup' => $markup,
+        );
+      }
+      break;
+  }
+  return $element;
+}
+
+/**
+ * Implements hook_civicrm_post().
+ *
+ * Here we need to probably clear some field caches when contacts are added / removed from group
+ *
+ * @param $op
+ * @param $objectName
+ * @param $objectId
+ * @param $objectRef
+ */
+function civicrm_entity_contact_group_assign_field_civicrm_post($op, $objectName, $objectId, &$objectRef) {
+  if ($objectName == 'GroupContact' && ($op == 'create' || $op == 'delete' || $op == 'edit')) {
+    $civicrm_entity_reference_fields = db_select('field_config', 'fc')
+      ->fields('fc', array('id'))
+      ->condition('type', 'civicrm_entity_contact_group_assign_field')
+      ->execute();
+    if ($civicrm_entity_reference_fields->rowCount()) {
+      cache_clear_all('field:civicrm_contact:' . $objectRef[0], 'cache_field');
+    }
+  }
+}
+
+/**
+ * Helper function to process field items on entity insert or update
+ *
+ * @param $contact_id
+ * @param $field
+ * @param $items
+ */
+function _civicrm_entity_contact_group_assign_field_process_field_items($contact_id, $field, &$items) {
+  $field_settings_groups = array_keys(_civicrm_entity_contact_group_assign_field_get_field_settings_groups($field));
+  if (!is_array($items[0]['groups'])) {
+    $set_value = $items[0]['groups'];
+    $items[0]['groups'] = array();
+    foreach ($field_settings_groups as $group_id) {
+      if ($group_id == $set_value) {
+        $items[0]['groups'][$group_id] = $set_value;
+      }
+      else {
+        $items[0]['groups'][$group_id] = 0;
+      }
+    }
+  }
+  foreach ($items[0]['groups'] as $group_id => $value) {
+    // ignore any programmatically added group id keys that aren't in the field settings list
+    if (in_array($group_id, $field_settings_groups)) {
+      // if group id has a non-zero, check to see if contact is in group, and if not, add it
+      if ($value) {
+        if (!_civicrm_entity_contact_group_assign_field_is_contact_in_group($contact_id, $group_id)) {
+          _civicrm_entity_contact_group_assign_field_add_contact_to_group($contact_id, $group_id);
+        }
+      } // if a group id has a value of zero, check to see if contact is in group, if it is, remove it
+      else {
+        if (_civicrm_entity_contact_group_assign_field_is_contact_in_group($contact_id, $group_id)) {
+          _civicrm_entity_contact_group_assign_field_remove_contact_from_group($contact_id, $group_id);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Helper function to get an array of group titles keyed by group id
+ *
+ * @param $field
+ * @return array
+ */
+function _civicrm_entity_contact_group_assign_field_get_field_settings_groups($field) {
+  civicrm_initialize();
+  $groups = array();
+  foreach ($field['settings']['groups'] as $id => $gid) {
+    try {
+      $result = civicrm_api3('Group', 'getvalue', array(
+        'return' => "title",
+        'id' => $gid,
+      ));
+      $groups[$id] = $result;
+    } catch (CiviCRM_API3_Exception $e) {
+      continue;
+    }
+  }
+  return $groups;
+}
+
+/**
+ * Helper function to check if contact is in a group
+ *
+ * @param $contact_id
+ * @param $group_id
+ * @return bool
+ */
+function _civicrm_entity_contact_group_assign_field_is_contact_in_group($contact_id, $group_id) {
+  civicrm_initialize();
+  try {
+    $result = civicrm_api3('GroupContact', 'get', array(
+      'contact_id' => $contact_id,
+      'group_id' => $group_id,
+      'status' => 'Added',
+    ));
+  } catch (CiviCRM_API3_Exception $e) {
+    return FALSE;
+  }
+  if ($result['count']) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ * Helper function, add a contact to a group
+ *
+ * @param $contact_id
+ * @param $group_id
+ */
+function _civicrm_entity_contact_group_assign_field_add_contact_to_group($contact_id, $group_id) {
+  civicrm_initialize();
+  try {
+    $result = civicrm_api3('GroupContact', 'create', array(
+      'contact_id' => $contact_id,
+      'group_id' => $group_id,
+      'status' => 'Added',
+    ));
+  } catch (CiviCRM_API3_Exception $e) {
+
+  }
+}
+
+/**
+ * Helper function, remove a contact from a group
+ *
+ * @param $contact_id
+ * @param $group_id
+ */
+function _civicrm_entity_contact_group_assign_field_remove_contact_from_group($contact_id, $group_id) {
+  civicrm_initialize();
+  try {
+    $result = civicrm_api3('GroupContact', 'create', array(
+      'contact_id' => $contact_id,
+      'group_id' => $group_id,
+      'status' => 'Removed',
+    ));
+  } catch (CiviCRM_API3_Exception $e) {
+
+  }
+}

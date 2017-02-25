@@ -1,0 +1,86 @@
+.civicrm-entity-price-set-field-registration-form .form-submit {
+    clear: left;
+    display: block;
+}
+
+.civicrm-entity-price-set-field-registration-form .civicrm-price-set,
+.civicrm-entity-price-set-field-registration-form h2 {
+    clear: left;
+}
+
+.civicrm-entity-price-set-field-participant-form {
+
+}
+
+.civicrm-entity-price-set-field-participant-form .form-item {
+    margin-bottom: 0.25em;
+    margin-top:0.5em;
+  /*  float: left; */
+}
+
+.civicrm-entity-price-set-field-participant-form:after {
+    clear: left;
+}
+
+.civicrm-entity-price-set-field-participant-form .form-item:nth-child(1),
+.civicrm-entity-price-set-field-participant-form .form-item:nth-child(3) {
+    display: block;
+    vertical-align: middle;
+    clear: left;
+    margin-right: 1em;
+}
+
+.civicrm-entity-price-set-field-participant-form .form-item:nth-child(2),
+.civicrm-entity-price-set-field-participant-form .form-item:nth-child(4) {
+    display: block;
+    vertical-align: middle;
+    margin-bottom: 1em;
+}
+
+.form-item-registration-form-pay-later {
+    clear: left;
+    margin-top: 0.5em;
+}
+
+.civicrm-entity-price-set-field-cc-block {
+    clear: left;
+}
+
+.civicrm-entity-price-set-field-cc-block .form-item {
+    margin-bottom: 0.25em;
+}
+
+.civicrm-entity-price-set-field-cc-exp-block:after {
+    clear: both;
+}
+
+.civicrm-entity-price-set-field-cc-block .form-item-registration-form-registration-cc-block-cc-number {
+    margin-top: 1em;
+}
+
+.civicrm-entity-price-set-field-cc-exp-block .form-item-registration-form-registration-cc-block-cc-exp-month {
+    float: left;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 1em;
+}
+
+.civicrm-entity-price-set-field-cc-exp-block .form-item-registration-form-registration-cc-block-cc-exp-year {
+    display: inline-block;
+    vertical-align: middle;
+}
+@media (min-width:640px) {
+    .civicrm-entity-price-set-field-cc-block .name-and-number-section {
+        float: left;
+        vertical-align: middle;
+        margin-right: 1.5em;
+    }
+}
+
+.civicrm-entity-price-set-field-cc-block .expiration-and-cvv-section {
+    vertical-align: middle;
+}
+
+.civicrm-entity-price-set-registration-buttons {
+    clear: left;
+}

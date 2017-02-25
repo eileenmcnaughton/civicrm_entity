@@ -1,0 +1,8 @@
+name = CiviCRM Entity Actions
+description = "Declare ad hoc actions to use with civicrm_entity (as we haven't yet decided how best to develop into CiviCRM Entity in a systematic way we are putting some ad hoc vbos in this module)"
+dependencies[] = civicrm
+dependencies[] = civicrm_entity
+dependencies[] = entityreference_autocomplete
+package = CiviCRM Entity
+version = 1.0-beta1
+core = 7.x
