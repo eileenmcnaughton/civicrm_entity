@@ -1,0 +1,6 @@
+name = CiviCRM Entity Contact Assign Relationship Type List Field
+description = "For CiviCRM Contacts. Provides a field for creating/activiating or deactiving a relationship from the contact to another contact. Contact_b is global to the field, and the user is presented a list of relationship types to manage."
+dependencies[] = civicrm_entity
+package = CiviCRM Entity
+version = 1.0
+core = 7.x

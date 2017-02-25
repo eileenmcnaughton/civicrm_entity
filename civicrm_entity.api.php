@@ -24,6 +24,7 @@
  *   -update: (optional) array of permissions necessary to update Drupal entity (defaults to 'administer CiviCRM' if not provided)
  *   -create: (optional) array of permissions necessary to create Drupal entity (defaults to 'administer CiviCRM' if not provided)
  *   -delete: (optional) array of permissions necessary to delete Drupal entity (defaults to 'administer CiviCRM' if not provided)
+ *   -access callback: (optional) string of function name to use as alternate permissions handler to that provided by CiviCRM entity (default to 'user_access')
  * -theme: (optional) array
  *   -template: (optional) Name of template file (without the .tpl.php extension)
  *   -path: (optional) Path to template file
@@ -49,7 +50,7 @@ function hook_civicrm_entity_supported_info(&$civicrm_entity_info) {
     ),
     'theme' => array(
       'template' => 'civicrm-phone',
-      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates'
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
     ),
     'display suite' => array(
       'link fields' => array(
@@ -58,7 +59,11 @@ function hook_civicrm_entity_supported_info(&$civicrm_entity_info) {
           'target' => 'civicrm_contact',
         ),
       ),
-      'option fields' => array('location_type_id', 'mobile_provider_id', 'phone_type_id'),
+      'option fields' => array(
+        'location_type_id',
+        'mobile_provider_id',
+        'phone_type_id',
+      ),
       'boolean fields' => array('is_primary', 'is_billing',),
     ),
   );

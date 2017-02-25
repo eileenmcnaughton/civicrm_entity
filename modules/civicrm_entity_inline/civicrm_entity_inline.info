@@ -1,0 +1,9 @@
+name = Inline CiviCRM Entity
+description = Provides Inline Entity Form integration with CiviCRM Entities
+core = 7.x
+package = CiviCRM Entity
+version = 1.0
+dependencies[] = civicrm_entity
+dependencies[] = inline_entity_form
+files[] = includes/civicrm.civicrm_entity_inline.inc
+

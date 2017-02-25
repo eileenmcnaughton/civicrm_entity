@@ -92,7 +92,10 @@ class CiviCRMEntityDefaultViewsController extends EntityDefaultViewsController {
       $name = !isset($this->relationships[$info['base table']][$this->info['base table']]) ? $this->info['base table'] : $this->info['base table'] . '_' . $views_field_name;
       $this->relationships[$info['base table']][$name] = array(
         'title' => $this->info['label'],
-        'help' => t("Associated @label via the @label's @property.", array('@label' => $label_lowercase, '@property' => $property_label_lowercase)),
+        'help' => t("Associated @label via the @label's @property.", array(
+          '@label' => $label_lowercase,
+          '@property' => $property_label_lowercase,
+        )),
         'relationship' => array(
           'label' => $this->info['label'],
           'handler' => $this->getRelationshipHandlerClass($this->type, $type),
@@ -261,14 +264,28 @@ class CiviCRMEntityDefaultViewsController extends EntityDefaultViewsController {
     // If there is an options list callback, add to the filter and field.
     if (isset($return['filter']) && !empty($property_info['options list'])) {
       $return['filter']['handler'] = 'views_handler_filter_in_operator';
-      $return['filter']['options callback'] = array('EntityDefaultViewsController', 'optionsListCallback');
-      $return['filter']['options arguments'] = array($this->type, $property_name, 'view');
+      $return['filter']['options callback'] = array(
+        'EntityDefaultViewsController',
+        'optionsListCallback',
+      );
+      $return['filter']['options arguments'] = array(
+        $this->type,
+        $property_name,
+        'view',
+      );
     }
     // @todo: This class_exists is needed until views 3.2.
     if (isset($return['field']) && !empty($property_info['options list']) && class_exists('views_handler_field_machine_name')) {
       $return['field']['handler'] = 'views_handler_field_machine_name';
-      $return['field']['options callback'] = array('EntityDefaultViewsController', 'optionsListCallback');
-      $return['field']['options arguments'] = array($this->type, $property_name, 'view');
+      $return['field']['options callback'] = array(
+        'EntityDefaultViewsController',
+        'optionsListCallback',
+      );
+      $return['field']['options arguments'] = array(
+        $this->type,
+        $property_name,
+        'view',
+      );
     }
     return $return;
   }

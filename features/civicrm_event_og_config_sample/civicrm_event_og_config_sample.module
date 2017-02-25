@@ -10,7 +10,7 @@ include_once 'civicrm_event_og_config_sample.features.inc';
  * Implements hook_variable_info().
  */
 function civicrm_event_og_config_sample_variable_info($options) {
-  if(!civicrm_initialize(TRUE)){
+  if (!civicrm_initialize(TRUE)) {
     return;
   }
   // This is the very minimum we need, some descriptive name.

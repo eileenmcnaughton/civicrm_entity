@@ -1,0 +1,6 @@
+name = CiviCRM Entity Price Set Field
+description = "Provides CiviCRM Entity Price Set Field Type.  Provides a widget for manipulating price sets for CiviCRM Events."
+dependencies[] = civicrm_entity_profile
+package = CiviCRM Entity
+core = 7.x
+version = 1.0-alpha2

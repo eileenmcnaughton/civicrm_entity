@@ -1,0 +1,6 @@
+name = CiviCRM Entity Discount
+description = "Provides CiviCRM Entity Discount Field Type.  A platform for custom discount settings for the CiviCRM Entity Price Set Field registration form.  Think of it as a template or canvas for what is possible"
+dependencies[] = civicrm_entity_price_set_field
+package = CiviCRM Entity
+version = 1.0
+core = 7.x

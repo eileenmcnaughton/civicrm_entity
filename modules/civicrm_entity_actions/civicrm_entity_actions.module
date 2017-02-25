@@ -1,0 +1,18 @@
+<?php
+
+function civicrm_entity_actions_action_info() {
+
+  $action_info = array();
+  $civicrm_entities = _civicrm_entity_enabled_entities();
+  foreach($civicrm_entities as $entity => $shortEntity) {      // civicrm_contact => contact
+    $actionFile = drupal_get_path('module', 'civicrm_entity_actions') . "/civicrm_entity_actions_$shortEntity.inc";
+    if (file_exists($actionFile)) {
+      require_once $actionFile;
+    }
+    $actionInfoFunction = 'civicrm_entity_actions_' . $shortEntity . '_action_info';
+    if (function_exists($actionInfoFunction)) {
+      $action_info = array_merge($action_info, $actionInfoFunction());
+    }
+  }
+  return $action_info;
+}

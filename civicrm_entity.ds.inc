@@ -11,39 +11,40 @@ function _civicrm_entity_render_fields($field) {
 
 
   //civicrm_contact civi_user field needs special handling
-  switch($field['entity_type']) {
+  switch ($field['entity_type']) {
     case 'civicrm_contact':
-      $formatted_value = _civicrm_entity_contact_get_formatted_values($field,$wrapper);
+      $formatted_value = _civicrm_entity_contact_get_formatted_values($field, $wrapper);
       break;
     case 'civicrm_participant':
-      $formatted_value = _civicrm_entity_participant_get_formatted_values($field,$wrapper,$field['entity']);
+      $formatted_value = _civicrm_entity_participant_get_formatted_values($field, $wrapper, $field['entity']);
       break;
-    default: $formatted_value = $wrapper->{$field['field_name']}->value();
+    default:
+      $formatted_value = $wrapper->{$field['field_name']}->value();
       break;
   }
 
   // primary_contact_id_contact and other fields are objects produced by the meta wrapper
   // Will be ease to generate links to the entities if it is consistent across entities
-  if(is_object($formatted_value)){
+  if (is_object($formatted_value)) {
     $formatted_value = $wrapper->{$field['field_name']}->id->value();
   }
-  if($field['formatter'] == 'civicrm_link') {
+  if ($field['formatter'] == 'civicrm_link') {
     global $base_url;
-    if($formatted_value){
-      $formatted_value = '<a href="'. $base_url . '/'. str_replace('_','-',$field['properties']['link_entity']) . '/' . $formatted_value . '">'. _civicrm_entity_get_entity_label($field['properties']['link_entity'],$formatted_value) . '</a>';
+    if ($formatted_value) {
+      $formatted_value = '<a href="' . $base_url . '/' . str_replace('_', '-', $field['properties']['link_entity']) . '/' . $formatted_value . '">' . _civicrm_entity_get_entity_label($field['properties']['link_entity'], $formatted_value) . '</a>';
     }
   }
 
-  if($field['formatter'] == 'civicrm_yes_no') {
-    if($formatted_value) {
+  if ($field['formatter'] == 'civicrm_yes_no') {
+    if ($formatted_value) {
       $formatted_value = 'Yes';
     }
     else {
       $formatted_value = 'No';
     }
   }
-  if($field['formatter'] == 'civicrm_true_false') {
-    if($formatted_value) {
+  if ($field['formatter'] == 'civicrm_true_false') {
+    if ($formatted_value) {
       $formatted_value = 'True';
     }
     else {
@@ -51,9 +52,21 @@ function _civicrm_entity_render_fields($field) {
     }
   }
 
-  if($field['formatter'] == 'civicrm_option_value') {
-    if($formatted_value){
-      $formatted_value = _civicrm_entity_option_lookup($field,explode(',', $formatted_value));
+  if ($field['formatter'] == 'civicrm_option_value') {
+    if ($formatted_value) {
+      $formatted_value = _civicrm_entity_option_lookup($field, explode(',', $formatted_value));
+    }
+  }
+
+  if ($field['formatter'] == 'civicrm_date') {
+    if (!empty($formatted_value) && !empty($field['formatter_settings']['date type'])) {
+      $formatted_value = format_date((int)strtotime($formatted_value), $field['formatter_settings']['date type']);
+    }
+  }
+
+  if ($field['formatter'] == 'civicrm_timestamp') {
+    if (!empty($formatted_value) && !empty($field['formatter_settings']['date type'])) {
+      $formatted_value = format_date($formatted_value, $field['formatter_settings']['date type']);
     }
   }
 
@@ -63,23 +76,26 @@ function _civicrm_entity_render_fields($field) {
     $class = (!empty($settings['class'])) ? ' class="' . check_plain($settings['class']) . '"' : '';
     $output = '<' . $wrapper . $class . '>' . $formatted_value . '</' . $wrapper . '>';
   }
+  else {
+    $output = $formatted_value;
+  }
 
   return $output;
 }
 
 /**
- * Utiltiy function to add provided boolean fields with yes/no and true/false formatters
+ * Utility function to add provided boolean fields with yes/no and true/false formatters
  *
  * @param $entity_type
  * @param $yes_no_fields
  * @param $fields
  */
-function _civicrm_entity_yesno_addformatters($entity_type,$yes_no_fields,&$fields){
-  foreach($yes_no_fields as $name) {
-    $fields[$entity_type][$name]['properties']['formatters'] = array (
-        'default' => 'Raw Value',
-        'civicrm_yes_no' => 'Yes/No',
-        'civicrm_true_false' => 'True/False',
+function _civicrm_entity_yesno_addformatters($entity_type, $yes_no_fields, &$fields) {
+  foreach ($yes_no_fields as $name) {
+    $fields[$entity_type][$name]['properties']['formatters'] = array(
+      'default' => 'Raw Value',
+      'civicrm_yes_no' => 'Yes/No',
+      'civicrm_true_false' => 'True/False',
     );
   }
 }
@@ -91,11 +107,11 @@ function _civicrm_entity_yesno_addformatters($entity_type,$yes_no_fields,&$field
  * @param $option_fields
  * @param $fields
  */
-function _civicrm_entity_option_addformatters($entity_type,$option_fields,&$fields){
-  foreach($option_fields as $name) {
-    $fields[$entity_type][$name]['properties']['formatters'] = array (
-        'default' => 'Option ID',
-        'civicrm_option_value' => 'Option Value',
+function _civicrm_entity_option_addformatters($entity_type, $option_fields, &$fields) {
+  foreach ($option_fields as $name) {
+    $fields[$entity_type][$name]['properties']['formatters'] = array(
+      'default' => 'Option ID',
+      'civicrm_option_value' => 'Option Value',
     );
   }
 }
@@ -107,13 +123,63 @@ function _civicrm_entity_option_addformatters($entity_type,$option_fields,&$fiel
  * @param $link_fields
  * @param $fields
  */
-function _civicrm_entity_link_addformatters($entity_type,$link_fields,&$fields){
-  foreach($link_fields as $link_field) {
-    $fields[$entity_type][$link_field['link_field']]['properties']['formatters'] = array (
-        'default' => 'Default',
-        'civicrm_link' => 'Link',
+function _civicrm_entity_link_addformatters($entity_type, $link_fields, &$fields) {
+  foreach ($link_fields as $link_field) {
+    $fields[$entity_type][$link_field['link_field']]['properties']['formatters'] = array(
+      'default' => 'Default',
+      'civicrm_link' => 'Link',
     );
     $fields[$entity_type][$link_field['link_field']]['properties']['link_entity'] = $link_field['target'];
+  }
+}
+
+/**
+ * Utility function to provide date fields with custom PHP date formatting
+ *
+ * @param $entity_type
+ * @param $date_fields
+ * @param $fields
+ */
+function  _civicrm_entity_date_addformatters($entity_type, $date_fields, &$fields) {
+  $date_types = system_get_date_types();
+  $date_options = array();
+  foreach ($date_types as $name => $values) {
+    $date_options[$name] = $values['title'];
+  }
+  foreach ($date_fields as $date_field) {
+    $fields[$entity_type][$date_field]['properties']['formatters'] = array(
+      'default' => 'Default',
+      'civicrm_date' => 'Date',
+    );
+    $fields[$entity_type][$date_field]['properties']['settings']['date type'] = array(
+      'type' => 'select',
+      'options' => $date_options,
+    );
+  }
+}
+
+/**
+ * Utility function to provide date fields with custom PHP date formatting
+ *
+ * @param $entity_type
+ * @param $date_fields
+ * @param $fields
+ */
+function  _civicrm_entity_timestamp_addformatters($entity_type, $date_fields, &$fields) {
+  $date_types = system_get_date_types();
+  $date_options = array();
+  foreach ($date_types as $name => $values) {
+    $date_options[$name] = $values['title'];
+  }
+  foreach ($date_fields as $date_field) {
+    $fields[$entity_type][$date_field]['properties']['formatters'] = array(
+      'default' => 'Default',
+      'civicrm_timestamp' => 'Date',
+    );
+    $fields[$entity_type][$date_field]['properties']['settings']['date type'] = array(
+      'type' => 'select',
+      'options' => $date_options,
+    );
   }
 }
 
@@ -124,9 +190,14 @@ function _civicrm_entity_link_addformatters($entity_type,$link_fields,&$fields){
  * @param $id
  * @return mixed
  */
-function _civicrm_entity_get_entity_label($entity_type,$id) {
-  $wrapper = entity_metadata_wrapper($entity_type,$id);
-  return $wrapper->label();
+function _civicrm_entity_get_entity_label($entity_type, $id) {
+  if ($entity_type != 'civicrm_participant') {
+    $wrapper = entity_metadata_wrapper($entity_type, $id);
+    return $wrapper->label();
+  }
+  else {
+    return $id;
+  }
 }
 
 /**
@@ -137,15 +208,15 @@ function _civicrm_entity_get_entity_label($entity_type,$id) {
  * @return string
  * @throws CiviCRM_API3_Exception
  */
-function _civicrm_entity_option_lookup($field,$values){
-  $result = civicrm_api3(substr($field['entity_type'],8), 'getoptions', array(
-      'field' => $field['field_name'],
+function _civicrm_entity_option_lookup($field, $values) {
+  $result = civicrm_api3(substr($field['entity_type'], 8), 'getoptions', array(
+    'field' => $field['field_name'],
   ));
   $fm = array();
-  foreach($values as $value) {
+  foreach ($values as $value) {
     $fm[] = $result['values'][$value];
   }
-  return implode(",",$fm);
+  return implode(",", $fm);
 }
 
 /**
@@ -155,12 +226,13 @@ function _civicrm_entity_option_lookup($field,$values){
  * @param $wrapper
  * @return string
  */
-function _civicrm_entity_contact_get_formatted_values(&$field,$wrapper){
-  switch($field['field_name']){
+function _civicrm_entity_contact_get_formatted_values(&$field, $wrapper) {
+  switch ($field['field_name']) {
     case 'contact_sub_type':
     case 'preferred_communication_method':
-      return _civicrm_entity_formatted_output_of_arrays($field,$wrapper);
-    default: return $wrapper->{$field['field_name']}->value();
+      return _civicrm_entity_formatted_output_of_arrays($field, $wrapper);
+    default:
+      return $wrapper->{$field['field_name']}->value();
   }
 }
 
@@ -172,20 +244,22 @@ function _civicrm_entity_contact_get_formatted_values(&$field,$wrapper){
  * @param $entity
  * @return mixed
  */
-function _civicrm_entity_participant_get_formatted_values(&$field,$wrapper,$entity){
-  switch($field['field_name']) {
+function _civicrm_entity_participant_get_formatted_values(&$field, $wrapper, $entity) {
+  switch ($field['field_name']) {
     case 'role_id':
     case 'status_id':
-    case 'registered_date':
+    case 'register_date':
     case 'source':
     case 'fee_currency':
     case 'is_pay_later':
     case 'registered_by_id':
+    case 'fee_amount':
     case 'is_test':
-      return $entity->{'participant_'.$field['field_name']};
+      return $entity->{'participant_' . $field['field_name']};
     case 'fee_level':
-      return $entity->{'participant_'.$field['field_name']}[0];
-    default: return $wrapper->{$field['field_name']}->value();
+      return $entity->{'participant_' . $field['field_name']}[0];
+    default:
+      return $wrapper->{$field['field_name']}->value();
   }
 }
 
@@ -196,10 +270,10 @@ function _civicrm_entity_participant_get_formatted_values(&$field,$wrapper,$enti
  * @param $wrapper
  * @return string
  */
-function _civicrm_entity_formatted_output_of_arrays(&$field,$wrapper) {
+function _civicrm_entity_formatted_output_of_arrays(&$field, $wrapper) {
   $values = $wrapper->{$field['field_name']}->value();
-  if(is_array($values)) {
-    return  implode(",",$values );
+  if (is_array($values)) {
+    return implode(",", $values);
   }
   else {
     return '';

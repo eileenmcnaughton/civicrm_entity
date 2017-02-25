@@ -30,7 +30,7 @@ function civicrm_entity_rules_data_info() {
     // I don't think these are being 'kept'.
     $fields = civicrm_api($civicrm_entity, 'getfields', array(
       'version' => 3,
-      'action' => 'create'
+      'action' => 'create',
     ));
     foreach ($fields['values'] as $fieldname => $field_specs) {
       if (!empty($field_specs['type']) && $field_specs['type'] == 1) {
@@ -234,7 +234,10 @@ function civicrm_entity_rules_condition_info() {
         'form_alter' => 'rules_action_type_form_alter',
       ),
       'provides' => array(
-        'entity_fetched' => array('type' => 'list', 'label' => t('Fetched CiviCRM entity list (being ignored?)')),
+        'entity_fetched' => array(
+          'type' => 'list',
+          'label' => t('Fetched CiviCRM entity list (being ignored?)'),
+        ),
       ),
       'base' => 'civicrm_entity_query',
     ),
@@ -325,6 +328,13 @@ function civicrm_entity_rules_action_info() {
           'default' => FALSE,
           'description' => t('Automatically log in as the created user.'),
         ),
+        'username_format' => array(
+          'label' => t('Username Format'),
+          'type' => 'text',
+          'default' => 'first last',
+          'options list' => '_civicrm_entity_options_username_format',
+          'description' => t('Preferred username format'),
+        ),
       ),
       'provides' => array(
         'civicrm_user' => array(
@@ -333,7 +343,7 @@ function civicrm_entity_rules_action_info() {
         ),
       ),
       'group' => t('CiviCRM'),
-      'base' => 'civicrm_entity_action_create_user'
+      'base' => 'civicrm_entity_action_create_user',
     ),
     'civicrm_entity_action_load_create_user' => array(
       'label' => t('Create or Load Linked Drupal User Account'),
@@ -359,7 +369,7 @@ function civicrm_entity_rules_action_info() {
         'civicrm_user' => array(
           'label' => t('Created or Loaded Drupal User'),
           'type' => 'user',
-        )
+        ),
       ),
       'group' => t('CiviCRM'),
       'base' => 'civicrm_entity_action_load_create_user',
@@ -400,7 +410,10 @@ function civicrm_entity_rules_action_info() {
         'form_alter' => 'rules_action_type_form_alter',
       ),
       'provides' => array(
-        'entity_fetched' => array('type' => 'list', 'label' => t('Fetched CiviCRM entity list')),
+        'entity_fetched' => array(
+          'type' => 'list',
+          'label' => t('Fetched CiviCRM entity list'),
+        ),
       ),
       'base' => 'civicrm_entity_query',
     ),
@@ -417,13 +430,13 @@ function civicrm_entity_rules_action_info() {
           'label' => t('email'),
           'type' => 'email',
           'optional' => TRUE,
-        )
+        ),
       ),
       'provides' => array(
         'civicrm_contact' => array(
           'label' => t('Created or Loaded CiviCRM Contact'),
           'type' => 'civicrm_contact',
-        )
+        ),
       ),
       'group' => t('CiviCRM'),
       'base' => 'civicrm_entity_action_load_create_contact',
@@ -495,6 +508,44 @@ function civicrm_entity_rules_action_info() {
     'base' => 'civicrm_entity_contact_send_email',
   );
 
+  $actions['civicrm_entity_rules_action_assign_contact_to_group'] = array(
+    'label' => t('Assign CiviCRM Contact to Group'),
+    'group' => t('CiviCRM Contact'),
+    'parameter' => array(
+      'contact' => array (
+        'type' => 'civicrm_contact',
+        'label' => t('CiviCRM Contact'),
+        'description' => t('CiviCRM Contact entity'),
+        'wrapped' => TRUE,
+      ),
+      'group_id' => array (
+        'type' => 'list<text>',
+        'label' => t('CiviCRM Group'),
+        'description' => t('Choose a group(s) to assign the contact to.'),
+        'options list' => 'civicrm_entity_rules_assign_contact_group_options_list',
+      ),
+    ),
+  );
+
+  $actions['civicrm_entity_rules_action_unassign_contact_to_group'] = array(
+    'label' => t('Unassign CiviCRM Contact from Group'),
+    'group' => t('CiviCRM Contact'),
+    'parameter' => array(
+      'contact' => array (
+        'type' => 'civicrm_contact',
+        'label' => t('CiviCRM Contact'),
+        'description' => t('CiviCRM Contact entity'),
+        'wrapped' => TRUE,
+      ),
+      'group_id' => array (
+        'type' => 'list<text>',
+        'label' => t('CiviCRM Group'),
+        'description' => t('Choose a group(s) to unassign the contact from.'),
+        'options list' => 'civicrm_entity_rules_assign_contact_group_options_list',
+      ),
+    ),
+  );
+
   return $actions;
 }
 
@@ -548,7 +599,7 @@ function _civicrm_entity_rules_access() {
  * @param $info
  * @param $arg3
  * @return
-*/
+ */
 function _civicrm_entity_rules_attach_options($fieldname, $info, $arg3) {
   return $info['property defaults']['options list'];
 }

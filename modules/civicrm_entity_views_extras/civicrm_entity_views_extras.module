@@ -1,0 +1,356 @@
+<?php
+
+/**
+ * @file
+ * Provide CiviCRM entity views extras, Views relationships and other handlers for entities exposed by CiviCRM Entity
+ */
+
+function civicrm_entity_views_extras_views_api() {
+  return array(
+    'api' => 3,
+  );
+}
+
+function civicrm_entity_views_extras_views_data() {
+  $data['civicrm_price_set_entity']['table']['group'] = t('CiviCRM Price Set Entities');
+
+  $data['civicrm_price_set_entity']['table']['base'] = array(
+    'field' => 'id',
+    'title' => t('CiviCRM Price Set Entities'),
+    'help' => t("View displays CiviCRM Price Set to Entity mapping info"),
+  );
+
+  //----------------------------------------------------------------
+  // CIVICRM Price Set Entity - FIELDS
+  //----------------------------------------------------------------
+
+  // Numeric: Price Set ID
+  $data['civicrm_price_set_entity']['price_set_id'] = array(
+    'title' => t('Price Set ID'),
+    'help' => t('The numeric ID of the Price Set'),
+    'field' => array(
+      'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_numeric',
+      'numeric' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_numeric',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
+
+  // Entity Table
+  $data['civicrm_price_set_entity']['entity_table'] = array(
+    'title' => t('Entity Table'),
+    'help' => t('The entity table for the Price Set'),
+    'field' => array(
+      'handler' => 'views_handler_field',
+      'click sortable' => TRUE,
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_string',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_string',
+      'allow empty' => TRUE,
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
+
+  //----------------------------------------------------------------
+  // CIVICRM Price Set Entity - TABLE JOINS
+  //----------------------------------------------------------------
+
+  $data['civicrm_price_set_entity']['table']['join'] = array(
+    // Directly links to event table.
+    'civicrm_event' => array(
+      'left_field' => 'id',
+      'field' => 'entity_id',
+    ),
+  );
+
+  $data['civicrm_event']['table']['join']['civicrm_price_set_entity'] = array(
+
+    'left_field' => 'entity_id',
+    'field' => 'id',
+
+  );
+
+  //----------------------------------------------------------------
+  // CIVICRM Price Set Entity - RELATIONSHIPS
+  //----------------------------------------------------------------
+
+  // Price Set
+  $data['civicrm_price_set_entity']['civicrm_price_set'] = array(
+    'title' => t('Price Set'),
+    'help' => t('Price Set for this Entity'),
+    'real field' => 'price_set_id',
+    'relationship' => array(
+      'base' => 'civicrm_price_set',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('Price Set'),
+    ),
+  );
+
+  $data['civicrm_price_set']['civicrm_price_field'] = array(
+    'group' => t('Price Field'),
+    'title' => t('CiviCRM Price field'),
+    'help' => t('Joins with the civicrm_price_field table'),
+    'relationship' => array(
+      'handler' => 'views_handler_relationship',
+      'label' => t('Price Field'),
+      'title' => t('Price Field'),
+      'base' => 'civicrm_price_field',
+      'base field' => 'price_set_id',
+      'relationship field' => 'id',
+    ),
+  );
+
+  // Price Field Value
+  $data['civicrm_price_field']['civicrm_price_field_value'] = array(
+    'title' => t('Price Field Value'),
+    'help' => t('Value(s) for this Price Field'),
+    'real field' => 'id',
+    'relationship' => array(
+      'base' => 'civicrm_price_field_value',
+      'base field' => 'price_field_id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('Price Field Value'),
+    ),
+  );
+
+  //----------------------------------------------------------------
+  // CIVICRM Membership Payment - RELATIONSHIPS
+  //----------------------------------------------------------------
+
+  // Membership
+  $data['civicrm_membership']['civicrm_membership_payment'] = array(
+    'title' => t('CiviCRM Membership Payment'),
+    'help' => t('Relates Membership Payment to Membership'),
+    'real field' => 'id',
+    'relationship' => array(
+      'base' => 'civicrm_membership_payment',
+      'base field' => 'membership_id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Membership Payment'),
+    ),
+  );
+
+
+  $data['civicrm_membership_payment']['civicrm_membership'] = array(
+    'title' => t('CiviCRM Membership'),
+    'help' => t('Relates Membership to Membership Payment'),
+    'real field' => 'membership_id',
+    'relationship' => array(
+      'base' => 'civicrm_membership',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Memberships'),
+    ),
+  );
+  // Contribution
+  $data['civicrm_membership_payment']['civicrm_contribution'] = array(
+    'title' => t('CiviCRM Contributions'),
+    'help' => t('Relates Contribution to Membership Payment'),
+    'real field' => 'contribution_id',
+    'relationship' => array(
+      'base' => 'civicrm_contribution',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Contributions'),
+    ),
+  );
+
+  //----------------------------------------------------------------
+  // CIVICRM Participant Payment - RELATIONSHIPS
+  //----------------------------------------------------------------
+
+  // Participant
+  $data['civicrm_participant']['civicrm_participant_payment'] = array(
+    'title' => t('CiviCRM Participant Payment'),
+    'help' => t('Relates Participant Payment to Participant'),
+    'real field' => 'id',
+    'relationship' => array(
+      'base' => 'civicrm_participant_payment',
+      'base field' => 'participant_id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Participant Payment'),
+    ),
+  );
+
+  $data['civicrm_participant_payment']['civicrm_participant'] = array(
+    'title' => t('CiviCRM Participant'),
+    'help' => t('Relates Participant to Participant Payment'),
+    'real field' => 'participant_id',
+    'relationship' => array(
+      'base' => 'civicrm_participant',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Participant'),
+    ),
+  );
+  // Contribution
+  $data['civicrm_participant_payment']['civicrm_contribution'] = array(
+    'title' => t('CiviCRM Contributions'),
+    'help' => t('Relates Contribution to Membership Payment'),
+    'real field' => 'contribution_id',
+    'relationship' => array(
+      'base' => 'civicrm_contribution',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Contributions'),
+    ),
+  );
+
+
+  //----------------------------------------------------------------
+  // CIVICRM Relationship - RELATIONSHIPS
+  //----------------------------------------------------------------
+  $data['civicrm_relationship']['civicrm_relationship_type'] = array(
+    'title' => t('CiviCRM Relationship Type'),
+    'help' => t('Relates Relationship Type to Relationships'),
+    'real field' => 'relationship_type_id',
+    'relationship' => array(
+      'base' => 'civicrm_relationship_type',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Relationship Type'),
+    ),
+  );
+
+  //----------------------------------------------------------------
+  // CIVICRM Contributions - RELATIONSHIPS
+  //----------------------------------------------------------------
+  $data['civicrm_contribution']['civicrm_line_item'] = array(
+    'title' => t('CiviCRM Line Items'),
+    'help' => t('Relates Line Items to Contributions'),
+    'real field' => 'id',
+    'relationship' => array(
+      'base' => 'civicrm_line_item',
+      'base field' => 'contribution_id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Line Items'),
+    ),
+  );
+
+  $data['civicrm_contribution']['civicrm_entity_financial_trxn'] = array(
+    'title' => t('CiviCRM Line Items'),
+    'help' => t('Relates Entity Financial Trxn to Contributions'),
+    'real field' => 'id',
+    'relationship' => array(
+      'base' => 'civicrm_entity_financial_trxn',
+      'base field' => 'entity_id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Entity Financial Trxn'),
+    ),
+  );
+
+  //----------------------------------------------------------------
+  // CIVICRM Entity Financial Trxn - RELATIONSHIPS
+  //----------------------------------------------------------------
+
+  $data['civicrm_entity_financial_txrn']['civicrm_financial_trxn'] = array(
+    'title' => t('Financial Trxn'),
+    'help' => t('Relates Financial Trxn to Entity Financial Trxn'),
+    'real field' => 'financial_trxn_id',
+    'relationship' => array(
+      'base' => 'civicrm_financial_trxn',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Financial Txrn'),
+    ),
+  );
+
+  //----------------------------------------------------------------
+  // CIVICRM Financial Trxn - RELATIONSHIPS
+  //----------------------------------------------------------------
+
+  $data['civicrm_financial_txrn']['civicrm_payment_processor'] = array(
+    'title' => t('Payment Processor'),
+    'help' => t('Relates Payment Processor to Financial Trxn'),
+    'real field' => 'payment_processor_id',
+    'relationship' => array(
+      'base' => 'civicrm_payment_processor',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Payment Processor'),
+    ),
+  );
+
+  $data['civicrm_financial_txrn']['civicrm_financial_account_from'] = array(
+    'title' => t('Financial Account (From)'),
+    'help' => t('Relates Financial Trxn to Financial Account (From)'),
+    'real field' => 'from_financial_account_id',
+    'relationship' => array(
+      'base' => 'civicrm_financial_account',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Financial Account (From)'),
+    ),
+  );
+
+  $data['civicrm_financial_txrn']['civicrm_financial_account_to'] = array(
+    'title' => t('Financial Account (To)'),
+    'help' => t('Relates Financial Trxn to Financial Account (To)'),
+    'real field' => 'to_financial_account_id',
+    'relationship' => array(
+      'base' => 'civicrm_financial_account',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Financial Account (To)'),
+    ),
+  );
+
+  //----------------------------------------------------------------
+  // CIVICRM Payment Processor - RELATIONSHIPS
+  //----------------------------------------------------------------
+
+  $data['civicrm_payment_processor']['civicrm_payment_processor_type'] = array(
+    'title' => t('Payment Processor type'),
+    'help' => t('Relates Payment Processor Type to Payment Processor'),
+    'real field' => 'payment_processor_type_id',
+    'relationship' => array(
+      'base' => 'civicrm_payment_processor_type',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Payment Processor Type'),
+    ),
+  );
+
+  //----------------------------------------------------------------
+  // CIVICRM Line Items - RELATIONSHIPS
+  //----------------------------------------------------------------
+  $data['civicrm_line_item']['civicrm_price_field'] = array(
+    'title' => t('CiviCRM Price Fields'),
+    'help' => t('Relates Price Fields to Line Items'),
+    'real field' => 'price_field_id',
+    'relationship' => array(
+      'base' => 'civicrm_price_field',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Price Field'),
+    ),
+  );
+
+  $data['civicrm_line_item']['civicrm_price_field_value'] = array(
+    'title' => t('CiviCRM Price Field Value'),
+    'help' => t('Relates Price Field Values to Line Items'),
+    'real field' => 'price_field_value_id',
+    'relationship' => array(
+      'base' => 'civicrm_price_field_value',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Price Field Value'),
+    ),
+  );
+
+  return $data;
+}
