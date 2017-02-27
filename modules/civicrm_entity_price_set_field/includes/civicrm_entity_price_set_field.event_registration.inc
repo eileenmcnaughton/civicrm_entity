@@ -4,6 +4,69 @@
  * CiviCRM Entity Price Set Field, Form display formatter, event registration
  */
 
+
+/**
+ * CiviCRM Entity Price Set Field Get Registration Access Callback Info
+ *
+ * Sets up info hook to gather registration access callbacks
+ *
+ * @param null $id
+ * @return array
+ */
+function civicrm_entity_price_set_field_get_registration_access_callbacks_info($id = NULL) {
+  $results = array();
+  foreach (module_implements('civicrm_entity_price_set_field_registration_access_callback_info') as $module) {
+    // Calling all modules implementing hook_hook_name and
+    // Returning results than pushing them into the $result array:
+    $result = module_invoke($module, 'civicrm_entity_price_set_field_registration_access_callback_info');
+    foreach ($result as $id => $r) {
+      if (!empty($r['callback'])) {
+        $results[$id] = $result;
+      }
+    }
+  }
+  if (empty($id)) {
+    return $results;
+  }
+  else {
+    return $results[$id];
+  }
+}
+
+/**
+ * Utility function to find modules with custom event registration access callbacks
+ *
+ * Designed to make exceptions to access, user still required to have 'register for events' permission that comes with CiviCRM
+ *
+ * @param $entity_type
+ * @param $entity
+ * @param $field
+ * @param $instance
+ * @param null $account
+ * @return bool
+ */
+function civicrm_entity_price_set_field_allow_registration($entity_type, $entity, $field, $instance, $account = NULL) {
+  if (is_null($account)) {
+    global $user;
+    $account = $user;
+  }
+
+  $callbacks = civicrm_entity_price_set_field_get_registration_access_callbacks_info();
+
+  if (!empty($callbacks)) {
+    foreach($callbacks as $key => $info) {
+      if (!empty($info['callback'])) {
+        $result = call_user_func($info['callback'], $entity_type, $entity, $field, $instance, $account);
+        if($result === FALSE) {
+          return FALSE;
+        }
+      }
+    }
+  }
+
+  return TRUE;
+}
+
 /**
  * Form callback for event registration form
  *
@@ -21,7 +84,7 @@ function civicrm_entity_price_set_field_display_form_event($form, &$form_state) 
   $form_state['display_settings'] = $form_state['build_info']['args'][5];
   // online registration
   if (!empty($event->is_online_registration)) {
-    if (user_access('register for events')) {
+    if (user_access('register for events') && civicrm_entity_price_set_field_allow_registration($host_entity_type, $event, $form_state['field'], $form_state['instance'])) {
       // check if registration date is set and passed yet
       if (!empty($event->registration_start_date)) {
         if (time() < strtotime($event->registration_start_date)) {

@@ -92,3 +92,33 @@ function hook_civicrm_entity_price_set_field_registration_form_price_set_data_al
     }
   }
 }
+
+/**
+ * Implements hook_civicrm_entity_price_set_field_registration_access_callback_info().
+ *
+ * @return array
+ */
+function hook_civicrm_entity_price_set_field_registration_access_callback_info() {
+  return array(
+    'civicrm_customs' => array(
+      'callback' => 'civicrm_customs_event_registration_access_callback',
+    )
+  );
+}
+
+/* example callback
+
+// intended to be able to customize access to field registration form, in a negative way
+// user still requires 'register for events' CiviCRM permission to access form
+function civicrm_customs_event_registration_access_callback($entity_type, $entity, $field, $instance, $account) {
+  if ($entity_type == 'civicrm_event') {
+    // allow if the user can edit events
+    if(user_access('edit all events', $account)) {
+      return TRUE;
+    }
+    // disallow access if the user doesn't have role id 5 and the event type is 7 or 9
+    elseif(!isset($account->roles[5]) && !empty($entity->event_type_id) && in_array($entity->event_type_id, array(7, 9))) {
+      return FALSE;
+    }
+  }
+}*/
