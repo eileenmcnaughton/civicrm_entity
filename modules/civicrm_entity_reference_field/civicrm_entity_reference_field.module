@@ -143,6 +143,7 @@ function civicrm_entity_reference_field_field_settings_form($field, $instance, $
       'address_id' => 'Address ID (Location Block Entity)',
       'email_id' => 'Email ID (Location Block Entity)',
       'phone_id' => 'Phone ID (Location Block Entity)',
+      'im_id' => 'Instant Messaging ID (Location Block Entity)',
       'uf_group_id' => 'UFGroup ID (UFJoin Entity)',
       'contact_id' => 'Contact ID (Grant Entity)',
     ),
@@ -210,7 +211,7 @@ function civicrm_entity_reference_field_field_load($entity_type, $entities, $fie
         $params = array(
           $field['settings']['target_id_column'] => $entity->{$field['settings']['host_source_id']},
         );
-        $is_primary_entities = array('address', 'phone', 'email');
+        $is_primary_entities = array('address', 'phone', 'email', 'im');
 
         if (in_array($field['settings']['target_entity_type'], $is_primary_entities)) {
           $params['options'] = array('sort' => 'is_primary DESC');
@@ -714,6 +715,7 @@ function civicrm_entity_reference_field_inline_entity_form_entity_form_alter(&$e
       'civicrm_address',
       'civicrm_email',
       'civicrm_phone',
+      'civicrm_im',
     );
     if ($host_entity_type == 'civicrm_loc_block' && in_array($entity_form['#entity_type'], $contact_id_entities)) {
       $entity_form['contact_id']['#required'] = FALSE;
@@ -765,6 +767,13 @@ function civicrm_entity_reference_field_entity_presave($entity, $type) {
               case 'phone':
                 $entity->{$field['settings']['host_source_id']} = $entity->{$key}[LANGUAGE_NONE][0]['target_id'];
                 db_update('civicrm_phone')
+                  ->fields(array('contact_id' => NULL))
+                  ->condition('id', $entity->{$key}[LANGUAGE_NONE][0]['target_id'])
+                  ->execute();
+                break;
+              case 'im':
+                $entity->{$field['settings']['host_source_id']} = $entity->{$key}[LANGUAGE_NONE][0]['target_id'];
+                db_update('civicrm_im')
                   ->fields(array('contact_id' => NULL))
                   ->condition('id', $entity->{$key}[LANGUAGE_NONE][0]['target_id'])
                   ->execute();
