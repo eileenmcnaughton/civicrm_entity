@@ -643,7 +643,14 @@ function civicrm_entity_reference_field_field_widget_form_alter(&$element, &$for
   if ($context['field']['type'] == 'civicrm_entity_reference') {
     if ($context['instance']['widget']['type'] == 'inline_entity_form_single') {
       if ($form_state['op'] == 'create') {
-        unset($element['form']);
+        $field = 'contact_id';
+        if (array_key_exists($field, $element['form'])) {
+          unset($element['form'][$field]['#required']);
+          if (empty($element['form'][$field]['#default_value'])) {
+          }
+        } else {
+          unset($element['form']);
+        }
       }
     }
     elseif ($context['instance']['widget']['type'] == 'inline_entity_form') {
