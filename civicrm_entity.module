@@ -1097,6 +1097,34 @@ function civicrm_entity_supported_entities_info() {
       ),
     ),
   );
+  $civicrm_entity_info['civicrm_im'] = array(
+    'civicrm entity name' => 'im',
+    'label property' => 'name',
+    'permissions' => array(
+      'view' => array('view all contacts'),
+      'edit' => array('edit all contacts'),
+      'update' => array('edit all contacts'),
+      'create' => array('edit all contacts'),
+      'delete' => array('delete contacts'),
+    ),
+    'theme' => array(
+      'template' => 'civicrm-im',
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
+    ),
+    'display suite' => array(
+      'link fields' => array(
+        array(
+          'link_field' => 'contact_id',
+          'target' => 'civicrm_contact',
+        ),
+      ),
+      'option fields' => array(
+        'location_type_id',
+        'provider_id',
+      ),
+      'boolean fields' => array('is_primary', 'is_billing'),
+    ),
+  );
   $civicrm_entity_info['civicrm_line_item'] = array(
     'civicrm entity name' => 'line_item',
     'label property' => 'label',
@@ -1161,6 +1189,10 @@ function civicrm_entity_supported_entities_info() {
           'target' => 'civicrm_phone',
         ),
         array(
+          'link_field' => 'im_id',
+          'target' => 'civicrm_im',
+        ),
+        array(
           'link_field' => 'address_2_id',
           'target' => 'civicrm_address',
         ),
@@ -1171,6 +1203,10 @@ function civicrm_entity_supported_entities_info() {
         array(
           'link_field' => 'email_2_id',
           'target' => 'civicrm_email',
+        ),
+        array(
+          'link_field' => 'im_2_id',
+          'target' => 'civicrm_im',
         ),
       ),
       'option fields' => array(),
@@ -2345,6 +2381,7 @@ function civicrm_entity_get_field_widget($field_spec, $civicrm_entity) {
     'address',
     'phone',
     'email',
+    'im',
     'relationship',
     'membership_type',
     'activity',
@@ -2544,6 +2581,12 @@ function civicrm_entity_civicrm_contact_label_callback($entity, $entity_type) {
       '!phone' => $entity->phone,
     ));
   }
+  elseif (isset($entity->im) && !empty($entity->im)) {
+    $label = t('!label <!im>', array(
+      '!label' => $label,
+      '!im' => $entity->im,
+    ));
+  }
   return $label;
 }
 
@@ -2731,7 +2774,7 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
   if (empty($contact['display_name'])) {
     $contact['display_name'] = $contact['email'];
   }
-  
+
   // Check if the requested username is available.
   $errors = array();
   $config = CRM_Core_Config::singleton();

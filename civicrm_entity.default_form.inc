@@ -357,13 +357,14 @@ function civicrm_entity_form_validate(&$form, &$form_state) {
   // validate name for contact
   if ($entity_type == 'civicrm_contact') {
     if ($form_state['values']['contact_type'] == 'Individual') {
-      if (!isset($form['first_name']) && !isset($form['middle_name']) && !isset($form['last_name'])) {
-        form_set_error('contact_type', t('Individual contact type, form must include at least one of first, middle, or last name fields.'));
+      if (!isset($form['first_name']) && !isset($form['middle_name']) && !isset($form['last_name']) && !isset($form['display_name'])) {
+        form_set_error('contact_type', t('Individual contact type, form must include at least one of first, middle, last or display name fields.'));
       }
-      elseif (empty($form_state['values']['first_name']) && empty($form_state['values']['middle_name']) && empty($form_state['values']['last_name'])) {
-        form_set_error('first_name', t('At least one of first, middle, or last names must be set when contact type is set to Individual.'));
+      elseif (empty($form_state['values']['first_name']) && empty($form_state['values']['middle_name']) && empty($form_state['values']['last_name']) && empty($form_state['values']['display_name'])) {
+        form_set_error('first_name', t('At least one of first, middle, last or display names must be set when contact type is set to Individual.'));
         form_set_error('middle_name');
         form_set_error('last_name');
+        form_set_error('display_name');
       }
     }
     elseif ($form_state['values']['contact_type'] == 'Household') {
