@@ -234,9 +234,7 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
     $field_name = $entity_form['#parents'][0];
     $ief_id = $entity_form['#ief_id'];
     $op = $entity_form['#op'];
-
     if ($op == 'edit') {
-      //dsm($form_state);
       foreach ($form_state['inline_entity_form'][$ief_id]['entities'] as $delta => &$entity_array) {
         if (isset($form_state['values'][$field_name]['und']['entities'][$delta]['form'])) {
           //$entity = $entity_array['entity'];
@@ -254,10 +252,8 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
               }
             }
           }
-          // field_attach_form_validate($entity_type, $entity, $entity_form, $form_state);
         }
       }
-
     }
     elseif ($op == 'create' || $op == 'add') {
       $entity = $form_state['entity'];
@@ -273,13 +269,12 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
           $entity->{$key} = $value;
         }
       }
-
     }
 
     if ($op == 'create' || $op == 'add' || $op == 'edit') {
       // validate civicrm data
       $entity_metadata_info = entity_get_property_info($entity_type);
-      foreach ($form_state['inline_entity_form'][$ief_id]['entities'] as $delta => $entity_array) {
+      foreach ($form_state['inline_entity_form'][$ief_id]['entities'] as $delta => $ent_array) {
         foreach ($entity_metadata_info['properties'] as $name => $info) {
           if (!empty($info['type'])) {
             // integer validation
@@ -338,7 +333,7 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
             }
           }
         }
-        field_attach_form_validate($entity_type, $entity_array['entity'], $entity_form, $form_state);
+        field_attach_form_validate($entity_type, $ent_array['entity'], $entity_form, $form_state);
       }
 
     }
@@ -357,8 +352,6 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
       'action' => 'create',
     ));
     if ($op == 'edit') {
-
-
       foreach ($form_state['inline_entity_form'][$ief_id]['entities'] as $k => &$entity_array) {
         if (isset($form_state['values'][$field_name]['und']['entities'][$k]['form'])) {
           foreach ($form_state['values'][$field_name]['und']['entities'][$k]['form'] as $key => $value) {
