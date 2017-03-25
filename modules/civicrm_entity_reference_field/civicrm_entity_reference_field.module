@@ -642,12 +642,21 @@ function civicrm_entity_reference_field_civicrm_post($op, $objectName, $objectId
 function civicrm_entity_reference_field_field_widget_form_alter(&$element, &$form_state, $context) {
   if ($context['field']['type'] == 'civicrm_entity_reference') {
     if ($context['instance']['widget']['type'] == 'inline_entity_form_single') {
-      if ($form_state['op'] == 'create') {
-        unset($element['form']);
+      if ((!empty($form_state['op']) && $form_state['op'] == 'create') || (!empty($element['form']['#op'])) && $element['form']['#op'] == 'add') {
+        $field = $context['field']['settings']['target_id_column'];
+        if (array_key_exists($field, $element['form'])) {
+          $element['form'][$field]['#required'] = FALSE;
+          $element['form'][$field]['#disabled'] = TRUE;
+          if (empty($element['form'][$field]['#default_value'])) {
+          }
+        }
+        else {
+          unset($element['form']);
+        }
       }
     }
     elseif ($context['instance']['widget']['type'] == 'inline_entity_form') {
-      if ($form_state['op'] == 'create') {
+      if ((!empty($form_state['op']) && $form_state['op'] == 'create') || (!empty($element['form']['#op'])) && $element['form']['#op'] == 'add') {
         $element['actions']['ief_add']['#disabled'] = TRUE;
       }
     }

@@ -446,9 +446,50 @@ function civicrm_entity_form_submit(&$form, &$form_state) {
   $entity->changed = time();
 
   $wrapper = entity_metadata_wrapper($entity_type, $entity);
-  field_attach_submit($entity_type, $entity, $form, $form_state);
+  //field_attach_submit($entity_type, $entity, $form, $form_state);
 
-  $wrapper->save();
+  //$wrapper->save();
+  // handling for civicrm entity reference fields on civicrm entities
+  $target_id_columns = array();
+  if ($entity->is_new) {
+    foreach ($form as $key => $form_field) {
+      if (strpos($key, 'field_') === 0) {
+        $field = field_info_field($key);
+        if ($field['type'] == 'civicrm_entity_reference') {
+          $ief_id = $form_field['und']['#ief_id'];
+          $host_entity_type = $form_state['inline_entity_form'][$ief_id]['instance']['entity_type'];
+          if ($host_entity_type == $entity_type) {
+            $target_id_columns[$key] = array($field['settings']['host_source_id'] => $field['settings']['target_id_column']);
+          }
+        }
+      }
+    }
+
+    if (!empty($target_id_columns)) {
+      // first save the entity
+      $wrapper->save();
+      // then update civicrm entity target id values with host id
+      foreach ($target_id_columns as $key => $target_id_column) {
+        $host_id = key($target_id_column);
+        $target_id = reset($target_id_column);
+        $ief_id = $form[$key]['und']['#ief_id'];
+        foreach ($form_state['inline_entity_form'][$ief_id]['entities'] as $item_index => $item) {
+          if(!empty($form_state['inline_entity_form'][$ief_id]['entities'][$item_index]['entity']->is_new)) {
+            $form_state['inline_entity_form'][$ief_id]['entities'][$item_index]['entity']->{$target_id} = $entity->{$host_id};
+          }
+        }
+      }
+      // this will create the civicrm entity reference fields entities
+      field_attach_submit($entity_type, $entity, $form, $form_state);
+    }
+  }
+  // is update, handle "normally"
+  else {
+    field_attach_submit($entity_type, $entity, $form, $form_state);
+    $wrapper->save();
+  }
+
+
 
   $t_args = array(
     '%label' => entity_label($entity_type, $entity),
