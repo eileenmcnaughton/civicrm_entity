@@ -227,6 +227,7 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
         } // end if isset widget
       } // end else not a drupal field
     } // end foreach
+
     return $entity_form;
   }
 
@@ -430,7 +431,6 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
 
       // First parent name is not the field name, then this reference field is nested inside another
       if ($field_name != $entity_form['#parents'][0]) {
-
         $parent_field_parents = array();
         foreach($entity_form['#parents'] as $index => $name) {
           $parent_field_parents[] = $name;
