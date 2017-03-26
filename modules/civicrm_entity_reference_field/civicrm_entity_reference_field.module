@@ -657,9 +657,9 @@ function civicrm_entity_reference_field_field_widget_form_alter(&$element, &$for
     }
     elseif ($context['instance']['widget']['type'] == 'inline_entity_form') {
       if ((!empty($form_state['op']) && $form_state['op'] == 'create') || (!empty($context['form']['#op'])) && $context['form']['#op'] == 'add') {
-        if ($element['#entity_type'] != 'civicrm_contact') {
+        //if ($element['#entity_type'] != 'civicrm_contact') {
           $element['actions']['ief_add']['#disabled'] = TRUE;
-        }
+        //}
       }
     }
     elseif ($context['instance']['widget']['type'] == 'civicrm_entity_reference_default_widget') {
@@ -708,10 +708,10 @@ function civicrm_entity_reference_field_inline_entity_form_entity_form_alter(&$e
     // this doesn't handle a field that is nested on an entityreference field that is on say a node....
     // this handles the 'multi' widget
     if (isset($form_state['complete form'][$host_id_prop]['#default_value']) && isset($entity_form[$target_id_column]) && is_array($entity_form[$target_id_column])) {
-        if ($entity_form['#op'] == 'add' || $entity_form['#op'] == 'create') {
-         $entity_form[$target_id_column]['#default_value'] = $form_state['complete form'][$host_id_prop]['#default_value'];
-        }
-        $entity_form[$target_id_column]['#disabled'] = TRUE;
+      if ($entity_form['#op'] == 'add' || $entity_form['#op'] == 'create') {
+        $entity_form[$target_id_column]['#default_value'] = $form_state['complete form'][$host_id_prop]['#default_value'];
+      }
+      $entity_form[$target_id_column]['#disabled'] = TRUE;
     }// this handles the 'single' widget
     elseif (isset($form_state['field'][$field_name][LANGUAGE_NONE]['instance']['entity_type'])) {
       $host_entity_type = $form_state['field'][$field_name][LANGUAGE_NONE]['instance']['entity_type'];
