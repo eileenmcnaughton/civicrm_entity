@@ -458,21 +458,26 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
             $parent_field_wrapper = entity_metadata_wrapper($parent_field_entity_type, $parent_field_entity);
 
             $parent_field_wrapper->save();
+
             $parent_submitted_values[$field_host_source_id] = $parent_field_wrapper->{$field_host_source_id}->value();
             if ($parent_field_entity_type == 'civicrm_contact') {
+              $parent_field_wrapper->contact_id->set($parent_field_wrapper->{$field_host_source_id}->value());
               $parent_submitted_values['contact_id'] = $parent_field_wrapper->{$field_host_source_id}->value();
             }
             $child_form_state_values[$field_target_id_column] = $parent_field_wrapper->{$field_host_source_id}->value();
+
+            //$entity->{$field_target_id_column} = $parent_field_wrapper->{$field_host_source_id}->value();
+
 
             drupal_array_set_nested_value($form_state['values'], $parent_field_parents, $parent_submitted_values);
             foreach($form_state['inline_entity_form'] as $iefid => $ief_data) {
               if($ief_data['instance']['field_name'] == $parent_field_name) {
                 $entity_count = count($form_state['inline_entity_form'][$iefid]['entities']);
-                $form_state['inline_entity_form'][$iefid]['entities'][$entity_count]['entity'] = $parent_field_wrapper->value();
+                //$form_state['inline_entity_form'][$iefid]['entities'][$entity_count]['entity'] = $parent_field_wrapper->value();
                 if ($parent_field_entity_type == 'civicrm_contact') {
-                  $form_state['inline_entity_form'][$iefid]['entities'][$entity_count]['entity']->contact_id = $parent_field_wrapper->{$field_host_source_id}->value();
+                  //$form_state['inline_entity_form'][$iefid]['entities'][$entity_count]['entity']->contact_id = $parent_field_wrapper->{$field_host_source_id}->value();
                 }
-                $form_state['inline_entity_form'][$iefid]['entities'][$entity_count]['needs_save'] = FALSE;
+                //$form_state['inline_entity_form'][$iefid]['entities'][$entity_count]['needs_save'] = FALSE;
               }
             }
 
@@ -480,16 +485,20 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
           else {
             $child_form_state_values[$field_target_id_column] = $parent_submitted_values[$field_host_source_id];
 
+            //$entity->{$field_target_id_column} = $parent_submitted_values[$field_host_source_id];
           }
         }
 
       }
 
       drupal_array_set_nested_value($form_state['values'], $entity_form['#parents'], $child_form_state_values);
-      $entity_form['#entity'] = $entity;
+
     }
     // Add in created and changed times.
+    //dsm($entity_form);
+   // dsm($form_state);
     parent::entityFormSubmit($entity_form, $form_state);
+
   }
 
   /**
