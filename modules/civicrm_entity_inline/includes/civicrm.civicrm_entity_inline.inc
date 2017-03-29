@@ -495,10 +495,7 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
 
     }
     // Add in created and changed times.
-    //dsm($entity_form);
-   // dsm($form_state);
     parent::entityFormSubmit($entity_form, $form_state);
-
   }
 
   /**
