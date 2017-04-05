@@ -647,8 +647,6 @@ function civicrm_entity_reference_field_field_widget_form_alter(&$element, &$for
         if ($element['#entity_type'] == 'civicrm_contact' && array_key_exists($field, $element['form'])) {
           $element['form'][$field]['#required'] = FALSE;
           $element['form'][$field]['#disabled'] = TRUE;
-          if (empty($element['form'][$field]['#default_value'])) {
-          }
         }
         else {
           unset($element['form']);
@@ -657,10 +655,8 @@ function civicrm_entity_reference_field_field_widget_form_alter(&$element, &$for
     }
     elseif ($context['instance']['widget']['type'] == 'inline_entity_form') {
       if ((!empty($form_state['op']) && $form_state['op'] == 'create') || (!empty($context['form']['#op'])) && $context['form']['#op'] == 'add') {
-        //if ($element['#entity_type'] != 'civicrm_contact') {
-          $element['actions']['ief_add']['#disabled'] = TRUE;
-        //}
-      }
+           $element['actions']['ief_add']['#disabled'] = TRUE;
+        }
     }
     elseif ($context['instance']['widget']['type'] == 'civicrm_entity_reference_default_widget') {
       if ($form_state['op'] == 'create') {

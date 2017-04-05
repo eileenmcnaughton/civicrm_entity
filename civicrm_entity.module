@@ -248,7 +248,10 @@ function civicrm_entity_views_data_alter(&$data) {
   foreach ($civicrm_entity_types as $civicrm_entity_type => $info) {
     foreach ($data[$civicrm_entity_type] as $property => $prop_info) {
       if (strpos($property, 'custom_') === 0) {
-        unset($data[$civicrm_entity_type][$property]);
+        $name_array = explode('_', $property);
+        if(!isset($name_array[1]) && is_numeric($name_array[1])) {
+          unset($data[$civicrm_entity_type][$property]);
+        }
       }
     }
   }
