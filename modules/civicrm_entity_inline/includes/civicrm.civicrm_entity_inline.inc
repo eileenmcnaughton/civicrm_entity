@@ -5,8 +5,9 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
    * Overrides EntityInlineEntityFormController::entityForm().
    */
   public function entityForm($entity_form, &$form_state) {
-    $entity_type = $form_state['entity_type'] = $entity_form['#entity_type'];
-    $entity = $form_state['entity'] = $entity_form['#entity'];
+    $entity_type = $entity_form['#entity_type'];
+
+    $entity =  $entity_form['#entity'];
     $entity->type = $entity_type;
     $op = $entity_form['#op'];
 
@@ -226,13 +227,15 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
         } // end if isset widget
       } // end else not a drupal field
     } // end foreach
+
     return $entity_form;
   }
 
   public function entityFormValidate($entity_form, &$form_state) {
-    $entity_type = $form_state['entity_type'];
-    $field_name = $entity_form['#parents'][0];
+    $entity_type = $entity_form['#entity_type'];
     $ief_id = $entity_form['#ief_id'];
+    $field_name = $form_state['inline_entity_form'][$ief_id]['instance']['field_name'];
+
     $op = $entity_form['#op'];
     if ($op == 'edit') {
       foreach ($form_state['inline_entity_form'][$ief_id]['entities'] as $delta => &$entity_array) {
@@ -256,9 +259,11 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
       }
     }
     elseif ($op == 'create' || $op == 'add') {
-      $entity = $form_state['entity'];
 
-      foreach ($form_state['values'][$field_name]['und']['form'] as $key => $value) {
+      $entity = $entity_form['#entity'];
+
+      $child_form_state_values = drupal_array_get_nested_value($form_state['values'], $entity_form['#parents']);
+      foreach ($child_form_state_values as $key => $value) {
         if (!is_array($value)) {
           $entity->{$key} = $value;
         }
@@ -342,9 +347,10 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
   }
 
   public function entityFormSubmit(&$entity_form, &$form_state) {
-    $entity_type = $form_state['entity_type'];
-    $field_name = $entity_form['#parents'][0];
+    //$entity_type = $form_state['entity_type'];
+    $entity_type = $entity_form['#entity_type'];
     $ief_id = $entity_form['#ief_id'];
+    $field_name = $form_state['inline_entity_form'][$ief_id]['instance']['field_name'];
     $op = $entity_form['#op'];
     civicrm_initialize();
     $civicrm_entity_fields = civicrm_api(substr_replace($entity_type, '', 0, 8), 'getfields', array(
@@ -396,62 +402,150 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
           }
           $entity_array['entity']->changed = time();
 
-          //$wrapper = entity_metadata_wrapper($entity_type, $entity);
           field_attach_submit($entity_type, $entity_array['entity'], $entity_form, $form_state);
 
         }
       }
     }
     elseif ($op == 'create' || $op == 'add') {
+      $entity = $entity_form['#entity'];
 
-      $entity = $form_state['entity'];
-      foreach ($form_state['values'][$field_name]['und']['form'] as $key => $value) {
-        if (substr($key, 0, 7) == 'custom_') {
-          if ($civicrm_entity_fields['values'][$key]['html_type'] == 'CheckBox') {
-            if (is_array($value)) {
-              $stored_value = array();
-              foreach ($value as $option => $checkbox_value) {
-                if ($checkbox_value) {
-                  $stored_value[] = $option;
+      $child_form_state_values = drupal_array_get_nested_value($form_state['values'], $entity_form['#parents']);
+      $field_info = field_info_field($field_name);
+      $field_target_id_column = !empty($field_info['settings']['target_id_column']) ? $field_info['settings']['target_id_column'] : '';
+      $field_host_source_id = !empty($field_info['settings']['host_source_id']) ? $field_info['settings']['host_source_id'] : '';
+
+      $this->fillEntityValues($child_form_state_values, $entity, $civicrm_entity_fields);
+
+      if(!empty($entity->is_new) && !empty($entity->id)) {
+        $entity->is_new = FALSE;
+        if($entity_type == 'civicrm_contact') {
+          $entity->contact_id = $entity->id;
+        }
+      }
+
+      if ($entity->is_new = isset($entity->is_new) ? $entity->is_new : 0) {
+        $entity->created = time();
+      }
+      $entity->changed = time();
+
+      // First parent name is not the field name, then this reference field is nested inside another
+      if ($field_name != $entity_form['#parents'][0]) {
+        $parent_field_parents = array();
+        foreach($entity_form['#parents'] as $index => $name) {
+          $parent_field_parents[] = $name;
+          if ($name == $field_name) {
+            unset($parent_field_parents[$index]);
+            $parent_field_name = $entity_form['#parents'][$index-3];
+            break;
+          }
+        }
+
+        $parent_field_info = field_info_field($parent_field_name);
+        if (!empty($parent_field_info['settings']['target_type'])) {
+          $parent_field_entity_type = $parent_field_info['settings']['target_type'];
+        }
+        elseif (!empty($parent_field_info['settings']['target_entity_type'])) {
+          $parent_field_entity_type = $parent_field_info['settings']['target_entity_type'];
+        }
+        if(!empty($parent_field_parents) && !empty($parent_field_entity_type) && !empty($field_host_source_id) && !empty($field_target_id_column) ) {
+          $parent_submitted_values = drupal_array_get_nested_value($form_state['values'], $parent_field_parents);
+          if(empty($parent_submitted_values[$field_host_source_id])) {
+            // save parent entity and update something?
+            $parent_field_entity = new CivicrmEntity(array(), $parent_field_entity_type);
+            $this->fillEntityValues($parent_submitted_values, $parent_field_entity, $civicrm_entity_fields);
+
+            $parent_field_wrapper = entity_metadata_wrapper($parent_field_entity_type, $parent_field_entity);
+
+            $parent_field_wrapper->save();
+
+            $parent_submitted_values[$field_host_source_id] = $parent_field_wrapper->{$field_host_source_id}->value();
+            if ($parent_field_entity_type == 'civicrm_contact') {
+              $parent_field_wrapper->contact_id->set($parent_field_wrapper->{$field_host_source_id}->value());
+              $parent_submitted_values['contact_id'] = $parent_field_wrapper->{$field_host_source_id}->value();
+            }
+            $child_form_state_values[$field_target_id_column] = $parent_field_wrapper->{$field_host_source_id}->value();
+
+            //$entity->{$field_target_id_column} = $parent_field_wrapper->{$field_host_source_id}->value();
+
+
+            drupal_array_set_nested_value($form_state['values'], $parent_field_parents, $parent_submitted_values);
+            foreach($form_state['inline_entity_form'] as $iefid => $ief_data) {
+              if($ief_data['instance']['field_name'] == $parent_field_name) {
+                $entity_count = count($form_state['inline_entity_form'][$iefid]['entities']);
+                //$form_state['inline_entity_form'][$iefid]['entities'][$entity_count]['entity'] = $parent_field_wrapper->value();
+                if ($parent_field_entity_type == 'civicrm_contact') {
+                  //$form_state['inline_entity_form'][$iefid]['entities'][$entity_count]['entity']->contact_id = $parent_field_wrapper->{$field_host_source_id}->value();
                 }
+                //$form_state['inline_entity_form'][$iefid]['entities'][$entity_count]['needs_save'] = FALSE;
               }
-              $entity->{$key} = !empty($stored_value) ? $stored_value : array('');
             }
 
           }
           else {
-            if (is_array($value) && isset($value['value'])) {
-              $value = $value['value'];
-              $form_state['values'][$field_name]['und']['form'][$key] = $value;
-            }
-            $entity->{$key} = $value;
-          }
+            $child_form_state_values[$field_target_id_column] = $parent_submitted_values[$field_host_source_id];
 
-          if (!empty($civicrm_entity_fields['values'][$key]['is_view'])) {
-            unset($entity->{$key});
+            //$entity->{$field_target_id_column} = $parent_submitted_values[$field_host_source_id];
+          }
+        }
+
+      }
+
+      drupal_array_set_nested_value($form_state['values'], $entity_form['#parents'], $child_form_state_values);
+
+    }
+    // Add in created and changed times.
+    parent::entityFormSubmit($entity_form, $form_state);
+  }
+
+  /**
+   * Utility function to fill entity with form values
+   *
+   * @param $values
+   * @param $entity
+   * @param $civicrm_entity_fields
+   * @param string $entity_type
+   */
+  private function fillEntityValues(&$values, $entity, $civicrm_entity_fields, $entity_type = '') {
+
+    foreach ($values as $key => $value) {
+
+      if (substr($key, 0, 7) == 'custom_') {
+        if (!empty($civicrm_entity_fields['values'][$key]['html_type']) && $civicrm_entity_fields['values'][$key]['html_type'] == 'CheckBox') {
+          if (is_array($value)) {
+            $stored_value = array();
+            foreach ($value as $option => $checkbox_value) {
+              if ($checkbox_value) {
+                $stored_value[] = $option;
+              }
+            }
+            $entity->{$key} = !empty($stored_value) ? $stored_value : array('');
           }
 
         }
         else {
           if (is_array($value) && isset($value['value'])) {
             $value = $value['value'];
-            $form_state['values'][$field_name]['und']['form'][$key] = $value;
+            //$form_state['values'][$field_name]['und']['form'][$key] = $value;
+            $values[$key] = $value;
           }
           $entity->{$key} = $value;
         }
-      }
-      if ($entity->is_new = isset($entity->is_new) ? $entity->is_new : 0) {
-        $entity->created = time();
-      }
-      $entity->changed = time();
 
-      //$wrapper = entity_metadata_wrapper($entity_type, $entity);
-      field_attach_submit($entity_type, $entity, $entity_form, $form_state);
+        if (!empty($civicrm_entity_fields['values'][$key]['is_view'])) {
+          unset($entity->{$key});
+        }
+
+      }
+      else {
+        if (is_array($value) && isset($value['value'])) {
+          $value = $value['value'];
+          //$form_state['values'][$field_name]['und']['form'][$key] = $value;
+          $values[$key] = $value;
+        }
+        $entity->{$key} = $value;
+      }
     }
-    // Add in created and changed times.
-
-
-    parent::entityFormSubmit($entity_form, $form_state);
   }
 
 }

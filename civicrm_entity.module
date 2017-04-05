@@ -248,7 +248,10 @@ function civicrm_entity_views_data_alter(&$data) {
   foreach ($civicrm_entity_types as $civicrm_entity_type => $info) {
     foreach ($data[$civicrm_entity_type] as $property => $prop_info) {
       if (strpos($property, 'custom_') === 0) {
-        unset($data[$civicrm_entity_type][$property]);
+        $name_array = explode('_', $property);
+        if(!isset($name_array[1]) && is_numeric($name_array[1])) {
+          unset($data[$civicrm_entity_type][$property]);
+        }
       }
     }
   }
@@ -1862,7 +1865,32 @@ function civicrm_entity_supported_entities_info() {
       ),
     ),
   );
-
+  $civicrm_entity_info['civicrm_website'] = array(
+    'civicrm entity name' => 'website',
+    'label property' => 'url',
+    'permissions' => array(
+      'view' => array('view all contacts'),
+      'edit' => array('edit all contacts'),
+      'update' => array('edit all contacts'),
+      'create' => array('edit all contacts'),
+      'delete' => array('delete contacts'),
+    ),
+    'theme' => array(
+      'template' => 'civicrm-website',
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
+    ),
+    'display suite' => array(
+      'link fields' => array(
+        array(
+          'link_field' => 'contact_id',
+          'target' => 'civicrm_contact',
+        ),
+      ),
+      'option fields' => array(
+        'website_type_id',
+      ),
+    ),
+  );
   return $civicrm_entity_info;
 }
 

@@ -352,5 +352,88 @@ function civicrm_entity_views_extras_views_data() {
     ),
   );
 
+//----------------------------------------------------------------
+  // CIVICRM World Region
+  //----------------------------------------------------------------
+  $data['civicrm_worldregion']['table']['group'] = t('CiviCRM World Region');
+
+  $data['civicrm_worldregion']['table']['base'] = array(
+    'field' => 'id',
+    'title' => t('CiviCRM World Regions'),
+    'help' => t("View displays CiviCRM World Regions"),
+  );
+
+  //----------------------------------------------------------------
+  // CIVICRM World Region - FIELDS
+  //----------------------------------------------------------------
+
+  // ID
+  $data['civicrm_worldregion']['id'] = array(
+    'title' => t('ID'),
+    'help' => t('The numeric ID of the world region'),
+    'field' => array(
+      'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_numeric',
+      'numeric' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_numeric',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
+
+  // Name
+  $data['civicrm_worldregion']['name'] = array(
+    'title' => t('Name'),
+    'help' => t('The world region name'),
+    'field' => array(
+      'handler' => 'views_handler_field',
+      'click sortable' => TRUE,
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_string',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_string',
+      'allow empty' => TRUE,
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
+
+  //----------------------------------------------------------------
+  // CIVICRM Country Relationships
+  //----------------------------------------------------------------
+  $data['civicrm_address']['civicrm_country'] = array(
+    'title' => t('CiviCRM Country'),
+    'help' => t('Relates Country to Address'),
+    'real field' => 'country_id',
+    'relationship' => array(
+      'base' => 'civicrm_country',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Country'),
+    ),
+  );
+
+
+  $data['civicrm_country']['civicrm_worldregion'] = array(
+    'title' => t('CiviCRM World Region'),
+    'help' => t('Relates World Region to Country'),
+    'real field' => 'region_id',
+    'relationship' => array(
+      'base' => 'civicrm_worldregion',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM World Region'),
+    ),
+  );
+
   return $data;
 }

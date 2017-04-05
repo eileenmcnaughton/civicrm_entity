@@ -117,7 +117,7 @@ function civicrm_customs_event_registration_access_callback($entity_type, $entit
       return TRUE;
     }
     // disallow access if the user doesn't have role id 5 and the event type is 7 or 9
-    elseif(!isset($account->roles[5]) && !empty($entity->event_type_id) && in_array($entity->event_type_id, array(7, 9))) {
+    elseif(!isset($account->roles[5]) && (!empty($entity->event_type_id) && in_array($entity->event_type_id, array(7, 9)))) {
       return FALSE;
     }
   }

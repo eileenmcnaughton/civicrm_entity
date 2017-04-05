@@ -174,6 +174,8 @@ class CivicrmEntityController extends EntityAPIController {
       $params['version'] = 3;
       $params['sequential'] = 1;
 
+
+
       if ($entity->is_new) {
         if (isset($params['id'])) {
           unset($params['id']);
