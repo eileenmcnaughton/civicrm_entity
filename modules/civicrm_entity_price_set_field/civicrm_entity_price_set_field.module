@@ -53,6 +53,17 @@ function civicrm_entity_price_set_field_rules_event_info() {
         ),
       ),
     ),
+    'civicrm_entity_price_set_field_successful_cc_transaction' => array(
+      'label' => t('Successful CC Transaction'),
+      'module' => 'civicrm_entity_price_set_field',
+      'group' => 'CiviCRM Entity Price Set Field',
+      'variables' => array(
+        'contribution' => array(
+          'type' => 'civicrm_contribution',
+          'label' => t('The contribution that was transacted.'),
+        ),
+      ),
+    ),
   );
 }
 
@@ -236,7 +247,7 @@ function civicrm_entity_price_set_field_field_load($entity_type, $entities, $fie
  * @return bool
  */
 function civicrm_entity_price_set_field_field_is_empty($item, $field) {
-  if (empty($item['price_set_id']) && !is_numeric($item['price_set_id'])) {
+  if ((isset($item['price_set_id']) && !is_numeric($item['price_set_id'])) || empty($item['price_set_id'])) {
     return TRUE;
   }
 
@@ -1018,7 +1029,7 @@ function _civicrm_entity_price_set_field_amount_element_validate($element, &$for
     // ignore?
   }
   else {
-    if (empty($price_field_values[$element_id]['amount'])) {
+    if (isset($price_field_values[$element_id]['amount']) && $price_field_values[$element_id]['amount'] == '') {
       form_set_error(implode('][', $parents) . '][' . $element_id . '][amount', t('Amount cannot be empty'));
     }
     elseif (!is_numeric($price_field_values[$element_id]['amount'])) {
