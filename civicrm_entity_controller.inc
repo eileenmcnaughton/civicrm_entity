@@ -174,8 +174,6 @@ class CivicrmEntityController extends EntityAPIController {
       $params['version'] = 3;
       $params['sequential'] = 1;
 
-
-
       if ($entity->is_new) {
         if (isset($params['id'])) {
           unset($params['id']);
@@ -218,29 +216,32 @@ class CivicrmEntityController extends EntityAPIController {
     if (!civicrm_initialize()) {
       throw new Exception('civicrm inaccessible');
     }
+
     $entities = entity_load($this->entityType, $ids);
-    foreach ($ids as $id) {
-      $params['version'] = 3;
-      $params['id'] = $id;
+    if(count($entities)) {
+      foreach ($ids as $id) {
+        $params['version'] = 3;
+        $params['id'] = $id;
 
-      try {
+        try {
 
-        $entity = $entities[$id];
+          $entity = $entities[$id];
 
-        $this->invoke('predelete', $entity);
-        $result = civicrm_api(substr($this->entityType, 8), 'delete', $params);
+          $this->invoke('predelete', $entity);
+          $result = civicrm_api(substr($this->entityType, 8), 'delete', $params);
 
-        if (!civicrm_error($result)) {
-          field_attach_delete($this->entityType, $entity);
-          // $this->invoke('delete', $entity);
-          return;
+          if (!civicrm_error($result)) {
+            field_attach_delete($this->entityType, $entity);
+            // $this->invoke('delete', $entity);
+            return;
+          }
+          throw new Exception($result['error_message']);
+        } catch (Exception $e) {
+          watchdog_exception($this->entityType, $e);
+          throw $e;
         }
-        throw new Exception($result['error_message']);
-      } catch (Exception $e) {
-        watchdog_exception($this->entityType, $e);
-        throw $e;
-      }
-    } //end foreach id
+      } //end foreach id
+    }
   }
 
   public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {

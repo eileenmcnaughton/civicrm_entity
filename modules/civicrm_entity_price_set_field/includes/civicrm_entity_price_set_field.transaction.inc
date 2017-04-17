@@ -185,6 +185,14 @@ function _civicrm_entity_price_set_field_run_cc_transaction($display, $price_set
         $result = call_user_func($invoke_type['callback'], $display, $processor, $processor_type, $price_set_data, $entity_type, $entity, $contacts, $form_state);
       }
       if (!empty($result)) {
+        // trigger rule event with all the pertinent data here
+        if(!empty($result['contribution']->id)) {
+          $rule_variables = array(
+            'contribution' => $result['contribution'],
+          );
+          
+          rules_invoke_event_by_args('civicrm_entity_price_set_field_successful_cc_transaction', $rule_variables);
+        }
         return $result;
       }
     }
