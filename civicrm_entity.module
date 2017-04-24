@@ -782,14 +782,19 @@ function civicrm_entity_supported_entities_info() {
           'link_field' => 'financial_type_id',
           'target' => 'civicrm_contribution',
         ),
+        array(
+          'link_field' => 'campaign_id',
+          'target' => 'civicrm_campaign',
+        ),
       ),
       'option fields' => array('financial_type_id', 'contribution_status_id', 'payment_instrument_id'),
-      'boolean fields' => array('is_test', 'is_pay_later'),
+      'boolean fields' => array('is_test', 'is_email_receipt', 'auto_renew'),
       'date fields' => array(
         'create_date',
         'modified_date',
         'cancel_date',
         'end_date',
+        'failure_retry_date',
       ),
     ),
   );
