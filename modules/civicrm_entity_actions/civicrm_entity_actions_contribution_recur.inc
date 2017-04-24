@@ -5,7 +5,7 @@
  * @return multitype:multitype:string boolean NULL
  */
 
-function civicrm_entity_actions_contribution_action_info() {
+function civicrm_entity_actions_contribution_recur_action_info() {
   return array(
     //Crud operations
     'civicrm_entity_actions_contribution_recur_view_action' => array(
@@ -39,26 +39,26 @@ function civicrm_entity_actions_contribution_action_info() {
   );
 }
 
-function civicrm_entity_actions_contribution_add_action($entity, $context = array()) {
+function civicrm_entity_actions_contribution_recur_add_action($entity, $context = array()) {
   $base_url = str_replace('_', '-', $context['entity_type']); // civicrm-contribution
   drupal_goto($base_url . '/add');
 }
 
-function civicrm_entity_actions_contribution_view_action($entity, $context = array()) {
+function civicrm_entity_actions_contribution_recur_view_action($entity, $context = array()) {
   $info = entity_get_info($context['entity_type']);
   $entity_id = $entity->{$info['entity keys']['id']};
   $base_url = str_replace('_', '-', $context['entity_type']); // civicrm-contribution
   drupal_goto($base_url . '/' . $entity_id);
 }
 
-function civicrm_entity_actions_contribution_edit_action($entity, $context = array()) {
+function civicrm_entity_actions_contribution_recur_edit_action($entity, $context = array()) {
   $info = entity_get_info($context['entity_type']);
   $entity_id = $entity->{$info['entity keys']['id']};
   $base_url = str_replace('_', '-', $context['entity_type']); // civicrm-contribution
   drupal_goto($base_url . '/' . $entity_id . '/edit');
 }
 
-function civicrm_entity_actions_contribution_delete_action($entity, $context = array()) {
+function civicrm_entity_actions_contribution_recur_delete_action($entity, $context = array()) {
   $info = entity_get_info($context['entity_type']);
   $entity_id = $entity->{$info['entity keys']['id']};
   $base_url = str_replace('_', '-', $context['entity_type']); // civicrm-contribution
