@@ -243,10 +243,12 @@ function  civicrm_entity_op_access($op, $entity_type, $entity = NULL, $account =
  * Implements hook_views_data_alter().
  */
 function civicrm_entity_views_data_alter(&$data) {
-  // unset auto-generated custom field views handlers due to civicrm_entity entity metadata coming from API getfields call
+
   $civicrm_entity_types = civicrm_entity_get_supported_entity_info();
+
   foreach ($civicrm_entity_types as $civicrm_entity_type => $info) {
     foreach ($data[$civicrm_entity_type] as $property => $prop_info) {
+      // unset auto-generated custom field views handlers due to civicrm_entity entity metadata coming from API getfields call
       if (strpos($property, 'custom_') === 0) {
         $name_array = explode('_', $property);
         if(!isset($name_array[1]) && is_numeric($name_array[1])) {
@@ -255,6 +257,25 @@ function civicrm_entity_views_data_alter(&$data) {
       }
     }
   }
+
+ if(!empty($data['civicrm_contribution_recur']['next_sched_contribution'])) {
+    foreach($data['civicrm_contribution_recur'] as $property => $property_data) {
+      if(strpos($property, 'next_sched_contribution') === 0) {
+        $property_name_components = explode('_', $property);
+        if(!empty($property_name_components[3])) {
+          $new_name = $property_name_components[0] . '_' . $property_name_components[1] . '_' . $property_name_components[2] . '_date_' . $property_name_components[3] . (!empty($property_name_components[4]) ? ('_' . $property_name_components[4]) : '');
+        }
+        else {
+          $new_name = implode('_', $property_name_components) . '_date';
+        }
+
+        $data['civicrm_contribution_recur'][$new_name] = $data['civicrm_contribution_recur'][$property];
+        unset($data['civicrm_contribution_recur'][$property]);
+
+      }
+    }
+  }
+
 }
 
 
@@ -726,6 +747,54 @@ function civicrm_entity_supported_entities_info() {
         'receipt_date',
         'thankyou_date',
         'receive_date',
+      ),
+    ),
+  );
+  $civicrm_entity_info['civicrm_contribution_recur'] = array(
+    'civicrm entity name' => 'contribution_recur',
+    'label property' => 'id',
+    'permissions' => array(
+      'view' => array('access CiviContribute', 'administer CiviCRM'),
+      'edit' => array('edit contributions', 'administer CiviCRM'),
+      'update' => array('edit contributions', 'administer CiviCRM'),
+      'create' => array('edit contributions', 'administer CiviCRM'),
+      'delete' => array(
+        'edit contributions',
+        'delete in CiviContribute',
+        'administer CiviCRM',
+      ),
+    ),
+    'theme' => array(
+      'template' => 'civicrm-contribution-recur',
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
+    ),
+    'display suite' => array(
+      'link fields' => array(
+        array(
+          'link_field' => 'contact_id',
+          'target' => 'civicrm_contact',
+        ),
+        array(
+          'link_field' => 'payment_processor_id',
+          'target' => 'civicrm_payment_processor',
+        ),
+        array(
+          'link_field' => 'financial_type_id',
+          'target' => 'civicrm_contribution',
+        ),
+        array(
+          'link_field' => 'campaign_id',
+          'target' => 'civicrm_campaign',
+        ),
+      ),
+      'option fields' => array('financial_type_id', 'contribution_status_id', 'payment_instrument_id'),
+      'boolean fields' => array('is_test', 'is_email_receipt', 'auto_renew'),
+      'date fields' => array(
+        'create_date',
+        'modified_date',
+        'cancel_date',
+        'end_date',
+        'failure_retry_date',
       ),
     ),
   );
