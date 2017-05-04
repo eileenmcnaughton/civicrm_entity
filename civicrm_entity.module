@@ -251,7 +251,7 @@ function civicrm_entity_views_data_alter(&$data) {
       // unset auto-generated custom field views handlers due to civicrm_entity entity metadata coming from API getfields call
       if (strpos($property, 'custom_') === 0) {
         $name_array = explode('_', $property);
-        if(!isset($name_array[1]) && is_numeric($name_array[1])) {
+        if(isset($name_array[1]) && is_numeric($name_array[1])) {
           unset($data[$civicrm_entity_type][$property]);
         }
       }
