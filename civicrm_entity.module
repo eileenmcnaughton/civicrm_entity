@@ -423,6 +423,7 @@ function civicrm_entity_entity_info() {
             'path' => 'admin/structure/civicrm-entity/' . $drupal_entity,
             'access arguments' => array('administer CiviCRM Entity'),
           ),
+          'uri callback' => 'civicrm_entity_uri_callback',
         ),
       ),
       'view modes' => array(
@@ -444,6 +445,17 @@ function civicrm_entity_entity_info() {
   }
 
   return $info;
+}
+
+/**
+ * URI Callback for entities
+ *
+ * @param $entity
+ * @return array
+ */
+function civicrm_entity_uri_callback($entity) {
+  $uri['path'] = str_replace('_', '-', $entity->entityType()) . '/' . $entity->id;
+  return $uri;
 }
 
 /**

@@ -42,3 +42,4 @@ class CivicrmEntity extends Entity {
     );
   }
 }
+
