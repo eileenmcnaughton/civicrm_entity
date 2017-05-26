@@ -24,6 +24,7 @@ function _civicrm_entity_price_set_field_setup_price_set_fapi(&$form, &$form_sta
           'civicrm-price-set-' . $data['price_set']->id,
         ),
       ),
+      '#weight' => -5,
     );
     foreach ($data['price_fields'] as $pf_id => $price_field) {
       if (!empty($price_field['pf_entity']->active_on)) {
@@ -94,6 +95,9 @@ function _civicrm_entity_price_set_field_setup_price_set_fapi(&$form, &$form_sta
       }
       if (empty($default_values['contacts'][$count]['price_set'][$pf_id]['price_field_values'])) {
         $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#default_value'] = $default_value;
+        if($price_field['pf_entity']->html_type == 'Radio' && empty($default_value)) {
+          $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#default_value'] = array();
+        }
       }
       else {
         $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#default_value'] = $default_values['contacts'][$count]['price_set'][$pf_id]['price_field_values'];
