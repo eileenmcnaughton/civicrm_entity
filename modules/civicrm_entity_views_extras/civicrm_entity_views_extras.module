@@ -74,6 +74,7 @@ function civicrm_entity_views_extras_views_data() {
       'left_field' => 'id',
       'field' => 'entity_id',
     ),
+
   );
 
   $data['civicrm_event']['table']['join']['civicrm_price_set_entity'] = array(
@@ -83,9 +84,23 @@ function civicrm_entity_views_extras_views_data() {
 
   );
 
+
   //----------------------------------------------------------------
   // CIVICRM Price Set Entity - RELATIONSHIPS
   //----------------------------------------------------------------
+
+  // Contribution page to price set entity
+  $data['civicrm_contribution_page']['civicrm_price_set_entity'] = array(
+    'title' => t('Price Set Entity'),
+    'help' => t('Price Set Entity'),
+    'real field' => 'id',
+    'relationship' => array(
+      'base' => 'civicrm_price_set_entity',
+      'base field' => 'entity_id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('Price Set Entity'),
+    ),
+  );
 
   // Price Set
   $data['civicrm_price_set_entity']['civicrm_price_set'] = array(
