@@ -1,0 +1,7 @@
+name = CiviCRM Entity Search API
+description = "Adds more support for Search API indexing of CiviCRM data"
+dependencies[] = civicrm
+dependencies[] = civicrm_entity
+dependencies[] = search_api
+package = CiviCRM Entity
+core = 7.x

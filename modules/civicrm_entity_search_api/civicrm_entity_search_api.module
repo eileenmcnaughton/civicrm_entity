@@ -1,0 +1,39 @@
+<?php
+
+/**
+ * Implements hook_civicrm_post().
+ *
+ * @param $op
+ * @param $objectName
+ * @param $objectId
+ * @param $objectRef
+ */
+function civicrm_entity_search_api_civicrm_post($op, $objectName, $objectId, &$objectRef) {
+  $index_entities = array('Contact', 'Individual', 'Household', 'Organization');
+  if(!in_array($objectName, $index_entities)) {
+    return;
+  }
+
+  switch ($objectName) {
+    case 'Contact':
+    case 'Individual':
+    case 'Household':
+    case 'Organization':
+     $drupal_entity_type = 'civicrm_contact';
+     break;
+  }
+
+  if(!empty($drupal_entity_type)) {
+    switch ($op) {
+      case 'create':
+        search_api_track_item_insert($drupal_entity_type, array($objectId));
+        break;
+      case 'edit':
+        search_api_track_item_change($drupal_entity_type, array($objectId));
+        break;
+      case 'delete':
+        search_api_track_item_delete($drupal_entity_type, array($objectId));
+        break;
+    }
+  }
+}
