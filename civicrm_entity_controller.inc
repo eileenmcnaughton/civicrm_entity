@@ -311,13 +311,20 @@ class CivicrmEntityController extends EntityAPIController {
     $civicrm_entities = civicrm_api3($this->entityInfo['description'], 'get', $condition);
 
     // get what we get by the 'return' property in the API call
-    $condition['return'] = $return_fields['return'];
-    $civicrm_entities2 = civicrm_api3($this->entityInfo['description'], 'get', $condition);
+    if(!empty($return_fields['return'])) {
+      $condition['return'] = $return_fields['return'];
+      $civicrm_entities2 = civicrm_api3($this->entityInfo['description'], 'get', $condition);
+    }
 
     // merge the two together
     $new_civicrm_entities = array();
     foreach ($civicrm_entities['values'] as $id => $entity) {
-      $new_civicrm_entities[$id] = array_merge($entity, $civicrm_entities2['values'][$id]);
+      if(!empty($civicrm_entities2['values'][$id])) {
+        $new_civicrm_entities[$id] = array_merge($entity, $civicrm_entities2['values'][$id]);
+      }
+      else {
+        $new_civicrm_entities[$id] = $entity;
+      }
       // unset anything not in the return array (if you wanted to) but why?
       /*foreach($new_civicrm_entities[$id] as $key => $value){
         if(!in_array($key, $return_fields['return'])) {
