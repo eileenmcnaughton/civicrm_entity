@@ -236,6 +236,13 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
             }
           }
 
+          // case special handling
+          if ($entity_type == 'civicrm_case') {
+            if($name == 'creator_id') {
+              unset($creator_id);
+            }
+          }
+
           // make sure to disable id field, and any custom field with is_view = 1
           if ($name == 'id' || !empty($info['is_view'])) {
             $form[$name]['#disabled'] = TRUE;
@@ -444,6 +451,9 @@ function civicrm_entity_form_submit(&$form, &$form_state) {
     $entity->created = time();
   }
   $entity->changed = time();
+  if($entity_type == 'civicrm_case') {
+    unset($entity->creator_id);
+  }
 
   $wrapper = entity_metadata_wrapper($entity_type, $entity);
   //field_attach_submit($entity_type, $entity, $form, $form_state);
