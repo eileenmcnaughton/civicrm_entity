@@ -105,9 +105,11 @@ function civicrm_case_activity_reference_field_field_settings_form($field, $inst
 function civicrm_case_activity_reference_field_field_load($entity_type, $entities, $field, $instances, $langcode, &$items, $age) {
   foreach ($entities as $id => $entity) {
     try {
-      $activities = db_select('civicrm_case_activity', 'ca')
-        ->fields('ca', array('activity_id'))
-        ->condition('case_id', $id, '=')
+      $query = db_select('civicrm_case_activity', 'ca');
+      $query->fields('ca', array('activity_id'));
+      $query->join('civicrm_activity', 'a', 'ca.activity_id = a.id');
+      $activities = $query->condition('ca.case_id', $id, '=')
+        ->condition('a.is_current_revision', 1, '=')
         ->execute()
         ->fetchAll();
       $result = array();
@@ -581,10 +583,14 @@ function civicrm_case_activity_reference_field_inline_entity_form_entity_form_al
     // this doesn't handle a field that is nested on an entityreference field that is on say a node....
     // this handles the 'multi' widget
     if (isset($form_state['complete form']['id']['#default_value']) && isset($entity_form['case_id']) && is_array($entity_form['case_id'])) {
-      if ($entity_form['#op'] == 'add' || $entity_form['#op'] == 'create') {
+      if ($entity_form['#op'] == 'add' || $entity_form['#op'] == 'create' || $entity_form['#op'] == 'edit' || $entity_form['#op'] == 'update') {
         $entity_form['case_id']['#default_value'] = $form_state['complete form']['id']['#default_value'];
       }
       $entity_form['case_id']['#disabled'] = TRUE;
+      if ($entity_form['#op'] == 'add' || $entity_form['#op'] == 'create') {
+        $entity_form['is_current_revision']['#default_value'] = 1;
+        $entity_form['is_current_revision']['#disabled'] = TRUE;
+      }
     }// this handles the 'single' widget
     elseif (isset($form_state['field'][$field_name][LANGUAGE_NONE]['instance']['entity_type'])) {
       if (isset($form_state['civicrm_case']->id)) {
