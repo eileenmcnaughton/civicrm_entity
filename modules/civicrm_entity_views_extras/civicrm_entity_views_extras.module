@@ -449,20 +449,19 @@ function civicrm_entity_views_extras_views_data() {
       'label' => t('CiviCRM World Region'),
     ),
   );
-  
+
   //----------------------------------------------------------------
   // CIVICRM Event Extras
   //----------------------------------------------------------------
-  
-  $data['civicrm_event']['civicrm_entity_views_extras_handler_event_is_full'] = array(  		
-  		'title' => t('Event Is Full'),
-  		'help' => t('Provided by CiviCRM Entity: True if event is full false otherwhise.'),
-  		'field' => array(
-  				'field' => 'id',
-  				'handler' => 'civicrm_entity_views_extras_handler_event_is_full',
-  		),
-  		
+
+  $data['civicrm_event']['civicrm_entity_views_extras_handler_event_is_full'] = array(
+    'title' => t('Event Is Full'),
+    'help' => t('Provided by CiviCRM Entity: True if event is full false otherwhise.'),
+    'field' => array(
+      'field' => 'id',
+      'handler' => 'civicrm_entity_views_extras_handler_event_is_full',
+    ),
   );
-  
+
   return $data;
 }
