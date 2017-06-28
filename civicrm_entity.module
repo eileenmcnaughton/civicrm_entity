@@ -2342,6 +2342,20 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
     }
   }
 
+  // 4.7 does not return metadata for the contact_id property, with a Contact API getfields call, Action => create
+  if($civicrm_entity == 'contact') {
+    if (!isset($info['contact_id_contact'])) {
+      $info['contact_id_contact'] = array(
+        'label' => 'Contact ID',
+        'type' => 'civicrm_contact',
+        'property_info' => array(
+          'field' => 'id',
+          'entity' => 'contact',
+        ),
+        'getter callback' => 'civicrm_entity_metadata_civicrm_entity_get_properties',
+      );
+    }
+  }
   return $info;
 }
 

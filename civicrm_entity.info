@@ -9,3 +9,4 @@ files[] = civicrm_entity_controller.inc
 files[] = civicrm_entity_ui_controller.inc
 files[] = civicrm_entity_metadata_controller.inc
 files[] = civicrm_entity_default_views_controller.inc
+
