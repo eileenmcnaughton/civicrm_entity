@@ -2785,6 +2785,33 @@ function civicrm_entity_user_exists_or_creatable($contact) {
 }
 
 /**
+ * Condition Contact is in Group
+ */
+function civicrm_entity_contact_is_in_group($contact, $group_id) {
+  if(!civicrm_initialize()) {
+    return;
+  }
+  try {
+
+    $contact_id = $contact->id;
+    $params = array(
+      'sequential' => 1,
+      'contact_id' => $contact_id,
+      'group_id' => $group_id,
+    );
+    $get_result = civicrm_api3('GroupContact', 'Get', $params);
+    if(!empty($get_result['count'])) {
+      $group = entity_load_single('civicrm_group', $group_id);
+      return $group;
+    }
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    drupal_set_message($e->getMessage());
+  }
+  return FALSE;
+}
+
+/**
  * Given a contact object return the Drupal user.
  *
  * @param StdClass $entity
@@ -3871,4 +3898,3 @@ function civicrm_entity_ds_fields_info($entity_type) {
     return array($entity_type => $fields[$entity_type]);
   }
 }
-
