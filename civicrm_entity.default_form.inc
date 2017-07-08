@@ -492,6 +492,10 @@ function civicrm_entity_form_submit(&$form, &$form_state) {
       // this will create the civicrm entity reference fields entities
       field_attach_submit($entity_type, $entity, $form, $form_state);
     }
+    else {
+      field_attach_submit($entity_type, $entity, $form, $form_state);
+      $wrapper->save();
+    }
   }
   // is update, handle "normally"
   else {
