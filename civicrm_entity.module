@@ -2792,7 +2792,6 @@ function civicrm_entity_contact_is_in_group($contact, $group_id) {
     return;
   }
   try {
-
     $contact_id = $contact->id;
     $params = array(
       'sequential' => 1,
@@ -2807,6 +2806,17 @@ function civicrm_entity_contact_is_in_group($contact, $group_id) {
   }
   catch (CiviCRM_API3_Exception $e) {
     drupal_set_message($e->getMessage());
+  }
+  return FALSE;
+}
+
+/**
+ * Condition Contact is of Sub type
+ */
+function civicrm_entity_contact_is_subtype($contact, $subtype) {
+  $contact_subtypes = explode(CRM_Core_DAO::VALUE_SEPARATOR, $contact->contact_sub_type);
+  if (!empty($contact_subtypes) && in_array($subtype, $contact_subtypes)) {
+    return TRUE;
   }
   return FALSE;
 }
@@ -3269,6 +3279,7 @@ function civicrm_entity_rules_action_unassign_contact_to_group($contact, $group_
 
 /**
  * Callback for Assign CiviCRM Contact to Group Rules action, Group selection options list
+ * also used by the Contact is in Group condition
  *
  * @return array
  */
@@ -3288,6 +3299,33 @@ function civicrm_entity_rules_assign_contact_group_options_list() {
     }
   }
   return $options;
+}
+
+/**
+ * Callback for Contact is of subtype condition, Contact Sub Type options list
+ *
+ * @return array
+ */
+function civicrm_entity_rules_contact_subtype_options_list() {
+  if (!civicrm_initialize()) {
+    return;
+  }
+  try {
+    $result = civicrm_api3('ContactType', 'get', array(
+      'sequential' => 1,
+      'parent_id' => array('IS NOT NULL' => 1),
+    ));
+    if (!empty($result['count'])) {
+      $options = array();
+      foreach ($result['values'] as $index => $subtype) {
+        $options[$subtype['name']] = $subtype['label'];
+      }
+      return $options;
+    }
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    return;
+  }
 }
 
 /**
