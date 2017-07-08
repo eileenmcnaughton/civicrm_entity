@@ -2342,6 +2342,20 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
     }
   }
 
+  // 4.7 does not return metadata for the contact_id property, with a Contact API getfields call, Action => create
+  if($civicrm_entity == 'contact') {
+    if (!isset($info['contact_id_contact'])) {
+      $info['contact_id_contact'] = array(
+        'label' => 'Contact ID',
+        'type' => 'civicrm_contact',
+        'property_info' => array(
+          'field' => 'id',
+          'entity' => 'contact',
+        ),
+        'getter callback' => 'civicrm_entity_metadata_civicrm_entity_get_properties',
+      );
+    }
+  }
   return $info;
 }
 
@@ -2768,6 +2782,43 @@ function civicrm_entity_user_creatable($contact) {
  */
 function civicrm_entity_user_exists_or_creatable($contact) {
   return civicrm_entity_action_load_create_user($contact);
+}
+
+/**
+ * Condition Contact is in Group
+ */
+function civicrm_entity_contact_is_in_group($contact, $group_id) {
+  if(!civicrm_initialize()) {
+    return;
+  }
+  try {
+    $contact_id = $contact->id;
+    $params = array(
+      'sequential' => 1,
+      'contact_id' => $contact_id,
+      'group_id' => $group_id,
+    );
+    $get_result = civicrm_api3('GroupContact', 'Get', $params);
+    if(!empty($get_result['count'])) {
+      $group = entity_load_single('civicrm_group', $group_id);
+      return $group;
+    }
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    drupal_set_message($e->getMessage());
+  }
+  return FALSE;
+}
+
+/**
+ * Condition Contact is of Sub type
+ */
+function civicrm_entity_contact_is_subtype($contact, $subtype) {
+  $contact_subtypes = explode(CRM_Core_DAO::VALUE_SEPARATOR, $contact->contact_sub_type);
+  if (!empty($contact_subtypes) && in_array($subtype, $contact_subtypes)) {
+    return TRUE;
+  }
+  return FALSE;
 }
 
 /**
@@ -3228,6 +3279,7 @@ function civicrm_entity_rules_action_unassign_contact_to_group($contact, $group_
 
 /**
  * Callback for Assign CiviCRM Contact to Group Rules action, Group selection options list
+ * also used by the Contact is in Group condition
  *
  * @return array
  */
@@ -3247,6 +3299,33 @@ function civicrm_entity_rules_assign_contact_group_options_list() {
     }
   }
   return $options;
+}
+
+/**
+ * Callback for Contact is of subtype condition, Contact Sub Type options list
+ *
+ * @return array
+ */
+function civicrm_entity_rules_contact_subtype_options_list() {
+  if (!civicrm_initialize()) {
+    return;
+  }
+  try {
+    $result = civicrm_api3('ContactType', 'get', array(
+      'sequential' => 1,
+      'parent_id' => array('IS NOT NULL' => 1),
+    ));
+    if (!empty($result['count'])) {
+      $options = array();
+      foreach ($result['values'] as $index => $subtype) {
+        $options[$subtype['name']] = $subtype['label'];
+      }
+      return $options;
+    }
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    return;
+  }
 }
 
 /**
@@ -3857,4 +3936,3 @@ function civicrm_entity_ds_fields_info($entity_type) {
     return array($entity_type => $fields[$entity_type]);
   }
 }
-

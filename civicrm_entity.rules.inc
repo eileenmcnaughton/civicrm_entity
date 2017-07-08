@@ -273,6 +273,51 @@ function civicrm_entity_rules_condition_info() {
     );
   }
 
+  // Is contact in group condition
+  $conditions['civicrm_entity_contact_is_in_group'] = array(
+    'label' => t('CiviCRM Contact is in Group'),
+    'access_callback' => '_civicrm_entity_rules_access',
+    'parameter' => array(
+      'civicrm_contact' => array(
+        'label' => t('CiviCRM Contact'),
+        'type' => 'civicrm_contact',
+      ),
+      'group_id' => array(
+        'type' => 'text',
+        'label' => t('Group'),
+        'options list' => 'civicrm_entity_rules_assign_contact_group_options_list',
+        'description' => t('Select the CiviCRM group'),
+        'restriction' => 'input',
+      ),
+    ),
+    'provides' => array(
+      'civicrm_group' => array(
+        'label' => t('CiviCRM Group'),
+        'type' => 'civicrm_group',
+      ),
+    ),
+    'group' => t('CiviCRM'),
+  );
+
+  $conditions['civicrm_entity_contact_is_subtype'] = array(
+    'label' => t('CiviCRM Contact is of subtype'),
+    'access_callback' => '_civicrm_entity_rules_access',
+    'parameter' => array(
+      'civicrm_contact' => array(
+        'label' => t('CiviCRM Contact'),
+        'type' => 'civicrm_contact',
+      ),
+      'contact_subtype' => array(
+        'type' => 'text',
+        'label' => t('Contact Sub Type'),
+        'options list' => 'civicrm_entity_rules_contact_subtype_options_list',
+        'description' => t('Select the Contact Sub Type'),
+        'restriction' => 'input',
+      ),
+    ),
+    'group' => t('CiviCRM'),
+  );
+
   return $conditions;
 }
 

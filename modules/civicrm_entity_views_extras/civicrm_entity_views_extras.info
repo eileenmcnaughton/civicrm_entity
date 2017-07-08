@@ -5,3 +5,5 @@ dependencies[] = views
 package = CiviCRM Entity
 version = 1.0
 core = 7.x
+
+files[] = views/civicrm_entity_views_extras_handler_event_is_full.inc
