@@ -12,8 +12,6 @@ class CivicrmInlineEntityFormController extends EntityInlineEntityFormController
     $op = $entity_form['#op'];
 
     field_attach_form($entity_type, $entity, $entity_form, $form_state);
-    dsm($entity_form);
-    dsm($form_state);
     if ($op == 'edit') {
       if (is_object($entity)) {
         $entity->original = clone $entity;
