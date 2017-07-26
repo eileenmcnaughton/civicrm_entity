@@ -775,7 +775,7 @@ function _civicrm_entity_price_set_field_process_event_registration(&$form_state
       if ($profile_entity_type != 'contact') {
         continue;
       }
-      if ($submitted_count == 0 && !empty($form_state['first_profile_submitted'])) {
+      if ($submitted_count == 0 && !empty($form_state['first_profile_submitted']) && $count == 0) {
         continue;
       }
       // here we want to submit only the contact profiles first
