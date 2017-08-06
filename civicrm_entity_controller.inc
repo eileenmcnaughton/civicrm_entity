@@ -44,6 +44,13 @@ class CivicrmEntityController extends EntityAPIController {
     // and we need to know if it's empty for this reason to avoid querying the
     // database when all requested entities are loaded from cache.
 
+    if(!empty($ids)) {
+      foreach ($ids as $index => $id) {
+        if (is_array($id)) {
+          $ids[$index] = !empty($id[0]) ? $id[0] : NULL;
+        }
+      }
+    }
     $passed_ids = !empty($ids) && !is_null(reset($ids)) ? array_flip((array) $ids) : FALSE;
     // Try to load entities from the static cache, if the entity type supports
     // static caching.

@@ -499,11 +499,11 @@ function civicrm_case_activity_reference_field_civicrm_post($op, $objectName, $o
       ->execute();
     while ($record = $civicrm_case_activity_reference_fields->fetchAssoc()) {
       $field = field_info_field_by_id($record['id']);
+      $instances = db_select('field_config_instance', 'fi')
+        ->fields('fi', array('id', 'entity_type'))
+        ->condition('field_id', $record['id'])
+        ->execute();
       if ($objectName == 'Case') {
-        $instances = db_select('field_config_instance', 'fi')
-          ->fields('fi', array('id', 'entity_type'))
-          ->condition('field_id', $record['id'])
-          ->execute();
         while ($instance = $instances->fetchAssoc()) {
           //clear the cache of entity
           cache_clear_all('field:' . $instance['entity_type'] . ':' . $objectId, 'cache_field');
@@ -511,8 +511,10 @@ function civicrm_case_activity_reference_field_civicrm_post($op, $objectName, $o
       }
       if ($objectName == 'Activity') {
         // look to see if this activity is associated with a case, if so we clear the field cache for the case
-        if(!empty($objectRef->case_id)) {
-          cache_clear_all('field:' . $instance['entity_type'] . ':' . $objectRef->case_id, 'cache_field');
+        while ($instance = $instances->fetchAssoc()) {
+          if (!empty($objectRef->case_id)) {
+            cache_clear_all('field:' . $instance['entity_type'] . ':' . $objectRef->case_id, 'cache_field');
+          }
         }
       }
     }
