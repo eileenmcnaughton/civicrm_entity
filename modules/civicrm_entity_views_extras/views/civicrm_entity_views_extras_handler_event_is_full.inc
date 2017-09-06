@@ -1,6 +1,7 @@
 <?php
 
 class civicrm_entity_views_extras_handler_event_is_full extends views_handler_field {
+  function query() {}
   function render($values) {
     if (!civicrm_initialize()) {
       return;
