@@ -451,6 +451,21 @@ function civicrm_entity_views_extras_views_data() {
   );
 
   //----------------------------------------------------------------
+  // CIVICRM IM
+  //----------------------------------------------------------------
+  $data['civicrm_contact']['civicrm_im'] = array(
+    'title' => t('CiviCRM IM'),
+    'help' => t('Contact IM'),
+    'real field' => 'id',
+    'relationship' => array(
+      'base' => 'civicrm_im',
+      'base field' => 'contact_id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('Contact IM'),
+    ),
+  );
+
+  //----------------------------------------------------------------
   // CIVICRM Event Extras
   //----------------------------------------------------------------
 
