@@ -9,7 +9,7 @@
  * @param $objectRef
  */
 function civicrm_entity_search_api_civicrm_post($op, $objectName, $objectId, &$objectRef) {
-  $index_entities = array('Contact', 'Individual', 'Household', 'Organization');
+  $index_entities = array('Contact', 'Individual', 'Household', 'Organization', 'Membership');
   if(!in_array($objectName, $index_entities)) {
     return;
   }
@@ -20,6 +20,9 @@ function civicrm_entity_search_api_civicrm_post($op, $objectName, $objectId, &$o
     case 'Household':
     case 'Organization':
      $drupal_entity_type = 'civicrm_contact';
+     break;
+    case 'Membership':
+     $drupal_entity_type = 'civicrm_membership';
      break;
   }
 
