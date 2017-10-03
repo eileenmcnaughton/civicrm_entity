@@ -5,12 +5,18 @@
  * Provide CiviCRM entity views extras, Views relationships and other handlers for entities exposed by CiviCRM Entity
  */
 
+/**
+ * Implements hook_views_api().
+ */
 function civicrm_entity_views_extras_views_api() {
   return array(
     'api' => 3,
   );
 }
 
+/**
+ * Implements hook_views_data().
+ */
 function civicrm_entity_views_extras_views_data() {
   $data['civicrm_price_set_entity']['table']['group'] = t('CiviCRM Price Set Entities');
 
@@ -453,9 +459,59 @@ function civicrm_entity_views_extras_views_data() {
   //----------------------------------------------------------------
   // CIVICRM IM
   //----------------------------------------------------------------
+  $data['civicrm_im']['location_type'] = array(
+    'title' => t('Location Type'),
+    'real field' => 'location_type_id',
+    'help' => t('The location type for the IM'),
+    'field' => array(
+      'handler' => 'civicrm_handler_field_pseudo_constant',
+      'pseudo class' => 'CRM_Core_PseudoConstant',
+      'pseudo method' => 'get',
+      'dao class' => 'CRM_Core_DAO_IM',
+      'click sortable' => TRUE,
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument',
+    ),
+    'filter' => array(
+      'handler' => 'civicrm_handler_filter_pseudo_constant',
+      'pseudo class' => 'CRM_Core_PseudoConstant',
+      'pseudo method' => 'get',
+      'dao class' => 'CRM_Core_DAO_IM',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
+
+  $data['civicrm_im']['provider'] = array(
+    'title' => t('Provider'),
+    'real field' => 'provider_id',
+    'help' => t('The provider for the IM'),
+    'field' => array(
+      'handler' => 'civicrm_handler_field_pseudo_constant',
+      'pseudo class' => 'CRM_Core_PseudoConstant',
+      'pseudo method' => 'get',
+      'dao class' => 'CRM_Core_DAO_IM',
+      'click sortable' => TRUE,
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument',
+    ),
+    'filter' => array(
+      'handler' => 'civicrm_handler_filter_pseudo_constant',
+      'pseudo class' => 'CRM_Core_PseudoConstant',
+      'pseudo method' => 'get',
+      'dao class' => 'CRM_Core_DAO_IM',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
+
   $data['civicrm_contact']['civicrm_im'] = array(
-    'title' => t('CiviCRM IM'),
-    'help' => t('Contact IM'),
+    'title' => t('IM'),
+    'help' => t('Instant Message Accounts'),
     'real field' => 'id',
     'relationship' => array(
       'base' => 'civicrm_im',
@@ -464,18 +520,38 @@ function civicrm_entity_views_extras_views_data() {
       'label' => t('Contact IM'),
     ),
   );
-
+  $data['civicrm_im']['civicrm_contact'] = array(
+    'title' => t('Contact'),
+    'help' => t('Contact for the instant message account'),
+    'real field' => 'contact_id',
+    'relationship' => array(
+      'base' => 'civicrm_contact',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('Contact'),
+    ),
+  );
   //----------------------------------------------------------------
   // CIVICRM Event Extras
   //----------------------------------------------------------------
 
   $data['civicrm_event']['event_is_full'] = array(
     'title' => t('Event Is Full'),
-    'help' => t('Provided by CiviCRM Entity: 1 if event is full 0 otherwhise.'),
+    'help' => t('Provided by CiviCRM Entity: 1 if event is full 0 otherwise.'),
     'field' => array(
       'handler' => 'civicrm_entity_views_extras_handler_event_is_full',
     ),
   );
 
   return $data;
+}
+
+/**
+ * Implements hook_views_data_alter().
+ */
+function civicrm_entity_views_extras_views_data_alter(&$data) {
+  if(!empty($data['civicrm_im'])) {
+    $data['civicrm_im']['provider_id']['title'] = 'Provider ID';
+    $data['civicrm_im']['location_type_id']['title'] = 'IM Location Type ID';
+  }
 }
