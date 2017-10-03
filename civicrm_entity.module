@@ -2360,7 +2360,7 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
   if ($civicrm_entity == 'activity') {
     $info['activity_type_id']['required'] = TRUE;
   }
-  
+
   return $info;
 }
 
