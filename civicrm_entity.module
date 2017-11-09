@@ -25,6 +25,15 @@ function civicrm_entity_menu() {
     'file path' => drupal_get_path('module', 'system'),
     'file' => 'system.admin.inc',
   );
+  $items['admin/structure/civicrm-entity/settings'] = array(
+    'title' => 'Configure CiviCRM Entity',
+    'description' => 'Configure CiviCRM settings, such as enabled entities',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('civicrm_entity_admin_settings_form'),
+    'access arguments' => array('administer CiviCRM Entity'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'civicrm_entity.admin_form.inc',
+  );
   $items['civicrm-entity/autocomplete/%'] = array(
     'title' => 'CiviCRM entity autocomplete',
     'page callback' => 'civicrm_entity_autocomplete',
@@ -129,25 +138,27 @@ function civicrm_entity_permission() {
  *
  * Lets Drupal know to look for templates for the entity types
  *
- * @return themes
+ * @return array $themes
  */
 
 function civicrm_entity_theme() {
   $civicrm_entity_info = civicrm_entity_get_supported_entity_info();
-
+  $enabled_entities = _civicrm_entity_enabled_entities();
   $themes = array();
 
   foreach ($civicrm_entity_info as $drupal_entity => $data) {
-    $dashkey = str_replace('_', '-', $drupal_entity);
-    if (isset($data['theme'])) {
-      $themes[$drupal_entity] = array(
-        'render element' => 'elements',
-      );
-      if (isset($data['theme']['template'])) {
-        $themes[$drupal_entity]['template'] = $data['theme']['template'];
-      }
-      if (isset($data['theme']['path'])) {
-        $themes[$drupal_entity]['path'] = $data['theme']['path'];
+    if(!empty($enabled_entities[$drupal_entity])) {
+      $dashkey = str_replace('_', '-', $drupal_entity);
+      if (isset($data['theme'])) {
+        $themes[$drupal_entity] = [
+          'render element' => 'elements',
+        ];
+        if (isset($data['theme']['template'])) {
+          $themes[$drupal_entity]['template'] = $data['theme']['template'];
+        }
+        if (isset($data['theme']['path'])) {
+          $themes[$drupal_entity]['path'] = $data['theme']['path'];
+        }
       }
     }
   }
@@ -209,6 +220,10 @@ function  civicrm_entity_op_access($op, $entity_type, $entity = NULL, $account =
   }
 
   $civicrm_entity_info = civicrm_entity_get_supported_entity_info();
+  $enabled_entities = _civicrm_entity_enabled_entities();
+  if (empty($enabled_entities[$entity_type])) {
+    return FALSE;
+  }
 
   if (isset($civicrm_entity_info[$entity_type]['permissions'][$op])) {
     $permissions = $civicrm_entity_info[$entity_type]['permissions'][$op];
@@ -245,20 +260,22 @@ function  civicrm_entity_op_access($op, $entity_type, $entity = NULL, $account =
 function civicrm_entity_views_data_alter(&$data) {
 
   $civicrm_entity_types = civicrm_entity_get_supported_entity_info();
-
+  $enabled_entities = _civicrm_entity_enabled_entities();
   foreach ($civicrm_entity_types as $civicrm_entity_type => $info) {
-    foreach ($data[$civicrm_entity_type] as $property => $prop_info) {
-      // unset auto-generated custom field views handlers due to civicrm_entity entity metadata coming from API getfields call
-      if (strpos($property, 'custom_') === 0) {
-        $name_array = explode('_', $property);
-        if(isset($name_array[1]) && is_numeric($name_array[1])) {
-          unset($data[$civicrm_entity_type][$property]);
+    if(!empty($enabled_entities[$civicrm_entity_type]) && !empty($data[$civicrm_entity_type])) {
+      foreach ($data[$civicrm_entity_type] as $property => $prop_info) {
+        // unset auto-generated custom field views handlers due to civicrm_entity entity metadata coming from API getfields call
+        if (strpos($property, 'custom_') === 0) {
+          $name_array = explode('_', $property);
+          if (isset($name_array[1]) && is_numeric($name_array[1])) {
+            unset($data[$civicrm_entity_type][$property]);
+          }
         }
       }
     }
   }
 
- if(!empty($data['civicrm_contribution_recur']['next_sched_contribution'])) {
+ if(!empty($enabled_entities['civicrm_contribution_recur']) && !empty($data['civicrm_contribution_recur']['next_sched_contribution'])) {
     foreach($data['civicrm_contribution_recur'] as $property => $property_data) {
       if(strpos($property, 'next_sched_contribution') === 0) {
         $property_name_components = explode('_', $property);
@@ -275,7 +292,6 @@ function civicrm_entity_views_data_alter(&$data) {
       }
     }
   }
-
 }
 
 
@@ -1976,15 +1992,9 @@ function civicrm_entity_supported_entities_info() {
 }
 
 /**
- * Whitelist of enabled entities. We don't have a compelling reason for not including all entities
- * but some entities are fairly non-standard and of course the rule hook would instantiate rules
- * more often if all were enabled.
- *
- * The whitelist approach is mostly out of caution
- *
- * @return array of enabled entities keyed by the drupal entity name
+ * We gather a list entities that are available, either as hardcoded in this module, or provided by the hook
  */
-function _civicrm_entity_enabled_entities() {
+function _civicrm_entity_available_entities() {
   $civicrm_entity_info = civicrm_entity_get_supported_entity_info();
   $whitelist = array();
   foreach ($civicrm_entity_info as $drupal_entity => $data) {
@@ -1995,6 +2005,49 @@ function _civicrm_entity_enabled_entities() {
 
   _civicrm_enabled_entity_alter_whitelist($whitelist);
   return $whitelist;
+}
+
+
+/**
+ * Whitelist of enabled entities. We don't have a compelling reason for not including all entities
+ * but some entities are fairly non-standard and of course the rule hook would instantiate rules
+ * more often if all were enabled.
+ *
+ * The whitelist approach is mostly out of caution
+ *
+ * @return array of enabled entities keyed by the drupal entity name
+ */
+function _civicrm_entity_enabled_entities() {
+  $available_entities = _civicrm_entity_available_entities();
+  $available_entities_option_set = _civicrm_entity_available_entities_get_option_set($available_entities);
+
+  $selected_entities = variable_get('civicrm_entity_admin_enabled_entities', $available_entities_option_set);
+
+  $enabled_entities = array();
+  foreach ($available_entities as $entity_type => $api_entity) {
+    if (!empty($selected_entities[$entity_type])) {
+      $enabled_entities[$entity_type] = $api_entity;
+    }
+  }
+
+  return $enabled_entities;
+}
+
+/**
+ * Build an option set array used by the configure CiviCRM Entity form, and various submodules
+ *
+ * @param $available_entities
+ *
+ * @return array
+ */
+function _civicrm_entity_available_entities_get_option_set($available_entities) {
+  $available_entities_option_set = array();
+  if (!empty($available_entities)) {
+    foreach ($available_entities as $entity_type => $api_entity) {
+      $available_entities_option_set[$entity_type] = $entity_type;
+    }
+  }
+  return $available_entities_option_set;
 }
 
 /**
@@ -3886,6 +3939,10 @@ function _civicrm_entity_manage_display_suite_forms_validate(&$form, &$form_stat
 function civicrm_entity_ds_fields_info($entity_type) {
   $fields = array();
   if (!civicrm_initialize(TRUE)) {
+    return;
+  }
+  $enabled_entities = _civicrm_entity_enabled_entities();
+  if (empty($enabled_entities[$entity_type])) {
     return;
   }
   $properties = _civicrm_entity_getproperties(substr($entity_type, 8), 'property_info');

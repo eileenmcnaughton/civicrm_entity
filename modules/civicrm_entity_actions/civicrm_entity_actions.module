@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * Implements hook_action_info().
+ *
+ * @return array
+ */
 function civicrm_entity_actions_action_info() {
 
   $action_info = array();

@@ -25,8 +25,8 @@ function civicrm_entity_search_api_civicrm_post($op, $objectName, $objectId, &$o
      $drupal_entity_type = 'civicrm_membership';
      break;
   }
-
-  if(!empty($drupal_entity_type)) {
+  $enabled_entities = _civicrm_entity_enabled_entities();
+  if(!empty($drupal_entity_type) && !empty($enabled_entities[$drupal_entity_type])) {
     switch ($op) {
       case 'create':
         search_api_track_item_insert($drupal_entity_type, array($objectId));

@@ -15,6 +15,7 @@ function civicrm_entity_uninstall() {
   foreach ($civicrm_entity_info as $entity_type => $info) {
     field_attach_delete_bundle($entity_type, $entity_type);
   }
+  variable_del('civicrm_entity_admin_enabled_entities');
 }
 
 

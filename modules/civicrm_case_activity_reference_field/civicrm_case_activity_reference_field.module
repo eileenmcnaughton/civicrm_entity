@@ -611,7 +611,52 @@ function civicrm_case_activity_reference_field_inline_entity_form_entity_form_al
       $entity_form['case_id']['#disabled'] = TRUE;
     }
 
+  }
+}
 
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Alter the CiviCRM Entity enabled entities settings form
+ *
+ * Insure necessary entity types for this module remain enabled
+ *
+ * @param $form
+ * @param $form_state
+ */
+function civicrm_case_activity_reference_field_form_civicrm_entity_admin_settings_form_alter(&$form, &$form_state) {
+  $required_entities = array(
+    'civicrm_case' => 'Case',
+    'civicrm_activity' => 'Activity',
+  );
+  foreach ($required_entities as $drupal_entity_type => $entity_type_label) {
+    if (empty($selected_entities[$drupal_entity_type])) {
+      $form['civicrm_entity_admin_enabled_entities'][$drupal_entity_type]['#disabled'] = TRUE;
+      $form['civicrm_entity_admin_enabled_entities'][$drupal_entity_type]['#default_value'] = 1;
+    }
+  }
 
+  $form['#validate'][] = 'civicrm_case_activity_reference_field_admin_settings_form_validate';
+}
+
+/**
+ * Validation callback for the CiviCRM Entity Enabled Entities form at 'admin/structure/civicrm-entity/settings'
+ *
+ * If CiviCRM Case Activity Reference module enabled, make sure activity, case entities are enabled
+ * @param $form
+ * @param $form_state
+ */
+function civicrm_case_activity_reference_field_admin_settings_form_validate($form, &$form_state) {
+  $selected_entities = $form_state['values']['civicrm_entity_admin_enabled_entities'];
+
+  $required_entities = array(
+    'civicrm_case' => 'Case',
+    'civicrm_activity' => 'Activity',
+  );
+
+  foreach ($required_entities as $drupal_entity_type => $entity_type_label) {
+    if (empty($selected_entities[$drupal_entity_type])) {
+      form_set_error('civicrm_entity_admin_enabled_entities][' . $drupal_entity_type, $entity_type_label . ' required by CiviCRM Case Activity Reference Field module');
+    }
   }
 }

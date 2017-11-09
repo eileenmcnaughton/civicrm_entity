@@ -585,3 +585,49 @@ function _civicrm_entity_contact_assign_rel_type_list_field_remove_contact_relat
 
   }
 }
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Alter the CiviCRM Entity enabled entities settings form
+ *
+ * Insure necessary entity types for this module remain enabled
+ *
+ * @param $form
+ * @param $form_state
+ */
+function civicrm_entity_contact_assign_rel_type_list_field_form_civicrm_entity_admin_settings_form_alter(&$form, &$form_state) {
+  $required_entities = array(
+    'civicrm_contact' => 'Contact',
+    'civicrm_relationship' => 'Relationship',
+  );
+  foreach ($required_entities as $drupal_entity_type => $entity_type_label) {
+    if (empty($selected_entities[$drupal_entity_type])) {
+      $form['civicrm_entity_admin_enabled_entities'][$drupal_entity_type]['#disabled'] = TRUE;
+      $form['civicrm_entity_admin_enabled_entities'][$drupal_entity_type]['#default_value'] = 1;
+    }
+  }
+
+  $form['#validate'][] = 'civicrm_entity_contact_assign_rel_type_list_field_admin_settings_form_validate';
+}
+
+/**
+ * Validation callback for the CiviCRM Entity Enabled Entities form at 'admin/structure/civicrm-entity/settings'
+ *
+ * @param $form
+ * @param $form_state
+ */
+function civicrm_entity_contact_assign_rel_type_list_field_admin_settings_form_validate($form, &$form_state) {
+  $selected_entities = $form_state['values']['civicrm_entity_admin_enabled_entities'];
+
+  $required_entities = array(
+    'civicrm_contact' => 'Contact',
+    'civicrm_relationship' => 'Relationship',
+  );
+
+  foreach ($required_entities as $drupal_entity_type => $entity_type_label) {
+    if (empty($selected_entities[$drupal_entity_type])) {
+      form_set_error('civicrm_entity_admin_enabled_entities][' . $drupal_entity_type, $entity_type_label . ' required by CiviCRM Entity Contact Assign Relationship Type module');
+    }
+  }
+}

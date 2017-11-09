@@ -480,7 +480,12 @@ function civicrm_entity_reference_field_field_formatter_prepare_view($entity_typ
   }
 
   if ($target_ids) {
-    $target_entities = entity_load($target_entity_type, $target_ids);
+    try {
+      $target_entities = entity_load($target_entity_type, $target_ids);
+    }
+    catch (Exception $e) {
+      return;
+    }
   }
   else {
     $target_entities = array();
