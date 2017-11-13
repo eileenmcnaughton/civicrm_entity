@@ -1,0 +1,49 @@
+<?php
+
+/**
+ * Implements hook_enable().
+ */
+function civicrm_entity_contact_group_assign_field_enable() {
+  $selected_entities = variable_get('civicrm_entity_admin_enabled_entities', array());
+  $update = FALSE;
+  $required_entities = array(
+    'civicrm_contact' => 'Contact',
+    'civicrm_group' => 'Group',
+  );
+
+  foreach ($required_entities as $drupal_entity_type => $entity_type_label) {
+    if(empty($selected_entities[$drupal_entity_type])) {
+      $update = TRUE;
+      $selected_entities[$drupal_entity_type] = $drupal_entity_type;
+    }
+  }
+
+  if ($update) {
+    variable_set('civicrm_entity_admin_enabled_entities', $selected_entities);
+    drupal_flush_all_caches();
+  }
+}
+
+/**
+ * Ensure required entities are configured in civicrm_entity settings
+ */
+function civicrm_entity_contact_group_assign_field_update_7200() {
+  $selected_entities = variable_get('civicrm_entity_admin_enabled_entities', array());
+  $update = FALSE;
+  $required_entities = array(
+    'civicrm_contact' => 'Contact',
+    'civicrm_group' => 'Group',
+  );
+
+  foreach ($required_entities as $drupal_entity_type => $entity_type_label) {
+    if(empty($selected_entities[$drupal_entity_type])) {
+      $update = TRUE;
+      $selected_entities[$drupal_entity_type] = $drupal_entity_type;
+    }
+  }
+
+  if ($update) {
+    variable_set('civicrm_entity_admin_enabled_entities', $selected_entities);
+    drupal_flush_all_caches();
+  }
+}

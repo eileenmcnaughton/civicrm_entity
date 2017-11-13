@@ -1,0 +1,67 @@
+<?php
+
+/**
+ * Implements hook_enable().
+ */
+function civicrm_entity_price_set_field_enable() {
+  $selected_entities = variable_get('civicrm_entity_admin_enabled_entities', array());
+  $update = FALSE;
+  $required_entities = array(
+    'civicrm_contact' => 'Contact',
+    'civicrm_contribution' => 'Contribution',
+    'civicrm_event' => 'Event',
+    'civicrm_line_item' => 'Line Item',
+    'civicrm_participant' => 'Participant',
+    'civicrm_participant_payment' => 'Participant Payment',
+    'civicrm_price_set' => 'Price Set',
+    'civicrm_price_field' => 'Price Field',
+    'civicrm_price_field_value' => 'Price Field Value',
+    'civicrm_payment_processor' => 'Payment Processor',
+    'civicrm_payment_processor_type' => 'Payment Processor Type',
+  );
+
+  foreach ($required_entities as $drupal_entity_type => $entity_type_label) {
+    if(empty($selected_entities[$drupal_entity_type])) {
+      $update = TRUE;
+      $selected_entities[$drupal_entity_type] = $drupal_entity_type;
+    }
+  }
+
+  if ($update) {
+    variable_set('civicrm_entity_admin_enabled_entities', $selected_entities);
+    drupal_flush_all_caches();
+  }
+}
+
+/**
+ * Ensure required entities are configured in civicrm_entity settings
+ */
+function civicrm_entity_price_set_field_update_7200() {
+  $selected_entities = variable_get('civicrm_entity_admin_enabled_entities', array());
+  $update = FALSE;
+  $required_entities = array(
+    'civicrm_contact' => 'Contact',
+    'civicrm_contribution' => 'Contribution',
+    'civicrm_event' => 'Event',
+    'civicrm_line_item' => 'Line Item',
+    'civicrm_participant' => 'Participant',
+    'civicrm_participant_payment' => 'Participant Payment',
+    'civicrm_price_set' => 'Price Set',
+    'civicrm_price_field' => 'Price Field',
+    'civicrm_price_field_value' => 'Price Field Value',
+    'civicrm_payment_processor' => 'Payment Processor',
+    'civicrm_payment_processor_type' => 'Payment Processor Type',
+  );
+
+  foreach ($required_entities as $drupal_entity_type => $entity_type_label) {
+    if(empty($selected_entities[$drupal_entity_type])) {
+      $update = TRUE;
+      $selected_entities[$drupal_entity_type] = $drupal_entity_type;
+    }
+  }
+
+  if ($update) {
+    variable_set('civicrm_entity_admin_enabled_entities', $selected_entities);
+    drupal_flush_all_caches();
+  }
+}

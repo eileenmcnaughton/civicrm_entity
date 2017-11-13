@@ -15,6 +15,7 @@ function civicrm_entity_uninstall() {
   foreach ($civicrm_entity_info as $entity_type => $info) {
     field_attach_delete_bundle($entity_type, $entity_type);
   }
+  variable_del('civicrm_entity_admin_enabled_entities');
 }
 
 
@@ -41,4 +42,18 @@ function civicrm_entity_update_7200() {
  */
 function civicrm_entity_update_7201() {
   drupal_flush_all_caches();
+}
+
+
+/**
+ * Create enabled entities variable
+ */
+function civicrm_entity_update_7202() {
+  drupal_load('module', 'civicrm_entity');
+  $available_entities = _civicrm_entity_available_entities();
+  $settings = [];
+  foreach ($available_entities as $drupal_entity_type => $civicrm_api_entity) {
+    $settings[$drupal_entity_type] = $drupal_entity_type;
+  }
+  variable_set('civicrm_entity_admin_enabled_entities', $settings);
 }
