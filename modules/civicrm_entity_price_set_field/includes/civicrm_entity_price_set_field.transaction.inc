@@ -190,7 +190,7 @@ function _civicrm_entity_price_set_field_run_cc_transaction($display, $price_set
           $rule_variables = array(
             'contribution' => $result['contribution'],
           );
-          
+
           rules_invoke_event_by_args('civicrm_entity_price_set_field_successful_cc_transaction', $rule_variables);
         }
         return $result;
