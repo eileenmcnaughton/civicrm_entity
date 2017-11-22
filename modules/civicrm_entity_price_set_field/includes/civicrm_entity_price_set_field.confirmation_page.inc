@@ -91,7 +91,21 @@ function theme_civicrm_entity_price_set_field_price_field_display_form_confirmat
         $html .= '<h4>' . _civicrm_entity_profile_get_profile_title($pid) . ':</h4>';
         if (!empty($contact['contact_info'][$profile_id]['profile']) && count($contact['contact_info'][$profile_id]['profile'])) {
           foreach ($contact['contact_info'][$profile_id]['profile'] as $name => $value) {
-            $html .= '<div class="profile-field"><span class="field-label">' . $vars['profiles'][$profile_id][$name]['title'] . ':</span> <span class="field-item>">' . $value . '</span></div>';
+            if (is_array($value)) {
+              $temp_param = [];
+              foreach ($value as $v) {
+                if ($v !== 0) {
+                  $temp_param[] = $v;
+                }
+              }
+              if (!empty($temp_param)) {
+                $output_value = implode(',', $temp_param);
+              }
+            }
+            else {
+              $output_value = $value;
+            }
+            $html .= '<div class="profile-field"><span class="field-label">' . $vars['profiles'][$profile_id][$name]['title'] . ':</span> <span class="field-item>">' . $output_value . '</span></div>';
           }
         }
       }

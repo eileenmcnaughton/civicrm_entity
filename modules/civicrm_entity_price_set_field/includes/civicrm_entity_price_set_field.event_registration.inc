@@ -102,7 +102,7 @@ function civicrm_entity_price_set_field_display_form_event($form, &$form_state) 
           $form['message'] = array(
             '#type' => 'markup',
             '#message' => 'registration_end_date',
-            '#markup' => 'Registration closed on ' . $event->registration_start_date,
+            '#markup' => 'Registration closed on ' . $event->registration_end_date,
           );
           return $form;
         }
@@ -303,7 +303,7 @@ function _civicrm_entity_price_set_field_setup_event_registration_form_fapi(&$fo
       }
     }
     else {
-      $form_state['contacts'][0] = array(new CivicrmEntity(array('is_new' => 1), 'civicrm_contact'));
+      $form_state['contacts'][0] = new CivicrmEntity(array('is_new' => 1), 'civicrm_contact');
     }
   }
   else {
@@ -882,13 +882,15 @@ function _civicrm_entity_price_set_field_process_event_registration(&$form_state
   }
 
   // trigger rule event with all the pertinent data here
-  $event_variables = array(
-    'event' => $form_state['event'],
-    'contacts' => $form_state['contacts'],
-    'participants' => $form_state['participants'],
-  );
+  if (module_exists('rules')) {
+    $event_variables = [
+      'event'        => $form_state['event'],
+      'contacts'     => $form_state['contacts'],
+      'participants' => $form_state['participants'],
+    ];
 
-  rules_invoke_event_by_args('civicrm_entity_price_set_field_event_registration', $event_variables);
+    rules_invoke_event_by_args('civicrm_entity_price_set_field_event_registration', $event_variables);
+  }
 }
 
 /**

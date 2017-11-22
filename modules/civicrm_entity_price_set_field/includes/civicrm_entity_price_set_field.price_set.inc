@@ -62,6 +62,7 @@ function _civicrm_entity_price_set_field_setup_price_set_fapi(&$form, &$form_sta
         $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#type'] = 'textfield';
         $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#size'] = 7;
         $form[$parent]['contacts'][$count]['price_set'][$pf_id]['price_field_values']['#maxlength'] = 5;
+        $default_value = '';
       }
       else {
         switch ($price_field['pf_entity']->html_type) {
