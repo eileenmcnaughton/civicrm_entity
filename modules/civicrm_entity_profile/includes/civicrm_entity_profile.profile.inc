@@ -139,7 +139,20 @@ function _civicrm_entity_profile_process_profile_submitted_data($profile_id, $su
       'profile_id' => $profile_id,
     );
     foreach ($submitted_data as $name => $value) {
-      $params[$name] = $value;
+      if (is_array($value)) {
+        $temp_param = array();
+        foreach ($value as $v) {
+           if(!empty($v)) {
+             $temp_param[] = $v;
+           }
+        }
+        if (!empty($temp_param)) {
+          $params[$name] =  implode(CRM_Core_DAO::VALUE_SEPARATOR, $temp_param);
+        }
+      }
+      else {
+        $params[$name] = $value;
+      }
     }
     if ($contact_id) {
       $params['contact_id'] = $contact_id;

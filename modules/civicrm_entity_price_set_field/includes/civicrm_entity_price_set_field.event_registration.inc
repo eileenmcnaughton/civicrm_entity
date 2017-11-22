@@ -102,7 +102,7 @@ function civicrm_entity_price_set_field_display_form_event($form, &$form_state) 
           $form['message'] = array(
             '#type' => 'markup',
             '#message' => 'registration_end_date',
-            '#markup' => 'Registration closed on ' . $event->registration_start_date,
+            '#markup' => 'Registration closed on ' . $event->registration_end_date,
           );
           return $form;
         }
