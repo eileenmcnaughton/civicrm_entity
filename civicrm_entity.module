@@ -2980,10 +2980,14 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
       break;
     case 'f.last':
       $params['name'] = _civicrm_entity_clean_login_name(substr($contact['first_name'], 0, 1) . "." . $contact['last_name']);
-     break;
+      break;
     case 'first.middle.last':
-     $params['name'] = _civicrm_entity_clean_login_name($contact['first_name'] . "." . $contact['middle_name'] . "." . $contact['last_name']);
-     break;
+      if (!empty($contact['middle_name'])) {
+        $params['name'] = _civicrm_entity_clean_login_name($contact['first_name'] . "." . $contact['middle_name'] . "." . $contact['last_name']);
+      } else {
+        $params['name'] = _civicrm_entity_clean_login_name($contact['first_name'] . "." . $contact['last_name']);
+      }
+      break;
     case 'email':
       $params['name'] = $params['email'];
       break;
