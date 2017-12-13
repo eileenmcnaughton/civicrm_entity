@@ -1,0 +1,4 @@
+services:
+  # @todo this should be in civicrm module
+  civicrm_entity.civicrm_container:
+    factory: ['\Civi\Core\Container:singleton']
