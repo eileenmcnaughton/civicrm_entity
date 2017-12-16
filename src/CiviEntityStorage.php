@@ -1,7 +1,5 @@
 <?php
 // In construct make sure to invoke initialize
-//
-
 namespace Drupal\civicrm_entity;
 
 use Drupal\Core\Cache\CacheBackendInterface;
@@ -60,6 +58,15 @@ class CiviEntityStorage extends ContentEntityStorageBase {
   protected function doLoadMultiple(array $ids = NULL) {
     $entities = [];
 
+    if ($ids === NULL) {
+      $civicrm_entities = $this->civicrmApi->get($this->entityType->get('civicrm_entity'));
+      foreach ($civicrm_entities as $civicrm_entity) {
+        $civicrm_entity = reset($civicrm_entity);
+        /** @var \Drupal\civicrm_entity\Entity\Events $entity */
+        $entity = $this->create($civicrm_entity);
+        $entities[$entity->id()] = $entity;
+      }
+    }
     foreach ($ids as $id) {
       $civicrm_entity = $this->civicrmApi->get($this->entityType->get('civicrm_entity'), ['id' => $id]);
       $civicrm_entity = reset($civicrm_entity);

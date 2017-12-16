@@ -1,0 +1,38 @@
+<?php
+
+/**
+ * @file
+ */
+
+/**
+ * Implements hook_entity_type_build().
+ */
+function civicrm_entity_entity_type_build(array &$entity_types) {
+  $supported_entities = \Drupal\civicrm_entity\SupportedEntities::getInfo();
+  /** @var $entity_types \Drupal\Core\Entity\EntityTypeInterface[] */
+  foreach ($entity_types as $entity_type) {
+    if ($entity_type->get('civicrm_entity') && isset($supported_entities[$entity_type->id()])) {
+      $supported_entity_info = $supported_entities[$entity_type->id()];
+      $keys = $entity_type->getKeys();
+      // @todo see if we need ID field mapping. D7 did not.
+      $keys['id'] = 'id';
+      $keys['label'] = $supported_entity_info['label property'];
+      $entity_type->set('entity_keys', $keys);
+      // @todo still needs to be defined in annotation...
+      $entity_type->set('civicrm_entity', $supported_entity_info['civicrm entity name']);
+      $entity_type->setStorageClass(\Drupal\civicrm_entity\CiviEntityStorage::class);
+      // @todo create CiviCRM entity specific list builder for magic.
+      $entity_type->setListBuilderClass(\Drupal\Core\Entity\EntityListBuilder::class);
+
+      $entity_type->set('administer_permission', 'administer CiviCRM');
+
+      $clean_entity_type_id = str_replace('_', '-', $entity_type->id());
+      $entity_type->set('links', [
+        'canonical' => sprintf('/%s/{%s}', $clean_entity_type_id, $entity_type->id()),
+        'delete-form' => sprintf('/admin/structure/civicrm-entity/%s/{%s}/delete', $clean_entity_type_id, $entity_type->id()),
+        'edit-form' => sprintf('/admin/structure/civicrm-entity/%s/{%s}/edit', $clean_entity_type_id, $entity_type->id()),
+        'create' => sprintf('/admin/structure/civicrm-entity/%s', $clean_entity_type_id, $entity_type->id()),
+      ]);
+    }
+  }
+}

@@ -4,7 +4,7 @@ namespace Drupal\civicrm_entity;
 
 class CiviCrmApi {
 
-  public function get($entity, array $params) {
+  public function get($entity, array $params = []) {
     $result = civicrm_api3($entity, 'get', $params);
     return $result['values'];
   }
