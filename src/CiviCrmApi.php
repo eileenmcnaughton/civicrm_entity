@@ -14,6 +14,11 @@ class CiviCrmApi {
     return $result['values'];
   }
 
+  public function save($entity, array $params) {
+    $result = civicrm_api3($entity, 'create', $params);
+    return $result;
+  }
+
   public function getFields($entity, $action = 'create') {
     $result = civicrm_api3($entity, 'getfields', ['action' => $action]);
     return $result['values'];

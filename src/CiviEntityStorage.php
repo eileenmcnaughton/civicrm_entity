@@ -36,20 +36,34 @@ class CiviEntityStorage extends ContentEntityStorageBase {
   }
 
   protected function doDelete($entities) {
-    /** @var \Drupal\Core\Entity\EntityInterface$entity */
+    /** @var EntityInterface $entity */
     foreach ($entities as $entity) {
       try {
         $params['id'] = $entity->id();
-        $result = civicrm_api3(substr($this->entityTypeId, 8), 'delete', $params);
-        if (!civicrm_error($result)) {
-          // @todo anything more to do?
-          // @todo throw an event?
-        }
+        $this->civicrmApi->delete($this->entityType->get('civicrm_entity'), $params);
       }
       catch (\Exception $e) {
         throw $e;
       }
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function doSave($id, EntityInterface $entity) {
+    if ($entity->isNew()) {
+      // @todo decide on special handling?
+      $return = SAVED_NEW;
+    }
+    else {
+      $return = SAVED_UPDATED;
+    }
+
+    // @todo ->toArray will provide ['is_new' => ['value' => TRUE]]
+    $this->civicrmApi->save($this->entityType->get('civicrm_entity'), $entity->toArray());
+
+    return $return;
   }
 
   /**

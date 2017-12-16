@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 
 abstract class CivicrmEntityBase extends ContentEntityBase {
+
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = [];
 
