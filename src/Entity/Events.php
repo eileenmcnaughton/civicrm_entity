@@ -27,7 +27,6 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  *   ),
  *   handlers = {
  *     "storage" = "\Drupal\civicrm_entity\CiviEntityStorage",
- *     "access" = "Drupal\comment\CommentAccessControlHandler",
  *     "list_builder" = "Drupal\Core\Entity\EntityListBuilder",
  *   },
  *   entity_keys = {
@@ -97,7 +96,7 @@ class Events extends ContentEntityBase {
         case \CRM_Utils_Type::T_DATE:
         case \CRM_Utils_Type::T_TIME:
         case (\CRM_Utils_Type::T_DATE + \CRM_Utils_Type::T_TIME):
-          $field = BaseFieldDefinition::create('datetime_iso8601');
+          $field = BaseFieldDefinition::create('datetime');
           break;
 
         case \CRM_Utils_Type::T_ENUM:
@@ -115,8 +114,8 @@ class Events extends ContentEntityBase {
     }
 
     $field
-      ->setLabel($civicrm_field['title'] ?: '')
-      ->setDescription($civicrm_field['description'] ?: '')
+      ->setLabel($civicrm_field['title'])
+      ->setDescription(isset($civicrm_field['description']) ? $civicrm_field['description'] : '')
       ->setRequired(isset($civicrm_field['required']) && (bool) $civicrm_field['required']);
 
     return $field;
