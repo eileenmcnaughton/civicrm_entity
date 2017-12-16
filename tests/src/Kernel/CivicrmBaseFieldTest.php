@@ -6,7 +6,16 @@ use Drupal\civicrm_entity\CiviCrmApi;
 use Drupal\civicrm_entity\Entity\Events;
 use Drupal\KernelTests\KernelTestBase;
 
+/**
+ * Tests base field generation.
+ *
+ * @group civicrim_entity
+ */
 class CivicrmBaseFieldTest extends KernelTestBase {
+
+  /**
+   * @var array
+   */
   protected static $modules = [
     'civicrm',
     'civicrm_entity',
@@ -16,6 +25,9 @@ class CivicrmBaseFieldTest extends KernelTestBase {
     'link',
   ];
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp() {
     parent::setUp();
 
@@ -144,6 +156,10 @@ class CivicrmBaseFieldTest extends KernelTestBase {
     $this->container->set('civicrm_entity.api', $civicrm_api_mock->reveal());
   }
 
+  /**
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Exception
+   */
   public function testBaseFields() {
     /** @var \Drupal\Core\Field\FieldDefinitionInterface[] $base_fields */
     $base_fields = Events::baseFieldDefinitions($this->container->get('entity_type.manager')->getDefinition('civicrm_event'));

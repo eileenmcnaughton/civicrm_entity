@@ -7,6 +7,11 @@ use Drupal\civicrm_entity\Entity\Events;
 use Drupal\Component\Serialization\Json;
 use Drupal\KernelTests\KernelTestBase;
 
+/**
+ * Tests the storage.
+ *
+ * @group civicrim_entity
+ */
 class CivicrmStorageGetTest extends KernelTestBase {
 
   protected static $modules = [

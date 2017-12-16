@@ -4,6 +4,11 @@ namespace Drupal\Tests\civicrim_entity\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
 
+/**
+ * Tests entity definition
+ *
+ * @group civicrim_entity
+ */
 class CivicrmEntityTypeTest extends KernelTestBase {
   protected static $modules = [
     'civicrm',
