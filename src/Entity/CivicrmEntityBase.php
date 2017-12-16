@@ -26,16 +26,42 @@ abstract class CivicrmEntityBase extends ContentEntityBase {
         ->setSetting('unsigned', TRUE);
     }
     elseif (empty($civicrm_field['type'])) {
-      $field = BaseFieldDefinition::create('string');
+      $field = BaseFieldDefinition::create('string')
+        ->setDisplayOptions('view', [
+          'label' => 'hidden',
+          'type' => 'string',
+          'weight' => -5,
+        ])
+        ->setDisplayOptions('form', [
+          'type' => 'string_textfield',
+          'weight' => -5,
+        ]);
     }
     else {
       switch ($civicrm_field['type']) {
         case \CRM_Utils_Type::T_INT:
-          $field = BaseFieldDefinition::create('integer');
+          $field = BaseFieldDefinition::create('integer')
+            ->setDisplayOptions('view', [
+              'label' => 'hidden',
+              'type' => 'integer',
+              'weight' => 0,
+            ])
+            ->setDisplayOptions('form', [
+              'type' => 'number',
+              'weight' => 20,
+            ]);
           break;
 
         case \CRM_Utils_Type::T_BOOLEAN:
-          $field = BaseFieldDefinition::create('boolean');
+          $field = BaseFieldDefinition::create('boolean')
+            ->setDisplayOptions('form', [
+              'type' => 'boolean_checkbox',
+              'settings' => [
+                'display_label' => TRUE,
+              ],
+              'weight' => 15,
+            ])
+            ->setDisplayConfigurable('form', TRUE);
           break;
 
         case \CRM_Utils_Type::T_MONEY:
@@ -47,7 +73,17 @@ abstract class CivicrmEntityBase extends ContentEntityBase {
         case \CRM_Utils_Type::T_STRING:
         case \CRM_Utils_Type::T_LONGTEXT:
         case \CRM_Utils_Type::T_CCNUM:
-          $field = BaseFieldDefinition::create('text');
+          $field = BaseFieldDefinition::create('text')
+            ->setDisplayOptions('view', [
+              'type' => 'text_default',
+              'weight' => 10,
+            ])
+            ->setDisplayConfigurable('view', TRUE)
+            ->setDisplayOptions('form', [
+              'type' => 'string_textfield',
+              'weight' => 10,
+            ])
+            ->setDisplayConfigurable('form', TRUE);
           break;
 
         case \CRM_Utils_Type::T_EMAIL:
