@@ -32,10 +32,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  *   },
  *   entity_keys = {
  *     "id" = "id",
- *     "label" = "subject",
- *     "langcode" = "langcode",
- *     "uuid" = "uuid",
- *     "published" = "status",
+ *     "label" = "title",
  *   },
  *   links = {
  *     "canonical" = "/events/{civicrm_events}",
@@ -50,8 +47,8 @@ class Events extends ContentEntityBase {
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = [];
 
-    $civicrm_fields = civicrm_api3($entity_type->get('civicrm_entity'), 'getfields', ['action' => 'create']);
-    foreach ($fields['values'] as $civicrm_field) {
+    $civicrm_fields = \Drupal::service('civicrm_entity.api')->getFields($entity_type->get('civicrm_entity'));
+    foreach ($civicrm_fields as $civicrm_field) {
       $fields[$civicrm_field['name']] = self::createBaseFieldDefinition($civicrm_field);
     }
 
@@ -100,26 +97,27 @@ class Events extends ContentEntityBase {
         case \CRM_Utils_Type::T_DATE:
         case \CRM_Utils_Type::T_TIME:
         case (\CRM_Utils_Type::T_DATE + \CRM_Utils_Type::T_TIME):
-          return array('type' => 'varchar', 'mysql_type' => 'datetime');
+          $field = BaseFieldDefinition::create('datetime_iso8601');
+          break;
 
         case \CRM_Utils_Type::T_ENUM:
-          return array('type' => 'varchar', 'mysql_type' => 'enum');
-
-        case \CRM_Utils_Type::T_BLOB:
-        case \CRM_Utils_Type::T_MEDIUMBLOB:
-          return array('type' => 'blob');
+          $field = BaseFieldDefinition::create('map');
+          break;
 
         case \CRM_Utils_Type::T_TIMESTAMP:
           $field = BaseFieldDefinition::create('timestamp');
           break;
+
+        default:
+          $field = BaseFieldDefinition::create('any');
+          break;
       }
     }
 
-
     $field
-      ->setLabel($civicrm_field['title'])
-      ->setDescription($civicrm_field['description'])
-      ->setRequired($civicrm_field['required']);
+      ->setLabel($civicrm_field['title'] ?: '')
+      ->setDescription($civicrm_field['description'] ?: '')
+      ->setRequired(isset($civicrm_field['required']) && (bool) $civicrm_field['required']);
 
     return $field;
   }

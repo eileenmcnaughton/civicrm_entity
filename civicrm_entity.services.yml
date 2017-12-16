@@ -3,3 +3,6 @@ services:
   civicrm_entity.civicrm_container:
     class: '\Symfony\Component\DependencyInjection\TaggedContainerInterface'
     factory: '\Civi\Core\Container::singleton'
+
+  civicrm_entity.api:
+    class: 'Drupal\civicrm_entity\CiviCrmApi'
