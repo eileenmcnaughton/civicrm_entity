@@ -102,8 +102,7 @@ class CiviEntityStorage extends ContentEntityStorageBase {
    * {@inheritdoc}
    */
   protected function getQueryServiceName() {
-    // @todo create a query service based off of API3
-    return NULL;
+    return 'entity.query.civicrm_entity';
   }
 
   /**

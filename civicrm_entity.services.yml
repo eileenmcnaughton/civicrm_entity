@@ -1,8 +1,9 @@
 services:
-  # @todo this should be in civicrm module
-  civicrm_entity.civicrm_container:
-    class: '\Symfony\Component\DependencyInjection\TaggedContainerInterface'
-    factory: '\Civi\Core\Container::singleton'
-
   civicrm_entity.api:
     class: 'Drupal\civicrm_entity\CiviCrmApi'
+
+  entity.query.civicrm_entity:
+    class: '\Drupal\civicrm_entity\Entity\Query\CiviCRM\QueryFactory'
+    arguments: ['@civicrm_entity.api']
+    tags:
+      - { name: backend_overridable }

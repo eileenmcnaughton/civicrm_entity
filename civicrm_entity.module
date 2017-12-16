@@ -22,16 +22,20 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
       $entity_type->set('civicrm_entity', $supported_entity_info['civicrm entity name']);
       $entity_type->setStorageClass(\Drupal\civicrm_entity\CiviEntityStorage::class);
       // @todo create CiviCRM entity specific list builder for magic.
-      $entity_type->setListBuilderClass(\Drupal\Core\Entity\EntityListBuilder::class);
+      $entity_type->setListBuilderClass(\Drupal\civicrm_entity\CivicrmEntityListBuilder::class);
 
-      $entity_type->set('administer_permission', 'administer CiviCRM');
+      $entity_type->set('admin_permission', 'administer CiviCRM');
 
+      $entity_type->setHandlerClass('route_provider', [
+        'default' => \Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider::class
+      ]);
       $clean_entity_type_id = str_replace('_', '-', $entity_type->id());
       $entity_type->set('links', [
         'canonical' => sprintf('/%s/{%s}', $clean_entity_type_id, $entity_type->id()),
         'delete-form' => sprintf('/admin/structure/civicrm-entity/%s/{%s}/delete', $clean_entity_type_id, $entity_type->id()),
         'edit-form' => sprintf('/admin/structure/civicrm-entity/%s/{%s}/edit', $clean_entity_type_id, $entity_type->id()),
-        'create' => sprintf('/admin/structure/civicrm-entity/%s', $clean_entity_type_id, $entity_type->id()),
+        'add-form' => sprintf('/admin/structure/civicrm-entity/%s/add', $clean_entity_type_id, $entity_type->id()),
+        'collection' => sprintf('/admin/structure/civicrm-entity/%s', $clean_entity_type_id),
       ]);
     }
   }

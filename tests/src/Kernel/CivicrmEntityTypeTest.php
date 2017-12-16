@@ -29,7 +29,7 @@ class CivicrmEntityTypeTest extends KernelTestBase {
     $links = $definition->getLinkTemplates();
     $this->assertEquals('/civicrm-event/{civicrm_event}', $links['canonical']);
     $this->assertEquals('/admin/structure/civicrm-entity/civicrm-event/{civicrm_event}/edit', $links['edit-form']);
-    $this->assertEquals('/admin/structure/civicrm-entity/civicrm-event', $links['create']);
+    $this->assertEquals('/admin/structure/civicrm-entity/civicrm-event', $links['collection']);
   }
 
 }
