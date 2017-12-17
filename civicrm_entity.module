@@ -4007,3 +4007,15 @@ function civicrm_entity_ds_fields_info($entity_type) {
     return array($entity_type => $fields[$entity_type]);
   }
 }
+
+/**
+ * If Rules is available, use that module's redirect on shutdown.
+ */
+function civicrm_entity_drupal_goto($path = '', array $options = array(), $http_response_code = 302) {
+    if (module_exists('rules')) {
+      rules_action_drupal_goto($path);
+    }
+    else {
+      drupal_goto($path, $options, $http_response_code);
+    }
+}
