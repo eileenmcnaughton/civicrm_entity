@@ -1,0 +1,54 @@
+<?php
+
+/**
+ * @file
+ */
+
+/**
+ * Implements hook_entity_type_build().
+ *
+ * Populates supported CiviCRM Entity definitions.
+ */
+function civicrm_entity_entity_type_build(array &$entity_types) {
+  //
+  $supported_entities = \Drupal\civicrm_entity\SupportedEntities::getInfo();
+  /** @var $entity_types \Drupal\Core\Entity\EntityTypeInterface[] */
+  foreach ($entity_types as $entity_type) {
+    // @todo Ditch supported_entites and know it is supported just by existing.
+    if ($entity_type->get('civicrm_entity') && isset($supported_entities[$entity_type->id()])) {
+      $supported_entity_info = $supported_entities[$entity_type->id()];
+      $keys = $entity_type->getKeys();
+      // @todo see if we need ID field mapping. D7 did not. (ie: source_id)
+      $keys['id'] = 'id';
+      // Ensure the label property is mapped.
+      $keys['label'] = $supported_entity_info['label property'];
+      $entity_type->set('entity_keys', $keys);
+      // Ensure our custom entity storage which maps to the CiviCRM API.
+      $entity_type->setStorageClass(\Drupal\civicrm_entity\CiviEntityStorage::class);
+      $entity_type->setListBuilderClass(\Drupal\civicrm_entity\CivicrmEntityListBuilder::class);
+      $entity_type->set('admin_permission', 'administer CiviCRM');
+      $entity_type->setHandlerClass('route_provider', [
+        'default' => \Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider::class
+      ]);
+      // @todo provide CiviCRM entity access handler for proper permissions.
+      $entity_type->setAccessClass(\Drupal\Core\Entity\EntityAccessControlHandler::class);
+
+      // Generate route paths.
+      $clean_entity_type_id = str_replace('_', '-', $entity_type->id());
+      $entity_type->set('links', [
+        'canonical' => sprintf('/%s/{%s}', $clean_entity_type_id, $entity_type->id()),
+        'delete-form' => sprintf('/admin/structure/civicrm-entity/%s/{%s}/delete', $clean_entity_type_id, $entity_type->id()),
+        'edit-form' => sprintf('/admin/structure/civicrm-entity/%s/{%s}/edit', $clean_entity_type_id, $entity_type->id()),
+        'add-form' => sprintf('/admin/structure/civicrm-entity/%s/add', $clean_entity_type_id, $entity_type->id()),
+        'collection' => sprintf('/admin/structure/civicrm-entity/%s', $clean_entity_type_id),
+      ]);
+
+      // Ensure form classes.
+      $entity_type->setFormClass('default', \Drupal\civicrm_entity\Form\CivicrmEntityForm::class);
+      $entity_type->setFormClass('add', \Drupal\civicrm_entity\Form\CivicrmEntityForm::class);
+      $entity_type->setFormClass('edit', \Drupal\civicrm_entity\Form\CivicrmEntityForm::class);
+      $entity_type->setFormClass('delete', \Drupal\Core\Entity\ContentEntityDeleteForm::class);
+
+    }
+  }
+}

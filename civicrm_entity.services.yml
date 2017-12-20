@@ -1,0 +1,10 @@
+services:
+  civicrm_entity.api:
+    class: 'Drupal\civicrm_entity\CiviCrmApi'
+    arguments: ['@civicrm']
+
+  entity.query.civicrm_entity:
+    class: '\Drupal\civicrm_entity\Entity\Query\CiviCRM\QueryFactory'
+    arguments: ['@civicrm_entity.api']
+    tags:
+      - { name: backend_overridable }
