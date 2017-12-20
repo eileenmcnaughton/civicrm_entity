@@ -39,6 +39,11 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
       ]);
 
       $entity_type->setFormClass('default', \Drupal\civicrm_entity\Form\CivicrmEntityForm::class);
+      $entity_type->setFormClass('add', \Drupal\civicrm_entity\Form\CivicrmEntityForm::class);
+      $entity_type->setFormClass('edit', \Drupal\civicrm_entity\Form\CivicrmEntityForm::class);
+      $entity_type->setFormClass('delete', \Drupal\Core\Entity\ContentEntityDeleteForm::class);
+
+      $entity_type->setAccessClass(\Drupal\Core\Entity\EntityAccessControlHandler::class);
     }
   }
 }

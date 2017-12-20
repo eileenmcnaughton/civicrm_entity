@@ -60,7 +60,6 @@ class CiviEntityStorage extends ContentEntityStorageBase {
       $return = SAVED_UPDATED;
     }
 
-    // @todo ->toArray will provide ['is_new' => ['value' => TRUE]]
     $params = $entity->toArray();
     $params = array_map(function ($value) {
       if (empty($value)) {
@@ -101,6 +100,9 @@ class CiviEntityStorage extends ContentEntityStorageBase {
       $civicrm_entity = reset($civicrm_entity);
       /** @var \Drupal\civicrm_entity\Entity\Events $entity */
       $entity = $this->create($civicrm_entity);
+      // We have to build entities through values using `create`, however it
+      // enforces the entity as new. We must undo that.
+      $entity->enforceIsNew(FALSE);
       $entities[$entity->id()] = $entity;
     }
     return $entities;
