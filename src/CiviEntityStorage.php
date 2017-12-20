@@ -61,7 +61,22 @@ class CiviEntityStorage extends ContentEntityStorageBase {
     }
 
     // @todo ->toArray will provide ['is_new' => ['value' => TRUE]]
-    $this->civicrmApi->save($this->entityType->get('civicrm_entity'), $entity->toArray());
+    $params = $entity->toArray();
+    $params = array_map(function ($value) {
+      if (empty($value)) {
+        return NULL;
+      }
+      else {
+        if (is_array($value)) {
+          $value = reset($value);
+          if (is_array($value)) {
+            return reset($value);
+          }
+        }
+        return $value;
+      }
+    }, $params);
+    $this->civicrmApi->save($this->entityType->get('civicrm_entity'), $params);
 
     return $return;
   }

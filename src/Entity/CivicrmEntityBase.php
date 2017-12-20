@@ -129,8 +129,11 @@ abstract class CivicrmEntityBase extends ContentEntityBase {
 
     $field
       ->setLabel($civicrm_field['title'])
-      ->setDescription(isset($civicrm_field['description']) ? $civicrm_field['description'] : '')
-      ->setRequired(isset($civicrm_field['required']) && (bool) $civicrm_field['required']);
+      ->setDescription(isset($civicrm_field['description']) ? $civicrm_field['description'] : '');
+
+    if ($field->getType() != 'boolean') {
+      $field->setRequired(isset($civicrm_field['required']) && (bool) $civicrm_field['required']);
+    }
 
     return $field;
   }
