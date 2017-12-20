@@ -69,18 +69,31 @@ abstract class CivicrmEntityBase extends ContentEntityBase {
           $field = BaseFieldDefinition::create('float');
           break;
 
-        case \CRM_Utils_Type::T_TEXT:
         case \CRM_Utils_Type::T_STRING:
-        case \CRM_Utils_Type::T_LONGTEXT:
+        case \CRM_Utils_Type::T_TEXT:
         case \CRM_Utils_Type::T_CCNUM:
-          $field = BaseFieldDefinition::create('text')
+        $field = BaseFieldDefinition::create('string')
+          ->setDisplayOptions('view', [
+            'type' => 'text_default',
+            'weight' => 10,
+          ])
+          ->setDisplayConfigurable('view', TRUE)
+          ->setDisplayOptions('form', [
+            'type' => 'string_textfield',
+            'weight' => 10,
+          ])
+          ->setDisplayConfigurable('form', TRUE);
+        break;
+
+        case \CRM_Utils_Type::T_LONGTEXT:
+          $field = BaseFieldDefinition::create('text_long')
             ->setDisplayOptions('view', [
               'type' => 'text_default',
               'weight' => 10,
             ])
             ->setDisplayConfigurable('view', TRUE)
             ->setDisplayOptions('form', [
-              'type' => 'string_textfield',
+              'type' => 'text_textfield',
               'weight' => 10,
             ])
             ->setDisplayConfigurable('form', TRUE);

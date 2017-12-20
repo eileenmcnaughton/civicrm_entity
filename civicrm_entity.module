@@ -38,7 +38,7 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
         'collection' => sprintf('/admin/structure/civicrm-entity/%s', $clean_entity_type_id),
       ]);
 
-      $entity_type->setFormClass('default', \Drupal\Core\Entity\EntityForm::class);
+      $entity_type->setFormClass('default', \Drupal\civicrm_entity\Form\CivicrmEntityForm::class);
     }
   }
 }
