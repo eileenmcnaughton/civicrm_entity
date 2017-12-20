@@ -2,7 +2,21 @@
 
 namespace Drupal\civicrm_entity;
 
-// @todo these should be plugins.
+/**
+ * Defines supported entities.
+ *
+ * See `$civicrm_entity_info['civicrm_event']` for implemented usage. This might
+ * not be required. Perhaps we just implement entity class definitions using
+ * this information. Providing entity type derivatives seems hard, and possibly
+ * overhead when we just can provide the classes directly.
+ *
+ * Entities could just define the `civicrm_entity` key to define their support
+ * and what CiviCRM entity they map to.
+ *
+ * Ported for now and used in civicrm_entity_entity_type_build()
+ *
+ * @see civicrm_entity_entity_type_build()
+ */
 final class SupportedEntities {
 
   public static function getInfo() {

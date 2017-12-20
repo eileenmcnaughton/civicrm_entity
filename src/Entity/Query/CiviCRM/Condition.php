@@ -14,6 +14,8 @@ use Drupal\Core\Database\Query\Condition as SqlCondition;
 
 /**
  * Implements entity query conditions for SQL databases.
+ *
+ * @todo This is a copy and paste, needs review.
  */
 class Condition extends ConditionBase {
 

@@ -5,7 +5,6 @@ namespace Drupal\civicrm_entity\Entity\Query\CiviCRM;
 use Drupal\civicrm_entity\CiviCrmApi;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Query\QueryBase;
-use Drupal\Core\Entity\Query\QueryException;
 use Drupal\Core\Entity\Query\QueryInterface;
 
 class Query extends QueryBase implements QueryInterface {

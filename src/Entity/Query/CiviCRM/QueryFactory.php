@@ -2,9 +2,6 @@
 
 namespace Drupal\civicrm_entity\Entity\Query\CiviCRM;
 
-use Drupal\civicrm_entity\CiviCrmApi;
-use Drupal\Component\Plugin\PluginManagerInterface;
-use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Query\QueryBase;
 use Drupal\Core\Entity\Query\QueryException;
@@ -23,8 +20,11 @@ class QueryFactory implements QueryFactoryInterface {
 
   /**
    * Constructs a QueryFactory object.
+   *
+   * @param \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api
+   *   The CiviCRM API bridge.
    */
-  public function __construct(CiviCrmApi $civicrm_api) {
+  public function __construct(CiviCrmApiInterface $civicrm_api) {
     $this->namespaces = QueryBase::getNamespaces($this);
     $this->civicrmApi = $civicrm_api;
   }
@@ -34,6 +34,7 @@ class QueryFactory implements QueryFactoryInterface {
    * {@inheritdoc}
    */
   public function get(EntityTypeInterface $entity_type, $conjunction) {
+    // @todo copy paste, evaluate if they do.
     if ($conjunction == 'OR') {
       throw new QueryException("CiviCRM entity queries do not support OR conditions.");
     }
@@ -45,6 +46,7 @@ class QueryFactory implements QueryFactoryInterface {
    * {@inheritdoc}
    */
   public function getAggregate(EntityTypeInterface $entity_type, $conjunction) {
+    // @todo copy paste, evaluate i they do.
     throw new QueryException("CiviCRM entity queries do not support aggregate queries.");
   }
 

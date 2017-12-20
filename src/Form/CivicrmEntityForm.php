@@ -12,7 +12,6 @@ class CivicrmEntityForm extends ContentEntityForm {
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
     $form['#tree'] = TRUE;
-
     return $form;
   }
 

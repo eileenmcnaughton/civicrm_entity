@@ -35,6 +35,9 @@ class CiviEntityStorage extends ContentEntityStorageBase {
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function doDelete($entities) {
     /** @var EntityInterface $entity */
     foreach ($entities as $entity) {

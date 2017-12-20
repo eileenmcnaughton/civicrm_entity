@@ -9,8 +9,6 @@ use Drupal\Core\Entity\Annotation\ContentEntityType;
 /**
  * Defines the comment entity class.
  *
- * @todo need to alter definition based on known fields.
- *
  * @ContentEntityType(
  *   id = "civicrm_event",
  *   civicrm_entity = "event",

@@ -7,6 +7,9 @@ use Drupal\Core\Entity\EntityListBuilder;
 
 class CivicrmEntityListBuilder extends EntityListBuilder {
 
+  /**
+   * {@inheritdoc}
+   */
   public function buildHeader() {
     return [
       'id' => $this->t('ID'),
@@ -14,6 +17,9 @@ class CivicrmEntityListBuilder extends EntityListBuilder {
     ] + parent::buildHeader();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function buildRow(EntityInterface $entity) {
     return [
       'id' => $entity->id(),
