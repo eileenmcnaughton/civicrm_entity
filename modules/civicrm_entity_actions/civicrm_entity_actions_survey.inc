@@ -41,26 +41,26 @@ function civicrm_entity_actions_survey_action_info() {
 
 function civicrm_entity_actions_survey_add_action($entity, $context = array()) {
   $base_url = str_replace('_', '-', $context['entity_type']); // civicrm-survey
-  drupal_goto($base_url . '/add');
+  civicrm_entity_drupal_goto($base_url . '/add');
 }
 
 function civicrm_entity_actions_survey_view_action($entity, $context = array()) {
   $info = entity_get_info($context['entity_type']);
   $entity_id = $entity->{$info['entity keys']['id']};
   $base_url = str_replace('_', '-', $context['entity_type']); // civicrm-survey
-  drupal_goto($base_url . '/' . $entity_id);
+  civicrm_entity_drupal_goto($base_url . '/' . $entity_id);
 }
 
 function civicrm_entity_actions_survey_edit_action($entity, $context = array()) {
   $info = entity_get_info($context['entity_type']);
   $entity_id = $entity->{$info['entity keys']['id']};
   $base_url = str_replace('_', '-', $context['entity_type']); // civicrm-survey
-  drupal_goto($base_url . '/' . $entity_id . '/edit');
+  civicrm_entity_drupal_goto($base_url . '/' . $entity_id . '/edit');
 }
 
 function civicrm_entity_actions_survey_delete_action($entity, $context = array()) {
   $info = entity_get_info($context['entity_type']);
   $entity_id = $entity->{$info['entity keys']['id']};
   $base_url = str_replace('_', '-', $context['entity_type']); // civicrm-survey
-  drupal_goto($base_url . '/' . $entity_id . '/delete');
+  civicrm_entity_drupal_goto($base_url . '/' . $entity_id . '/delete');
 }
