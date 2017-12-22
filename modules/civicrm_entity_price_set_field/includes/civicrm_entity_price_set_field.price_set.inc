@@ -27,6 +27,9 @@ function _civicrm_entity_price_set_field_setup_price_set_fapi(&$form, &$form_sta
       '#weight' => -5,
     );
     foreach ($data['price_fields'] as $pf_id => $price_field) {
+      if (empty($price_field['pf_entity']->is_active)) {
+        continue;
+      }
       if (!empty($price_field['pf_entity']->active_on)) {
         if (time() < strtotime($price_field['pf_entity']->active_on)) {
           continue;
