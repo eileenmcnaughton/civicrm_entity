@@ -534,6 +534,35 @@ function _civicrm_entity_price_set_field_setup_event_registration_form_fapi(&$fo
         ),
       ),
     );
+
+    $payment_processor_options = array();
+    if (!empty($form_state['event']->payment_processor)) {
+      $pp_default = '';
+      if (is_array($form_state['event']->payment_processor)) {
+        foreach ($form_state['event']->payment_processor as $pp_delta => $pp_id) {
+          $pp = entity_load_single('civicrm_payment_processor', $pp_id);
+          $payment_processor_options[$pp_id] = $pp->name;
+          if (!empty($pp->is_default)) {
+            $pp_default = $pp_id;
+          }
+        }
+      }
+      else {
+        $pp = entity_load_single('civicrm_payment_processor', $form_state['event']->payment_processor);
+        $payment_processor_options[$form_state['event']->payment_processor] = $pp['name'];
+        $pp_default = $form_state['event']->payment_processor;
+      }
+      $form['registration_form']['registration_cc_block']['payment_processor_selection'] = array(
+        '#title' => t('Payment method'),
+        '#type' => 'radios',
+        '#options' => $payment_processor_options,
+        '#default_value' => $pp_default,
+      );
+    }
+    else {
+      $form['registration_form']['registration_cc_block']['#access'] = FALSE;
+    }
+
     $form['registration_form']['registration_cc_block']['first_name_on_card'] = array(
       '#type' => 'textfield',
       '#title' => 'First Name',
@@ -919,6 +948,9 @@ function civicrm_entity_price_set_field_display_form_event_validate($form, $form
     }
     elseif (!is_numeric($form_state['values']['registration_form']['registration_cc_block']['cvv'])) {
       form_set_error('registration_form][registration_cc_block][cvv', 'CVV must be numeric.');
+    }
+    if (empty($form_state['values']['registration_form']['registration_cc_block']['payment_processor_selection'])) {
+      form_set_error('registration_form][registration_cc_block][payment_processor_selection', 'Payment method selection is required.');
     }
   }
   // price set field text widget validation
