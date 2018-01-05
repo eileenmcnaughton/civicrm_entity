@@ -2980,7 +2980,14 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
       break;
     case 'f.last':
       $params['name'] = _civicrm_entity_clean_login_name(substr($contact['first_name'], 0, 1) . "." . $contact['last_name']);
-     break;
+      break;
+    case 'first.middle.last':
+      if (!empty($contact['middle_name'])) {
+        $params['name'] = _civicrm_entity_clean_login_name($contact['first_name'] . "." . $contact['middle_name'] . "." . $contact['last_name']);
+      } else {
+        $params['name'] = _civicrm_entity_clean_login_name($contact['first_name'] . "." . $contact['last_name']);
+      }
+      break;
     case 'email':
       $params['name'] = $params['email'];
       break;
@@ -3001,7 +3008,7 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
      $config->userSystem->checkUserNameEmailExists($params, $errors);
      if (!empty($errors)) {
        foreach ($errors as $error) {
-         drupal_set_message(check_plain($error), 'error');
+         //drupal_set_message(check_plain($error), 'error');
          watchdog('civicrm_entity', 'Check name %error.', array('%error' => $error), WATCHDOG_ERROR);
        }
        $params['name'] = $params['name'] . "$ind";
@@ -3046,6 +3053,7 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
   // Note that we 'pretend' to be logging in to make it do a ufmatch
   // on just the email.
   CRM_Core_BAO_UFMatch::synchronizeUFMatch($user_object, $user_object->uid, $contact['email'], 'drupal', NULL, NULL, TRUE);
+  drupal_set_message('User with username, ' . $params['cms_name'] . ', has been created.');
 
   // If selected in action configuration, automatically sign in the
   // current user.
@@ -3070,6 +3078,7 @@ function _civicrm_entity_options_username_format($field, $instance) {
     'firstlast' => t('FirstLast'),
     'first.last' => t('First.Last'),
     'f.last' => t('F.Last'),
+    'first.middle.last' => t('First.Middle.Last'),
     'email' => 'Use E-mail Address',
   );
   return $options;
@@ -3997,4 +4006,16 @@ function civicrm_entity_ds_fields_info($entity_type) {
   if (isset($fields[$entity_type])) {
     return array($entity_type => $fields[$entity_type]);
   }
+}
+
+/**
+ * If Rules is available, use that module's redirect on shutdown.
+ */
+function civicrm_entity_drupal_goto($path = '', array $options = array(), $http_response_code = 302) {
+    if (module_exists('rules')) {
+      rules_action_drupal_goto($path);
+    }
+    else {
+      drupal_goto($path, $options, $http_response_code);
+    }
 }
