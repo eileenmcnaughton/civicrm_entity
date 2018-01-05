@@ -2970,22 +2970,22 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
 
   switch ($username_format) {
     case 'first last':
-      $params['name'] = _civicrm_entity_clean_login_name($contact['first_name'] . " " . $contact['last_name']);
+      $params['name'] = _civicrm_entity_clean_login_name(trim($contact['first_name']) . " " . trim($contact['last_name']));
       break;
     case 'firstlast':
-      $params['name'] = _civicrm_entity_clean_login_name($contact['first_name'] . " " . $contact['last_name']);
+      $params['name'] = _civicrm_entity_clean_login_name(trim($contact['first_name']) . " " . trim($contact['last_name']));
       break;
     case 'first.last':
-      $params['name'] = _civicrm_entity_clean_login_name($contact['first_name'] . "." . $contact['last_name']);
+      $params['name'] = _civicrm_entity_clean_login_name(trim($contact['first_name']) . "." . trim($contact['last_name']));
       break;
     case 'f.last':
-      $params['name'] = _civicrm_entity_clean_login_name(substr($contact['first_name'], 0, 1) . "." . $contact['last_name']);
+      $params['name'] = _civicrm_entity_clean_login_name(substr(trim($contact['first_name']), 0, 1) . "." . trim($contact['last_name']));
       break;
     case 'first.middle.last':
       if (!empty($contact['middle_name'])) {
-        $params['name'] = _civicrm_entity_clean_login_name($contact['first_name'] . "." . $contact['middle_name'] . "." . $contact['last_name']);
+        $params['name'] = _civicrm_entity_clean_login_name(trim($contact['first_name']) . "." . trim($contact['middle_name']) . "." . trim($contact['last_name']));
       } else {
-        $params['name'] = _civicrm_entity_clean_login_name($contact['first_name'] . "." . $contact['last_name']);
+        $params['name'] = _civicrm_entity_clean_login_name(trim($contact['first_name']) . "." . trim($contact['last_name']));
       }
       break;
     case 'email':
