@@ -6,7 +6,14 @@ use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 
-abstract class CivicrmEntityBase extends ContentEntityBase {
+/**
+ * Class for representing CiviCRM entities.
+ *
+ * @todo Document how this is used in _entity_type_build().
+ *
+ * @see civicrm_entity_entity_type_build().
+ */
+class CivicrmEntity extends ContentEntityBase {
 
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = [];
