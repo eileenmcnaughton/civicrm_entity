@@ -6,6 +6,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Query\QueryBase;
 use Drupal\Core\Entity\Query\QueryException;
 use Drupal\Core\Entity\Query\QueryFactoryInterface;
+use Drupal\civicrm_entity\CiviCrmApiInterface;
 
 class QueryFactory implements QueryFactoryInterface {
 
