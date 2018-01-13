@@ -1,0 +1,7 @@
+civicrm_entity.admin:
+  path: '/admin/structure/civicrm-entity'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'CiviCRM Entity'
+  requirements:
+    _permission: 'access administration pages'
