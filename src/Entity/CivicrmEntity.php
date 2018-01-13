@@ -6,20 +6,28 @@ use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 
-abstract class CivicrmEntityBase extends ContentEntityBase {
+/**
+ * Class for representing CiviCRM entities.
+ *
+ * @todo Document how this is used in _entity_type_build().
+ *
+ * @see civicrm_entity_entity_type_build().
+ */
+class CivicrmEntity extends ContentEntityBase {
 
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = [];
 
     $civicrm_fields = \Drupal::service('civicrm_entity.api')->getFields($entity_type->get('civicrm_entity'));
     foreach ($civicrm_fields as $civicrm_field) {
-      $fields[$civicrm_field['name']] = self::createBaseFieldDefinition($civicrm_field);
+      $fields[$civicrm_field['name']] = self::createBaseFieldDefinition($civicrm_field, $entity_type->get('civicrm_entity'));
     }
 
     return $fields;
   }
 
-  protected static function createBaseFieldDefinition(array $civicrm_field) {
+  protected static function createBaseFieldDefinition(array $civicrm_field, $civicrm_entity_id) {
+//    dpm($civicrm_field);
     if ($civicrm_field['name'] == 'id') {
       $field = BaseFieldDefinition::create('integer')
         ->setReadOnly(TRUE)
@@ -30,26 +38,41 @@ abstract class CivicrmEntityBase extends ContentEntityBase {
         ->setDisplayOptions('view', [
           'label' => 'hidden',
           'type' => 'string',
-          'weight' => -5,
         ])
         ->setDisplayOptions('form', [
           'type' => 'string_textfield',
-          'weight' => -5,
         ]);
     }
     else {
       switch ($civicrm_field['type']) {
         case \CRM_Utils_Type::T_INT:
-          $field = BaseFieldDefinition::create('integer')
-            ->setDisplayOptions('view', [
-              'label' => 'hidden',
-              'type' => 'integer',
-              'weight' => 0,
-            ])
-            ->setDisplayOptions('form', [
-              'type' => 'number',
-              'weight' => 20,
-            ]);
+          // If this field has `pseudoconstant` it is a reference to values in
+          // civicrm_option_value.
+          if (!empty($civicrm_field['pseudoconstant'])) {
+            // @todo this should be in a value callback, not set on generation.
+            $options = \Drupal::getContainer()->get('civicrm_entity.api')->getOptions($civicrm_entity_id, $civicrm_field['name']);
+            $field = BaseFieldDefinition::create('list_integer')
+              ->setSetting('allowed_values', $options)
+              ->setDisplayOptions('view', [
+                'label' => 'hidden',
+                'type' => 'integer',
+              ])
+              ->setDisplayOptions('form', [
+                'type' => 'options_select',
+              ]);
+          }
+          // Otherwise it is just a regular integer field.
+          else {
+            $field = BaseFieldDefinition::create('integer')
+              ->setDisplayOptions('view', [
+                'label' => 'hidden',
+                'type' => 'integer',
+              ])
+              ->setDisplayOptions('form', [
+                'type' => 'number',
+              ]);
+          }
+
           break;
 
         case \CRM_Utils_Type::T_BOOLEAN:
@@ -59,7 +82,6 @@ abstract class CivicrmEntityBase extends ContentEntityBase {
               'settings' => [
                 'display_label' => TRUE,
               ],
-              'weight' => 15,
             ])
             ->setDisplayConfigurable('form', TRUE);
           break;
@@ -75,12 +97,10 @@ abstract class CivicrmEntityBase extends ContentEntityBase {
         $field = BaseFieldDefinition::create('string')
           ->setDisplayOptions('view', [
             'type' => 'text_default',
-            'weight' => 10,
           ])
           ->setDisplayConfigurable('view', TRUE)
           ->setDisplayOptions('form', [
             'type' => 'string_textfield',
-            'weight' => 10,
           ])
           ->setDisplayConfigurable('form', TRUE);
         break;
@@ -89,12 +109,10 @@ abstract class CivicrmEntityBase extends ContentEntityBase {
           $field = BaseFieldDefinition::create('text_long')
             ->setDisplayOptions('view', [
               'type' => 'text_default',
-              'weight' => 10,
             ])
             ->setDisplayConfigurable('view', TRUE)
             ->setDisplayOptions('form', [
               'type' => 'text_textfield',
-              'weight' => 10,
             ])
             ->setDisplayConfigurable('form', TRUE);
           break;

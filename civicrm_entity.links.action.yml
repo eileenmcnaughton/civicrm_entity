@@ -1,0 +1,3 @@
+civicrm_entity.entity_add:
+  class: \Drupal\Core\Menu\LocalActionDefault
+  deriver: \Drupal\civicrm_entity\Plugin\Derivative\CivicrmEntityLocalAction

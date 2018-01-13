@@ -44,4 +44,13 @@ interface CiviCrmApiInterface {
    */
   public function getFields($entity, $action = 'create');
 
+  /**
+   * Get options for the CiviCRM entity field.
+   * @param $entity
+   * @param $field_name
+   *
+   * @return mixed
+   */
+  public function getOptions($entity, $field_name);
+
 }

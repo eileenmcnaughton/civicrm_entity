@@ -51,4 +51,12 @@ class CiviCrmApi implements CiviCrmApiInterface {
     return $result['values'];
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getOptions($entity, $field_name) {
+    $result = civicrm_api3($entity, 'getoptions', ['field' => $field_name]);
+    return $result['values'];
+  }
+
 }
