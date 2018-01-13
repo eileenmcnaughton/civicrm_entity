@@ -1,0 +1,3 @@
+civicrm_entity.tasks:
+  deriver: 'Drupal\civicrm_entity\Plugin\Derivative\DynamicLocalTasks'
+  weight: 100
