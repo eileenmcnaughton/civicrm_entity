@@ -549,7 +549,7 @@ function _civicrm_entity_price_set_field_setup_event_registration_form_fapi(&$fo
       }
       else {
         $pp = entity_load_single('civicrm_payment_processor', $form_state['event']->payment_processor);
-        $payment_processor_options[$form_state['event']->payment_processor] = $pp['name'];
+        $payment_processor_options[$form_state['event']->payment_processor] = $pp->name;
         $pp_default = $form_state['event']->payment_processor;
       }
       $form['registration_form']['registration_cc_block']['payment_processor_selection'] = array(
