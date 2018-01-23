@@ -13,16 +13,14 @@ use Drupal\Core\Database\Query\SelectInterface;
 use Drupal\Core\Database\Query\Condition as SqlCondition;
 
 /**
- * Implements entity query conditions for SQL databases.
- *
- * @todo This is a copy and paste, needs review.
+ * Implements entity query conditions for CiviCRM.
  */
 class Condition extends ConditionBase {
 
   /**
-   * The SQL entity query object this condition belongs to.
+   * The CiviCRM entity query object this condition belongs to.
    *
-   * @var \Drupal\Core\Entity\Query\Sql\Query
+   * @var \Drupal\civicrm_entity\Entity\Query\CiviCRM\Query
    */
   protected $query;
 
@@ -35,7 +33,6 @@ class Condition extends ConditionBase {
     // SQL query object is only necessary to pass to Query::addField() so it
     // can join tables as necessary. On the other hand, conditions need to be
     // added to the $conditionContainer object to keep grouping.
-
     foreach ($this->conditions as $condition) {
       if ($condition['field'] instanceOf ConditionInterface) {
         $query_condition = new static('AND', $this->query);
