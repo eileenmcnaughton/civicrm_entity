@@ -30,7 +30,6 @@ class CivicrmEntity extends ContentEntityBase {
   }
 
   protected static function createBaseFieldDefinition(array $civicrm_field, $civicrm_entity_id) {
-//    dpm($civicrm_field);
     if ($civicrm_field['name'] == 'id') {
       $field = BaseFieldDefinition::create('integer')
         ->setReadOnly(TRUE)
@@ -51,7 +50,7 @@ class CivicrmEntity extends ContentEntityBase {
         case \CRM_Utils_Type::T_INT:
           // If this field has `pseudoconstant` it is a reference to values in
           // civicrm_option_value.
-          if (!empty($civicrm_field['pseudoconstant'])) {
+          if (!empty($civicrm_field['pseudoconstant']) && $civicrm_field['name'] != 'card_type_id') {
             // @todo this should be in a value callback, not set on generation.
             $options = \Drupal::getContainer()->get('civicrm_entity.api')->getOptions($civicrm_entity_id, $civicrm_field['name']);
             $field = BaseFieldDefinition::create('list_integer')

@@ -5,3 +5,11 @@ civicrm_entity.admin:
     _title: 'CiviCRM Entity'
   requirements:
     _permission: 'access administration pages'
+
+civicrm_entity.settings:
+  path: '/admin/structure/civicrm-entity/settings'
+  defaults:
+    _form: '\Drupal\civicrm_entity\Form\CivicrmEntitySettings'
+    _title: 'Settings'
+  requirements:
+    _permission: 'access administration pages'

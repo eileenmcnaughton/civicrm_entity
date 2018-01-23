@@ -1,0 +1,10 @@
+civicrm_entity.settings:
+  type: config_entity
+  label: 'CiviCRM settings'
+  mapping:
+    enabled_entity_types:
+      type: sequence
+      label: 'Enabled entity types'
+      sequence:
+        type: string
+        label: 'Entity type'

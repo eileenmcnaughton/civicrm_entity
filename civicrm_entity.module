@@ -14,18 +14,19 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  */
 function civicrm_entity_entity_type_build(array &$entity_types) {
   $supported_entities = \Drupal\civicrm_entity\SupportedEntities::getInfo();
-  $enabled_entity_types = ['event'];
-  foreach ($enabled_entity_types as $enabled_entity_type) {
-    $entity_type_id = 'civicrm_' . $enabled_entity_type;
-    $civicrm_entity_info = $supported_entities[$entity_type_id];
+  $enabled_entity_types = \Drupal::config('civicrm_entity.settings')->get('enabled_entity_types');
+  foreach ($supported_entities as $entity_type_id => $civicrm_entity_info) {
     $clean_entity_type_id = str_replace('_', '-', $entity_type_id);
+    $civicrm_entity_name = $civicrm_entity_info['civicrm entity name'];
+
     $entity_types[$entity_type_id] = new ContentEntityType([
       'provider' => 'civicrm_entity',
       'class' => \Drupal\civicrm_entity\Entity\CivicrmEntity::class,
       'originalClass' => \Drupal\civicrm_entity\Entity\CivicrmEntity::class,
       'id' => $entity_type_id,
-      'civicrm_entity' => $enabled_entity_type,
-      'label' => new TranslatableMarkup('CiviCRM :name', [':name' => $civicrm_entity_info['civicrm entity name']]),
+      'civicrm_entity' => $civicrm_entity_name,
+      'civicrm_entity_ui_exposed' => in_array($entity_type_id, $enabled_entity_types),
+      'label' => new TranslatableMarkup('CiviCRM :name', [':name' => $civicrm_entity_name]),
       // @todo add label_singular
       // @todo add label_plural
       // @todo add label_count
@@ -39,8 +40,10 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
         'storage' => \Drupal\civicrm_entity\CiviEntityStorage::class,
         'list_builder' => \Drupal\civicrm_entity\CivicrmEntityListBuilder::class,
         'route_provider' => [
+          // @todo Need customer provider to handle `civicrm_entity_ui_exposed`
           'default' => \Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider::class
         ],
+        // @todo Need custom access to handle `civicrm_entity_ui_exposed`
         'access' => \Drupal\Core\Entity\EntityAccessControlHandler::class,
         'form' => [
           'default' => \Drupal\civicrm_entity\Form\CivicrmEntityForm::class,
