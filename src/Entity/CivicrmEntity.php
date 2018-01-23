@@ -7,9 +7,12 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 
 /**
- * Class for representing CiviCRM entities.
+ * Entity class for CiviCRM entities.
  *
- * @todo Document how this is used in _entity_type_build().
+ * This entity class is not annotated. Plugin definitions are created during
+ * the hook_entity_type_build() process. This allows for dynamic creation of
+ * multiple entity types that use one single class, without creating redundant
+ * class files and annotations.
  *
  * @see civicrm_entity_entity_type_build().
  */
