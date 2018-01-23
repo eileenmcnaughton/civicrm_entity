@@ -55,6 +55,7 @@ class CiviEntityStorage extends ContentEntityStorageBase {
    * {@inheritdoc}
    */
   protected function doSave($id, EntityInterface $entity) {
+    /** @var \Drupal\civicrm_entity\Entity\CivicrmEntity $entity */
     if ($entity->isNew()) {
       // @todo decide on special handling?
       $return = SAVED_NEW;
@@ -63,21 +64,33 @@ class CiviEntityStorage extends ContentEntityStorageBase {
       $return = SAVED_UPDATED;
     }
 
-    $params = $entity->toArray();
-    $params = array_map(function ($value) {
-      if (empty($value)) {
-        return NULL;
+    $params = [];
+    /** @var \Drupal\Core\Field\FieldItemListInterface $items */
+    foreach ($entity->getFields() as $field_name => $items) {
+      $items->filterEmptyItems();
+      if ($items->isEmpty()) {
+        continue;
       }
-      else {
-        if (is_array($value)) {
-          $value = reset($value);
-          if (is_array($value)) {
-            return reset($value);
-          }
+
+      $storage_definition = $items->getFieldDefinition()->getFieldStorageDefinition();;
+      $list = $items->getValue();
+      foreach ($list as $delta => $item) {
+        // Simplify items with a single key (such as "value").
+        $main_property_name = $storage_definition->getMainPropertyName();
+        if ($main_property_name && isset($item[$main_property_name]) && count($item) === 1) {
+          $item = $item[$main_property_name];
         }
-        return $value;
+        $list[$delta] = $item;
       }
-    }, $params);
+      // Remove the wrapping array if the field is single-valued.
+      if ($storage_definition->getCardinality() === 1) {
+        $list = reset($list);
+      }
+      if (!empty($list)) {
+        $params[$field_name] = $list;
+      }
+    }
+
     $this->civicrmApi->save($this->entityType->get('civicrm_entity'), $params);
 
     return $return;
