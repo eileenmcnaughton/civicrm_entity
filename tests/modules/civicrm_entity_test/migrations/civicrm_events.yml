@@ -1,0 +1,28 @@
+id: civicrm_entity_test_civicrm_event
+label: 'Import CiviCRM events for CiviCRM Entity Test'
+migration_group: 'CiviCRM Entity'
+migration_tags:
+  - 'CiviCRM Entity'
+source:
+  plugin: embedded_data
+  ids:
+    title:
+      type: string
+  data_rows:
+    - title: 'DrupalCon Nashville'
+    - summary: 'DrupalCon Nashville 2018! Get your Drupal on'
+      description: "At DrupalCon, you'll learn to make, think about, and do things differently with Drupal. Session tracks feature topics like Javascript, Front End, DevOps, Content Strategy, Site Building, PHP, and Being Human. Each track includes sessions for beginners, experts, and everyone between. You'll leave DrupalCon inspired and empowered to create amazing web experiences."
+      event_type_id: 1
+      is_public: true
+      is_online_registration: true
+      default_role_id: 1
+destination:
+  plugin: entity:civicrm_event
+process:
+  title: title
+  summary: summary
+  description: description
+  event_type_id: event_type_id
+  is_public: is_public
+  is_online_registration: is_online_registration
+  default_role_id: default_role_id
