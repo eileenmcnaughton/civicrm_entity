@@ -34,7 +34,7 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
         'id' => 'id',
         'label' => $civicrm_entity_info['label property'],
       ],
-      'admin_permission' => 'administer CiviCRM',
+      'admin_permission' => 'administer civicrm entity',
       'permission_granularity' => 'entity_type',
       'handlers' => [
         'storage' => \Drupal\civicrm_entity\CiviEntityStorage::class,
