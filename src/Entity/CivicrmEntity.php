@@ -82,8 +82,7 @@ class CivicrmEntity extends ContentEntityBase {
               'settings' => [
                 'display_label' => TRUE,
               ],
-            ])
-            ->setDisplayConfigurable('form', TRUE);
+            ]);
           break;
 
         case \CRM_Utils_Type::T_MONEY:
@@ -98,11 +97,9 @@ class CivicrmEntity extends ContentEntityBase {
           ->setDisplayOptions('view', [
             'type' => 'text_default',
           ])
-          ->setDisplayConfigurable('view', TRUE)
           ->setDisplayOptions('form', [
             'type' => 'string_textfield',
-          ])
-          ->setDisplayConfigurable('form', TRUE);
+          ]);
         break;
 
         case \CRM_Utils_Type::T_LONGTEXT:
@@ -110,21 +107,32 @@ class CivicrmEntity extends ContentEntityBase {
             ->setDisplayOptions('view', [
               'type' => 'text_default',
             ])
-            ->setDisplayConfigurable('view', TRUE)
             ->setDisplayOptions('form', [
               'type' => 'text_textfield',
-            ])
-            ->setDisplayConfigurable('form', TRUE);
+            ]);
           break;
 
         case \CRM_Utils_Type::T_EMAIL:
-          $field = BaseFieldDefinition::create('email');
+          $field = BaseFieldDefinition::create('email')
+            ->setDisplayOptions('view', [
+              'label' => 'above',
+              'type' => 'string',
+              'weight' => 0,
+            ])
+            ->setDisplayOptions('form', [
+              'type' => 'email_default',
+            ]);
           break;
 
         case \CRM_Utils_Type::T_URL:
-          $field = BaseFieldDefinition::create('uri');
+          $field = BaseFieldDefinition::create('uri')
+            ->setDisplayOptions('form', [
+              'type' => 'uri',
+              'weight' => -3,
+            ]);
           break;
 
+        // @todo this needs display options... thought they were set?
         case \CRM_Utils_Type::T_DATE:
         case \CRM_Utils_Type::T_TIME:
         case (\CRM_Utils_Type::T_DATE + \CRM_Utils_Type::T_TIME):
@@ -136,7 +144,16 @@ class CivicrmEntity extends ContentEntityBase {
           break;
 
         case \CRM_Utils_Type::T_TIMESTAMP:
-          $field = BaseFieldDefinition::create('timestamp');
+          $field = BaseFieldDefinition::create('timestamp')
+            ->setDisplayOptions('view', [
+              'label' => 'hidden',
+              'type' => 'timestamp',
+              'weight' => 0,
+            ])
+            ->setDisplayOptions('form', [
+              'type' => 'datetime_timestamp',
+              'weight' => 10,
+            ]);
           break;
 
         default:
@@ -146,6 +163,8 @@ class CivicrmEntity extends ContentEntityBase {
     }
 
     $field
+      ->setDisplayConfigurable('view', TRUE)
+      ->setDisplayConfigurable('form', TRUE)
       ->setLabel($civicrm_field['title'])
       ->setDescription(isset($civicrm_field['description']) ? $civicrm_field['description'] : '');
 
