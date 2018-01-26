@@ -51,10 +51,8 @@ class CivicrmEntity extends ContentEntityBase {
           // If this field has `pseudoconstant` it is a reference to values in
           // civicrm_option_value.
           if (!empty($civicrm_field['pseudoconstant']) && $civicrm_field['name'] != 'card_type_id') {
-            // @todo this should be in a value callback, not set on generation.
-            $options = \Drupal::getContainer()->get('civicrm_entity.api')->getOptions($civicrm_entity_id, $civicrm_field['name']);
             $field = BaseFieldDefinition::create('list_integer')
-              ->setSetting('allowed_values', $options)
+              ->setSetting('allowed_values_function', 'civicrm_entity_pseudoconstant_options')
               ->setDisplayOptions('view', [
                 'label' => 'hidden',
                 'type' => 'integer',

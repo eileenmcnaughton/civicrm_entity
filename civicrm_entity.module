@@ -5,6 +5,8 @@
  */
 
 use Drupal\Core\Entity\ContentEntityType;
+use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
@@ -62,4 +64,27 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
       ],
     ]);
   }
+}
+
+/**
+ * Implements callback_allowed_values_function().
+ *
+ * Provides the pseudoconstant values for CiviCRM entity fields.
+ *
+ * @param \Drupal\Core\Field\FieldStorageDefinitionInterface $definition
+ *  The field storage definition.
+ * @param \Drupal\Core\Entity\FieldableEntityInterface|NULL $entity
+ *  The entity.
+ * @param bool $cacheable
+ *  If the options are cacheable.
+ *
+ * @return array
+ *  The array of field options.
+ */
+function civicrm_entity_pseudoconstant_options(FieldStorageDefinitionInterface $definition, FieldableEntityInterface $entity = NULL, &$cacheable = NULL) {
+  /** @var \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api */
+  $civicrm_api = \Drupal::service('civicrm_entity.api');
+  $entity_type = $entity->getEntityType();
+  $options = $civicrm_api->getOptions($entity_type->get('civicrm_entity'), $definition->getName());
+  return $options;
 }
