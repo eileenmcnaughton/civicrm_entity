@@ -88,3 +88,14 @@ function civicrm_entity_pseudoconstant_options(FieldStorageDefinitionInterface $
   $options = $civicrm_api->getOptions($entity_type->get('civicrm_entity'), $definition->getName());
   return $options;
 }
+
+function civicrm_entity_test_migration() {
+  $migration_ids = [
+    'civicrm_entity_test_civicrm_event',
+  ];
+  $migrations = \Drupal::getContainer()->get('plugin.manager.migration')->createInstances($migration_ids);
+  foreach ($migrations as $migration) {
+    $executable = new \Drupal\migrate\MigrateExecutable($migration, new \Drupal\migrate\MigrateMessage());
+    $executable->import();
+  }
+}

@@ -5,6 +5,7 @@ namespace Drupal\civicrm_entity\Entity;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
 
 /**
  * Entity class for CiviCRM entities.
@@ -40,9 +41,11 @@ class CivicrmEntity extends ContentEntityBase {
         ->setDisplayOptions('view', [
           'label' => 'hidden',
           'type' => 'string',
+          'weight' => 0,
         ])
         ->setDisplayOptions('form', [
           'type' => 'string_textfield',
+          'weight' => 0,
         ]);
     }
     else {
@@ -56,9 +59,11 @@ class CivicrmEntity extends ContentEntityBase {
               ->setDisplayOptions('view', [
                 'label' => 'hidden',
                 'type' => 'integer',
+                'weight' => 0,
               ])
               ->setDisplayOptions('form', [
                 'type' => 'options_select',
+                'weight' => 0,
               ]);
           }
           // Otherwise it is just a regular integer field.
@@ -67,9 +72,11 @@ class CivicrmEntity extends ContentEntityBase {
               ->setDisplayOptions('view', [
                 'label' => 'hidden',
                 'type' => 'integer',
+                'weight' => 0,
               ])
               ->setDisplayOptions('form', [
                 'type' => 'number',
+                'weight' => 0,
               ]);
           }
 
@@ -82,6 +89,7 @@ class CivicrmEntity extends ContentEntityBase {
               'settings' => [
                 'display_label' => TRUE,
               ],
+              'weight' => 0,
             ]);
           break;
 
@@ -96,9 +104,11 @@ class CivicrmEntity extends ContentEntityBase {
         $field = BaseFieldDefinition::create('string')
           ->setDisplayOptions('view', [
             'type' => 'text_default',
+            'weight' => 0,
           ])
           ->setDisplayOptions('form', [
             'type' => 'string_textfield',
+            'weight' => 0,
           ]);
         break;
 
@@ -106,9 +116,11 @@ class CivicrmEntity extends ContentEntityBase {
           $field = BaseFieldDefinition::create('text_long')
             ->setDisplayOptions('view', [
               'type' => 'text_default',
+              'weight' => 0,
             ])
             ->setDisplayOptions('form', [
               'type' => 'text_textfield',
+              'weight' => 0,
             ]);
           break;
 
@@ -121,6 +133,7 @@ class CivicrmEntity extends ContentEntityBase {
             ])
             ->setDisplayOptions('form', [
               'type' => 'email_default',
+              'weight' => 0,
             ]);
           break;
 
@@ -128,15 +141,38 @@ class CivicrmEntity extends ContentEntityBase {
           $field = BaseFieldDefinition::create('uri')
             ->setDisplayOptions('form', [
               'type' => 'uri',
-              'weight' => -3,
+              'weight' => 0,
+            ])
+            ->setDisplayOptions('view', [
+              'type' => 'uri_link',
+              'weight' => 0,
             ]);
           break;
 
-        // @todo this needs display options... thought they were set?
         case \CRM_Utils_Type::T_DATE:
-        case \CRM_Utils_Type::T_TIME:
+          $field = BaseFieldDefinition::create('datetime')
+            ->setSetting('datetime_type', DateTimeItem::DATETIME_TYPE_DATE)
+            ->setDisplayOptions('form', [
+              'type' => 'datetime_default',
+              'weight' => 0,
+            ])
+            ->setDisplayOptions('view', [
+              'type' => 'datetime_default',
+              'weight' => 0,
+            ]);
+          break;
+
         case (\CRM_Utils_Type::T_DATE + \CRM_Utils_Type::T_TIME):
-          $field = BaseFieldDefinition::create('datetime');
+          $field = BaseFieldDefinition::create('datetime')
+            ->setSetting('datetime_type', DateTimeItem::DATETIME_TYPE_DATETIME)
+            ->setDisplayOptions('form', [
+              'type' => 'datetime_default',
+              'weight' => 0,
+            ])
+            ->setDisplayOptions('view', [
+              'type' => 'datetime_default',
+              'weight' => 0,
+            ]);
           break;
 
         case \CRM_Utils_Type::T_ENUM:
@@ -152,10 +188,13 @@ class CivicrmEntity extends ContentEntityBase {
             ])
             ->setDisplayOptions('form', [
               'type' => 'datetime_timestamp',
-              'weight' => 10,
+              'weight' => 0,
             ]);
           break;
 
+        case \CRM_Utils_Type::T_TIME:
+          // @see https://github.com/civicrm/civicrm-core/blob/master/CRM/Core/DAO.php#L279
+          // When T_TIME DAO throws error?
         default:
           $field = BaseFieldDefinition::create('any');
           break;
