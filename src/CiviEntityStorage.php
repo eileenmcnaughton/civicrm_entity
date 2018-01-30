@@ -213,7 +213,16 @@ class CiviEntityStorage extends ContentEntityStorageBase {
       if ($definition->getType() == 'datetime') {
         $item_values = $items->getValue();
         foreach ($item_values as $delta => $item) {
-          $item_values[$delta][$main_property_name] = str_replace(' ', 'T', $item[$main_property_name]);
+          // Handle if the value provided is a timestamp.
+          // @note: This only occurred during test migrations.
+          if (is_numeric($item[$main_property_name])) {
+            $item_values[$delta][$main_property_name] = (new \DateTime())->setTimestamp($item[$main_property_name])->format(DATETIME_DATETIME_STORAGE_FORMAT);
+          }
+          // Date time formats from CiviCRM do not match the storage
+          // format for Drupal's date time fields. Add in missing "T" marker.
+          else {
+            $item_values[$delta][$main_property_name] = str_replace(' ', 'T', $item[$main_property_name]);
+          }
         }
         $items->setValue($item_values);
       }
