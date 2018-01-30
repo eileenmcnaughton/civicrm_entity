@@ -195,5 +195,30 @@ class CiviEntityStorage extends ContentEntityStorageBase {
   protected function doDeleteRevisionFieldItems(ContentEntityInterface $revision) {
   }
 
+  /**
+   * {@inheritdoc}
+   *
+   * Provide any additional processing of values from CiviCRM API.
+   */
+  protected function initFieldValues(ContentEntityInterface $entity, array $values = [], array $field_names = []) {
+    parent::initFieldValues($entity, $values, $field_names);
+    foreach ($entity->getFieldDefinitions() as $definition) {
+      $items = $entity->get($definition->getName());
+      if ($items->isEmpty()) {
+        continue;
+      }
+      $main_property_name = $definition->getMainPropertyName();
+
+      // Fix DateTime values for Drupal format.
+      if ($definition->getType() == 'datetime') {
+        $item_values = $items->getValue();
+        foreach ($item_values as $delta => $item) {
+          $item_values[$delta][$main_property_name] = str_replace(' ', 'T', $item[$main_property_name]);
+        }
+        $items->setValue($item_values);
+      }
+    }
+  }
+
 
 }
