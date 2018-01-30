@@ -22,6 +22,7 @@ final class SupportedEntities {
   public static function getInfo() {
     $civicrm_entity_info = [];
     $civicrm_entity_info['civicrm_activity'] = [
+      'civicrm entity label' => t('Activity'),
       'civicrm entity name' => 'activity',
       'label property' => 'subject',
       'permissions' => [
@@ -33,6 +34,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_action_schedule'] = [
+      'civicrm entity label' => t('Action Schedule'),
       'civicrm entity name' => 'action_schedule',
       'label property' => 'name',
       'permissions' => [
@@ -44,6 +46,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_address'] = [
+      'civicrm entity label' => t('Address'),
       'civicrm entity name' => 'address',
       'label property' => 'name',
       'permissions' => [
@@ -55,6 +58,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_campaign'] = [
+      'civicrm entity label' => t('Campaign'),
       'civicrm entity name' => 'campaign',
       'label property' => 'title',
       'permissions' => [
@@ -66,6 +70,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_case'] = [
+      'civicrm entity label' => t('Case'),
       'civicrm entity name' => 'case',
       'label property' => 'subject',
       'permissions' => [
@@ -80,6 +85,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_contact'] = [
+      'civicrm entity label' => t('Contact'),
       'civicrm entity name' => 'contact',
       'label property' => 'display_name',
       'permissions' => [
@@ -91,6 +97,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_contribution'] = [
+      'civicrm entity label' => t('Contribution'),
       'civicrm entity name' => 'contribution',
       'label property' => 'source',
       'permissions' => [
@@ -106,6 +113,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_contribution_recur'] = [
+      'civicrm entity label' => t('Contribution recurring'),
       'civicrm entity name' => 'contribution_recur',
       'label property' => 'id',
       'permissions' => [
@@ -121,6 +129,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_contribution_page'] = [
+      'civicrm entity label' => t('Contribution page'),
       'civicrm entity name' => 'contribution_page',
       'label property' => 'title',
       'permissions' => [
@@ -132,6 +141,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_country'] = [
+      'civicrm entity label' => t('Country'),
       'civicrm entity name' => 'country',
       'label property' => 'name',
       'permissions' => [
@@ -143,6 +153,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_email'] = [
+      'civicrm entity label' => t('Email'),
       'civicrm entity name' => 'email',
       'label property' => 'email',
       'permissions' => [
@@ -154,6 +165,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_entity_tag'] = [
+      'civicrm entity label' => t('Entity tag'),
       'civicrm entity name' => 'entity_tag',
       'label property' => 'tag_id',
       'permissions' => [
@@ -165,6 +177,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_entity_financial_trxn'] = [
+      'civicrm entity label' => t('Entity financial transaction'),
       'civicrm entity name' => 'entity_financial_trxn',
       'label property' => 'id',
       'permissions' => [
@@ -176,6 +189,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_financial_account'] = [
+      'civicrm entity label' => t('Financial account'),
       'civicrm entity name' => 'financial_account',
       'label property' => 'name',
       'permissions' => [
@@ -187,6 +201,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_financial_trxn'] = [
+      'civicrm entity label' => t('Financial transaction'),
       'civicrm entity name' => 'financial_trxn',
       'label property' => 'id',
       'permissions' => [
@@ -200,6 +215,7 @@ final class SupportedEntities {
     //dirty check for whether financialType exists
     if (!method_exists('CRM_Contribute_PseudoConstant', 'contributionType')) {
       $civicrm_entity_info['civicrm_financial_type'] = [
+        'civicrm entity label' => t('Financial type'),
         'civicrm entity name' => 'financial_type',
         'label property' => 'description',
         'permissions' => [
@@ -212,6 +228,7 @@ final class SupportedEntities {
       ];
     }
     $civicrm_entity_info['civicrm_event'] = [
+      'civicrm entity label' => t('Event'),
       'civicrm entity name' => 'event',
       'label property' => 'title',
       'permissions' => [
@@ -223,6 +240,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_group'] = [
+      'civicrm entity label' => t('Group'),
       'civicrm entity name' => 'group',
       'label property' => 'name',
       'permissions' => [
@@ -234,6 +252,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_grant'] = [
+      'civicrm entity label' => t('Grant'),
       'civicrm entity name' => 'grant',
       'label property' => '',
       'permissions' => [
@@ -245,6 +264,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_im'] = [
+      'civicrm entity label' => t('IM'),
       'civicrm entity name' => 'im',
       'label property' => 'name',
       'permissions' => [
@@ -256,6 +276,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_line_item'] = [
+      'civicrm entity label' => t('Line item'),
       'civicrm entity name' => 'line_item',
       'label property' => 'label',
       'permissions' => [
@@ -267,6 +288,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_loc_block'] = [
+      'civicrm entity label' => t('Location block'),
       'civicrm entity name' => 'loc_block',
       'label property' => '',
       'permissions' => [
@@ -278,6 +300,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_membership'] = [
+      'civicrm entity label' => t('Membership'),
       'civicrm entity name' => 'membership',
       'permissions' => [
         'view' => ['access CiviMember'],
@@ -288,6 +311,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_membership_payment'] = [
+      'civicrm entity label' => t('Membership payment'),
       'civicrm entity name' => 'membership_payment',
       'permissions' => [
         'view' => ['access CiviMember', 'access CiviContribute'],
@@ -302,6 +326,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_membership_type'] = [
+      'civicrm entity label' => t('Membership type'),
       'civicrm entity name' => 'membership_type',
       'label property' => 'name',
       'permissions' => [
@@ -317,6 +342,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_note'] = [
+      'civicrm entity label' => t('Note'),
       'civicrm entity name' => 'note',
       'label property' => 'subject',
       'permissions' => [
@@ -328,6 +354,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_participant'] = [
+      'civicrm entity label' => t('Participant'),
       'civicrm entity name' => 'participant',
       'label property' => 'source',
       'permissions' => [
@@ -339,6 +366,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_participant_status_type'] = [
+      'civicrm entity label' => t('Participant status type'),
       'civicrm entity name' => 'participant_status_type',
       'label property' => 'label',
       'permissions' => [
@@ -350,6 +378,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_participant_payment'] = [
+      'civicrm entity label' => t('Participant payment'),
       'civicrm entity name' => 'participant_payment',
       'label property' => 'id',
       'permissions' => [
@@ -361,6 +390,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_payment_processor'] = [
+      'civicrm entity label' => t('Payment processor'),
       'civicrm entity name' => 'payment_processor',
       'label property' => 'name',
       'permissions' => [
@@ -372,6 +402,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_payment_processor_type'] = [
+      'civicrm entity label' => t('Payment processor type'),
       'civicrm entity name' => 'payment_processor_type',
       'label property' => 'title',
       'permissions' => [
@@ -383,6 +414,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_phone'] = [
+      'civicrm entity label' => t('Phone'),
       'civicrm entity name' => 'phone',
       'label property' => 'phone',
       'permissions' => [
@@ -394,6 +426,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_pledge'] = [
+      'civicrm entity label' => t('Pledge'),
       'civicrm entity name' => 'pledge',
       'permissions' => [
         'view' => ['access CiviPledge'],
@@ -404,6 +437,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_pledge_payment'] = [
+      'civicrm entity label' => t('Pledge payment'),
       'civicrm entity name' => 'pledge_payment',
       'permissions' => [
         'view' => [],
@@ -414,6 +448,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_price_set'] = [
+      'civicrm entity label' => t('Price set'),
       'civicrm entity name' => 'price_set',
       'permissions' => [
         'view' => [],
@@ -424,6 +459,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_price_field'] = [
+      'civicrm entity label' => t('Price field'),
       'civicrm entity name' => 'price_field',
       'permissions' => [
         'view' => [],
@@ -434,6 +470,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_price_field_value'] = [
+      'civicrm entity label' => t('Price field value'),
       'civicrm entity name' => 'price_field_value',
       'permissions' => [
         'view' => [],
@@ -444,6 +481,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_recurring_entity'] = [
+      'civicrm entity label' => t('Recurring entity'),
       'civicrm entity name' => 'recurring_entity',
       'permissions' => [
         'view' => [],
@@ -454,6 +492,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_relationship'] = [
+      'civicrm entity label' => t('Relationship'),
       'civicrm entity name' => 'relationship',
       'label property' => 'description',
       'permissions' => [
@@ -465,6 +504,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_relationship_type'] = [
+      'civicrm entity label' => t('Relationship type'),
       'civicrm entity name' => 'relationship_type',
       'label property' => 'description',
       'permissions' => [
@@ -476,6 +516,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_survey'] = [
+      'civicrm entity label' => t('Survey'),
       'civicrm entity name' => 'survey',
       'label property' => 'title',
       'permissions' => [
@@ -487,6 +528,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_tag'] = [
+      'civicrm entity label' => t('Tag'),
       'civicrm entity name' => 'tag',
       'label property' => 'name',
       'permissions' => [
@@ -498,6 +540,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_custom_field'] = [
+      'civicrm entity label' => t('Custom field'),
       'civicrm entity name' => 'custom_field',
       'label property' => 'label',
       'permissions' => [
@@ -509,6 +552,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_custom_group'] = [
+      'civicrm entity label' => t('Group'),
       'civicrm entity name' => 'custom_group',
       'label property' => 'title',
       'permissions' => [
@@ -520,6 +564,7 @@ final class SupportedEntities {
       ],
     ];
     $civicrm_entity_info['civicrm_website'] = [
+      'civicrm entity label' => t('Website'),
       'civicrm entity name' => 'website',
       'label property' => 'url',
       'permissions' => [

@@ -11,6 +11,7 @@ use Drupal\Core\Menu\LocalActionManagerInterface;
 use Drupal\Core\Menu\LocalTaskManagerInterface;
 use Drupal\Core\Menu\MenuLinkManagerInterface;
 use Drupal\Core\Routing\RouteBuilderInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Form for CiviCRM entity settings.
@@ -80,6 +81,20 @@ class CivicrmEntitySettings extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('config.factory'),
+      $container->get('entity_type.manager'),
+      $container->get('router.builder'),
+      $container->get('plugin.manager.menu.local_action'),
+      $container->get('plugin.manager.menu.local_task'),
+      $container->get('plugin.manager.menu.link')
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function getEditableConfigNames() {
     return ['civicrm_entity.settings'];
   }
@@ -104,7 +119,7 @@ class CivicrmEntitySettings extends ConfigFormBase {
       '#type' => 'checkboxes',
       '#title' => $this->t('Enabled entity types'),
       '#options' => array_map(function (array $entity_info) {
-        return ucfirst($entity_info['civicrm entity name']);
+        return $entity_info['civicrm entity label'];
       }, $civicrm_entity_types),
       '#default_value' => $config->get('enabled_entity_types'),
     ];
