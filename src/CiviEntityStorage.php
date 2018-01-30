@@ -57,13 +57,7 @@ class CiviEntityStorage extends ContentEntityStorageBase {
    */
   protected function doSave($id, EntityInterface $entity) {
     /** @var \Drupal\civicrm_entity\Entity\CivicrmEntity $entity */
-    if ($entity->isNew()) {
-      // @todo decide on special handling?
-      $return = SAVED_NEW;
-    }
-    else {
-      $return = SAVED_UPDATED;
-    }
+    $return = $entity->isNew() ? SAVED_NEW : SAVED_UPDATED;
 
     $params = [];
     /** @var \Drupal\Core\Field\FieldItemListInterface $items */
