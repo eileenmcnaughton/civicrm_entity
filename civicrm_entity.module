@@ -44,8 +44,7 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
         'route_provider' => [
           'default' => \Drupal\civicrm_entity\Routing\CiviCrmEntityRouteProvider::class,
         ],
-        // @todo Need custom access to handle `civicrm_entity_ui_exposed`
-        'access' => \Drupal\Core\Entity\EntityAccessControlHandler::class,
+        'access' => \Drupal\civicrm_entity\CivicrmEntityAccessHandler::class,
         'form' => [
           'default' => \Drupal\civicrm_entity\Form\CivicrmEntityForm::class,
           'add' => \Drupal\civicrm_entity\Form\CivicrmEntityForm::class,
