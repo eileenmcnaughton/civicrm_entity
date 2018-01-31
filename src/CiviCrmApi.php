@@ -7,22 +7,27 @@ use Drupal\civicrm\Civicrm;
 class CiviCrmApi implements CiviCrmApiInterface {
 
   /**
+   * The CiviCRM service.
+   *
+   * @var \Drupal\civicrm\Civicrm
+   */
+  protected $civicrm;
+
+  /**
    * Constructs a new CiviCrmApi object.
    *
    * @param \Drupal\civicrm\Civicrm $civicrm
    *   The CiviCRM service.
    */
   public function __construct(Civicrm $civicrm) {
-    // Ensure CiviCRM is loaded and our function is available.
-    if (!function_exists('civicrm_api3')) {
-      $civicrm->initialize();
-    }
+    $this->civicrm = $civicrm;
   }
 
   /**
    * {@inheritdoc}
    */
   public function get($entity, array $params = []) {
+    $this->initialize();
     $result = civicrm_api3($entity, 'get', $params);
     return $result['values'];
   }
@@ -31,6 +36,7 @@ class CiviCrmApi implements CiviCrmApiInterface {
    * {@inheritdoc}
    */
   public function delete($entity, array $params) {
+    $this->initialize();
     $result = civicrm_api3($entity, 'delete', $params);
     return $result['values'];
   }
@@ -39,6 +45,7 @@ class CiviCrmApi implements CiviCrmApiInterface {
    * {@inheritdoc}
    */
   public function save($entity, array $params) {
+    $this->initialize();
     $result = civicrm_api3($entity, 'create', $params);
     return $result;
   }
@@ -47,6 +54,7 @@ class CiviCrmApi implements CiviCrmApiInterface {
    * {@inheritdoc}
    */
   public function getFields($entity, $action = 'create') {
+    $this->initialize();
     $result = civicrm_api3($entity, 'getfields', ['action' => $action]);
     return $result['values'];
   }
@@ -55,8 +63,18 @@ class CiviCrmApi implements CiviCrmApiInterface {
    * {@inheritdoc}
    */
   public function getOptions($entity, $field_name) {
+    $this->initialize();
     $result = civicrm_api3($entity, 'getoptions', ['field' => $field_name]);
     return $result['values'];
+  }
+
+  /**
+   * Ensures that CiviCRM is loaded and API function available.
+   */
+  protected function initialize() {
+    if (!function_exists('civicrm_api3')) {
+      $this->civicrm->initialize();
+    }
   }
 
 }

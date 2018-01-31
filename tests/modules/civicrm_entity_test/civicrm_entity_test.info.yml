@@ -1,0 +1,9 @@
+name: CiviCRM Entity Test
+type: module
+description: 'Test module for CiviCRM.'
+package: CiviCRM
+version: 8.x-3.x
+core: 8.x
+dependencies:
+  - civicrm
+  - civicrm_entity

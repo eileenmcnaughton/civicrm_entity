@@ -2,7 +2,12 @@ civicrm_entity.admin:
   title: 'CiviCRM Entity'
   route_name: 'civicrm_entity.admin'
   parent: 'system.admin_structure'
-  # @todo better description
+  description: 'Manage CiviCRM within Drupal.'
+
+civicrm_entity.settings:
+  title: 'Settings'
+  route_name: 'civicrm_entity.settings'
+  parent: 'civicrm_entity.admin'
   description: 'Manage CiviCRM within Drupal.'
 
 civicrm_entity.entity_collections:

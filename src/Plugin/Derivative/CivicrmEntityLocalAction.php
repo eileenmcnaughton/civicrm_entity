@@ -51,7 +51,7 @@ class CivicrmEntityLocalAction extends DeriverBase implements ContainerDeriverIn
     $this->derivatives = [];
 
     $civicrm_entities = array_filter($this->entityTypeManager->getDefinitions(), function (EntityTypeInterface $type) {
-      return $type->getProvider() == 'civicrm_entity' && $type->get('civicrm_entity');
+      return $type->getProvider() == 'civicrm_entity' && $type->get('civicrm_entity_ui_exposed');
     });
 
     /** @var \Drupal\Core\Entity\EntityTypeInterface $entity_type */

@@ -1,0 +1,3 @@
+administer civicrm entity:
+  title: 'Administer CiviCRM entities'
+  description: 'Allow managing CiviCRM entities in Drupal.'

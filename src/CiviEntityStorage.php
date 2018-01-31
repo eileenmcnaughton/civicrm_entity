@@ -9,6 +9,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\TypedData\Plugin\DataType\DateTimeIso8601;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -55,31 +56,42 @@ class CiviEntityStorage extends ContentEntityStorageBase {
    * {@inheritdoc}
    */
   protected function doSave($id, EntityInterface $entity) {
-    if ($entity->isNew()) {
-      // @todo decide on special handling?
-      $return = SAVED_NEW;
-    }
-    else {
-      $return = SAVED_UPDATED;
-    }
+    /** @var \Drupal\civicrm_entity\Entity\CivicrmEntity $entity */
+    $return = $entity->isNew() ? SAVED_NEW : SAVED_UPDATED;
 
-    $params = $entity->toArray();
-    $params = array_map(function ($value) {
-      if (empty($value)) {
-        return NULL;
+    $params = [];
+    /** @var \Drupal\Core\Field\FieldItemListInterface $items */
+    foreach ($entity->getFields() as $field_name => $items) {
+      $items->filterEmptyItems();
+      if ($items->isEmpty()) {
+        continue;
       }
-      else {
-        if (is_array($value)) {
-          $value = reset($value);
-          if (is_array($value)) {
-            return reset($value);
-          }
+
+      $storage_definition = $items->getFieldDefinition()->getFieldStorageDefinition();
+      $main_property_name = $storage_definition->getMainPropertyName();
+      $list = [];
+      /** @var \Drupal\Core\Field\FieldItemInterface $item */
+      foreach ($items as $delta => $item) {
+        $main_property = $item->get($main_property_name);
+        if ($main_property instanceof DateTimeIso8601) {
+          $value = $main_property->getDateTime()->format(DATETIME_DATETIME_STORAGE_FORMAT);
         }
-        return $value;
+        else {
+          $value = $main_property->getValue();
+        }
+        $list[$delta] = $value;
       }
-    }, $params);
-    $this->civicrmApi->save($this->entityType->get('civicrm_entity'), $params);
 
+      // Remove the wrapping array if the field is single-valued.
+      if ($storage_definition->getCardinality() === 1) {
+        $list = reset($list);
+      }
+      if (!empty($list)) {
+        $params[$field_name] = $list;
+      }
+    }
+
+    $this->civicrmApi->save($this->entityType->get('civicrm_entity'), $params);
     return $return;
   }
 
@@ -175,6 +187,40 @@ class CiviEntityStorage extends ContentEntityStorageBase {
    * {@inheritdoc}
    */
   protected function doDeleteRevisionFieldItems(ContentEntityInterface $revision) {
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * Provide any additional processing of values from CiviCRM API.
+   */
+  protected function initFieldValues(ContentEntityInterface $entity, array $values = [], array $field_names = []) {
+    parent::initFieldValues($entity, $values, $field_names);
+    foreach ($entity->getFieldDefinitions() as $definition) {
+      $items = $entity->get($definition->getName());
+      if ($items->isEmpty()) {
+        continue;
+      }
+      $main_property_name = $definition->getMainPropertyName();
+
+      // Fix DateTime values for Drupal format.
+      if ($definition->getType() == 'datetime') {
+        $item_values = $items->getValue();
+        foreach ($item_values as $delta => $item) {
+          // Handle if the value provided is a timestamp.
+          // @note: This only occurred during test migrations.
+          if (is_numeric($item[$main_property_name])) {
+            $item_values[$delta][$main_property_name] = (new \DateTime())->setTimestamp($item[$main_property_name])->format(DATETIME_DATETIME_STORAGE_FORMAT);
+          }
+          // Date time formats from CiviCRM do not match the storage
+          // format for Drupal's date time fields. Add in missing "T" marker.
+          else {
+            $item_values[$delta][$main_property_name] = str_replace(' ', 'T', $item[$main_property_name]);
+          }
+        }
+        $items->setValue($item_values);
+      }
+    }
   }
 
 

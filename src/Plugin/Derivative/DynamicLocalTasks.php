@@ -66,7 +66,7 @@ class DynamicLocalTasks extends DeriverBase implements ContainerDeriverInterface
     $this->derivatives = [];
 
     $civicrm_entities = array_filter($this->entityTypeManager->getDefinitions(), function (EntityTypeInterface $type) {
-      return $type->getProvider() == 'civicrm_entity' && $type->hasKey('civicrm_entity');
+      return $type->getProvider() == 'civicrm_entity' && $type->get('civicrm_entity_ui_exposed');
     });
 
     foreach ($civicrm_entities as $entity_type_id => $entity_type) {

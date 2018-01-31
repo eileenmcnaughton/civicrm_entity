@@ -7,6 +7,9 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Query\QueryBase;
 use Drupal\Core\Entity\Query\QueryInterface;
 
+/**
+ * The CiviCRM entity query class.
+ */
 class Query extends QueryBase implements QueryInterface {
 
   protected $civicrmApi;

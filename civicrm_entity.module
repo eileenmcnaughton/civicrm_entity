@@ -5,6 +5,8 @@
  */
 
 use Drupal\Core\Entity\ContentEntityType;
+use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
@@ -14,18 +16,19 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  */
 function civicrm_entity_entity_type_build(array &$entity_types) {
   $supported_entities = \Drupal\civicrm_entity\SupportedEntities::getInfo();
-  $enabled_entity_types = ['event'];
-  foreach ($enabled_entity_types as $enabled_entity_type) {
-    $entity_type_id = 'civicrm_' . $enabled_entity_type;
-    $civicrm_entity_info = $supported_entities[$entity_type_id];
+  $enabled_entity_types = \Drupal::config('civicrm_entity.settings')->get('enabled_entity_types');
+  foreach ($supported_entities as $entity_type_id => $civicrm_entity_info) {
     $clean_entity_type_id = str_replace('_', '-', $entity_type_id);
+    $civicrm_entity_name = $civicrm_entity_info['civicrm entity name'];
+
     $entity_types[$entity_type_id] = new ContentEntityType([
       'provider' => 'civicrm_entity',
       'class' => \Drupal\civicrm_entity\Entity\CivicrmEntity::class,
       'originalClass' => \Drupal\civicrm_entity\Entity\CivicrmEntity::class,
       'id' => $entity_type_id,
-      'civicrm_entity' => $enabled_entity_type,
-      'label' => new TranslatableMarkup('CiviCRM :name', [':name' => $civicrm_entity_info['civicrm entity name']]),
+      'civicrm_entity' => $civicrm_entity_name,
+      'civicrm_entity_ui_exposed' => in_array($entity_type_id, $enabled_entity_types),
+      'label' => new TranslatableMarkup('CiviCRM :name', [':name' => $civicrm_entity_info['civicrm entity label']]),
       // @todo add label_singular
       // @todo add label_plural
       // @todo add label_count
@@ -33,15 +36,15 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
         'id' => 'id',
         'label' => $civicrm_entity_info['label property'],
       ],
-      'admin_permission' => 'administer CiviCRM',
+      'admin_permission' => 'administer civicrm entity',
       'permission_granularity' => 'entity_type',
       'handlers' => [
         'storage' => \Drupal\civicrm_entity\CiviEntityStorage::class,
         'list_builder' => \Drupal\civicrm_entity\CivicrmEntityListBuilder::class,
         'route_provider' => [
-          'default' => \Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider::class
+          'default' => \Drupal\civicrm_entity\Routing\CiviCrmEntityRouteProvider::class,
         ],
-        'access' => \Drupal\Core\Entity\EntityAccessControlHandler::class,
+        'access' => \Drupal\civicrm_entity\CivicrmEntityAccessHandler::class,
         'form' => [
           'default' => \Drupal\civicrm_entity\Form\CivicrmEntityForm::class,
           'add' => \Drupal\civicrm_entity\Form\CivicrmEntityForm::class,
@@ -52,11 +55,45 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
       // Generate route paths.
       'links' => [
         'canonical' => sprintf('/%s/{%s}', $clean_entity_type_id, $entity_type_id),
-        'delete-form' => sprintf('/admin/structure/civicrm-entity/%s/{%s}/delete', $clean_entity_type_id, $entity_type_id),
-        'edit-form' => sprintf('/admin/structure/civicrm-entity/%s/{%s}/edit', $clean_entity_type_id, $entity_type_id),
-        'add-form' => sprintf('/admin/structure/civicrm-entity/%s/add', $clean_entity_type_id, $entity_type_id),
+        'delete-form' => sprintf('/%s/{%s}/delete', $clean_entity_type_id, $entity_type_id),
+        'edit-form' => sprintf('/%s/{%s}/edit', $clean_entity_type_id, $entity_type_id),
+        'add-form' => sprintf('/%s/add', $clean_entity_type_id, $entity_type_id),
         'collection' => sprintf('/admin/structure/civicrm-entity/%s', $clean_entity_type_id),
       ],
     ]);
+  }
+}
+
+/**
+ * Implements callback_allowed_values_function().
+ *
+ * Provides the pseudoconstant values for CiviCRM entity fields.
+ *
+ * @param \Drupal\Core\Field\FieldStorageDefinitionInterface $definition
+ *  The field storage definition.
+ * @param \Drupal\Core\Entity\FieldableEntityInterface|NULL $entity
+ *  The entity.
+ * @param bool $cacheable
+ *  If the options are cacheable.
+ *
+ * @return array
+ *  The array of field options.
+ */
+function civicrm_entity_pseudoconstant_options(FieldStorageDefinitionInterface $definition, FieldableEntityInterface $entity = NULL, &$cacheable = NULL) {
+  /** @var \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api */
+  $civicrm_api = \Drupal::service('civicrm_entity.api');
+  $entity_type = $entity->getEntityType();
+  $options = $civicrm_api->getOptions($entity_type->get('civicrm_entity'), $definition->getName());
+  return $options;
+}
+
+function civicrm_entity_test_migration() {
+  $migration_ids = [
+    'civicrm_entity_test_civicrm_event',
+  ];
+  $migrations = \Drupal::getContainer()->get('plugin.manager.migration')->createInstances($migration_ids);
+  foreach ($migrations as $migration) {
+    $executable = new \Drupal\migrate\MigrateExecutable($migration, new \Drupal\migrate\MigrateMessage());
+    $executable->import();
   }
 }

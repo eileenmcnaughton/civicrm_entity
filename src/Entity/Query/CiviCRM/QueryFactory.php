@@ -8,6 +8,11 @@ use Drupal\Core\Entity\Query\QueryException;
 use Drupal\Core\Entity\Query\QueryFactoryInterface;
 use Drupal\civicrm_entity\CiviCrmApiInterface;
 
+/**
+ * Factory class creating entity query objects in CiviCRM.
+ *
+ * @see \Drupal\civicrm_entity\Entity\Query\CiviCRM\Query
+ */
 class QueryFactory implements QueryFactoryInterface {
 
   /**
@@ -17,6 +22,11 @@ class QueryFactory implements QueryFactoryInterface {
    */
   protected $namespaces;
 
+  /**
+   * The CiviCRM API service.
+   *
+   * @var \Drupal\civicrm_entity\CiviCrmApiInterface
+   */
   protected $civicrmApi;
 
   /**
@@ -47,7 +57,7 @@ class QueryFactory implements QueryFactoryInterface {
    * {@inheritdoc}
    */
   public function getAggregate(EntityTypeInterface $entity_type, $conjunction) {
-    // @todo copy paste, evaluate i they do.
+    // @todo copy paste, evaluate if they do.
     throw new QueryException("CiviCRM entity queries do not support aggregate queries.");
   }
 
