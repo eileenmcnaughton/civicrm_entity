@@ -1581,6 +1581,26 @@ function civicrm_entity_supported_entities_info() {
       'boolean fields' => array('is_active', 'is_default'),
     ),
   );
+  $civicrm_entity_info['civicrm_pcp'] = array(
+    'civicrm entity name' => 'pcp',
+    'label property' => 'title',
+    'permissions' => array(
+      'view' => array('administer CiviCRM'),
+      'edit' => array('administer CiviCRM'),
+      'update' => array('administer CiviCRM'),
+      'create' => array('administer CiviCRM'),
+      'delete' => array('administer CiviCRM'),
+    ),
+    'theme' => array(
+      'template' => 'civicrm-pcp',
+      'path' => drupal_get_path('module', 'civicrm_entity') . '/templates',
+    ),
+    'display suite' => array(
+      'link fields' => array('contact_id'),
+      'option fields' => array('status_id'),
+      'boolean fields' => array('is_active', 'is_notify', 'is_honor_roll', 'is_thermometer'),
+    ),
+  );
   $civicrm_entity_info['civicrm_phone'] = array(
     'civicrm entity name' => 'phone',
     'label property' => 'phone',
@@ -3407,6 +3427,7 @@ function civicrm_entity_rules_contact_subtype_options_list() {
  */
 function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
   if ($op == 'delete') {
+    dsm($objectName);
     $entity_type = '';
     $valid_entities = _civicrm_entity_enabled_entities();
     switch ($objectName) {
