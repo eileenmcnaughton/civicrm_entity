@@ -3427,7 +3427,6 @@ function civicrm_entity_rules_contact_subtype_options_list() {
  */
 function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
   if ($op == 'delete') {
-    dsm($objectName);
     $entity_type = '';
     $valid_entities = _civicrm_entity_enabled_entities();
     switch ($objectName) {
