@@ -3906,7 +3906,7 @@ function civicrm_entity_form_alter(&$form, &$form_state, $form_id) {
  * @see civicrm_entity_form_alter().
  */
 function _civicrm_entity_manage_display_submit(&$form, &$form_state) {
-  if ($form_state['values']['additional_settings']['layout'] != '') {
+  if (empty($form_state['values']['additional_settings']['layout'])) {
     $entity_type = $form['#entity_type'];
     $bundle = $form['#bundle'];
     $bundle_settings = field_bundle_settings($entity_type, $bundle);
