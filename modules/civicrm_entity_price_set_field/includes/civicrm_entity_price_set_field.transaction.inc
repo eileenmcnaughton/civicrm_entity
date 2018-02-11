@@ -230,10 +230,6 @@ function civicrm_entity_price_set_field_civicrm_entity_price_set_field_processor
       'payment_processor_type' => 'PayPal',
       'callback' => 'civicrm_entity_price_set_field_transact_payment_processing',
     ),
-    'paypal_standard' => array(
-      'payment_processor_type' => 'PayPal_Standard',
-      'callback' => 'civicrm_entity_price_set_field_transact_payment_processing',
-    ),
     'iats' => array(
       'payment_processor_type' => 'iATS Payments Credit Card',
       'callback' => 'civicrm_entity_price_set_field_transact_payment_processing',
