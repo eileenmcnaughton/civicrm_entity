@@ -325,7 +325,7 @@ function civicrm_entity_form_validate(&$form, &$form_state) {
   $entity_type = $form['#entity_type'];
 
   // unset form and entity values if civicrm properties are hidden from the form by display suite
-  if (module_exists('ds_form')) {
+  if (module_exists('ds_forms')) {
     if ($ds_form = ds_build_load($form, $form['#form_id'])) {
       if ($layout = ds_get_layout($ds_form->entity_type, $ds_form->bundle, 'form', FALSE)) {
         foreach ($layout['settings']['fields'] as $field_name => $visibility) {
@@ -425,11 +425,12 @@ function civicrm_entity_form_submit(&$form, &$form_state) {
     'action' => 'create',
   ));
   // unset form and entity values if civicrm properties are hidden from the form by display suite
-  if (module_exists('ds_form')) {
+  if (module_exists('ds_forms')) {
     if ($ds_form = ds_build_load($form, $form['#form_id'])) {
       if ($layout = ds_get_layout($ds_form->entity_type, $ds_form->bundle, 'form', FALSE)) {
         foreach ($layout['settings']['fields'] as $field_name => $visibility) {
           if ($field_name != 'id' && $visibility == 'hidden' && strpos($field_name, 'field_') !== 0) {
+            unset($form_state['values'][$field_name]);
             unset($entity->{$field_name});
           }
         }
