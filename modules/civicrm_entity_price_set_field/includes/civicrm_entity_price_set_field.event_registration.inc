@@ -1058,9 +1058,10 @@ function _civicrm_entity_price_set_field_event_registration_remove_participant_s
  * @param $form_state
  * @return mixed
  */
-function civicrm_entity_price_set_field_event_registration_form_ajax_callback($form, &$form_state) {
+function civicrm_entity_price_set_field_event_registration_form_ajax_callback(&$form, &$form_state) {
   $commands = array();
-
+  drupal_alter('form', $form, $form_state, $form['#form_id']);
+  drupal_alter('form_' . $form['#form_id'], $form, $form_state);
   $commands[] = ajax_command_html('#civicrm-price-set-field-event-registration', render($form));
   $commands[] = ajax_command_prepend('#civicrm-price-set-field-event-registration', '<div id="messages">' . theme('status_messages') . '</div>');
   $commands[] = array(
