@@ -177,7 +177,10 @@ function civicrm_entity_price_set_field_display_form_event($form, &$form_state) 
         // Registration Form
         case 1:
           $default_values = array();
-          if (isset($form_state['values']['registration_form'])) {
+          if (isset($form_state['input']['registration_form'])) {
+            $default_values = $form_state['input']['registration_form'];
+          }
+          elseif (isset($form_state['values']['registration_form'])) {
             $default_values = $form_state['values']['registration_form'];
           }
           elseif (isset($form_state['storage']['registration_form'])) {
@@ -188,7 +191,7 @@ function civicrm_entity_price_set_field_display_form_event($form, &$form_state) 
             $contact = civicrm_entity_user_contact_get($user, array(), '', '', '');
             if ($contact) {
               $already_registered = _civicrm_entity_price_set_field_get_participant_count_for_event($event->id, $contact->id);
-              if (!empty($already_registered)) {
+              if (empty($event->allow_same_participant_emails) && !empty($already_registered)) {
                 drupal_set_message(t('You have already registered for this event.'), 'status', FALSE);
                 $form_state['main_registrant_already_registered'] = TRUE;
               }
@@ -695,7 +698,7 @@ function civicrm_entity_price_set_field_display_form_event_submit($form, &$form_
           if (!empty($dedupe_result['id'])) {
             // should we check here if the contact is already registered, and if so throw back a message?
             $contact_registrations_for_event = _civicrm_entity_price_set_field_get_participant_count_for_event($event->id, $dedupe_result['id']);
-            if ($contact_registrations_for_event) {
+            if (empty($event->allow_same_participant_emails) && $contact_registrations_for_event) {
               drupal_set_message('Participant ' . ($count + 1) . ' has already registered for this event.');
               $form_state['step'] = 1;
               $form_state['rebuild'] = TRUE;
@@ -793,7 +796,6 @@ function _civicrm_entity_price_set_field_process_event_registration(&$form_state
   }
 
   $line_items = array();
-
   foreach ($form_state['contacts'] as $count => $contact) {
     //_civicrm_entity_price_set_field_display_form_create_update_contact('other', $count, $form_state);
     $submitted_count = 0;
@@ -1056,9 +1058,10 @@ function _civicrm_entity_price_set_field_event_registration_remove_participant_s
  * @param $form_state
  * @return mixed
  */
-function civicrm_entity_price_set_field_event_registration_form_ajax_callback($form, &$form_state) {
+function civicrm_entity_price_set_field_event_registration_form_ajax_callback(&$form, &$form_state) {
   $commands = array();
-
+  drupal_alter('form', $form, $form_state, $form['#form_id']);
+  drupal_alter('form_' . $form['#form_id'], $form, $form_state);
   $commands[] = ajax_command_html('#civicrm-price-set-field-event-registration', render($form));
   $commands[] = ajax_command_prepend('#civicrm-price-set-field-event-registration', '<div id="messages">' . theme('status_messages') . '</div>');
   $commands[] = array(
@@ -1088,7 +1091,7 @@ function civicrm_entity_price_set_field_event_registration_form_register_as_anot
 
     $form_state['contacts'][0] = new CivicrmEntity(array('is_new' => 1), 'civicrm_contact');
     global $user;
-    if ($user->uid && empty($form_state['main_registrant_already_registered'])) {
+    if ($user->uid && empty($form_state['main_registrant_already_registered']) && empty($form_state['event']->allow_same_participant_emails)) {
       $form_state['contacts'][0]->uid = $user->uid;
     }
   }
