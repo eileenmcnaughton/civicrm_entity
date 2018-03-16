@@ -99,19 +99,19 @@ class CivicrmEntity extends ContentEntityBase {
           break;
 
         case \CRM_Utils_Type::T_STRING:
-        case \CRM_Utils_Type::T_TEXT:
         case \CRM_Utils_Type::T_CCNUM:
-        $field = BaseFieldDefinition::create('string')
-          ->setDisplayOptions('view', [
-            'type' => 'text_default',
-            'weight' => 0,
-          ])
-          ->setDisplayOptions('form', [
-            'type' => 'string_textfield',
-            'weight' => 0,
-          ]);
-        break;
+          $field = BaseFieldDefinition::create('string')
+            ->setDisplayOptions('view', [
+              'type' => 'text_default',
+              'weight' => 0,
+            ])
+            ->setDisplayOptions('form', [
+              'type' => 'string_textfield',
+              'weight' => 0,
+            ]);
+          break;
 
+        case \CRM_Utils_Type::T_TEXT:
         case \CRM_Utils_Type::T_LONGTEXT:
           $field = BaseFieldDefinition::create('text_long')
             ->setDisplayOptions('view', [
@@ -119,8 +119,9 @@ class CivicrmEntity extends ContentEntityBase {
               'weight' => 0,
             ])
             ->setDisplayOptions('form', [
-              'type' => 'text_textfield',
+              'type' => 'text_textarea',
               'weight' => 0,
+              'rows' => $civicrm_field['rows'],
             ]);
           break;
 
