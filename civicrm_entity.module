@@ -78,6 +78,7 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
         'add-form' => sprintf('/%s/add', $clean_entity_type_id, $entity_type_id),
         'collection' => sprintf('/admin/structure/civicrm-entity/%s', $clean_entity_type_id),
       ],
+      'field_ui_base_route' => "entity.$entity_type_id.collection",
     ]);
   }
 }
