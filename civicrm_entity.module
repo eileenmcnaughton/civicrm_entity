@@ -11,6 +11,17 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
+ * Implements hook_theme().
+ */
+function civicrm_entity_theme() {
+  return [
+    'civicrm_entity_entity_form' => [
+      'render element' => 'form',
+    ],
+  ];
+}
+
+/**
  * Implements hook_entity_type_build().
  *
  * Populates supported CiviCRM Entity definitions.
