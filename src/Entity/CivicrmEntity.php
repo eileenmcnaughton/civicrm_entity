@@ -23,8 +23,13 @@ class CivicrmEntity extends ContentEntityBase {
     $fields = [];
 
     $civicrm_fields = \Drupal::service('civicrm_entity.api')->getFields($entity_type->get('civicrm_entity'));
+    $hidden_fields = $entity_type->get('civicrm_hidden_fields');
     foreach ($civicrm_fields as $civicrm_field) {
       $fields[$civicrm_field['name']] = self::createBaseFieldDefinition($civicrm_field, $entity_type->get('civicrm_entity'));
+      if (in_array($civicrm_field['name'], $hidden_fields)) {
+        $fields[$civicrm_field['name']]->setDisplayOptions('form', []);
+        $fields[$civicrm_field['name']]->setDisplayConfigurable('form', FALSE);
+      }
     }
 
     return $fields;
