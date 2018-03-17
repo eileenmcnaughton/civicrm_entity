@@ -4,6 +4,7 @@
  * @file
  */
 
+use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Core\Entity\ContentEntityType;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
@@ -15,11 +16,17 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * Populates supported CiviCRM Entity definitions.
  */
 function civicrm_entity_entity_type_build(array &$entity_types) {
-  $supported_entities = \Drupal\civicrm_entity\SupportedEntities::getInfo();
+  $logger = \Drupal::logger('civicrm-entity');
+  $supported_entities = SupportedEntities::getInfo();
   $enabled_entity_types = \Drupal::config('civicrm_entity.settings')->get('enabled_entity_types');
   foreach ($supported_entities as $entity_type_id => $civicrm_entity_info) {
     $clean_entity_type_id = str_replace('_', '-', $entity_type_id);
     $civicrm_entity_name = $civicrm_entity_info['civicrm entity name'];
+
+    if (empty($civicrm_entity_info['label property'])) {
+      $logger->debug(sprintf('Missing label property: %s', $entity_type_id));
+      continue;
+    }
 
     $entity_types[$entity_type_id] = new ContentEntityType([
       'provider' => 'civicrm_entity',
