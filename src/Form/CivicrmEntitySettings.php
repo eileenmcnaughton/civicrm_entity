@@ -139,10 +139,7 @@ class CivicrmEntitySettings extends ConfigFormBase {
 
     // Need to rebuild derivative routes.
     $this->entityTypeManager->clearCachedDefinitions();
-    $this->routeBuilder->setRebuildNeeded();
-    $this->localActionManager->clearCachedDefinitions();
-    $this->localTaskManager->clearCachedDefinitions();
-    $this->menuLinkManager->rebuild();
+    $this->routeBuilder->rebuild();
   }
 
 }
