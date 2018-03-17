@@ -104,6 +104,35 @@ class CivicrmEntity extends ContentEntityBase {
           break;
 
         case \CRM_Utils_Type::T_STRING:
+          // If this field has `pseudoconstant` it is a reference to values in
+          // civicrm_option_value.
+          if (!empty($civicrm_field['pseudoconstant']) && $civicrm_field['name'] != 'card_type_id') {
+            $field = BaseFieldDefinition::create('list_string')
+              ->setSetting('allowed_values_function', 'civicrm_entity_pseudoconstant_options')
+              ->setDisplayOptions('view', [
+                'type' => 'list_default',
+                'weight' => 0,
+              ])
+              ->setDisplayOptions('form', [
+                'type' => 'options_select',
+                'weight' => 0,
+              ]);
+          }
+          // Otherwise it is just a regular integer field.
+          else {
+            $field = BaseFieldDefinition::create('string')
+              ->setDisplayOptions('view', [
+                'label' => 'hidden',
+                'type' => 'text_default',
+                'weight' => 0,
+              ])
+              ->setDisplayOptions('form', [
+                'type' => 'string_textfield',
+                'weight' => 0,
+              ]);
+          }
+          break;
+
         case \CRM_Utils_Type::T_CCNUM:
           $field = BaseFieldDefinition::create('string')
             ->setDisplayOptions('view', [
