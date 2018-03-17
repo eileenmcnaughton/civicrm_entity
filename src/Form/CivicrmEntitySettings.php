@@ -115,12 +115,16 @@ class CivicrmEntitySettings extends ConfigFormBase {
     $config = $this->config('civicrm_entity.settings');
     $civicrm_entity_types = SupportedEntities::getInfo();
 
+    // @todo Use tableselect so we can display entity descriptions.
+    $options = array_map(function (array $entity_info) {
+      return $entity_info['civicrm entity label'];
+    }, $civicrm_entity_types);
+    asort($options);
+
     $form['enabled_entity_types'] = [
       '#type' => 'checkboxes',
       '#title' => $this->t('Enabled entity types'),
-      '#options' => array_map(function (array $entity_info) {
-        return $entity_info['civicrm entity label'];
-      }, $civicrm_entity_types),
+      '#options' => $options,
       '#default_value' => $config->get('enabled_entity_types'),
     ];
 
