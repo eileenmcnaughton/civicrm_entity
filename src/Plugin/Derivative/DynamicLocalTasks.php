@@ -80,12 +80,6 @@ class DynamicLocalTasks extends DeriverBase implements ContainerDeriverInterface
           'title' => $this->t('Edit'),
           'base_route' => "entity.$entity_type_id.canonical",
         ] + $base_plugin_definition;
-      $this->derivatives["$entity_type_id.delete_form"] = [
-          'route_name' => "entity.$entity_type_id.delete_form",
-          'title' => $this->t('Delete'),
-          'base_route' => "entity.$entity_type_id.canonical",
-          'weight' => 10,
-        ] + $base_plugin_definition;
     }
 
     return $this->derivatives;
