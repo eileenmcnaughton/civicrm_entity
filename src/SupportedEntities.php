@@ -251,10 +251,11 @@ final class SupportedEntities {
         'delete' => ['edit groups', 'administer CiviCRM'],
       ],
     ];
+
     $civicrm_entity_info['civicrm_grant'] = [
       'civicrm entity label' => t('Grant'),
       'civicrm entity name' => 'grant',
-      'label property' => '',
+      'label property' => 'id',
       'permissions' => [
         'view' => ['access CiviGrant', 'administer CiviCRM'],
         'edit' => ['access CiviGrant', 'edit grants'],
@@ -290,7 +291,7 @@ final class SupportedEntities {
     $civicrm_entity_info['civicrm_loc_block'] = [
       'civicrm entity label' => t('Location block'),
       'civicrm entity name' => 'loc_block',
-      'label property' => '',
+      'label property' => 'id',
       'permissions' => [
         'view' => ['administer CiviCRM'],
         'edit' => ['administer CiviCRM'],
@@ -302,6 +303,7 @@ final class SupportedEntities {
     $civicrm_entity_info['civicrm_membership'] = [
       'civicrm entity label' => t('Membership'),
       'civicrm entity name' => 'membership',
+      'label property' => 'id',
       'permissions' => [
         'view' => ['access CiviMember'],
         'edit' => ['edit memberships', 'access CiviMember'],
@@ -313,6 +315,7 @@ final class SupportedEntities {
     $civicrm_entity_info['civicrm_membership_payment'] = [
       'civicrm entity label' => t('Membership payment'),
       'civicrm entity name' => 'membership_payment',
+      'label property' => 'id',
       'permissions' => [
         'view' => ['access CiviMember', 'access CiviContribute'],
         'edit' => ['access CiviMember', 'access CiviContribute'],
@@ -428,6 +431,7 @@ final class SupportedEntities {
     $civicrm_entity_info['civicrm_pledge'] = [
       'civicrm entity label' => t('Pledge'),
       'civicrm entity name' => 'pledge',
+      'label property' => 'id',
       'permissions' => [
         'view' => ['access CiviPledge'],
         'edit' => ['edit pledges'],
@@ -439,6 +443,7 @@ final class SupportedEntities {
     $civicrm_entity_info['civicrm_pledge_payment'] = [
       'civicrm entity label' => t('Pledge payment'),
       'civicrm entity name' => 'pledge_payment',
+      'label property' => 'id',
       'permissions' => [
         'view' => [],
         'edit' => [],
@@ -450,6 +455,7 @@ final class SupportedEntities {
     $civicrm_entity_info['civicrm_price_set'] = [
       'civicrm entity label' => t('Price set'),
       'civicrm entity name' => 'price_set',
+      'label property' => 'id',
       'permissions' => [
         'view' => [],
         'edit' => [],
@@ -461,6 +467,7 @@ final class SupportedEntities {
     $civicrm_entity_info['civicrm_price_field'] = [
       'civicrm entity label' => t('Price field'),
       'civicrm entity name' => 'price_field',
+      'label property' => 'id',
       'permissions' => [
         'view' => [],
         'edit' => [],
@@ -472,6 +479,7 @@ final class SupportedEntities {
     $civicrm_entity_info['civicrm_price_field_value'] = [
       'civicrm entity label' => t('Price field value'),
       'civicrm entity name' => 'price_field_value',
+      'label property' => 'id',
       'permissions' => [
         'view' => [],
         'edit' => [],
@@ -483,6 +491,7 @@ final class SupportedEntities {
     $civicrm_entity_info['civicrm_recurring_entity'] = [
       'civicrm entity label' => t('Recurring entity'),
       'civicrm entity name' => 'recurring_entity',
+      'label property' => 'id',
       'permissions' => [
         'view' => [],
         'edit' => [],
