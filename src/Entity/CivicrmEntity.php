@@ -155,7 +155,7 @@ class CivicrmEntity extends ContentEntityBase {
             ->setDisplayOptions('form', [
               'type' => 'text_textarea',
               'weight' => 0,
-              'rows' => $civicrm_field['rows'],
+              'rows' => isset($civicrm_field['rows']) ? $civicrm_field['rows'] : 5,
             ]);
           break;
 
