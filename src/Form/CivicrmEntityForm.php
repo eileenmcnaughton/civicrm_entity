@@ -70,7 +70,7 @@ class CivicrmEntityForm extends ContentEntityForm {
     ];
     $form['options'] = [
       '#type' => 'details',
-      '#title' => t('Options'),
+      '#title' => $this->t('Options'),
       '#group' => 'advanced',
       '#weight' => 95,
       '#optional' => TRUE,

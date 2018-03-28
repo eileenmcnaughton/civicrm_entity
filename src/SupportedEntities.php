@@ -238,9 +238,6 @@ final class SupportedEntities {
         'create' => ['edit all events'],
         'delete' => ['edit all events', 'delete in CiviEvent'],
       ],
-      'hidden fields' => [
-        'created_id',
-      ],
     ];
     $civicrm_entity_info['civicrm_group'] = [
       'civicrm entity label' => t('Group'),

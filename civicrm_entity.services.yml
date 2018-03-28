@@ -3,6 +3,9 @@ services:
     class: 'Drupal\civicrm_entity\CiviCrmApi'
     arguments: ['@civicrm']
 
+  civicrm_entity.field_definition_provider:
+    class: Drupal\civicrm_entity\Entity\FieldDefinitionProvider
+
   entity.query.civicrm_entity:
     class: '\Drupal\civicrm_entity\Entity\Query\CiviCRM\QueryFactory'
     arguments: ['@civicrm_entity.api']
