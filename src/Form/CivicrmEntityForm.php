@@ -2,6 +2,7 @@
 
 namespace Drupal\civicrm_entity\Form;
 
+use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Entity\EntityManagerInterface;
@@ -53,6 +54,7 @@ class CivicrmEntityForm extends ContentEntityForm {
    */
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
+    $form_display_info = SupportedEntities::getFormDisplayInfo($this->entity->getEntityTypeId());
     $form['#tree'] = TRUE;
     $form['#theme'] = ['civicrm_entity_entity_form'];
     $form['#attached']['library'][] = 'civicrm_entity/form';
@@ -68,13 +70,30 @@ class CivicrmEntityForm extends ContentEntityForm {
       '#group' => 'advanced',
       '#weight' => -100,
     ];
-    $form['options'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Options'),
-      '#group' => 'advanced',
-      '#weight' => 95,
-      '#optional' => TRUE,
-    ];
+
+    if (isset($form_display_info['groups'])) {
+      foreach ($form_display_info['groups'] as $form_display_group_key => $form_display_group) {
+        $form[$form_display_group_key] = [
+          '#type' => 'details',
+          '#title' => $form_display_group['title'],
+          '#group' => $form_display_group['group'],
+          '#weight' => 95,
+          '#optional' => TRUE,
+          '#open' => isset($form_display_group['open']),
+        ];
+      }
+    }
+
+    if (isset($form_display_info['fields'])) {
+      foreach ($form_display_info['fields'] as $field_name => $field_display_info) {
+        // If the field is present, change it.
+        if (isset($form[$field_name])) {
+          if (isset($field_display_info['group'])) {
+            $form[$field_name]['#group'] = $field_display_info['group'];
+          }
+        }
+      }
+    }
 
     return $form;
   }

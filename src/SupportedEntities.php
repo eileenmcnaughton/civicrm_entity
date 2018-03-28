@@ -587,4 +587,46 @@ final class SupportedEntities {
     return $civicrm_entity_info;
   }
 
+  public static function getFormDisplayInfo($entity_type_id = NULL) {
+    $info = [];
+
+    $info['civicrm_event'] = [
+      'groups' => [
+        'settings' => [
+          'title' => t('Settings'),
+          'group' => 'advanced',
+          'open' => TRUE,
+        ],
+      ],
+      'fields' => [
+        'event_type_id' => [
+          'group' => 'settings',
+        ],
+        'default_role_id' => [
+          'group' => 'settings',
+        ],
+        'participant_listing_id' => [
+          'group' => 'settings',
+        ],
+        'is_map' => [
+          'group' => 'settings',
+        ],
+        'is_public' => [
+          'group' => 'settings',
+        ],
+        'is_share' => [
+          'group' => 'settings',
+        ],
+        'is_active' => [
+          'group' => 'settings',
+        ],
+      ]
+    ];
+
+    if (!$entity_type_id) {
+      return $info;
+    }
+    return isset($info[$entity_type_id]) ? $info[$entity_type_id] : [];
+  }
+
 }
