@@ -11,6 +11,17 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
+ * Implements hook_theme().
+ */
+function civicrm_entity_theme() {
+  return [
+    'civicrm_entity_entity_form' => [
+      'render element' => 'form',
+    ],
+  ];
+}
+
+/**
  * Implements hook_entity_type_build().
  *
  * Populates supported CiviCRM Entity definitions.
@@ -67,6 +78,7 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
         'add-form' => sprintf('/%s/add', $clean_entity_type_id, $entity_type_id),
         'collection' => sprintf('/admin/structure/civicrm-entity/%s', $clean_entity_type_id),
       ],
+      'field_ui_base_route' => "entity.$entity_type_id.collection",
     ]);
   }
 }

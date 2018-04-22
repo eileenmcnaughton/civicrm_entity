@@ -80,6 +80,12 @@ class DynamicLocalTasks extends DeriverBase implements ContainerDeriverInterface
           'title' => $this->t('Edit'),
           'base_route' => "entity.$entity_type_id.canonical",
         ] + $base_plugin_definition;
+      $this->derivatives["entity.$entity_type_id.collection"] = [
+          'route_name' => "entity.$entity_type_id.collection",
+          'title' => $this->t('List'),
+          'base_route' => "entity.$entity_type_id.collection",
+          'weight' => -10,
+        ] + $base_plugin_definition;
     }
 
     return $this->derivatives;

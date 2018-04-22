@@ -53,9 +53,12 @@ class CiviCrmApi implements CiviCrmApiInterface {
   /**
    * {@inheritdoc}
    */
-  public function getFields($entity, $action = 'create') {
+  public function getFields($entity, $action = '') {
     $this->initialize();
-    $result = civicrm_api3($entity, 'getfields', ['action' => $action]);
+    $result = civicrm_api3($entity, 'getfields', [
+      'sequential' => 1,
+      'action' => $action,
+    ]);
     return $result['values'];
   }
 

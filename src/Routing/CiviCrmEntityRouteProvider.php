@@ -3,13 +3,13 @@
 namespace Drupal\civicrm_entity\Routing;
 
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider;
+use Drupal\Core\Entity\Routing\AdminHtmlRouteProvider;
 use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Provides routing for CiviCRM entities.
  */
-class CiviCrmEntityRouteProvider extends DefaultHtmlRouteProvider {
+class CiviCrmEntityRouteProvider extends AdminHtmlRouteProvider {
 
   /**
    * {@inheritdoc}

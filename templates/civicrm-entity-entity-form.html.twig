@@ -1,0 +1,25 @@
+{#
+/**
+ * @file
+ * Two column template for the CiviCRM entity add/edit form.
+ *
+ * Available variables:
+ * - form: The form.
+ *
+ * @ingroup themeable
+ */
+#}
+<div class="layout-civicrm-entity-form clearfix">
+  <div class="layout-region layout-region-civicrm-entity-main">
+    {{ form|without('advanced', 'footer', 'actions') }}
+  </div>
+  <div class="layout-region layout-region-civicrm-entity-secondary">
+    {{ form.advanced }}
+  </div>
+  <div class="layout-region layout-region-civicrm-entity-footer">
+    <div class="layout-region-civicrm-entity-footer__content">
+      {{ form.footer }}
+      {{ form.actions }}
+    </div>
+  </div>
+</div>
