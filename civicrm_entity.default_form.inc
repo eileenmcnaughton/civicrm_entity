@@ -70,9 +70,9 @@ function civicrm_entity_form($form, &$form_state, $entity, $op, $entity_type) {
               case 'select':
                 $form[$name]['#type'] = 'select';
                 $form[$name]['#options'] = !empty($entity_form[$name]['#required']) ? _civicrm_entity_get_entities_list($info['widget']['entity']) : array(NULL => 'None') + _civicrm_entity_get_entities_list($info['widget']['entity']);
-                if ($info['widget']['entity'] == 'Event') {
+                /*if ($info['widget']['entity'] == 'Event') {
                   array_shift($form[$name]['#options']);
-                }
+                }*/
                 break;
               default:
                 $form[$name]['#type'] = 'textfield';
