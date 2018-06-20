@@ -123,7 +123,7 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
         ->setSetting('allowed_values_function', 'civicrm_entity_pseudoconstant_options')
         ->setDisplayOptions('view', [
           'label' => 'hidden',
-          'type' => 'integer',
+          'type' => 'number_integer',
           'weight' => 0,
         ])
         ->setDisplayOptions('form', [
@@ -136,7 +136,7 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
       $field = BaseFieldDefinition::create('integer')
         ->setDisplayOptions('view', [
           'label' => 'hidden',
-          'type' => 'integer',
+          'type' => 'number_integer',
           'weight' => 0,
         ])
         ->setDisplayOptions('form', [
