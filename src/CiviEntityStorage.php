@@ -10,6 +10,7 @@ use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\TypedData\Plugin\DataType\DateTimeIso8601;
+use Drupal\Core\TypedData\Plugin\DataType\Timestamp;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -73,7 +74,7 @@ class CiviEntityStorage extends ContentEntityStorageBase {
       /** @var \Drupal\Core\Field\FieldItemInterface $item */
       foreach ($items as $delta => $item) {
         $main_property = $item->get($main_property_name);
-        if ($main_property instanceof DateTimeIso8601) {
+        if ($main_property instanceof DateTimeIso8601 || $main_property instanceof Timestamp) {
           $value = $main_property->getDateTime()->format(DATETIME_DATETIME_STORAGE_FORMAT);
         }
         else {
@@ -110,9 +111,26 @@ class CiviEntityStorage extends ContentEntityStorageBase {
         $entities[$entity->id()] = $entity;
       }
     }
+
+    // get all the fields
+    $fields = $this->civicrmApi->getFields($this->entityType->get('civicrm_entity'));
+    foreach ($fields as $field) {
+      $field_names[] = $field['name'];
+    }
     foreach ($ids as $id) {
-      $civicrm_entity = $this->civicrmApi->get($this->entityType->get('civicrm_entity'), ['id' => $id]);
+      $options = ['id' => $id];
+      $options['return'] = $field_names;
+      $civicrm_entity = $this->civicrmApi->get($this->entityType->get('civicrm_entity'), $options);
       $civicrm_entity = reset($civicrm_entity);
+
+      // convert dates to timestamps
+      $date_fields = ['created_date', 'modified_date'];
+      foreach ($date_fields as $date_field) {
+        if (isset($civicrm_entity[$date_field])) {
+          $civicrm_entity[$date_field] = strtotime($civicrm_entity[$date_field]);
+        }
+      }
+
       /** @var \Drupal\civicrm_entity\Entity\Events $entity */
       $entity = $this->create($civicrm_entity);
       // We have to build entities through values using `create`, however it
