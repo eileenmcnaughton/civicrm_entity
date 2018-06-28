@@ -84,6 +84,9 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
    *
    * @return \Drupal\Core\Entity\Sql\SqlContentEntityStorageSchema
    *   The schema object.
+   *
+   *
+   * TODO this won't work due to constructor in SqlContentEntityStorageSchema.
    */
   protected function getStorageSchema() {
     if (!isset($this->storageSchema)) {
