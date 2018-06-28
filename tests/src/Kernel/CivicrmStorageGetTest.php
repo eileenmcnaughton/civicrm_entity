@@ -3,6 +3,7 @@
 namespace Drupal\Tests\civicrim_entity\Kernel;
 
 use Drupal\civicrm_entity\CiviCrmApi;
+use Drupal\civicrm_entity\Entity\CivicrmEntity;
 use Drupal\civicrm_entity\Entity\Events;
 use Drupal\Component\Serialization\Json;
 use Drupal\KernelTests\KernelTestBase;
@@ -33,6 +34,11 @@ class CivicrmStorageGetTest extends KernelTestBase {
     $civicrm_api_mock->get('event', ['id' => 1])->willReturn($this->sampleGetEvents());
     $civicrm_api_mock->getFields("event")->willReturn($this->sampleGetFields());
     $this->container->set('civicrm_entity.api', $civicrm_api_mock->reveal());
+
+    $this->config('civicrm_entity.settings')
+      ->set('enabled_entity_types', [
+        'civicrm_event',
+      ])->save();
   }
 
   public function testGet() {
@@ -45,13 +51,11 @@ class CivicrmStorageGetTest extends KernelTestBase {
     $storage = $this->container->get('entity_type.manager')
       ->getStorage('civicrm_event');
     $entity = $storage->load(1);
-    $this->assertInstanceOf(Events::class, $entity);
+    $this->assertInstanceOf(CivicrmEntity::class, $entity);
     $this->assertEquals($entity->id(), 1);
     $this->assertEquals($entity->get('title')->value, 'Fall Fundraiser Dinner');
-    $this->assertEquals('2018-05-02 17:00:00', $entity->get('start_date')->value);
-    // @todo The format is incorrect and throws invalid format exception.
-    $this->assertNull($entity->get('start_date')->date);
-    // $this->assertEquals('2018-05-02 17:00:00', $entity->get('start_date')->date->format('Y/m/d'));
+    $this->assertEquals('2018-05-02T17:00:00', $entity->get('start_date')->value);
+    $this->assertEquals('2018/05/02', $entity->get('start_date')->date->format('Y/m/d'));
     $this->assertTrue($entity->get('is_public')->value);
   }
 
