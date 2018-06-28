@@ -180,28 +180,29 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
    */
   protected function doLoadMultiple(array $ids = NULL) {
     $entities = [];
-
     if ($ids === NULL) {
       $civicrm_entities = $this->civicrmApi->get($this->entityType->get('civicrm_entity'));
       foreach ($civicrm_entities as $civicrm_entity) {
         $civicrm_entity = reset($civicrm_entity);
-        $this->loadFromDedicatedTables($civicrm_entity);
-        /** @var \Drupal\civicrm_entity\Entity\CivicrmEntity $entity */
-        $entity = new $this->entityClass($civicrm_entity, $this->entityTypeId);
+        $entity = $this->prepareLoadedEntity($civicrm_entity);
         $entities[$entity->id()] = $entity;
       }
     }
-    else {
-      foreach ($ids as $id) {
-        $civicrm_entity = $this->civicrmApi->get($this->entityType->get('civicrm_entity'), ['id' => $id]);
-        $civicrm_entity = reset($civicrm_entity);
-        $this->loadFromDedicatedTables($civicrm_entity);
-        /** @var \Drupal\civicrm_entity\Entity\CivicrmEntity $entity */
-        $entity = new $this->entityClass($civicrm_entity, $this->entityTypeId);
-        $entities[$entity->id()] = $entity;
-      }
+    foreach ($ids as $id) {
+      $civicrm_entity = $this->civicrmApi->get($this->entityType->get('civicrm_entity'), ['id' => $id]);
+      $civicrm_entity = reset($civicrm_entity);
+      $entity = $this->prepareLoadedEntity($civicrm_entity);
+      $entities[$entity->id()] = $entity;
     }
     return $entities;
+  }
+
+  protected function prepareLoadedEntity($civicrm_entity) {
+    $this->loadFromDedicatedTables($civicrm_entity);
+    $entity = new $this->entityClass([], $this->entityTypeId);
+    // Use initFieldValues to fix CiviCRM data array to Drupal.
+    $this->initFieldValues($entity, $civicrm_entity);
+    return $entity;
   }
 
   /**
