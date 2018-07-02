@@ -5,6 +5,7 @@ namespace Drupal\Tests\civicrim_entity\Kernel;
 use Drupal\civicrm_entity\CiviCrmApi;
 use Drupal\civicrm_entity\Entity\CivicrmEntity;
 use Drupal\civicrm_entity\Entity\Events;
+use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\Unicode;
 use Drupal\field\Entity\FieldConfig;
@@ -36,6 +37,15 @@ class CivicrmFieldConfigTest extends KernelTestBase {
     $civicrm_api_mock = $this->prophesize(CiviCrmApi::class);
     $civicrm_api_mock->get('event', ['id' => 1])->willReturn($this->sampleGetEvents());
     $civicrm_api_mock->getFields("event")->willReturn($this->sampleGetFields());
+
+    $supported_entities = SupportedEntities::getInfo();
+    foreach ($supported_entities as $entity_type_id => $civicrm_entity_info) {
+      $civicrm_entity_name = $civicrm_entity_info['civicrm entity name'];
+      if ($civicrm_entity_name == 'event') {
+        continue;
+      }
+      $civicrm_api_mock->getFields($civicrm_entity_name)->willReturn($this->minimalSampleFields());
+    }
     $this->container->set('civicrm_entity.api', $civicrm_api_mock->reveal());
 
     $this->config('civicrm_entity.settings')
@@ -75,6 +85,26 @@ class CivicrmFieldConfigTest extends KernelTestBase {
     $entity = $storage->load(1);
     $this->assertInstanceOf(CivicrmEntity::class, $entity);
     $this->assertEquals($entity->id(), 1);
+  }
+
+  protected function minimalSampleFields() {
+    return [
+      'id' => [
+        'name' => 'id',
+        'type' => 1,
+        'title' => 'Event ID',
+        'description' => 'Event',
+        'required' => TRUE,
+        'table_name' => 'civicrm_event',
+        'entity' => 'Event',
+        'bao' => 'CRM_Event_BAO_Event',
+        'localizable' => 0,
+        'is_core_field' => TRUE,
+        'api.aliases' => [
+          0 => 'event_id',
+        ],
+      ],
+    ];
   }
 
   /**
