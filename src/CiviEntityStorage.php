@@ -88,9 +88,9 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
    *
    * TODO this won't work due to constructor in SqlContentEntityStorageSchema.
    */
-  protected function getStorageSchema() {
+  public function getStorageSchema() {
     if (!isset($this->storageSchema)) {
-      $class = $this->entityType->getHandlerClass('storage_schema') ?: 'Drupal\Core\Entity\Sql\SqlContentEntityStorageSchema';
+      $class = '\Drupal\civicrm_entity\Entity\Sql\CivicrmEntityStorageSchema';
       $this->storageSchema = new $class($this->entityManager, $this->entityType, $this, $this->database);
     }
     return $this->storageSchema;
@@ -522,7 +522,7 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
    * @return \Drupal\Core\Entity\Sql\TableMappingInterface|\Drupal\Core\Entity\Sql\DefaultTableMapping
    *   A table mapping object for the entity's tables.
    */
-  protected function getTableMapping() {
+  public function getTableMapping() {
     $table_mapping = $this->tableMapping;
 
     if ($table_mapping) {
