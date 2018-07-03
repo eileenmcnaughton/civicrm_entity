@@ -2,9 +2,17 @@
 
 /**
  * @file
+ * Module file for the CiviCRM Entity module.
  */
 
+use Drupal\civicrm_entity\CivicrmEntityAccessHandler;
+use Drupal\civicrm_entity\CivicrmEntityListBuilder;
+use Drupal\civicrm_entity\CiviEntityStorage;
+use Drupal\civicrm_entity\Entity\CivicrmEntity;
+use Drupal\civicrm_entity\Form\CivicrmEntityForm;
+use Drupal\civicrm_entity\Routing\CiviCrmEntityRouteProvider;
 use Drupal\civicrm_entity\SupportedEntities;
+use Drupal\Core\Entity\ContentEntityDeleteForm;
 use Drupal\Core\Entity\ContentEntityType;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
@@ -41,8 +49,8 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
 
     $entity_types[$entity_type_id] = new ContentEntityType([
       'provider' => 'civicrm_entity',
-      'class' => \Drupal\civicrm_entity\Entity\CivicrmEntity::class,
-      'originalClass' => \Drupal\civicrm_entity\Entity\CivicrmEntity::class,
+      'class' => CivicrmEntity::class,
+      'originalClass' => CivicrmEntity::class,
       'id' => $entity_type_id,
       'civicrm_entity' => $civicrm_entity_name,
       'civicrm_entity_ui_exposed' => in_array($entity_type_id, $enabled_entity_types),
@@ -57,17 +65,17 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
       'admin_permission' => 'administer civicrm entity',
       'permission_granularity' => 'entity_type',
       'handlers' => [
-        'storage' => \Drupal\civicrm_entity\CiviEntityStorage::class,
-        'list_builder' => \Drupal\civicrm_entity\CivicrmEntityListBuilder::class,
+        'storage' => CiviEntityStorage::class,
+        'list_builder' => CivicrmEntityListBuilder::class,
         'route_provider' => [
-          'default' => \Drupal\civicrm_entity\Routing\CiviCrmEntityRouteProvider::class,
+          'default' => CiviCrmEntityRouteProvider::class,
         ],
-        'access' => \Drupal\civicrm_entity\CivicrmEntityAccessHandler::class,
+        'access' => CivicrmEntityAccessHandler::class,
         'form' => [
-          'default' => \Drupal\civicrm_entity\Form\CivicrmEntityForm::class,
-          'add' => \Drupal\civicrm_entity\Form\CivicrmEntityForm::class,
-          'edit' => \Drupal\civicrm_entity\Form\CivicrmEntityForm::class,
-          'delete' => \Drupal\Core\Entity\ContentEntityDeleteForm::class,
+          'default' => CivicrmEntityForm::class,
+          'add' => CivicrmEntityForm::class,
+          'edit' => CivicrmEntityForm::class,
+          'delete' => ContentEntityDeleteForm::class,
         ],
       ],
       // Generate route paths.
@@ -89,14 +97,14 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
  * Provides the pseudoconstant values for CiviCRM entity fields.
  *
  * @param \Drupal\Core\Field\FieldStorageDefinitionInterface $definition
- *  The field storage definition.
- * @param \Drupal\Core\Entity\FieldableEntityInterface|NULL $entity
- *  The entity.
+ *   The field storage definition.
+ * @param \Drupal\Core\Entity\FieldableEntityInterface|null $entity
+ *   The entity.
  * @param bool $cacheable
- *  If the options are cacheable.
+ *   If the options are cacheable.
  *
  * @return array
- *  The array of field options.
+ *   The array of field options.
  */
 function civicrm_entity_pseudoconstant_options(FieldStorageDefinitionInterface $definition, FieldableEntityInterface $entity = NULL, &$cacheable = NULL) {
   /** @var \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api */
@@ -104,15 +112,4 @@ function civicrm_entity_pseudoconstant_options(FieldStorageDefinitionInterface $
   $entity_type = $entity->getEntityType();
   $options = $civicrm_api->getOptions($entity_type->get('civicrm_entity'), $definition->getName());
   return $options;
-}
-
-function civicrm_entity_test_migration() {
-  $migration_ids = [
-    'civicrm_entity_test_civicrm_event',
-  ];
-  $migrations = \Drupal::getContainer()->get('plugin.manager.migration')->createInstances($migration_ids);
-  foreach ($migrations as $migration) {
-    $executable = new \Drupal\migrate\MigrateExecutable($migration, new \Drupal\migrate\MigrateMessage());
-    $executable->import();
-  }
 }

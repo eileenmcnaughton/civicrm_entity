@@ -14,11 +14,17 @@ class Query extends QueryBase implements QueryInterface {
 
   protected $civicrmApi;
 
+  /**
+   * {@inheritdoc}
+   */
   public function __construct(EntityTypeInterface $entity_type, $conjunction, array $namespaces, CiviCrmApi $civicrm_api) {
     parent::__construct($entity_type, $conjunction, $namespaces);
     $this->civicrmApi = $civicrm_api;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function execute() {
     $result = $this->civicrmApi->get($this->entityType->get('civicrm_entity'));
     return array_keys($result);

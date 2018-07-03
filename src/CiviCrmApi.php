@@ -4,6 +4,9 @@ namespace Drupal\civicrm_entity;
 
 use Drupal\civicrm\Civicrm;
 
+/**
+ * CiviCRM API implementation.
+ */
 class CiviCrmApi implements CiviCrmApiInterface {
 
   /**

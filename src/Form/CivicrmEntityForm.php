@@ -106,4 +106,5 @@ class CivicrmEntityForm extends ContentEntityForm {
     drupal_set_message($this->t('Saved %label.', ['%label' => $this->entity->label()]));
     $form_state->setRedirectUrl($this->entity->toUrl('collection'));
   }
+
 }

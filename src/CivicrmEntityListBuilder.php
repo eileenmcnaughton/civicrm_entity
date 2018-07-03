@@ -27,5 +27,4 @@ class CivicrmEntityListBuilder extends EntityListBuilder {
     ] + parent::buildRow($entity);
   }
 
-
 }

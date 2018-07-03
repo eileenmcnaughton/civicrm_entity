@@ -12,7 +12,7 @@ use Drupal\civicrm_entity\Entity\CivicrmEntity;
 class CivicrmBaseFieldTest extends CivicrmEntityTestBase {
 
   /**
-   * @var array
+   * {@inheritdoc}
    */
   protected static $modules = [
     'civicrm',
@@ -24,8 +24,7 @@ class CivicrmBaseFieldTest extends CivicrmEntityTestBase {
   ];
 
   /**
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   * @throws \Exception
+   * Tests the base fields generated.
    */
   public function testBaseFields() {
     /** @var \Drupal\Core\Field\FieldDefinitionInterface[] $base_fields */
@@ -48,4 +47,5 @@ class CivicrmBaseFieldTest extends CivicrmEntityTestBase {
     $this->assertTrue(isset($base_fields['refresh_date']));
     $this->assertEquals('timestamp', $base_fields['refresh_date']->getType());
   }
+
 }

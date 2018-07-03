@@ -19,6 +19,12 @@ namespace Drupal\civicrm_entity;
  */
 final class SupportedEntities {
 
+  /**
+   * Gets information about the supported CiviCRM entities.
+   *
+   * @return array
+   *   The entity information.
+   */
   public static function getInfo() {
     $civicrm_entity_info = [];
     $civicrm_entity_info['civicrm_activity'] = [
@@ -212,7 +218,7 @@ final class SupportedEntities {
         'delete' => [],
       ],
     ];
-    //dirty check for whether financialType exists
+    // Dirty check for whether financialType exists.
     if (!method_exists('CRM_Contribute_PseudoConstant', 'contributionType')) {
       $civicrm_entity_info['civicrm_financial_type'] = [
         'civicrm entity label' => t('Financial type'),
@@ -587,6 +593,15 @@ final class SupportedEntities {
     return $civicrm_entity_info;
   }
 
+  /**
+   * Gets default form display information.
+   *
+   * @param string $entity_type_id
+   *   The entity type ID.
+   *
+   * @return array
+   *   The form display configuration.
+   */
   public static function getFormDisplayInfo($entity_type_id = NULL) {
     $info = [];
 
@@ -620,7 +635,7 @@ final class SupportedEntities {
         'is_active' => [
           'group' => 'settings',
         ],
-      ]
+      ],
     ];
 
     if (!$entity_type_id) {

@@ -3,11 +3,15 @@
 namespace Drupal\Tests\civicrm_entity\Kernel;
 
 /**
- * Tests entity definition
+ * Tests entity definition.
  *
  * @group civicrim_entity
  */
 class CivicrmEntityTypeTest extends CivicrmEntityTestBase {
+
+  /**
+   * {@inheritdoc}
+   */
   protected static $modules = [
     'civicrm',
     'civicrm_entity',
@@ -17,6 +21,9 @@ class CivicrmEntityTypeTest extends CivicrmEntityTestBase {
     'link',
   ];
 
+  /**
+   * Tests the generated entity type.
+   */
   public function testEntityType() {
     $definition = $this->container->get('entity_type.manager')->getDefinition('civicrm_event');
 

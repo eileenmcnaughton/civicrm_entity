@@ -1,4 +1,5 @@
 <?php
+// @codingStandardsIgnoreFile
 /*
  +--------------------------------------------------------------------+
  | CiviCRM version 4.7                                                |

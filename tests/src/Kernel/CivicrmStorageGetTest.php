@@ -2,11 +2,7 @@
 
 namespace Drupal\Tests\civicrm_entity\Kernel;
 
-use Drupal\civicrm_entity\CiviCrmApi;
 use Drupal\civicrm_entity\Entity\CivicrmEntity;
-use Drupal\civicrm_entity\Entity\Events;
-use Drupal\Component\Serialization\Json;
-use Drupal\KernelTests\KernelTestBase;
 
 /**
  * Tests the storage.
@@ -25,12 +21,18 @@ class CivicrmStorageGetTest extends CivicrmEntityTestBase {
     'datetime',
   ];
 
+  /**
+   * Tests getting a single entity.
+   */
   public function testGet() {
     $result = $this->container->get('civicrm_entity.api')
       ->get('event', ['id' => 1]);
     $this->assertEquals('Fall Fundraiser Dinner', $result[0]['title']);
   }
 
+  /**
+   * Tests loading an entity through storage.
+   */
   public function testLoad() {
     $storage = $this->container->get('entity_type.manager')
       ->getStorage('civicrm_event');
@@ -42,4 +44,5 @@ class CivicrmStorageGetTest extends CivicrmEntityTestBase {
     $this->assertEquals('2018/05/02', $entity->get('start_date')->date->format('Y/m/d'));
     $this->assertTrue($entity->get('is_public')->value);
   }
+
 }

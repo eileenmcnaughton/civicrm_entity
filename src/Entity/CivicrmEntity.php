@@ -17,6 +17,9 @@ use Drupal\Core\Entity\EntityTypeInterface;
  */
 class CivicrmEntity extends ContentEntityBase {
 
+  /**
+   * {@inheritdoc}
+   */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = [];
     $field_definition_provider = \Drupal::service('civicrm_entity.field_definition_provider');
@@ -26,4 +29,5 @@ class CivicrmEntity extends ContentEntityBase {
     }
     return $fields;
   }
+
 }

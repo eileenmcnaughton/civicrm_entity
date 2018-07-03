@@ -8,6 +8,12 @@ use Drupal\Core\Entity\ContentEntityTypeInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\Sql\SqlContentEntityStorageSchema;
 
+/**
+ * Implementation of the SqlContentEntityStorageSchema for CiviCRM entities.
+ *
+ * This allows CiviCRM entities to support dedicated field storage while using
+ * CiviCRM for full data of the entity.
+ */
 class CivicrmEntityStorageSchema extends SqlContentEntityStorageSchema {
 
   /**

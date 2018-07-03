@@ -7,8 +7,14 @@ use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\KernelTests\KernelTestBase;
 use Prophecy\Argument;
 
+/**
+ * Test base to aid in mocking the CiviCRM API.
+ */
 abstract class CivicrmEntityTestBase extends KernelTestBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp() {
     parent::setUp();
     require __DIR__ . '/../Type.php';
@@ -20,6 +26,9 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
       ])->save();
   }
 
+  /**
+   * Mocks the CiviCRM API.
+   */
   protected function mockCiviCrmApi() {
     $civicrm_api_mock = $this->prophesize(CiviCrmApiInterface::class);
     $civicrm_api_mock->get('event', ['id' => 1])->willReturn($this->sampleEventsData());
@@ -41,9 +50,12 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
   }
 
   /**
-   * Json returned from sample Event getfields
+   * Json returned from sample Event getfields.
    *
-   * Gathered from http://dmaster.demo.civicrm.org/civicrm/api#explorer
+   * Gathered from http://dmaster.demo.civicrm.org/civicrm/api#explorer.
+   *
+   * @return array
+   *   The field data.
    */
   protected function sampleEventsGetFields() {
     return [
@@ -1369,6 +1381,12 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
     ];
   }
 
+  /**
+   * Json returned from sample Contact getfields.
+   *
+   * @return array
+   *   The field data.
+   */
   protected function sampleContactGetFields() {
     return [
       'id' => [
@@ -1400,7 +1418,7 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
         'bao' => 'CRM_Contact_BAO_Group',
         'api.required' => 1,
       ],
-      'phone_number' => array(
+      'phone_number' => [
         'name' => 'phone_number',
         'type' => 2,
         'title' => 'Phone (called) Number',
@@ -1410,13 +1428,13 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
         'table_name' => 'civicrm_activity',
         'entity' => 'Activity',
         'bao' => 'CRM_Activity_BAO_Activity',
-        'html' => array(
+        'html' => [
           'type' => 'Text',
           'maxlength' => 64,
           'size' => 30,
-        ),
-      ),
-      'birth_date' => array(
+        ],
+      ],
+      'birth_date' => [
         'name' => 'birth_date',
         'type' => 4,
         'title' => 'Birth Date',
@@ -1429,12 +1447,12 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
         'table_name' => 'civicrm_contact',
         'entity' => 'Contact',
         'bao' => 'CRM_Contact_BAO_Contact',
-        'html' => array(
+        'html' => [
           'type' => 'Select Date',
           'format' => 'birth',
-        ),
-      ),
-      'activity_date_time' => array(
+        ],
+      ],
+      'activity_date_time' => [
         'name' => 'activity_date_time',
         'type' => 12,
         'title' => 'Activity Date',
@@ -1446,20 +1464,20 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
         'table_name' => 'civicrm_activity',
         'entity' => 'Activity',
         'bao' => 'CRM_Activity_BAO_Activity',
-        'html' => array(
+        'html' => [
           'type' => 'Select Date',
           'format' => 'activityDateTime',
-        ),
-      ),
-      'is_auto' => array(
+        ],
+      ],
+      'is_auto' => [
         'name' => 'is_auto',
         'type' => 16,
         'title' => 'Auto',
         'table_name' => 'civicrm_activity',
         'entity' => 'Activity',
         'bao' => 'CRM_Activity_BAO_Activity',
-      ),
-      'details' => array(
+      ],
+      'details' => [
         'name' => 'details',
         'type' => 32,
         'title' => 'Details',
@@ -1471,14 +1489,14 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
         'table_name' => 'civicrm_activity',
         'entity' => 'Activity',
         'bao' => 'CRM_Activity_BAO_Activity',
-        'html' => array(
+        'html' => [
           'type' => 'RichTextEditor',
           'rows' => 2,
           'cols' => 80,
-        ),
+        ],
         'uniqueName' => 'activity_details',
-      ),
-      'refresh_date' => array(
+      ],
+      'refresh_date' => [
         'name' => 'refresh_date',
         'type' => 256,
         'title' => 'Next Group Refresh Time',
@@ -1487,7 +1505,7 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
         'table_name' => 'civicrm_group',
         'entity' => 'Group',
         'bao' => 'CRM_Contact_BAO_Group',
-      ),
+      ],
     ];
   }
 
@@ -1511,6 +1529,12 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
     ];
   }
 
+  /**
+   * Provides sample events data.
+   *
+   * @return array
+   *   The events data.
+   */
   protected function sampleEventsData() {
     return [
       0 => [

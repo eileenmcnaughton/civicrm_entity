@@ -3,7 +3,6 @@
 namespace Drupal\civicrm_entity\Plugin\Derivative;
 
 use Drupal\Component\Plugin\Derivative\DeriverBase;
-use Drupal\content_moderation\ModerationInformationInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
@@ -71,21 +70,21 @@ class DynamicLocalTasks extends DeriverBase implements ContainerDeriverInterface
 
     foreach ($civicrm_entities as $entity_type_id => $entity_type) {
       $this->derivatives["$entity_type_id.canonical"] = [
-          'route_name' => "entity.$entity_type_id.canonical",
-          'title' => $this->t('View'),
-          'base_route' => "entity.$entity_type_id.canonical",
-        ] + $base_plugin_definition;
+        'route_name' => "entity.$entity_type_id.canonical",
+        'title' => $this->t('View'),
+        'base_route' => "entity.$entity_type_id.canonical",
+      ] + $base_plugin_definition;
       $this->derivatives["$entity_type_id.edit_form"] = [
-          'route_name' => "entity.$entity_type_id.edit_form",
-          'title' => $this->t('Edit'),
-          'base_route' => "entity.$entity_type_id.canonical",
-        ] + $base_plugin_definition;
+        'route_name' => "entity.$entity_type_id.edit_form",
+        'title' => $this->t('Edit'),
+        'base_route' => "entity.$entity_type_id.canonical",
+      ] + $base_plugin_definition;
       $this->derivatives["entity.$entity_type_id.collection"] = [
-          'route_name' => "entity.$entity_type_id.collection",
-          'title' => $this->t('List'),
-          'base_route' => "entity.$entity_type_id.collection",
-          'weight' => -10,
-        ] + $base_plugin_definition;
+        'route_name' => "entity.$entity_type_id.collection",
+        'title' => $this->t('List'),
+        'base_route' => "entity.$entity_type_id.collection",
+        'weight' => -10,
+      ] + $base_plugin_definition;
     }
 
     return $this->derivatives;

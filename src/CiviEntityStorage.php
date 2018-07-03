@@ -1,5 +1,5 @@
 <?php
-// In construct make sure to invoke initialize
+
 namespace Drupal\civicrm_entity;
 
 use Drupal\Core\Cache\CacheBackendInterface;
@@ -14,7 +14,6 @@ use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Schema\DynamicallyFieldableEntityStorageSchemaInterface;
 use Drupal\Core\Entity\Sql\DefaultTableMapping;
-use Drupal\Core\Entity\Sql\SqlContentEntityStorageException;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Language\LanguageInterface;
@@ -29,6 +28,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyFieldableEntityStorageSchemaInterface {
 
   /**
+   * The CiviCRM API.
+   *
    * @var \Drupal\civicrm_entity\CiviCrmApi
    */
   protected $civicrmApi;
@@ -61,6 +62,22 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
    */
   protected $tableMapping;
 
+  /**
+   * Constructs a ContentEntityStorageBase object.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type definition.
+   * @param \Drupal\Core\Database\Connection $database
+   *   The database connection.
+   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
+   *   The entity manager.
+   * @param \Drupal\Core\Cache\CacheBackendInterface $cache
+   *   The cache backend to be used.
+   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   *   The language manager.
+   * @param \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api
+   *   The CiviCRM API.
+   */
   public function __construct(EntityTypeInterface $entity_type, Connection $database, EntityManagerInterface $entity_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, CiviCrmApiInterface $civicrm_api) {
     parent::__construct($entity_type, $entity_manager, $cache);
     $this->database = $database;
@@ -68,6 +85,9 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
     $this->civicrmApi = $civicrm_api;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
     return new static(
       $entity_type,
@@ -84,9 +104,6 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
    *
    * @return \Drupal\Core\Entity\Sql\SqlContentEntityStorageSchema
    *   The schema object.
-   *
-   *
-   * TODO this won't work due to constructor in SqlContentEntityStorageSchema.
    */
   public function getStorageSchema() {
     if (!isset($this->storageSchema)) {
@@ -100,7 +117,7 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
    * {@inheritdoc}
    */
   protected function doDelete($entities) {
-    /** @var EntityInterface $entity */
+    /** @var \Drupal\Core\Entity\EntityInterface $entity */
     foreach ($entities as $entity) {
       try {
         $params['id'] = $entity->id();
@@ -210,7 +227,18 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
     return $entities;
   }
 
-  protected function prepareLoadedEntity($civicrm_entity) {
+  /**
+   * Prepares a loaded entity.
+   *
+   * @param array $civicrm_entity
+   *   The entity data.
+   *
+   * @return \Drupal\civicrm_entity\Entity\CivicrmEntity
+   *   The prepared entity.
+   *
+   * @throws \Drupal\Core\Entity\Sql\SqlContentEntityStorageException
+   */
+  protected function prepareLoadedEntity(array $civicrm_entity) {
     $this->loadFromDedicatedTables($civicrm_entity);
     $entity = new $this->entityClass([], $this->entityTypeId);
     // Use initFieldValues to fix CiviCRM data array to Drupal.
@@ -234,6 +262,7 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
 
   /**
    * {@inheritdoc}
+   *
    * @throws \Drupal\Core\Entity\Sql\SqlContentEntityStorageException
    */
   public function countFieldData($storage_definition, $as_bool = FALSE) {
@@ -286,7 +315,6 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
     // @todo query API and get actual count.
     return FALSE;
   }
-
 
   /**
    * {@inheritdoc}
@@ -369,8 +397,7 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
   /**
    * {@inheritdoc}
    */
-  protected function doLoadRevisionFieldItems($revision_id) {
-  }
+  protected function doLoadRevisionFieldItems($revision_id) {}
 
   /**
    * {@inheritdoc}
@@ -397,13 +424,10 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
     }
   }
 
-
   /**
    * {@inheritdoc}
    */
-  protected function doDeleteRevisionFieldItems(ContentEntityInterface $revision) {
-  }
-
+  protected function doDeleteRevisionFieldItems(ContentEntityInterface $revision) {}
 
   /**
    * {@inheritdoc}
@@ -698,8 +722,10 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
    * @param string[] $names
    *   (optional) The names of the fields to be stored. Defaults to all the
    *   available fields.
+   *
+   * @throws \Drupal\Core\Entity\Sql\SqlContentEntityStorageException
    */
-  protected function saveToDedicatedTables(ContentEntityInterface $entity, $update = TRUE, $names = []) {
+  protected function saveToDedicatedTables(ContentEntityInterface $entity, $update = TRUE, array $names = []) {
     $vid = $entity->getRevisionId();
     $id = $entity->id();
     $bundle = $entity->bundle();
