@@ -8,9 +8,11 @@ use Drupal\civicrm_entity\Entity\Events;
 use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\Unicode;
+use Drupal\Core\Language\Language;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\KernelTests\KernelTestBase;
+use Prophecy\Argument;
 
 /**
  * Tests the storage.
@@ -46,6 +48,9 @@ class CivicrmFieldConfigTest extends KernelTestBase {
       }
       $civicrm_api_mock->getFields($civicrm_entity_name)->willReturn($this->minimalSampleFields());
     }
+
+    $civicrm_api_mock->save('event', Argument::type('array'))->willReturn(TRUE);
+
     $this->container->set('civicrm_entity.api', $civicrm_api_mock->reveal());
 
     $this->config('civicrm_entity.settings')
@@ -71,6 +76,15 @@ class CivicrmFieldConfigTest extends KernelTestBase {
       'bundle' => 'civicrm_event',
       'label' => $this->randomMachineName() . '_label',
     ])->save();
+
+    /** @var \Drupal\civicrm_entity\CiviEntityStorage $civi_entity_storage */
+    $civi_entity_storage = $this->container->get('entity_type.manager')->getStorage('civicrm_event');
+    $table_mapping = $civi_entity_storage->getTableMapping();
+    $db_schema = $this->container->get('database')->schema();
+
+    $this->assertTrue(
+      $db_schema->tableExists($table_mapping->getDedicatedDataTableName($field_storage))
+    );
   }
 
   public function testGet() {
@@ -80,11 +94,61 @@ class CivicrmFieldConfigTest extends KernelTestBase {
   }
 
   public function testSaveAndLoadFieldConfig() {
+    // Create a field.
+    $field_name = Unicode::strtolower($this->randomMachineName());
+    $field_storage = FieldStorageConfig::create([
+      'field_name' => $field_name,
+      'entity_type' => 'civicrm_event',
+      'type' => 'string'
+    ]);
+    $field_storage->save();
+    FieldConfig::create([
+      'field_storage' => $field_storage,
+      'bundle' => 'civicrm_event',
+      'label' => $this->randomMachineName() . '_label',
+    ])->save();
+
     $storage = $this->container->get('entity_type.manager')
       ->getStorage('civicrm_event');
+    /** @var \Drupal\civicrm_entity\Entity\CivicrmEntity $entity */
     $entity = $storage->load(1);
     $this->assertInstanceOf(CivicrmEntity::class, $entity);
     $this->assertEquals($entity->id(), 1);
+
+    $this->assertTrue($entity->get($field_name)->isEmpty());
+
+    $entity->get($field_name)->setValue('Testing value');
+    $entity->save();
+
+
+    /** @var \Drupal\civicrm_entity\CiviEntityStorage $civi_entity_storage */
+    $civi_entity_storage = $this->container->get('entity_type.manager')->getStorage('civicrm_event');
+    $database = $this->container->get('database');
+    $table_mapping = $civi_entity_storage->getTableMapping();
+    $db_schema = $database->schema();
+
+    $this->assertTrue(
+      $db_schema->tableExists($table_mapping->getDedicatedDataTableName($field_storage))
+    );
+
+    $this->assertEquals(1,
+      $database->select($table_mapping->getDedicatedDataTableName($field_storage))->countQuery()->execute()->fetchField()
+    );
+
+    $raw_values = $database->select($table_mapping->getDedicatedDataTableName($field_storage), 't')->fields('t')->execute()->fetchAssoc();
+    $this->assertEquals([
+      'bundle' => $entity->bundle(),
+      'deleted' => '0',
+      'entity_id' => $entity->id(),
+      'revision_id' => $entity->id(),
+      'langcode' => Language::LANGCODE_NOT_SPECIFIED,
+      'delta' => '0',
+      "{$field_name}_value" => 'Testing value'
+    ], $raw_values);
+
+    /** @var \Drupal\civicrm_entity\Entity\CivicrmEntity $entity */
+    $entity = $storage->load($entity->id());
+    $this->assertEquals('Testing value', $entity->get($field_name)->value);
   }
 
   protected function minimalSampleFields() {

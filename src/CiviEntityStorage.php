@@ -141,6 +141,7 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
     $return = $entity->isNew() ? SAVED_NEW : SAVED_UPDATED;
 
     $params = [];
+    $non_base_fields = [];
     /** @var \Drupal\Core\Field\FieldItemListInterface $items */
     foreach ($entity->getFields() as $field_name => $items) {
       $items->filterEmptyItems();
@@ -149,6 +150,13 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
       }
 
       $storage_definition = $items->getFieldDefinition()->getFieldStorageDefinition();
+
+      if (!$storage_definition->isBaseField()) {
+        // Do not try to pass any FieldConfig (or else) to CiviCRM API.
+        $non_base_fields[] = $field_name;
+        continue;
+      }
+
       $main_property_name = $storage_definition->getMainPropertyName();
       $list = [];
       /** @var \Drupal\Core\Field\FieldItemInterface $item */
@@ -173,6 +181,8 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
     }
 
     $this->civicrmApi->save($this->entityType->get('civicrm_entity'), $params);
+    $this->doSaveFieldItems($entity, $non_base_fields);
+
     return $return;
   }
 
@@ -366,7 +376,27 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
    * {@inheritdoc}
    */
   protected function doSaveFieldItems(ContentEntityInterface $entity, array $names = []) {
+    $update = !$entity->isNew();
+    $table_mapping = $this->getTableMapping();
+    $storage_definitions = $this->entityManager->getFieldStorageDefinitions($this->entityTypeId);
+    $dedicated_table_fields = [];
+
+    // Collect the name of fields to be written in dedicated tables and check
+    // whether shared table records need to be updated.
+    foreach ($names as $name) {
+      $storage_definition = $storage_definitions[$name];
+      if ($table_mapping->requiresDedicatedTableStorage($storage_definition)) {
+        $dedicated_table_fields[] = $name;
+      }
+    }
+
+    // Update dedicated table records if necessary.
+    if ($dedicated_table_fields) {
+      $names = is_array($dedicated_table_fields) ? $dedicated_table_fields : [];
+      $this->saveToDedicatedTables($entity, $update, $names);
+    }
   }
+
 
   /**
    * {@inheritdoc}
@@ -660,6 +690,130 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
    */
   public function finalizePurge(FieldStorageDefinitionInterface $storage_definition) {
     $this->getStorageSchema()->finalizePurge($storage_definition);
+  }
+
+  /**
+   * Saves values of fields that use dedicated tables.
+   *
+   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
+   *   The entity.
+   * @param bool $update
+   *   TRUE if the entity is being updated, FALSE if it is being inserted.
+   * @param string[] $names
+   *   (optional) The names of the fields to be stored. Defaults to all the
+   *   available fields.
+   */
+  protected function saveToDedicatedTables(ContentEntityInterface $entity, $update = TRUE, $names = []) {
+    $vid = $entity->getRevisionId();
+    $id = $entity->id();
+    $bundle = $entity->bundle();
+    $entity_type = $entity->getEntityTypeId();
+    $default_langcode = $entity->getUntranslated()->language()->getId();
+    $translation_langcodes = array_keys($entity->getTranslationLanguages());
+    $table_mapping = $this->getTableMapping();
+
+    if (!isset($vid)) {
+      $vid = $id;
+    }
+
+    $original = !empty($entity->original) ? $entity->original : NULL;
+
+    // Determine which fields should be actually stored.
+    $definitions = $this->entityManager->getFieldDefinitions($entity_type, $bundle);
+    if ($names) {
+      $definitions = array_intersect_key($definitions, array_flip($names));
+    }
+
+    foreach ($definitions as $field_name => $field_definition) {
+      $storage_definition = $field_definition->getFieldStorageDefinition();
+      if (!$table_mapping->requiresDedicatedTableStorage($storage_definition)) {
+        continue;
+      }
+
+      // When updating an existing revision, keep the existing records if the
+      // field values did not change.
+      if (!$entity->isNewRevision() && $original && !$this->hasFieldValueChanged($field_definition, $entity, $original)) {
+        continue;
+      }
+
+      $table_name = $table_mapping->getDedicatedDataTableName($storage_definition);
+      $revision_name = $table_mapping->getDedicatedRevisionTableName($storage_definition);
+
+      // Delete and insert, rather than update, in case a value was added.
+      if ($update) {
+        // Only overwrite the field's base table if saving the default revision
+        // of an entity.
+        if ($entity->isDefaultRevision()) {
+          $this->database->delete($table_name)
+            ->condition('entity_id', $id)
+            ->execute();
+        }
+        if ($this->entityType->isRevisionable()) {
+          $this->database->delete($revision_name)
+            ->condition('entity_id', $id)
+            ->condition('revision_id', $vid)
+            ->execute();
+        }
+      }
+
+      // Prepare the multi-insert query.
+      $do_insert = FALSE;
+      $columns = ['entity_id', 'revision_id', 'bundle', 'delta', 'langcode'];
+      foreach ($storage_definition->getColumns() as $column => $attributes) {
+        $columns[] = $table_mapping->getFieldColumnName($storage_definition, $column);
+      }
+      $query = $this->database->insert($table_name)->fields($columns);
+      if ($this->entityType->isRevisionable()) {
+        $revision_query = $this->database->insert($revision_name)->fields($columns);
+      }
+
+      $langcodes = $field_definition->isTranslatable() ? $translation_langcodes : [$default_langcode];
+      foreach ($langcodes as $langcode) {
+        $delta_count = 0;
+        $items = $entity->getTranslation($langcode)->get($field_name);
+        $items->filterEmptyItems();
+        foreach ($items as $delta => $item) {
+          // We now know we have something to insert.
+          $do_insert = TRUE;
+          $record = [
+            'entity_id' => $id,
+            'revision_id' => $vid,
+            'bundle' => $bundle,
+            'delta' => $delta,
+            'langcode' => $langcode,
+          ];
+          foreach ($storage_definition->getColumns() as $column => $attributes) {
+            $column_name = $table_mapping->getFieldColumnName($storage_definition, $column);
+            // Serialize the value if specified in the column schema.
+            $value = $item->$column;
+            if (!empty($attributes['serialize'])) {
+              $value = serialize($value);
+            }
+            $record[$column_name] = drupal_schema_get_field_value($attributes, $value);
+          }
+          $query->values($record);
+          if ($this->entityType->isRevisionable()) {
+            $revision_query->values($record);
+          }
+
+          if ($storage_definition->getCardinality() != FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED && ++$delta_count == $storage_definition->getCardinality()) {
+            break;
+          }
+        }
+      }
+
+      // Execute the query if we have values to insert.
+      if ($do_insert) {
+        // Only overwrite the field's base table if saving the default revision
+        // of an entity.
+        if ($entity->isDefaultRevision()) {
+          $query->execute();
+        }
+        if ($this->entityType->isRevisionable()) {
+          $revision_query->execute();
+        }
+      }
+    }
   }
 
 }
