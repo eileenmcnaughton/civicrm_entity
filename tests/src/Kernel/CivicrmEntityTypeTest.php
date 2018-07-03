@@ -1,15 +1,13 @@
 <?php
 
-namespace Drupal\Tests\civicrim_entity\Kernel;
-
-use Drupal\KernelTests\KernelTestBase;
+namespace Drupal\Tests\civicrm_entity\Kernel;
 
 /**
  * Tests entity definition
  *
  * @group civicrim_entity
  */
-class CivicrmEntityTypeTest extends KernelTestBase {
+class CivicrmEntityTypeTest extends CivicrmEntityTestBase {
   protected static $modules = [
     'civicrm',
     'civicrm_entity',
@@ -18,15 +16,6 @@ class CivicrmEntityTypeTest extends KernelTestBase {
     'options',
     'link',
   ];
-
-  protected function setUp() {
-    parent::setUp();
-    require __DIR__ . '/../Type.php';
-    $this->config('civicrm_entity.settings')
-      ->set('enabled_entity_types', [
-        'civicrm_event',
-      ])->save();
-  }
 
   public function testEntityType() {
     $definition = $this->container->get('entity_type.manager')->getDefinition('civicrm_event');

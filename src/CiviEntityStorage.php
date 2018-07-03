@@ -61,7 +61,7 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
    */
   protected $tableMapping;
 
-  public function __construct(EntityTypeInterface $entity_type, Connection $database, EntityManagerInterface $entity_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, CiviCrmApi $civicrm_api) {
+  public function __construct(EntityTypeInterface $entity_type, Connection $database, EntityManagerInterface $entity_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, CiviCrmApiInterface $civicrm_api) {
     parent::__construct($entity_type, $entity_manager, $cache);
     $this->database = $database;
     $this->languageManager = $language_manager;
