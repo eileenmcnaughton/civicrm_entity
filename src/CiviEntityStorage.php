@@ -524,7 +524,7 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
       if ($items->isEmpty()) {
         continue;
       }
-      $main_property_name = $definition->getMainPropertyName();
+      $main_property_name = $definition->getFieldStorageDefinition()->getMainPropertyName();
 
       // Fix DateTime values for Drupal format.
       if ($definition->getType() == 'datetime') {
@@ -630,15 +630,11 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
         ->execute();
 
       foreach ($results as $row) {
-        // Field values in default language are stored with
-        // LanguageInterface::LANGCODE_DEFAULT as key.
-        $langcode = LanguageInterface::LANGCODE_DEFAULT;
-
-        if (!isset($values[$field_name][$langcode])) {
-          $values[$field_name][$langcode] = [];
+        if (!isset($values[$field_name])) {
+          $values[$field_name] = [];
         }
 
-        if ($storage_definition->getCardinality() == FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED || count($values[$field_name][$langcode]) < $storage_definition->getCardinality()) {
+        if ($storage_definition->getCardinality() == FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED || count($values[$field_name]) < $storage_definition->getCardinality()) {
           $item = [];
           // For each column declared by the field, populate the item from the
           // prefixed database column.
@@ -649,7 +645,7 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
           }
 
           // Add the item to the field values for the entity.
-          $values[$field_name][$langcode][] = $item;
+          $values[$field_name][] = $item;
         }
       }
     }
