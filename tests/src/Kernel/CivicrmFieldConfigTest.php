@@ -59,12 +59,6 @@ class CivicrmFieldConfigTest extends CivicrmEntityTestBase {
     );
   }
 
-  public function testGet() {
-    $result = $this->container->get('civicrm_entity.api')
-      ->get('event', ['id' => 1]);
-    $this->assertEquals('Fall Fundraiser Dinner', $result[0]['title']);
-  }
-
   public function testSaveAndLoadFieldConfig() {
     // Create a field.
     $field_name = Unicode::strtolower($this->randomMachineName());
@@ -121,6 +115,12 @@ class CivicrmFieldConfigTest extends CivicrmEntityTestBase {
     /** @var \Drupal\civicrm_entity\Entity\CivicrmEntity $entity */
     $entity = $storage->load($entity->id());
     $this->assertEquals('Testing value', $entity->get($field_name)->value);
+
+    $entity->delete();
+
+    $this->assertEquals(0,
+      $database->select($table_mapping->getDedicatedDataTableName($field_storage))->countQuery()->execute()->fetchField()
+    );
   }
 
 }

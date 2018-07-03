@@ -36,6 +36,7 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
     }
 
     $civicrm_api_mock->save('event', Argument::type('array'))->willReturn(TRUE);
+    $civicrm_api_mock->delete('event', Argument::type('array'))->willReturn(TRUE);
     $this->container->set('civicrm_entity.api', $civicrm_api_mock->reveal());
   }
 
