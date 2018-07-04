@@ -22,6 +22,10 @@ class CivicrmEntityTypeTest extends KernelTestBase {
   protected function setUp() {
     parent::setUp();
     require __DIR__ . '/../Type.php';
+    $this->config('civicrm_entity.settings')
+      ->set('enabled_entity_types', [
+        'civicrm_event',
+      ])->save();
   }
 
   public function testEntityType() {
@@ -33,7 +37,7 @@ class CivicrmEntityTypeTest extends KernelTestBase {
 
     $links = $definition->getLinkTemplates();
     $this->assertEquals('/civicrm-event/{civicrm_event}', $links['canonical']);
-    $this->assertEquals('/admin/structure/civicrm-entity/civicrm-event/{civicrm_event}/edit', $links['edit-form']);
+    $this->assertEquals('/civicrm-event/{civicrm_event}/edit', $links['edit-form']);
     $this->assertEquals('/admin/structure/civicrm-entity/civicrm-event', $links['collection']);
   }
 

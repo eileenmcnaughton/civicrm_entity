@@ -3,6 +3,7 @@
 namespace Drupal\Tests\civicrim_entity\Kernel;
 
 use Drupal\civicrm_entity\CiviCrmApi;
+use Drupal\civicrm_entity\Entity\CivicrmEntity;
 use Drupal\civicrm_entity\Entity\Events;
 use Drupal\KernelTests\KernelTestBase;
 
@@ -154,6 +155,11 @@ class CivicrmBaseFieldTest extends KernelTestBase {
       ),
     ]);
     $this->container->set('civicrm_entity.api', $civicrm_api_mock->reveal());
+
+    $this->config('civicrm_entity.settings')
+      ->set('enabled_entity_types', [
+      'civicrm_event',
+    ])->save();
   }
 
   /**
@@ -162,14 +168,14 @@ class CivicrmBaseFieldTest extends KernelTestBase {
    */
   public function testBaseFields() {
     /** @var \Drupal\Core\Field\FieldDefinitionInterface[] $base_fields */
-    $base_fields = Events::baseFieldDefinitions($this->container->get('entity_type.manager')->getDefinition('civicrm_event'));
+    $base_fields = CivicrmEntity::baseFieldDefinitions($this->container->get('entity_type.manager')->getDefinition('civicrm_event'));
 
     $this->assertTrue(isset($base_fields['id']));
     $this->assertEquals('integer', $base_fields['id']->getType());
     $this->assertTrue(isset($base_fields['title']));
-    $this->assertEquals('text', $base_fields['title']->getType());
+    $this->assertEquals('string', $base_fields['title']->getType());
     $this->assertTrue(isset($base_fields['phone_number']));
-    $this->assertEquals('text', $base_fields['phone_number']->getType());
+    $this->assertEquals('string', $base_fields['phone_number']->getType());
     $this->assertTrue(isset($base_fields['birth_date']));
     $this->assertEquals('datetime', $base_fields['birth_date']->getType());
     $this->assertTrue(isset($base_fields['activity_date_time']));
@@ -177,7 +183,7 @@ class CivicrmBaseFieldTest extends KernelTestBase {
     $this->assertTrue(isset($base_fields['is_auto']));
     $this->assertEquals('boolean', $base_fields['is_auto']->getType());
     $this->assertTrue(isset($base_fields['details']));
-    $this->assertEquals('text', $base_fields['details']->getType());
+    $this->assertEquals('text_long', $base_fields['details']->getType());
     $this->assertTrue(isset($base_fields['refresh_date']));
     $this->assertEquals('timestamp', $base_fields['refresh_date']->getType());
   }
