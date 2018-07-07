@@ -6,6 +6,7 @@ use Drupal\civicrm_entity\CiviEntityStorage;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\ContentEntityTypeInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Sql\SqlContentEntityStorageSchema;
 
 /**
@@ -48,6 +49,45 @@ class CivicrmEntityStorageSchema extends SqlContentEntityStorageSchema {
     $this->fieldStorageDefinitions = $entity_manager->getFieldStorageDefinitions($entity_type->id());
     $this->storage = $storage;
     $this->database = $database;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function onEntityTypeCreate(EntityTypeInterface $entity_type) {
+    $this->checkEntityType($entity_type);
+
+    // Create dedicated field tables.
+    $table_mapping = $this->storage->getTableMapping();
+    foreach ($this->fieldStorageDefinitions as $field_storage_definition) {
+      if ($table_mapping->requiresDedicatedTableStorage($field_storage_definition)) {
+        $this->createDedicatedTableSchema($field_storage_definition);
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function onEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original) {
+    $this->checkEntityType($entity_type);
+    $this->checkEntityType($original);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function requiresEntityStorageSchemaChanges(EntityTypeInterface $entity_type, EntityTypeInterface $original) {
+    return FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * There are no base tables.
+   */
+  protected function getEntitySchemaTables() {
+    return [];
   }
 
 }
