@@ -27,6 +27,10 @@ class Query extends QueryBase implements QueryInterface {
    */
   public function execute() {
     $result = $this->civicrmApi->get($this->entityType->get('civicrm_entity'));
+    if ($this->count) {
+      return count($result);
+    }
+
     return array_keys($result);
   }
 
