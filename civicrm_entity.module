@@ -37,7 +37,8 @@ function civicrm_entity_theme() {
 function civicrm_entity_entity_type_build(array &$entity_types) {
   $logger = \Drupal::logger('civicrm-entity');
   $supported_entities = SupportedEntities::getInfo();
-  $enabled_entity_types = \Drupal::config('civicrm_entity.settings')->get('enabled_entity_types');
+  $config = \Drupal::config('civicrm_entity.settings');
+  $enabled_entity_types = $config->get('enabled_entity_types') ?: [];
   foreach ($supported_entities as $entity_type_id => $civicrm_entity_info) {
     $clean_entity_type_id = str_replace('_', '-', $entity_type_id);
     $civicrm_entity_name = $civicrm_entity_info['civicrm entity name'];
