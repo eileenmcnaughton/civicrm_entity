@@ -26,7 +26,17 @@ class Query extends QueryBase implements QueryInterface {
    * {@inheritdoc}
    */
   public function execute() {
-    $result = $this->civicrmApi->get($this->entityType->get('civicrm_entity'));
+    $params = [];
+    foreach ($this->condition->conditions() as $condition) {
+      $operator = $condition['operator'] ?: '=';
+      if ($operator != '=') {
+        $params[$condition['field']] = [$operator => $condition['value']];
+      }
+      else {
+        $params[$condition['field']] = $condition['value'];
+      }
+    }
+    $result = $this->civicrmApi->get($this->entityType->get('civicrm_entity'), $params);
     if ($this->count) {
       return count($result);
     }
