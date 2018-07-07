@@ -100,6 +100,23 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
   }
 
   /**
+   * Updates the wrapped entity type definition.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The update entity type.
+   *
+   * @see \Drupal\Core\Entity\Sql\SqlContentEntityStorage::setEntityType()
+   */
+  public function setEntityType(EntityTypeInterface $entity_type) {
+    if ($this->entityType->id() == $entity_type->id()) {
+      $this->entityType = $entity_type;
+    }
+    else {
+      throw new EntityStorageException("Unsupported entity type {$entity_type->id()}");
+    }
+  }
+
+  /**
    * Gets the entity type's storage schema object.
    *
    * @return \Drupal\Core\Entity\Sql\SqlContentEntityStorageSchema
