@@ -560,6 +560,24 @@ function civicrm_entity_views_extras_views_data() {
       ],
     ];
   }
+
+  //----------------------------------------------------------------
+  // CIVICRM Membership Type - RELATIONSHIPS
+  //----------------------------------------------------------------
+  if (!empty($enabled_entities['civicrm_membership_type'])) {
+    $data['civicrm_membership']['civicrm_membership_type'] = [
+      'title'        => t('Membership Type'),
+      'help'         => t('Relates Membership Type table to Memberships'),
+      'real field'   => 'membership_type_id',
+      'relationship' => [
+        'base'       => 'civicrm_membership_type',
+        'base field' => 'id',
+        'handler'    => 'views_handler_relationship',
+        'label'      => t('CiviCRM Membership Type'),
+      ],
+    ];
+  }
+
   //----------------------------------------------------------------
   // CIVICRM Event Extras
   //----------------------------------------------------------------
