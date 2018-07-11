@@ -214,7 +214,10 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
       }
     }
 
-    $this->civicrmApi->save($this->entityType->get('civicrm_entity'), $params);
+    $result = $this->civicrmApi->save($this->entityType->get('civicrm_entity'), $params);
+    if ($entity->isNew()) {
+      $entity->{$this->idKey} = (string) $result['id'];
+    }
     $this->doSaveFieldItems($entity, $non_base_fields);
 
     return $return;
