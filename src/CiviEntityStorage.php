@@ -91,7 +91,12 @@ class CiviEntityStorage extends ContentEntityStorageBase {
       }
     }
 
-    $this->civicrmApi->save($this->entityType->get('civicrm_entity'), $params);
+    $result = $this->civicrmApi->save($this->entityType->get('civicrm_entity'), $params);
+
+    if ($entity->isNew()) {
+      $entity->{$this->idKey} = (string) $result['id'];
+    }
+
     return $return;
   }
 
