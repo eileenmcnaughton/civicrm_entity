@@ -13,9 +13,11 @@
   <div class="layout-region layout-region-civicrm-entity-main">
     {{ form|without('advanced', 'footer', 'actions') }}
   </div>
+  {% if (form.advanced) %}
   <div class="layout-region layout-region-civicrm-entity-secondary">
     {{ form.advanced }}
   </div>
+  {% endif %}
   <div class="layout-region layout-region-civicrm-entity-footer">
     <div class="layout-region-civicrm-entity-footer__content">
       {{ form.footer }}
