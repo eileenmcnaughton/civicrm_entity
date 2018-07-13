@@ -22,10 +22,12 @@ class CivicrmEntity extends ContentEntityBase {
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = [];
+    $civicrm_required_fields = $entity_type->get('civicrm_required_fields');
     $field_definition_provider = \Drupal::service('civicrm_entity.field_definition_provider');
-    $civicrm_fields = \Drupal::service('civicrm_entity.api')->getFields($entity_type->get('civicrm_entity'));
+    $civicrm_fields = \Drupal::service('civicrm_entity.api')->getFields($entity_type->get('civicrm_entity'), 'create');
     foreach ($civicrm_fields as $civicrm_field) {
       $fields[$civicrm_field['name']] = $field_definition_provider->getBaseFieldDefinition($civicrm_field);
+      $fields[$civicrm_field['name']]->setRequired(isset($civicrm_required_fields[$civicrm_field['name']]));
     }
     return $fields;
   }

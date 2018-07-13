@@ -27,6 +27,23 @@ final class SupportedEntities {
    */
   public static function getInfo() {
     $civicrm_entity_info = [];
+    $civicrm_entity_info['civicrm_action_schedule'] = [
+      'civicrm entity label' => t('Action Schedule'),
+      'civicrm entity name' => 'action_schedule',
+      'label property' => 'name',
+      'permissions' => [
+        'view' => [],
+        'edit' => [],
+        'update' => [],
+        'create' => [],
+        'delete' => [],
+      ],
+      'required' => [
+        'title' => TRUE,
+        'mapping_id' => TRUE,
+        'entity_value' => TRUE,
+      ],
+    ];
     $civicrm_entity_info['civicrm_activity'] = [
       'civicrm entity label' => t('Activity'),
       'civicrm entity name' => 'activity',
@@ -38,17 +55,8 @@ final class SupportedEntities {
         'create' => [],
         'delete' => ['delete activities'],
       ],
-    ];
-    $civicrm_entity_info['civicrm_action_schedule'] = [
-      'civicrm entity label' => t('Action Schedule'),
-      'civicrm entity name' => 'action_schedule',
-      'label property' => 'name',
-      'permissions' => [
-        'view' => [],
-        'edit' => [],
-        'update' => [],
-        'create' => [],
-        'delete' => [],
+      'required' => [
+        'source_contact_id' => TRUE,
       ],
     ];
     $civicrm_entity_info['civicrm_address'] = [
@@ -62,6 +70,10 @@ final class SupportedEntities {
         'create' => ['edit all contacts'],
         'delete' => ['delete contacts'],
       ],
+      'required' => [
+        'location_type_id' => TRUE,
+        'contact_id' => TRUE,
+      ],
     ];
     $civicrm_entity_info['civicrm_campaign'] = [
       'civicrm entity label' => t('Campaign'),
@@ -73,6 +85,9 @@ final class SupportedEntities {
         'update' => [],
         'create' => [],
         'delete' => [],
+      ],
+      'required' => [
+        'title' => TRUE,
       ],
     ];
     $civicrm_entity_info['civicrm_case'] = [
@@ -89,6 +104,9 @@ final class SupportedEntities {
           'access all cases and activities',
         ],
       ],
+      'required' => [
+        'contact_id' => TRUE,
+      ],
     ];
     $civicrm_entity_info['civicrm_contact'] = [
       'civicrm entity label' => t('Contact'),
@@ -100,6 +118,10 @@ final class SupportedEntities {
         'update' => ['edit all contacts'],
         'create' => ['edit all contacts'],
         'delete' => ['delete contacts'],
+      ],
+      'required' => [
+        'contact_type' => TRUE,
+        'name' => TRUE,
       ],
     ];
     $civicrm_entity_info['civicrm_contribution'] = [
@@ -243,6 +265,11 @@ final class SupportedEntities {
         'update' => ['edit all events'],
         'create' => ['edit all events'],
         'delete' => ['edit all events', 'delete in CiviEvent'],
+      ],
+      'required' => [
+        'start_date' => TRUE,
+        'title' => TRUE,
+        'event_type_id' => TRUE,
       ],
     ];
     $civicrm_entity_info['civicrm_group'] = [
