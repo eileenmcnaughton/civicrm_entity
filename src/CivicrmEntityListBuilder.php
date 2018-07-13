@@ -23,8 +23,20 @@ class CivicrmEntityListBuilder extends EntityListBuilder {
   public function buildRow(EntityInterface $entity) {
     return [
       'id' => $entity->id(),
-      'label' => $entity->label(),
+      'label' => $entity->toLink(),
     ] + parent::buildRow($entity);
+  }
+
+  protected function getDefaultOperations(EntityInterface $entity) {
+    $operations = parent::getDefaultOperations($entity);
+
+    $operations['view'] = [
+      'title' => $this->t('View'),
+      'weight' => 50,
+      'url' => $this->ensureDestination($entity->toUrl()),
+    ];
+
+    return $operations;
   }
 
 }
