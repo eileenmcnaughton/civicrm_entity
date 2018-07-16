@@ -174,45 +174,13 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
     /** @var \Drupal\civicrm_entity\Entity\CivicrmEntity $entity */
     $return = $entity->isNew() ? SAVED_NEW : SAVED_UPDATED;
 
-    $params = [];
-    $non_base_fields = [];
-    /** @var \Drupal\Core\Field\FieldItemListInterface $items */
-    foreach ($entity->getFields() as $field_name => $items) {
-      $items->filterEmptyItems();
-      if ($items->isEmpty()) {
-        continue;
-      }
-
-      $storage_definition = $items->getFieldDefinition()->getFieldStorageDefinition();
-
-      if (!$storage_definition->isBaseField()) {
-        // Do not try to pass any FieldConfig (or else) to CiviCRM API.
-        $non_base_fields[] = $field_name;
-        continue;
-      }
-
-      $main_property_name = $storage_definition->getMainPropertyName();
-      $list = [];
-      /** @var \Drupal\Core\Field\FieldItemInterface $item */
-      foreach ($items as $delta => $item) {
-        $main_property = $item->get($main_property_name);
-        if ($main_property instanceof DateTimeIso8601) {
-          $value = $main_property->getDateTime()->format(DATETIME_DATETIME_STORAGE_FORMAT);
-        }
-        else {
-          $value = $main_property->getValue();
-        }
-        $list[$delta] = $value;
-      }
-
-      // Remove the wrapping array if the field is single-valued.
-      if ($storage_definition->getCardinality() === 1) {
-        $list = reset($list);
-      }
-      if (!empty($list)) {
-        $params[$field_name] = $list;
-      }
-    }
+    $params = $entity->civicrmApiNormalize();
+    $non_base_fields = array_filter($entity->getFieldDefinitions(), function (FieldDefinitionInterface $definition) {
+      return $definition->getFieldStorageDefinition()->isBaseField();
+    });
+    $non_base_fields = array_map(function (FieldDefinitionInterface $definition) {
+      return $definition->getName();
+    }, $non_base_fields);
 
     $result = $this->civicrmApi->save($this->entityType->get('civicrm_entity'), $params);
     if ($entity->isNew()) {
