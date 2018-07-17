@@ -7,6 +7,7 @@
 
 use Drupal\civicrm_entity\CivicrmEntityAccessHandler;
 use Drupal\civicrm_entity\CivicrmEntityListBuilder;
+use Drupal\civicrm_entity\CivicrmEntityViewsData;
 use Drupal\civicrm_entity\CiviEntityStorage;
 use Drupal\civicrm_entity\Entity\CivicrmEntity;
 use Drupal\civicrm_entity\Form\CivicrmEntityForm;
@@ -79,6 +80,7 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
           'edit' => CivicrmEntityForm::class,
           'delete' => ContentEntityDeleteForm::class,
         ],
+        'views_data' => CivicrmEntityViewsData::class,
       ],
       // Generate route paths.
       'links' => [
