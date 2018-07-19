@@ -662,6 +662,15 @@ final class SupportedEntities {
         'is_active' => [
           'group' => 'settings',
         ],
+        'is_monetary' => [
+          'group' => 'settings',
+        ],
+        'is_online_registration' => [
+          'group' => 'settings',
+        ],
+        'financial_type_id' => [
+          'group' => 'settings',
+        ],
       ],
     ];
 
