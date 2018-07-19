@@ -176,7 +176,7 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
 
     $params = $entity->civicrmApiNormalize();
     $non_base_fields = array_filter($entity->getFieldDefinitions(), function (FieldDefinitionInterface $definition) {
-      return $definition->getFieldStorageDefinition()->isBaseField();
+      return !$definition->getFieldStorageDefinition()->isBaseField();
     });
     $non_base_fields = array_map(function (FieldDefinitionInterface $definition) {
       return $definition->getName();
