@@ -102,7 +102,15 @@ class CivicrmEntityViewsData extends EntityViewsData {
     $field_definitions = $this->entityManager->getBaseFieldDefinitions($this->entityType->id());
 
     $table_mapping = $this->storage->getTableMapping();
+
     if ($table_mapping) {
+
+      foreach ($table_mapping->getTableNames() as $table) {
+        foreach ($table_mapping->getFieldNames($table) as $field_name) {
+          $stop = null;
+        }
+      }
+
       foreach ($field_definitions as $field_definition) {
         if ($table_mapping->allowsSharedTableStorage($field_definition->getFieldStorageDefinition())) {
           $this->mapFieldDefinition($views_base_table, $field_definition->getName(), $field_definition, $table_mapping, $data[$views_base_table]);

@@ -14,6 +14,7 @@ use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Schema\DynamicallyFieldableEntityStorageSchemaInterface;
 use Drupal\Core\Entity\Sql\DefaultTableMapping;
+use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Language\LanguageInterface;
@@ -25,7 +26,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Defines entity class for external CiviCRM entities.
  */
-class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyFieldableEntityStorageSchemaInterface {
+class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFieldableEntityStorageSchemaInterface {
 
   /**
    * The CiviCRM API.
@@ -33,34 +34,6 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
    * @var \Drupal\civicrm_entity\CiviCrmApi
    */
   protected $civicrmApi;
-
-  /**
-   * Active database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $database;
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * The entity type's storage schema object.
-   *
-   * @var \Drupal\Core\Entity\Schema\EntityStorageSchemaInterface
-   */
-  protected $storageSchema;
-
-  /**
-   * The mapping of field columns to SQL tables.
-   *
-   * @var \Drupal\Core\Entity\Sql\TableMappingInterface
-   */
-  protected $tableMapping;
 
   /**
    * Constructs a ContentEntityStorageBase object.
@@ -79,9 +52,7 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
    *   The CiviCRM API.
    */
   public function __construct(EntityTypeInterface $entity_type, Connection $database, EntityManagerInterface $entity_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, CiviCrmApiInterface $civicrm_api) {
-    parent::__construct($entity_type, $entity_manager, $cache);
-    $this->database = $database;
-    $this->languageManager = $language_manager;
+    parent::__construct($entity_type, $database, $entity_manager, $cache, $language_manager);
     $this->civicrmApi = $civicrm_api;
   }
 
@@ -100,34 +71,14 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
   }
 
   /**
-   * Updates the wrapped entity type definition.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The update entity type.
-   *
-   * @see \Drupal\Core\Entity\Sql\SqlContentEntityStorage::setEntityType()
+   * Initializes table name variables.
    */
-  public function setEntityType(EntityTypeInterface $entity_type) {
-    if ($this->entityType->id() == $entity_type->id()) {
-      $this->entityType = $entity_type;
-    }
-    else {
-      throw new EntityStorageException("Unsupported entity type {$entity_type->id()}");
-    }
-  }
-
-  /**
-   * Gets the entity type's storage schema object.
-   *
-   * @return \Drupal\Core\Entity\Sql\SqlContentEntityStorageSchema
-   *   The schema object.
-   */
-  public function getStorageSchema() {
-    if (!isset($this->storageSchema)) {
-      $class = '\Drupal\civicrm_entity\Entity\Sql\CivicrmEntityStorageSchema';
-      $this->storageSchema = new $class($this->entityManager, $this->entityType, $this, $this->database);
-    }
-    return $this->storageSchema;
+  protected function initTableLayout() {
+    $this->tableMapping = NULL;
+    $this->revisionKey = NULL;
+    $this->revisionTable = NULL;
+    $this->dataTable = NULL;
+    $this->revisionDataTable = NULL;
   }
 
   /**
@@ -237,13 +188,6 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
   /**
    * {@inheritdoc}
    */
-  protected function has($id, EntityInterface $entity) {
-    return !$entity->isNew();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   protected function getQueryServiceName() {
     return 'entity.query.civicrm_entity';
   }
@@ -303,85 +247,6 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
     // @todo query API and get actual count.
     return FALSE;
   }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function readFieldItemsToPurge(FieldDefinitionInterface $field_definition, $batch_size) {
-    // Check whether the whole field storage definition is gone, or just some
-    // bundle fields.
-    $storage_definition = $field_definition->getFieldStorageDefinition();
-    $is_deleted = $storage_definition instanceof FieldStorageConfigInterface && $storage_definition->isDeleted();
-    $table_mapping = $this->getTableMapping();
-    $table_name = $table_mapping->getDedicatedDataTableName($storage_definition, $is_deleted);
-
-    // Get the entities which we want to purge first.
-    $entity_query = $this->database->select($table_name, 't', ['fetch' => \PDO::FETCH_ASSOC]);
-    $or = $entity_query->orConditionGroup();
-    foreach ($storage_definition->getColumns() as $column_name => $data) {
-      $or->isNotNull($table_mapping->getFieldColumnName($storage_definition, $column_name));
-    }
-    $entity_query
-      ->distinct(TRUE)
-      ->fields('t', ['entity_id'])
-      ->condition('bundle', $field_definition->getTargetBundle())
-      ->range(0, $batch_size);
-
-    // Create a map of field data table column names to field column names.
-    $column_map = [];
-    foreach ($storage_definition->getColumns() as $column_name => $data) {
-      $column_map[$table_mapping->getFieldColumnName($storage_definition, $column_name)] = $column_name;
-    }
-
-    $entities = [];
-    $items_by_entity = [];
-    foreach ($entity_query->execute() as $row) {
-      $item_query = $this->database->select($table_name, 't', ['fetch' => \PDO::FETCH_ASSOC])
-        ->fields('t')
-        ->condition('entity_id', $row['entity_id'])
-        ->condition('deleted', 1)
-        ->orderBy('delta');
-
-      foreach ($item_query->execute() as $item_row) {
-        if (!isset($entities[$item_row['revision_id']])) {
-          // Create entity with the right revision id and entity id combination.
-          $item_row['entity_type'] = $this->entityTypeId;
-          // @todo: Replace this by an entity object created via an entity
-          // factory, see https://www.drupal.org/node/1867228.
-          $entities[$item_row['revision_id']] = _field_create_entity_from_ids((object) $item_row);
-        }
-        $item = [];
-        foreach ($column_map as $db_column => $field_column) {
-          $item[$field_column] = $item_row[$db_column];
-        }
-        $items_by_entity[$item_row['revision_id']][] = $item;
-      }
-    }
-
-    // Create field item objects and return.
-    foreach ($items_by_entity as $revision_id => $values) {
-      $entity_adapter = $entities[$revision_id]->getTypedData();
-      $items_by_entity[$revision_id] = \Drupal::typedDataManager()->create($field_definition, $values, $field_definition->getName(), $entity_adapter);
-    }
-    return $items_by_entity;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function purgeFieldItems(ContentEntityInterface $entity, FieldDefinitionInterface $field_definition) {
-    $storage_definition = $field_definition->getFieldStorageDefinition();
-    $is_deleted = $this->storageDefinitionIsDeleted($storage_definition);
-    $table_mapping = $this->getTableMapping();
-    $table_name = $table_mapping->getDedicatedDataTableName($storage_definition, $is_deleted);
-    $revision_name = $table_mapping->getDedicatedRevisionTableName($storage_definition, $is_deleted);
-    $revision_id = $this->entityType->isRevisionable() ? $entity->getRevisionId() : $entity->id();
-    $this->database->delete($table_name)
-      ->condition('revision_id', $revision_id)
-      ->condition('deleted', 1)
-      ->execute();
-  }
-
   /**
    * {@inheritdoc}
    */
@@ -420,45 +285,9 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
   /**
    * {@inheritdoc}
    */
-  public function onEntityTypeCreate(EntityTypeInterface $entity_type) {
-    $this->wrapSchemaException(function () use ($entity_type) {
-      $this->getStorageSchema()->onEntityTypeCreate($entity_type);
-    });
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function onEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original) {
-    $this->wrapSchemaException(function () use ($entity_type, $original) {
-      $this->getStorageSchema()->onEntityTypeUpdate($entity_type, $original);
-    });
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function onEntityTypeDelete(EntityTypeInterface $entity_type) {
-    $this->wrapSchemaException(function () use ($entity_type) {
-      $this->getStorageSchema()->onEntityTypeDelete($entity_type);
-    });
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function onFieldStorageDefinitionCreate(FieldStorageDefinitionInterface $storage_definition) {
     $this->wrapSchemaException(function () use ($storage_definition) {
       $this->getStorageSchema()->onFieldStorageDefinitionCreate($storage_definition);
-    });
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function onFieldStorageDefinitionUpdate(FieldStorageDefinitionInterface $storage_definition, FieldStorageDefinitionInterface $original) {
-    $this->wrapSchemaException(function () use ($storage_definition, $original) {
-      $this->getStorageSchema()->onFieldStorageDefinitionUpdate($storage_definition, $original);
     });
   }
 
@@ -482,46 +311,6 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
     $this->wrapSchemaException(function () use ($storage_definition) {
       $this->getStorageSchema()->onFieldStorageDefinitionDelete($storage_definition);
     });
-  }
-
-  /**
-   * Wraps a database schema exception into an entity storage exception.
-   *
-   * @param callable $callback
-   *   The callback to be executed.
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
-   *   When a database schema exception is thrown.
-   */
-  protected function wrapSchemaException(callable $callback) {
-    $message = 'Exception thrown while performing a schema update.';
-    try {
-      $callback();
-    }
-    catch (SchemaException $e) {
-      $message .= ' ' . $e->getMessage();
-      throw new EntityStorageException($message, 0, $e);
-    }
-    catch (DatabaseExceptionWrapper $e) {
-      $message .= ' ' . $e->getMessage();
-      throw new EntityStorageException($message, 0, $e);
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function onFieldDefinitionDelete(FieldDefinitionInterface $field_definition) {
-    $table_mapping = $this->getTableMapping();
-    $storage_definition = $field_definition->getFieldStorageDefinition();
-    // Mark field data as deleted.
-    if ($table_mapping->requiresDedicatedTableStorage($storage_definition)) {
-      $table_name = $table_mapping->getDedicatedDataTableName($storage_definition);
-      $this->database->update($table_name)
-        ->fields(['deleted' => 1])
-        ->condition('bundle', $field_definition->getTargetBundle())
-        ->execute();
-    }
   }
 
   /**
@@ -559,12 +348,9 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
   }
 
   /**
-   * Gets a table mapping for the entity's field config SQL tables.
-   *
-   * @return \Drupal\Core\Entity\Sql\TableMappingInterface|\Drupal\Core\Entity\Sql\DefaultTableMapping
-   *   A table mapping object for the entity's tables.
+   * {@inheritdoc}
    */
-  public function getTableMapping() {
+  public function getTableMapping(array $storage_definitions = NULL) {
     $table_mapping = $this->tableMapping;
 
     if ($table_mapping) {
@@ -608,7 +394,7 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
    *
    * @throws \Drupal\Core\Entity\Sql\SqlContentEntityStorageException
    */
-  protected function loadFromDedicatedTables(array &$values) {
+  protected function loadFromDedicatedTables(array &$values, $load_from_revision = FALSE) {
     if (empty($values)) {
       return;
     }
@@ -666,20 +452,6 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
   /**
    * {@inheritdoc}
    */
-  public function requiresFieldStorageSchemaChanges(FieldStorageDefinitionInterface $storage_definition, FieldStorageDefinitionInterface $original) {
-    return $this->getStorageSchema()->requiresFieldStorageSchemaChanges($storage_definition, $original);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function requiresFieldDataMigration(FieldStorageDefinitionInterface $storage_definition, FieldStorageDefinitionInterface $original) {
-    return $this->getStorageSchema()->requiresFieldDataMigration($storage_definition, $original);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function requiresEntityStorageSchemaChanges(EntityTypeInterface $entity_type, EntityTypeInterface $original) {
     // There is no base table.
     return FALSE;
@@ -691,13 +463,6 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
   public function requiresEntityDataMigration(EntityTypeInterface $entity_type, EntityTypeInterface $original) {
     // There is no base table.
     return FALSE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function finalizePurge(FieldStorageDefinitionInterface $storage_definition) {
-    $this->getStorageSchema()->finalizePurge($storage_definition);
   }
 
   /**
@@ -713,7 +478,7 @@ class CiviEntityStorage extends ContentEntityStorageBase implements DynamicallyF
    *
    * @throws \Drupal\Core\Entity\Sql\SqlContentEntityStorageException
    */
-  protected function saveToDedicatedTables(ContentEntityInterface $entity, $update = TRUE, array $names = []) {
+  protected function saveToDedicatedTables(ContentEntityInterface $entity, $update = TRUE, $names = []) {
     $vid = $entity->getRevisionId();
     $id = $entity->id();
     $bundle = $entity->bundle();

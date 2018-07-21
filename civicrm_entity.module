@@ -10,6 +10,7 @@ use Drupal\civicrm_entity\CivicrmEntityListBuilder;
 use Drupal\civicrm_entity\CivicrmEntityViewsData;
 use Drupal\civicrm_entity\CiviEntityStorage;
 use Drupal\civicrm_entity\Entity\CivicrmEntity;
+use Drupal\civicrm_entity\Entity\Sql\CivicrmEntityStorageSchema;
 use Drupal\civicrm_entity\Form\CivicrmEntityForm;
 use Drupal\civicrm_entity\Routing\CiviCrmEntityRouteProvider;
 use Drupal\civicrm_entity\SupportedEntities;
@@ -81,6 +82,7 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
           'delete' => ContentEntityDeleteForm::class,
         ],
         'views_data' => CivicrmEntityViewsData::class,
+        'storage_schema' => CivicrmEntityStorageSchema::class,
       ],
       // Generate route paths.
       'links' => [
@@ -116,4 +118,13 @@ function civicrm_entity_pseudoconstant_options(FieldStorageDefinitionInterface $
   $entity_type = $entity->getEntityType();
   $options = $civicrm_api->getOptions($entity_type->get('civicrm_entity'), $definition->getName());
   return $options;
+}
+
+
+function civicrm_entity_debug_views() {
+  $views_data = \Drupal::getContainer()->get('views.views_data');
+  $views_data->clear();
+  $data = $views_data->getAll();
+  $civicrm_event_data = $data['civicrm_contact'];
+  $stop = null;
 }
