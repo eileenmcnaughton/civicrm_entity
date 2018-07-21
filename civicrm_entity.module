@@ -119,12 +119,3 @@ function civicrm_entity_pseudoconstant_options(FieldStorageDefinitionInterface $
   $options = $civicrm_api->getOptions($entity_type->get('civicrm_entity'), $definition->getName());
   return $options;
 }
-
-
-function civicrm_entity_debug_views() {
-  $views_data = \Drupal::getContainer()->get('views.views_data');
-  $views_data->clear();
-  $data = $views_data->getAll();
-  $civicrm_event_data = $data['civicrm_contact'];
-  $stop = null;
-}
