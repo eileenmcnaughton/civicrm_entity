@@ -134,12 +134,11 @@ function civicrm_entity_field_default_views_data(FieldStorageConfigInterface $fi
   $entity_manager = \Drupal::entityManager();
   $entity_type_id = $field_storage->getTargetEntityTypeId();
   $entity_type = $entity_manager->getDefinition($entity_type_id);
+  // EDIT: We ensure the base table is set to the entity type ID, which matches
+  // the CiviCRM table pattern of `civicrm_*`
   if (!$base_table = $entity_type->getBaseTable()) {
-    // EDIT
     // We cannot do anything if for some reason there is no base table.
-    // return $data;
-    // CHANGE: the base table is the entity name.
-    $base_table = $entity_type_id;
+     return $data;
   }
   $entity_tables = [$base_table => $entity_type_id];
   // Some entities may not have a data table.

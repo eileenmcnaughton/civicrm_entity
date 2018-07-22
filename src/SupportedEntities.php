@@ -122,6 +122,10 @@ final class SupportedEntities {
       'required' => [
         'contact_type' => TRUE,
         'name' => TRUE,
+        'first_name' => TRUE,
+        'last_name' => TRUE,
+        'email' => TRUE,
+        'display_name' => TRUE,
       ],
     ];
     $civicrm_entity_info['civicrm_contribution'] = [
