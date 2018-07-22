@@ -5,6 +5,7 @@ namespace Drupal\civicrm_entity;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
 use Drupal\views\EntityViewsData;
@@ -143,6 +144,37 @@ class CivicrmEntityViewsData extends EntityViewsData {
   public function getViewsTableForEntityType(EntityTypeInterface $entity_type) {
     // CiviCRM Entity tables are `civicrm_*`
     return $entity_type->id();
+  }
+
+  /**
+   * Provides Views integration for any datetime-based fields.
+   *
+   * This does not provide arguments, as that required an alter against the
+   * entire Views data array, which is not possible here.
+   *
+   * @param string $table
+   *   The table the language field is added to.
+   * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
+   *   The field definition.
+   * @param array $views_field
+   *   The views field data.
+   * @param string $field_column_name
+   *   The field column being processed.
+   *
+   * @see datetime_type_field_views_data_helper()
+   */
+  protected function processViewsDataForDatetime($table, FieldDefinitionInterface $field_definition, array &$views_field, $field_column_name) {
+    // Set the 'datetime' filter type.
+    $views_field['filter']['id'] = 'datetime';
+    $views_field['filter']['field_name'] = $field_definition->getName();
+
+    // Set the 'datetime' argument type.
+    $views_field['argument']['id'] = 'datetime';
+    $views_field['argument']['field_name'] = $field_definition->getName();
+
+    // Set the 'datetime' sort handler.
+    $views_field['sort']['id'] = 'datetime';
+    $views_field['sort']['field_name'] = $field_definition->getName();
   }
 
 }
