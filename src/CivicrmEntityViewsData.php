@@ -177,4 +177,35 @@ class CivicrmEntityViewsData extends EntityViewsData {
     $views_field['sort']['field_name'] = $field_definition->getName();
   }
 
+  /**
+   * Provides Views integration for list_string fields.
+   *
+   * This does not provide arguments, as that required an alter against the
+   * entire Views data array, which is not possible here.
+   *
+   * @param string $table
+   *   The table the language field is added to.
+   * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
+   *   The field definition.
+   * @param array $views_field
+   *   The views field data.
+   * @param string $field_column_name
+   *   The field column being processed.
+   *
+   * @see options_field_views_data()
+   */
+  protected function processViewsDataForListString($table, FieldDefinitionInterface $field_definition, array &$views_field, $field_column_name) {
+    $views_field['filter']['id'] = 'list_field';
+    $views_field['filter']['field_name'] = $field_definition->getName();
+
+    // Set the 'datetime' argument type.
+    if ($field_definition->getName() == 'list_string') {
+      $views_field['argument']['id'] = 'string_list_field';
+    }
+    else {
+      $views_field['argument']['id'] = 'number_list_field';
+    }
+    $views_field['argument']['field_name'] = $field_definition->getName();
+  }
+
 }

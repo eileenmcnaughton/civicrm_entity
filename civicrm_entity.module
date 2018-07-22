@@ -116,7 +116,7 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
 function civicrm_entity_pseudoconstant_options(FieldStorageDefinitionInterface $definition, FieldableEntityInterface $entity = NULL, &$cacheable = NULL) {
   /** @var \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api */
   $civicrm_api = \Drupal::service('civicrm_entity.api');
-  $entity_type = $entity->getEntityType();
+  $entity_type = \Drupal::entityTypeManager()->getDefinition($definition->getTargetEntityTypeId());
   $options = $civicrm_api->getOptions($entity_type->get('civicrm_entity'), $definition->getName());
   return $options;
 }
