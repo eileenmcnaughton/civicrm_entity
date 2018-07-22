@@ -5,12 +5,25 @@ namespace Drupal\civicrm_entity;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityAccessControlHandler;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Session\AccountInterface;
 
 /**
  * Entity access handler for CiviCRM entities.
  */
 class CivicrmEntityAccessHandler extends EntityAccessControlHandler {
+
+  /**
+   * The CiviCRM entity info.
+   *
+   * @var array
+   */
+  protected $civicrmEntityInfo;
+
+  public function __construct(EntityTypeInterface $entity_type) {
+    parent::__construct($entity_type);
+    $this->civicrmEntityInfo = SupportedEntities::getInfo();
+  }
 
   /**
    * {@inheritdoc}
@@ -44,11 +57,7 @@ class CivicrmEntityAccessHandler extends EntityAccessControlHandler {
   protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL) {
     $result = parent::checkCreateAccess($account, $context, $entity_bundle);
     if ($result->isNeutral()) {
-      $permissions = [
-        'administer ' . $this->entityTypeId,
-        'create ' . $this->entityTypeId,
-      ];
-
+      $permissions = $this->civicrmEntityInfo[$this->entityTypeId]['permissions']['create'];
       $result = AccessResult::allowedIfHasPermissions($account, $permissions, 'OR');
     }
 
@@ -70,11 +79,10 @@ class CivicrmEntityAccessHandler extends EntityAccessControlHandler {
    *   The access result.
    */
   protected function checkEntityPermissions(EntityInterface $entity, $operation, AccountInterface $account) {
-    $permissions = [
-      "administer {$entity->getEntityTypeId()}",
-      "$operation {$entity->getEntityTypeId()}",
-    ];
-
+    $permissions = [];
+    if (!empty($this->civicrmEntityInfo[$this->entityTypeId]['permissions'][$operation])) {
+      $permissions = $this->civicrmEntityInfo[$this->entityTypeId]['permissions'][$operation];
+    }
     return AccessResult::allowedIfHasPermissions($account, $permissions, 'OR');
   }
 
