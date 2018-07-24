@@ -244,8 +244,7 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
    * {@inheritdoc}
    */
   public function hasData() {
-    // @todo query API and get actual count.
-    return FALSE;
+    return $this->civicrmApi->getCount($this->entityTypeId) > 0;
   }
   /**
    * {@inheritdoc}

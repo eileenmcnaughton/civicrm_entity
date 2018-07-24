@@ -72,4 +72,15 @@ interface CiviCrmApiInterface {
    */
   public function getOptions($entity, $field_name);
 
+  /**
+   * Get the count of entries for an entity.
+   *
+   * @param string $entity
+   *   The entity name.
+   *
+   * @return int
+   *   The number of entities.
+   */
+  public function getCount($entity);
+
 }

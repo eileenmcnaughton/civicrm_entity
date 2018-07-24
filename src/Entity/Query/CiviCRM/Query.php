@@ -37,7 +37,10 @@ class Query extends QueryBase implements QueryInterface {
         break;
       }
       $operator = $condition['operator'] ?: '=';
-      if ($operator != '=') {
+      if ($operator == 'CONTAINS') {
+        $params[$condition['field']] = ['LIKE' => '%' . $condition['value'] . '%'];
+      }
+      elseif ($operator != '=') {
         $params[$condition['field']] = [$operator => $condition['value']];
       }
       else {

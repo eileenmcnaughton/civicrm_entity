@@ -80,6 +80,15 @@ class CiviCrmApi implements CiviCrmApiInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function getCount($entity) {
+    $this->initialize();
+    $result = civicrm_api3($entity, 'getcount');
+    return $result['result'];
+  }
+
+  /**
    * Ensures that CiviCRM is loaded and API function available.
    */
   protected function initialize() {
