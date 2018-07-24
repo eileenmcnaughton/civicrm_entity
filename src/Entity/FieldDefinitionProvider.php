@@ -245,7 +245,7 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
         'weight' => 0,
       ])
       ->setDisplayOptions('form', [
-        'type' => $field_type == 'string_long' ? 'string_textarea' : 'text_textarea',
+        'type' => $field_type == 'string_long' ? 'string_textarea' : 'civicrm_entity_textarea',
         'weight' => 0,
         // If the default text formatter is CKEditor, this will be ignored.
         'rows' => isset($civicrm_field['rows']) ? $civicrm_field['rows'] : 5,

@@ -3,6 +3,7 @@
 namespace Drupal\civicrm_entity;
 
 use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\DatabaseExceptionWrapper;
 use Drupal\Core\Database\SchemaException;
@@ -36,6 +37,13 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
   protected $civicrmApi;
 
   /**
+   * The config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
+
+  /**
    * Constructs a ContentEntityStorageBase object.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -51,9 +59,10 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
    * @param \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api
    *   The CiviCRM API.
    */
-  public function __construct(EntityTypeInterface $entity_type, Connection $database, EntityManagerInterface $entity_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, CiviCrmApiInterface $civicrm_api) {
+  public function __construct(EntityTypeInterface $entity_type, Connection $database, EntityManagerInterface $entity_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, CiviCrmApiInterface $civicrm_api, ConfigFactoryInterface $config_factory) {
     parent::__construct($entity_type, $database, $entity_manager, $cache, $language_manager);
     $this->civicrmApi = $civicrm_api;
+    $this->configFactory = $config_factory;
   }
 
   /**
@@ -66,7 +75,8 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
       $container->get('entity.manager'),
       $container->get('cache.entity'),
       $container->get('language_manager'),
-      $container->get('civicrm_entity.api')
+      $container->get('civicrm_entity.api'),
+      $container->get('config.factory')
     );
   }
 
@@ -326,8 +336,22 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
       }
       $main_property_name = $definition->getFieldStorageDefinition()->getMainPropertyName();
 
+      // Set a default format for text fields.
+      if ($definition->getType() == 'text_long') {
+        // @todo Load the format from the config factory.
+        // Allow CiviCRM to configure a default format to be used for text
+        // fields. Currently we pick the default which would display on a new
+        // field.
+        $formats = filter_formats();
+        $default = reset($formats);
+        $item_values = $items->getValue();
+        foreach ($item_values as $delta => $item) {
+          $item_values[$delta]['format'] = $default->id();
+        }
+        $items->setValue($item_values);
+      }
       // Fix DateTime values for Drupal format.
-      if ($definition->getType() == 'datetime') {
+      elseif ($definition->getType() == 'datetime') {
         $item_values = $items->getValue();
         foreach ($item_values as $delta => $item) {
           // Handle if the value provided is a timestamp.
