@@ -4,6 +4,7 @@ namespace Drupal\civicrm_entity;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
+use Drupal\Core\Url;
 
 class CivicrmEntityListBuilder extends EntityListBuilder {
 
@@ -27,6 +28,9 @@ class CivicrmEntityListBuilder extends EntityListBuilder {
     ] + parent::buildRow($entity);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function getDefaultOperations(EntityInterface $entity) {
     $operations = parent::getDefaultOperations($entity);
 
@@ -37,6 +41,14 @@ class CivicrmEntityListBuilder extends EntityListBuilder {
     ];
 
     return $operations;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function ensureDestination(Url $url) {
+    // @todo Disabled redirection to collection until paging fixed.
+    return $url;
   }
 
 }
