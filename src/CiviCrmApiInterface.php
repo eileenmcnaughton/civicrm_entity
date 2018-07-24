@@ -77,10 +77,12 @@ interface CiviCrmApiInterface {
    *
    * @param string $entity
    *   The entity name.
+   * @param array $params
+   *   The array of field values.
    *
    * @return int
    *   The number of entities.
    */
-  public function getCount($entity);
+  public function getCount($entity, array $params);
 
 }

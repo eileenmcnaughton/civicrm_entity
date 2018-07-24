@@ -47,12 +47,22 @@ class Query extends QueryBase implements QueryInterface {
         $params[$condition['field']] = $condition['value'];
       }
     }
-    $result = $this->civicrmApi->get($this->entityType->get('civicrm_entity'), $params);
-    if ($this->count) {
-      return count($result);
+
+    $this->initializePager();
+    if ($this->range) {
+      $params['options'] = [
+        'limit' => $this->range['length'],
+        'offset' => $this->range['start'],
+      ];
     }
 
-    return array_keys($result);
+    if ($this->count) {
+      return $this->civicrmApi->getCount($this->entityType->get('civicrm_entity'), $params);
+    }
+    else {
+      $result = $this->civicrmApi->get($this->entityType->get('civicrm_entity'), $params);
+      return array_keys($result);
+    }
   }
 
 }

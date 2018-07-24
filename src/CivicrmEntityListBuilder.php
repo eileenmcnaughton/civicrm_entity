@@ -8,6 +8,8 @@ use Drupal\Core\Url;
 
 class CivicrmEntityListBuilder extends EntityListBuilder {
 
+  protected $limit = 25;
+
   /**
    * {@inheritdoc}
    */
