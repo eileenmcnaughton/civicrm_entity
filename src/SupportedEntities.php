@@ -274,6 +274,11 @@ final class SupportedEntities {
         'title' => TRUE,
         'event_type_id' => TRUE,
       ],
+      'fields' => [
+        'summary' => [
+          'description' => 'Brief summary of event.'
+        ],
+      ],
     ];
     $civicrm_entity_info['civicrm_group'] = [
       'civicrm entity label' => t('Group'),

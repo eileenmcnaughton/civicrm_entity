@@ -229,8 +229,10 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
    *   The base field definition.
    */
   protected function getTextDefinition(array $civicrm_field) {
-    // @todo Also allow `text_long` if "Text and html allowed." in description?
     if (!empty($civicrm_field['html']) && $civicrm_field['html']['type'] == 'RichTextEditor') {
+      $field_type = 'text_long';
+    }
+    elseif (!empty($civicrm_field['description']) && strpos($civicrm_field['description'], 'Text and html allowed.') !== FALSE) {
       $field_type = 'text_long';
     }
     else {
