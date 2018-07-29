@@ -338,15 +338,10 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
 
       // Set a default format for text fields.
       if ($definition->getType() == 'text_long') {
-        // @todo Load the format from the config factory.
-        // Allow CiviCRM to configure a default format to be used for text
-        // fields. Currently we pick the default which would display on a new
-        // field.
-        $formats = filter_formats();
-        $default = reset($formats);
+        $filter_format = $this->configFactory->get('filter_format') ?: filter_fallback_format();
         $item_values = $items->getValue();
         foreach ($item_values as $delta => $item) {
-          $item_values[$delta]['format'] = $default->id();
+          $item_values[$delta]['format'] = $filter_format;
         }
         $items->setValue($item_values);
       }

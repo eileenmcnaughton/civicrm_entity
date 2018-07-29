@@ -2,6 +2,9 @@ civicrm_entity.settings:
   type: config_entity
   label: 'CiviCRM settings'
   mapping:
+    filter_format:
+      type: string
+      label: 'Filter format'
     enabled_entity_types:
       type: sequence
       label: 'Enabled entity types'
