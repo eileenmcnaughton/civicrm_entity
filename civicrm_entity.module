@@ -3420,8 +3420,28 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
         break;
     }
     if (isset($valid_entities[$entity_type])) {
-      $entity = entity_load_single($entity_type, $id);
-      field_attach_delete($entity_type, $entity);
+      if ($objectName == 'EntityTag') {
+        $api_params = [
+          'sequential' => 1,
+          'entity_id' => $params[0][0],
+          'entity_table' => $params[1],
+        ];
+        $api_results = civicrm_api3('EntityTag', 'get', $api_params);
+        if (!empty($api_results['values'])) {
+          foreach ($api_results as $delta => $result) {
+            if ($result['tag_id'] == $id) {
+              $entity = entity_load_single($entity_type, $result['tag_id']);
+              break;
+            }
+          }
+        }
+      }
+      else {
+        $entity = entity_load_single($entity_type, $id);
+      }
+      if (!empty($entity)) {
+        field_attach_delete($entity_type, $entity);
+      }
     }
 
   }
