@@ -78,8 +78,19 @@ class CivicrmEntityController extends EntityAPIController {
         }
         if (!empty($ids)) {
           foreach ($ids as $id) {
+            if ($this->entityInfo['description'] == 'entity_tag') {
+              // When removing tags in the civicrm contact tag editor, we get passed the tag ID here, not the entity table ID.
+              $entityParams = [
+                'tag_id' => $id,
+              ];
+            }
+            else {
+              $entityParams = [
+                'id' => $id,
+              ];
+            }
             // we can't rely on civicrm api accepting the 'IN' => array(1,5,6) for all entities
-            $queried_entities += $this->loadEntities(array('id' => $id));
+            $queried_entities += $this->loadEntities($entityParams);
           }
         }
       } catch (Exception $e) {
