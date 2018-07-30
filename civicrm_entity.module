@@ -3430,7 +3430,7 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
         if (!empty($api_results['values'])) {
           foreach ($api_results as $delta => $result) {
             if ($result['tag_id'] == $id) {
-              $entity = entity_load_single($entity_type, $result['tag_id']);
+              $entity = entity_load_single($entity_type, $result['id']);
               break;
             }
           }
