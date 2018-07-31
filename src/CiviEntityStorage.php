@@ -329,6 +329,7 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
    */
   protected function initFieldValues(ContentEntityInterface $entity, array $values = [], array $field_names = []) {
     parent::initFieldValues($entity, $values, $field_names);
+    $civicrm_entity_settings = $this->configFactory->get('civicrm_entity.settings');
     foreach ($entity->getFieldDefinitions() as $definition) {
       $items = $entity->get($definition->getName());
       if ($items->isEmpty()) {
@@ -338,7 +339,7 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
 
       // Set a default format for text fields.
       if ($definition->getType() == 'text_long') {
-        $filter_format = $this->configFactory->get('filter_format') ?: filter_fallback_format();
+        $filter_format = $civicrm_entity_settings->get('filter_format') ?: filter_fallback_format();
         $item_values = $items->getValue();
         foreach ($item_values as $delta => $item) {
           $item_values[$delta]['format'] = $filter_format;
