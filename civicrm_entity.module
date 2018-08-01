@@ -50,51 +50,53 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
       continue;
     }
 
-    $entity_types[$entity_type_id] = new ContentEntityType([
-      'provider' => 'civicrm_entity',
-      'class' => CivicrmEntity::class,
-      'originalClass' => CivicrmEntity::class,
-      'id' => $entity_type_id,
-      'civicrm_entity' => $civicrm_entity_name,
-      'civicrm_entity_ui_exposed' => in_array($entity_type_id, $enabled_entity_types),
-      'civicrm_required_fields' => !empty($civicrm_entity_info['required']) ? $civicrm_entity_info['required'] : [],
+    if (in_array($entity_type_id, $enabled_entity_types)) {
+      $entity_types[$entity_type_id] = new ContentEntityType([
+        'provider' => 'civicrm_entity',
+        'class' => CivicrmEntity::class,
+        'originalClass' => CivicrmEntity::class,
+        'id' => $entity_type_id,
+        'civicrm_entity' => $civicrm_entity_name,
+        'civicrm_entity_ui_exposed' => in_array($entity_type_id, $enabled_entity_types),
+        'civicrm_required_fields' => !empty($civicrm_entity_info['required']) ? $civicrm_entity_info['required'] : [],
       'label' => new TranslatableMarkup('CiviCRM :name', [':name' => $civicrm_entity_info['civicrm entity label']]),
-      // @todo add label_singular
-      // @todo add label_plural
-      // @todo add label_count
-      'entity_keys' => [
-        'id' => 'id',
-        'label' => $civicrm_entity_info['label property'],
-      ],
-      'base_table' => $entity_type_id,
+        // @todo add label_singular
+        // @todo add label_plural
+        // @todo add label_count
+        'entity_keys' => [
+          'id' => 'id',
+          'label' => $civicrm_entity_info['label property'],
+        ],
+        'base_table' => $entity_type_id,
       'admin_permission' => 'administer civicrm entity',
-      'permission_granularity' => 'entity_type',
-      'handlers' => [
-        'storage' => CiviEntityStorage::class,
-        'list_builder' => CivicrmEntityListBuilder::class,
-        'route_provider' => [
-          'default' => CiviCrmEntityRouteProvider::class,
-        ],
-        'access' => CivicrmEntityAccessHandler::class,
-        'form' => [
-          'default' => CivicrmEntityForm::class,
-          'add' => CivicrmEntityForm::class,
-          'edit' => CivicrmEntityForm::class,
-          'delete' => ContentEntityDeleteForm::class,
-        ],
+        'permission_granularity' => 'entity_type',
+        'handlers' => [
+          'storage' => CiviEntityStorage::class,
+          'list_builder' => CivicrmEntityListBuilder::class,
+          'route_provider' => [
+            'default' => CiviCrmEntityRouteProvider::class,
+          ],
+          'access' => CivicrmEntityAccessHandler::class,
+          'form' => [
+            'default' => CivicrmEntityForm::class,
+            'add' => CivicrmEntityForm::class,
+            'edit' => CivicrmEntityForm::class,
+            'delete' => ContentEntityDeleteForm::class,
+          ],
         'views_data' => CivicrmEntityViewsData::class,
         'storage_schema' => CivicrmEntityStorageSchema::class,
-      ],
-      // Generate route paths.
-      'links' => [
-        'canonical' => sprintf('/%s/{%s}', $clean_entity_type_id, $entity_type_id),
-        'delete-form' => sprintf('/%s/{%s}/delete', $clean_entity_type_id, $entity_type_id),
-        'edit-form' => sprintf('/%s/{%s}/edit', $clean_entity_type_id, $entity_type_id),
-        'add-form' => sprintf('/%s/add', $clean_entity_type_id, $entity_type_id),
-        'collection' => sprintf('/admin/structure/civicrm-entity/%s', $clean_entity_type_id),
-      ],
-      'field_ui_base_route' => "entity.$entity_type_id.collection",
-    ]);
+        ],
+        // Generate route paths.
+        'links' => [
+          'canonical' => sprintf('/%s/{%s}', $clean_entity_type_id, $entity_type_id),
+          'delete-form' => sprintf('/%s/{%s}/delete', $clean_entity_type_id, $entity_type_id),
+          'edit-form' => sprintf('/%s/{%s}/edit', $clean_entity_type_id, $entity_type_id),
+          'add-form' => sprintf('/%s/add', $clean_entity_type_id, $entity_type_id),
+          'collection' => sprintf('/admin/structure/civicrm-entity/%s', $clean_entity_type_id),
+        ],
+        'field_ui_base_route' => "entity.$entity_type_id.collection",
+      ]);
+    }
   }
 }
 

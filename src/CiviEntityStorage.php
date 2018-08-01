@@ -21,6 +21,7 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\TypedData\Plugin\DataType\DateTimeIso8601;
+use Drupal\Core\TypedData\Plugin\DataType\Timestamp;
 use Drupal\field\FieldStorageConfigInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -167,8 +168,16 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
         $entities[$entity->id()] = $entity;
       }
     }
+
+    // get all the fields
+    $fields = $this->civicrmApi->getFields($this->entityType->get('civicrm_entity'));
+    foreach ($fields as $field) {
+      $field_names[] = $field['name'];
+    }
     foreach ($ids as $id) {
-      $civicrm_entity = $this->civicrmApi->get($this->entityType->get('civicrm_entity'), ['id' => $id]);
+      $options = ['id' => $id];
+      $options['return'] = $field_names;
+      $civicrm_entity = $this->civicrmApi->get($this->entityType->get('civicrm_entity'), $options);
       $civicrm_entity = reset($civicrm_entity);
       $entity = $this->prepareLoadedEntity($civicrm_entity);
       $entities[$entity->id()] = $entity;
