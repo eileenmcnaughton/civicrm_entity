@@ -58,8 +58,7 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
         'id' => $entity_type_id,
         'civicrm_entity' => $civicrm_entity_name,
         'civicrm_entity_ui_exposed' => in_array($entity_type_id, $enabled_entity_types),
-        'civicrm_required_fields' => !empty($civicrm_entity_info['required']) ? $civicrm_entity_info['required'] : [],
-      'label' => new TranslatableMarkup('CiviCRM :name', [':name' => $civicrm_entity_info['civicrm entity label']]),
+        'label' => new TranslatableMarkup('CiviCRM :name', [':name' => $civicrm_entity_info['civicrm entity label']]),
         // @todo add label_singular
         // @todo add label_plural
         // @todo add label_count
@@ -68,7 +67,7 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
           'label' => $civicrm_entity_info['label property'],
         ],
         'base_table' => $entity_type_id,
-      'admin_permission' => 'administer civicrm entity',
+        'admin_permission' => 'administer civicrm entity',
         'permission_granularity' => 'entity_type',
         'handlers' => [
           'storage' => CiviEntityStorage::class,
@@ -83,8 +82,8 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
             'edit' => CivicrmEntityForm::class,
             'delete' => ContentEntityDeleteForm::class,
           ],
-        'views_data' => CivicrmEntityViewsData::class,
-        'storage_schema' => CivicrmEntityStorageSchema::class,
+          'views_data' => CivicrmEntityViewsData::class,
+          'storage_schema' => CivicrmEntityStorageSchema::class,
         ],
         // Generate route paths.
         'links' => [
@@ -107,7 +106,7 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
  *
  * @param \Drupal\Core\Field\FieldStorageDefinitionInterface $definition
  *   The field storage definition.
- * @param \Drupal\Core\Entity\FieldableEntityInterface|null $entity
+ * @param \Drupal\Core\Entity\FieldableEntityInterface|NULL $entity
  *   The entity.
  * @param bool $cacheable
  *   If the options are cacheable.

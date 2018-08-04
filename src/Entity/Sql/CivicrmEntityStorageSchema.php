@@ -84,7 +84,7 @@ class CivicrmEntityStorageSchema extends SqlContentEntityStorageSchema {
   /**
    * {@inheritdoc}
    *
-   * There are no base tables.
+   * The entity table schema is managed by CiviCRM.
    */
   protected function getEntitySchemaTables() {
     return [];

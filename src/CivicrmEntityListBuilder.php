@@ -49,7 +49,6 @@ class CivicrmEntityListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   protected function ensureDestination(Url $url) {
-    // @todo Disabled redirection to collection until paging fixed.
     return $url;
   }
 

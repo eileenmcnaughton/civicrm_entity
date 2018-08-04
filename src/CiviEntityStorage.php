@@ -481,7 +481,7 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
    * {@inheritdoc}
    */
   public function requiresEntityStorageSchemaChanges(EntityTypeInterface $entity_type, EntityTypeInterface $original) {
-    // There is no base table.
+    // The entity base table is managed by CiviCRM.
     return FALSE;
   }
 
@@ -489,7 +489,7 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
    * {@inheritdoc}
    */
   public function requiresEntityDataMigration(EntityTypeInterface $entity_type, EntityTypeInterface $original) {
-    // There is no base table.
+    // The entity base table is managed by CiviCRM.
     return FALSE;
   }
 

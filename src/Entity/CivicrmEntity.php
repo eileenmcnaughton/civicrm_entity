@@ -7,7 +7,6 @@ use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\TypedData\Plugin\DataType\DateTimeIso8601;
 use Drupal\Core\TypedData\Plugin\DataType\Timestamp;
-use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 
 /**
@@ -28,11 +27,11 @@ class CivicrmEntity extends ContentEntityBase {
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = [];
     $civicrm_entity_info = SupportedEntities::getInfo()[$entity_type->id()];
-    $civicrm_required_fields = $entity_type->get('civicrm_required_fields');
+    $civicrm_required_fields = !empty($civicrm_entity_info['required']) ? $civicrm_entity_info['required'] : [];
     $field_definition_provider = \Drupal::service('civicrm_entity.field_definition_provider');
     $civicrm_fields = \Drupal::service('civicrm_entity.api')->getFields($entity_type->get('civicrm_entity'), 'create');
     foreach ($civicrm_fields as $civicrm_field) {
-      // If the entity has any field overrides, merge them in.
+      // Apply any additional field data provided by the module.
       if (!empty($civicrm_entity_info['fields'][$civicrm_field['name']])) {
         $civicrm_field = $civicrm_entity_info['fields'][$civicrm_field['name']] + $civicrm_field;
       }

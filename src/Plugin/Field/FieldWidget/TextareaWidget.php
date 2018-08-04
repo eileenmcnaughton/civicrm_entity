@@ -38,7 +38,7 @@ class TextareaWidget extends CoreTextareaWidget {
    * {@inheritdoc}
    */
   public static function isApplicable(FieldDefinitionInterface $field_definition) {
-    return strpos($field_definition->getTargetEntityTypeId(), 'civicrm_') !== FALSE;
+    return strpos($field_definition->getTargetEntityTypeId(), 'civicrm_') !== FALSE && $field_definition->getFieldStorageDefinition()->isBaseField();
   }
 
 }
