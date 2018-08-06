@@ -19,30 +19,43 @@ namespace Drupal\civicrm_entity;
  */
 final class SupportedEntities {
 
+  /**
+   * Gets information about the supported CiviCRM entities.
+   *
+   * @return array
+   *   The entity information.
+   */
   public static function getInfo() {
     $civicrm_entity_info = [];
-    $civicrm_entity_info['civicrm_activity'] = [
-      'civicrm entity label' => t('Activity'),
-      'civicrm entity name' => 'activity',
-      'label property' => 'subject',
-      'permissions' => [
-        'view' => ['view all activities'],
-        'edit' => [],
-        'update' => [],
-        'create' => [],
-        'delete' => ['delete activities'],
-      ],
-    ];
     $civicrm_entity_info['civicrm_action_schedule'] = [
       'civicrm entity label' => t('Action Schedule'),
       'civicrm entity name' => 'action_schedule',
       'label property' => 'name',
       'permissions' => [
         'view' => [],
-        'edit' => [],
         'update' => [],
         'create' => [],
         'delete' => [],
+      ],
+      'required' => [
+        'title' => TRUE,
+        'mapping_id' => TRUE,
+        'entity_value' => TRUE,
+      ],
+    ];
+    $civicrm_entity_info['civicrm_activity'] = [
+      'civicrm entity label' => t('Activity'),
+      'civicrm entity name' => 'activity',
+      'label property' => 'subject',
+      'permissions' => [
+        'view' => ['view all activities'],
+
+        'update' => [],
+        'create' => [],
+        'delete' => ['delete activities'],
+      ],
+      'required' => [
+        'source_contact_id' => TRUE,
       ],
     ];
     $civicrm_entity_info['civicrm_address'] = [
@@ -56,6 +69,10 @@ final class SupportedEntities {
         'create' => ['edit all contacts'],
         'delete' => ['delete contacts'],
       ],
+      'required' => [
+        'location_type_id' => TRUE,
+        'contact_id' => TRUE,
+      ],
     ];
     $civicrm_entity_info['civicrm_campaign'] = [
       'civicrm entity label' => t('Campaign'),
@@ -63,10 +80,13 @@ final class SupportedEntities {
       'label property' => 'title',
       'permissions' => [
         'view' => [],
-        'edit' => [],
+
         'update' => [],
         'create' => [],
         'delete' => [],
+      ],
+      'required' => [
+        'title' => TRUE,
       ],
     ];
     $civicrm_entity_info['civicrm_case'] = [
@@ -83,6 +103,9 @@ final class SupportedEntities {
           'access all cases and activities',
         ],
       ],
+      'required' => [
+        'contact_id' => TRUE,
+      ],
     ];
     $civicrm_entity_info['civicrm_contact'] = [
       'civicrm entity label' => t('Contact'),
@@ -94,6 +117,14 @@ final class SupportedEntities {
         'update' => ['edit all contacts'],
         'create' => ['edit all contacts'],
         'delete' => ['delete contacts'],
+      ],
+      'required' => [
+        'contact_type' => TRUE,
+        'name' => TRUE,
+        'first_name' => TRUE,
+        'last_name' => TRUE,
+        'email' => TRUE,
+        'display_name' => TRUE,
       ],
     ];
     $civicrm_entity_info['civicrm_contribution'] = [
@@ -146,7 +177,7 @@ final class SupportedEntities {
       'label property' => 'name',
       'permissions' => [
         'view' => ['view all contacts'],
-        'edit' => [],
+
         'update' => [],
         'create' => [],
         'delete' => [],
@@ -170,7 +201,7 @@ final class SupportedEntities {
       'label property' => 'tag_id',
       'permissions' => [
         'view' => [],
-        'edit' => [],
+
         'update' => [],
         'create' => [],
         'delete' => [],
@@ -182,7 +213,7 @@ final class SupportedEntities {
       'label property' => 'id',
       'permissions' => [
         'view' => [],
-        'edit' => [],
+
         'update' => [],
         'create' => [],
         'delete' => [],
@@ -194,7 +225,7 @@ final class SupportedEntities {
       'label property' => 'name',
       'permissions' => [
         'view' => [],
-        'edit' => [],
+
         'update' => [],
         'create' => [],
         'delete' => [],
@@ -206,13 +237,13 @@ final class SupportedEntities {
       'label property' => 'id',
       'permissions' => [
         'view' => [],
-        'edit' => [],
+
         'update' => [],
         'create' => [],
         'delete' => [],
       ],
     ];
-    //dirty check for whether financialType exists
+    // Dirty check for whether financialType exists.
     if (!method_exists('CRM_Contribute_PseudoConstant', 'contributionType')) {
       $civicrm_entity_info['civicrm_financial_type'] = [
         'civicrm entity label' => t('Financial type'),
@@ -237,6 +268,16 @@ final class SupportedEntities {
         'update' => ['edit all events'],
         'create' => ['edit all events'],
         'delete' => ['edit all events', 'delete in CiviEvent'],
+      ],
+      'required' => [
+        'start_date' => TRUE,
+        'title' => TRUE,
+        'event_type_id' => TRUE,
+      ],
+      'fields' => [
+        'summary' => [
+          'description' => 'Brief summary of event.'
+        ],
       ],
     ];
     $civicrm_entity_info['civicrm_group'] = [
@@ -350,7 +391,7 @@ final class SupportedEntities {
       'label property' => 'subject',
       'permissions' => [
         'view' => [],
-        'edit' => [],
+
         'update' => [],
         'create' => [],
         'delete' => [],
@@ -446,7 +487,7 @@ final class SupportedEntities {
       'label property' => 'id',
       'permissions' => [
         'view' => [],
-        'edit' => [],
+
         'update' => [],
         'create' => [],
         'delete' => [],
@@ -458,7 +499,7 @@ final class SupportedEntities {
       'label property' => 'id',
       'permissions' => [
         'view' => [],
-        'edit' => [],
+
         'update' => [],
         'create' => [],
         'delete' => [],
@@ -470,7 +511,7 @@ final class SupportedEntities {
       'label property' => 'id',
       'permissions' => [
         'view' => [],
-        'edit' => [],
+
         'update' => [],
         'create' => [],
         'delete' => [],
@@ -482,7 +523,7 @@ final class SupportedEntities {
       'label property' => 'id',
       'permissions' => [
         'view' => [],
-        'edit' => [],
+
         'update' => [],
         'create' => [],
         'delete' => [],
@@ -494,7 +535,7 @@ final class SupportedEntities {
       'label property' => 'id',
       'permissions' => [
         'view' => [],
-        'edit' => [],
+
         'update' => [],
         'create' => [],
         'delete' => [],
@@ -554,7 +595,7 @@ final class SupportedEntities {
       'label property' => 'label',
       'permissions' => [
         'view' => [],
-        'edit' => [],
+
         'update' => [],
         'create' => [],
         'delete' => [],
@@ -566,7 +607,7 @@ final class SupportedEntities {
       'label property' => 'title',
       'permissions' => [
         'view' => [],
-        'edit' => [],
+
         'update' => [],
         'create' => [],
         'delete' => [],
@@ -587,6 +628,15 @@ final class SupportedEntities {
     return $civicrm_entity_info;
   }
 
+  /**
+   * Gets default form display information.
+   *
+   * @param string $entity_type_id
+   *   The entity type ID.
+   *
+   * @return array
+   *   The form display configuration.
+   */
   public static function getFormDisplayInfo($entity_type_id = NULL) {
     $info = [];
 
@@ -620,7 +670,16 @@ final class SupportedEntities {
         'is_active' => [
           'group' => 'settings',
         ],
-      ]
+        'is_monetary' => [
+          'group' => 'settings',
+        ],
+        'is_online_registration' => [
+          'group' => 'settings',
+        ],
+        'financial_type_id' => [
+          'group' => 'settings',
+        ],
+      ],
     ];
 
     if (!$entity_type_id) {

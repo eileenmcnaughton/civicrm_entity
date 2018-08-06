@@ -4,6 +4,9 @@ namespace Drupal\civicrm_entity;
 
 use Drupal\civicrm\Civicrm;
 
+/**
+ * CiviCRM API implementation.
+ */
 class CiviCrmApi implements CiviCrmApiInterface {
 
   /**
@@ -41,6 +44,11 @@ class CiviCrmApi implements CiviCrmApiInterface {
     return $result['values'];
   }
 
+  public function validate($entity, $params) {
+    $this->initialize();
+    return _civicrm_api3_validate($entity, 'create', $params);
+  }
+
   /**
    * {@inheritdoc}
    */
@@ -69,6 +77,15 @@ class CiviCrmApi implements CiviCrmApiInterface {
     $this->initialize();
     $result = civicrm_api3($entity, 'getoptions', ['field' => $field_name]);
     return $result['values'];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCount($entity, array $params) {
+    $this->initialize();
+    $result = civicrm_api3($entity, 'getcount', $params);
+    return is_int($result) ? $result : $result['result'];
   }
 
   /**

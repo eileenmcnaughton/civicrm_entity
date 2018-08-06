@@ -63,6 +63,7 @@ class CivicrmEntityForm extends ContentEntityForm {
       '#type' => 'container',
       '#attributes' => ['class' => ['entity-meta']],
       '#weight' => 99,
+      '#access' => !empty($form_display_info['groups']) && !empty($form_display_info['fields'])
     ];
     $form['meta'] = [
       '#attributes' => ['class' => ['entity-meta__header']],
@@ -106,4 +107,5 @@ class CivicrmEntityForm extends ContentEntityForm {
     drupal_set_message($this->t('Saved %label.', ['%label' => $this->entity->label()]));
     $form_state->setRedirectUrl($this->entity->toUrl('collection'));
   }
+
 }

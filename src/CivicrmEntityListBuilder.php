@@ -4,8 +4,11 @@ namespace Drupal\civicrm_entity;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
+use Drupal\Core\Url;
 
 class CivicrmEntityListBuilder extends EntityListBuilder {
+
+  protected $limit = 25;
 
   /**
    * {@inheritdoc}
@@ -23,9 +26,30 @@ class CivicrmEntityListBuilder extends EntityListBuilder {
   public function buildRow(EntityInterface $entity) {
     return [
       'id' => $entity->id(),
-      'label' => $entity->label(),
+      'label' => $entity->toLink(),
     ] + parent::buildRow($entity);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  protected function getDefaultOperations(EntityInterface $entity) {
+    $operations = parent::getDefaultOperations($entity);
+
+    $operations['view'] = [
+      'title' => $this->t('View'),
+      'weight' => 50,
+      'url' => $this->ensureDestination($entity->toUrl()),
+    ];
+
+    return $operations;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function ensureDestination(Url $url) {
+    return $url;
+  }
 
 }

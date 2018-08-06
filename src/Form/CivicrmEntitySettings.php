@@ -11,6 +11,7 @@ use Drupal\Core\Menu\LocalActionManagerInterface;
 use Drupal\Core\Menu\LocalTaskManagerInterface;
 use Drupal\Core\Menu\MenuLinkManagerInterface;
 use Drupal\Core\Routing\RouteBuilderInterface;
+use Drupal\filter\FilterFormatInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -111,10 +112,21 @@ class CivicrmEntitySettings extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildForm($form, $form_state);
-
     $config = $this->config('civicrm_entity.settings');
-    $civicrm_entity_types = SupportedEntities::getInfo();
 
+    $formats = filter_formats();
+    $form['filter_format'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Text format'),
+      '#options' => array_map(function (FilterFormatInterface $filter) {
+        return $filter->label();
+      }, $formats),
+      '#default_value' => $config->get('filter_format') ?: filter_fallback_format(),
+      '#access' => count($formats) > 1 && $this->currentUser()->hasPermission('administer filters'),
+      '#attributes' => ['class' => ['filter-list']],
+    ];
+
+    $civicrm_entity_types = SupportedEntities::getInfo();
     // @todo Use tableselect so we can display entity descriptions.
     $options = array_map(function (array $entity_info) {
       return $entity_info['civicrm entity label'];
@@ -138,12 +150,15 @@ class CivicrmEntitySettings extends ConfigFormBase {
     parent::submitForm($form, $form_state);
     $enabled_entity_type = array_filter($form_state->getValue('enabled_entity_types'));
     $this->config('civicrm_entity.settings')
+      ->set('filter_format', $form_state->getValue('filter_format'))
       ->set('enabled_entity_types', $enabled_entity_type)
       ->save();
 
     // Need to rebuild derivative routes.
     $this->entityTypeManager->clearCachedDefinitions();
     $this->routeBuilder->rebuild();
+    $this->localActionManager->clearCachedDefinitions();
+    $this->localTaskManager->clearCachedDefinitions();
   }
 
 }

@@ -40,7 +40,6 @@ class QueryFactory implements QueryFactoryInterface {
     $this->civicrmApi = $civicrm_api;
   }
 
-
   /**
    * {@inheritdoc}
    */

@@ -3,11 +3,9 @@
 namespace Drupal\civicrm_entity\Plugin\Derivative;
 
 use Drupal\Component\Plugin\Derivative\DeriverBase;
-use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
-use Drupal\Core\Routing\RouteProviderInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -19,7 +17,7 @@ class CivicrmEntityMenuLink extends DeriverBase implements ContainerDeriverInter
   use StringTranslationTrait;
 
   /**
-   * The entity manager
+   * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
@@ -57,11 +55,11 @@ class CivicrmEntityMenuLink extends DeriverBase implements ContainerDeriverInter
     /** @var \Drupal\Core\Entity\EntityTypeInterface $entity_type */
     foreach ($civicrm_entities as $entity_type_id => $entity_type) {
       $this->derivatives["field_storage_config_add_$entity_type_id"] = [
-          'route_name' => "entity.$entity_type_id.collection",
-          'title' => $entity_type->getLabel(),
-          'parent' => 'civicrm_entity.admin',
-          'description' => $this->t('Manage :label', [':label' => $entity_type->getLabel()]),
-        ] + $base_plugin_definition;
+        'route_name' => "entity.$entity_type_id.collection",
+        'title' => $entity_type->getLabel(),
+        'parent' => 'civicrm_entity.admin',
+        'description' => $this->t('Manage :label', [':label' => $entity_type->getLabel()]),
+      ] + $base_plugin_definition;
     }
 
     return $this->derivatives;

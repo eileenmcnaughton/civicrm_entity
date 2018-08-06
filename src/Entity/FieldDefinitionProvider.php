@@ -79,14 +79,20 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
       }
     }
 
+    if ($civicrm_field['name'] != 'id') {
+      $field->setDisplayConfigurable('form', TRUE);
+    }
+
     $field
       ->setDisplayConfigurable('view', TRUE)
-      ->setDisplayConfigurable('form', TRUE)
       ->setLabel($civicrm_field['title'])
       ->setDescription(isset($civicrm_field['description']) ? $civicrm_field['description'] : '');
 
     if ($field->getType() != 'boolean') {
-      $field->setRequired(isset($civicrm_field['required']) && (bool) $civicrm_field['required']);
+      $field->setRequired(isset($civicrm_field['api.required']) && (bool) $civicrm_field['api.required']);
+    }
+    if (isset($civicrm_field['api.default'])) {
+      $field->setDefaultValue($field['api.default']);
     }
 
     return $field;
@@ -223,17 +229,28 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
    *   The base field definition.
    */
   protected function getTextDefinition(array $civicrm_field) {
-    return BaseFieldDefinition::create('text_long')
+    if (!empty($civicrm_field['html']) && $civicrm_field['html']['type'] == 'RichTextEditor') {
+      $field_type = 'text_long';
+    }
+    elseif (!empty($civicrm_field['description']) && strpos($civicrm_field['description'], 'Text and html allowed.') !== FALSE) {
+      $field_type = 'text_long';
+    }
+    else {
+      $field_type = 'string_long';
+    }
+
+    $field = BaseFieldDefinition::create($field_type)
       ->setDisplayOptions('view', [
-        'type' => 'text_default',
+        'type' => $field_type == 'string_long' ? 'basic_string' : 'text_default',
         'weight' => 0,
       ])
       ->setDisplayOptions('form', [
-        'type' => 'text_textarea',
+        'type' => $field_type == 'string_long' ? 'string_textarea' : 'civicrm_entity_textarea',
         'weight' => 0,
         // If the default text formatter is CKEditor, this will be ignored.
         'rows' => isset($civicrm_field['rows']) ? $civicrm_field['rows'] : 5,
       ]);
+    return $field;
   }
 
   /**

@@ -1,16 +1,9 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\external_entities\Entity\Query\External\Condition.
- */
-
 namespace Drupal\civicrm_entity\Entity\Query\CiviCRM;
 
 use Drupal\Core\Entity\Query\ConditionBase;
 use Drupal\Core\Entity\Query\ConditionInterface;
-use Drupal\Core\Database\Query\SelectInterface;
-use Drupal\Core\Database\Query\Condition as SqlCondition;
 
 /**
  * Implements entity query conditions for CiviCRM.
@@ -34,7 +27,7 @@ class Condition extends ConditionBase {
     // can join tables as necessary. On the other hand, conditions need to be
     // added to the $conditionContainer object to keep grouping.
     foreach ($this->conditions as $condition) {
-      if ($condition['field'] instanceOf ConditionInterface) {
+      if ($condition['field'] instanceof ConditionInterface) {
         $query_condition = new static('AND', $this->query);
         $query_condition->compile($condition_container);
       }
