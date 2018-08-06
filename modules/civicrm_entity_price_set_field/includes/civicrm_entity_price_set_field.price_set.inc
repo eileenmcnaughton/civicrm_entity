@@ -88,7 +88,13 @@ function _civicrm_entity_price_set_field_setup_price_set_fapi(&$form, &$form_sta
           if (empty($price_field_value->is_active)) {
             continue;
           }
-          $options[$id] = $price_field_value->label . ' $' . $price_field_value->amount;
+          if (is_numeric($price_field_value->amount)) {
+            $amount = number_format($price_field_value->amount, 2);
+          }
+          else {
+            $amount = $price_field_value->amount;
+          }
+          $options[$id] = $price_field_value->label . ' $' . $amount;
           if (!empty($price_field_value->is_default)) {
             if (is_array($default_value)) {
               $default_value[$id] = $id;
