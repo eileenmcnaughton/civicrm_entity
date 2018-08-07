@@ -46,6 +46,9 @@ class CiviCrmApi implements CiviCrmApiInterface {
 
   public function validate($entity, $params) {
     $this->initialize();
+    if (!function_exists('_civicrm_api3_validate')) {
+      require_once 'api/v3/utils.php';
+    }
     return _civicrm_api3_validate($entity, 'create', $params);
   }
 
