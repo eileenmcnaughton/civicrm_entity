@@ -1,0 +1,16 @@
+{#
+/**
+ * @file
+ * Default template for a CiviCRM template.
+ */
+#}
+{%
+  set classes = [
+  'civicrm-entity',
+  'civicrm-entity--type-' ~ entity_type|clean_class,
+  view_mode ? 'civicrm-entity--view-mode-' ~ view_mode|clean_class,
+]
+%}
+<article{{ attributes.addClass(classes) }}>
+  {{ content }}
+</article>
