@@ -7,7 +7,7 @@
 {%
   set classes = [
   'civicrm-entity',
-  'civicrm-entity--type-' ~ entity_type|clean_class,
+  entity_type ? 'civicrm-entity--type-' ~ entity_type|clean_class,
   view_mode ? 'civicrm-entity--view-mode-' ~ view_mode|clean_class,
 ]
 %}
