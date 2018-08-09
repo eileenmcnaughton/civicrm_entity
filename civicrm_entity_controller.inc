@@ -170,6 +170,14 @@ class CivicrmEntityController extends EntityAPIController {
         if (substr($key, 0, 7) === 'custom_' && empty($entity->original->{$key}) && empty($value)) {
           unset($params[$key]);
         }
+        // handle differences between 'get' and 'create' api for contact reference custom fields
+        if (substr($key, 0, 7) === 'custom_' && substr($key, -3) === '_id') {
+          $customkey = substr($key, 0, strlen($key) - 3);
+          if (!is_numeric($params[$customkey]) && is_numeric($params[$key])) {
+            $params[$customkey] = $params[$key];
+          }
+          unset($params[$key]);
+        }
       }
 
       // special handling for relationships, empty case_id throws api exception
