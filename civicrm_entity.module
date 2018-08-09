@@ -149,7 +149,22 @@ function template_preprocess_civicrm_entity(&$variables) {
  * Implements hook_theme_suggestions_HOOK_alter().
  */
 function civicrm_entity_theme_suggestions_civicrm_entity_alter(array &$suggestions, array $variables) {
-  $entity_type = $variables['elements']['#entity_type'];
+  $entity_type = NULL;
+  if (isset($variables['elements']['#entity_type'])) {
+    $entity_type = $variables['elements']['#entity_type'];
+  }
+
+  // Find the CivicrmEntity from elements if #entity_type is not set.
+  if (! $entity_type) {
+    foreach ($variables['elements'] as $element) {
+      if ($element instanceof CivicrmEntity) {
+        /** @var CivicrmEntity $element */
+        $entity_type = $element->getEntityTypeId();
+        break;
+      }
+    }
+  }
+
   $view_mode = $variables['elements']['#view_mode'];
   $hook = $variables['theme_hook_original'];
 
