@@ -103,9 +103,20 @@ class CivicrmEntityForm extends ContentEntityForm {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
+    $insert = $this->entity->isNew();
     $this->entity->save();
-    drupal_set_message($this->t('Saved %label.', ['%label' => $this->entity->label()]));
-    $form_state->setRedirectUrl($this->entity->toUrl('collection'));
+
+    $t_args = ['%title' => $this->entity->toLink()->toString()];
+    if ($insert) {
+      drupal_set_message($this->t('%title has been created.', $t_args));
+    }
+    else {
+      drupal_set_message($this->t('%title has been updated.', $t_args));
+    }
+    $form_state->setRedirect(
+      "entity.{$this->entity->getEntityTypeId()}.canonical",
+      [$this->entity->getEntityTypeId() => $this->entity->id()]
+    );
   }
 
 }
