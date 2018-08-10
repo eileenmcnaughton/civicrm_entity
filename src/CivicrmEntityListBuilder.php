@@ -39,17 +39,10 @@ class CivicrmEntityListBuilder extends EntityListBuilder {
     $operations['view'] = [
       'title' => $this->t('View'),
       'weight' => 50,
-      'url' => $this->ensureDestination($entity->toUrl()),
+      'url' => $entity->toUrl(),
     ];
 
     return $operations;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function ensureDestination(Url $url) {
-    return $url;
   }
 
 }
