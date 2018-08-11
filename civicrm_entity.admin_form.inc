@@ -24,6 +24,30 @@ function civicrm_entity_admin_settings_form($form, &$form_state) {
 
   $default_value = variable_get('civicrm_entity_admin_enabled_entities', $available_entities_option_set);
 
+  $form['random_options'] = [
+    '#type' => 'fieldset',
+    '#title' => 'Options',
+    '#description' => 'Various uncategorized options.',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  ];
+
+  $contact_label = variable_get('civicrm_entity_contact_label_format', 'legacy');
+
+  $form['random_options']['contact_label'] = [
+    '#type' => 'select',
+    '#title' => 'Contact Entity Label',
+    '#description' => 'Select formatting for the civicrm_contact entity label. Legacy, is the default logic before addition of this setting.',
+    '#options' => [
+      'legacy' => 'Legacy',
+      'display_name' => 'Display Name only',
+      'display_name_email' => 'Display Name + email',
+      'display_name_phone' => 'Display Name + phone',
+      'display_name_im' => 'Display Name + IM',
+    ],
+    '#default_value' => $contact_label,
+  ];
+
   $form['civicrm_entity_admin_enabled_entities']  = array(
     '#type' => 'fieldset',
     '#title' => 'Enabled Entities',
@@ -59,6 +83,7 @@ function civicrm_entity_admin_settings_form_submit($form, $form_state) {
   foreach ($form_state['values']['civicrm_entity_admin_enabled_entities'] as $drupal_entity_type => $value) {
     $settings[$drupal_entity_type] = !empty($value) ? $drupal_entity_type : 0;
   }
+  variable_set('civicrm_entity_contact_label_format', $form_state['values']['contact_label']);
 
   variable_set('civicrm_entity_admin_enabled_entities', $settings);
   drupal_flush_all_caches();

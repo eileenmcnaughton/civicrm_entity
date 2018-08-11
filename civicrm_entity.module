@@ -2749,24 +2749,45 @@ function _civicrm_entity_get_title($field_specs, $entity_type = '') {
  */
 function civicrm_entity_civicrm_contact_label_callback($entity, $entity_type) {
   $label = isset($entity->display_name) ? $entity->display_name : '';
-  // drupal_alter('civicrm_entity_contact_label', $label, $entity);
-  if (isset($entity->email) && !empty($entity->email)) {
-    $label = t('!label <!email>', array(
+  $contact_label_setting = variable_get('civicrm_entity_contact_label_format', 'legacy');
+  if ($contact_label_setting == 'legacy') {
+    // drupal_alter('civicrm_entity_contact_label', $label, $entity);
+    if (isset($entity->email) && !empty($entity->email)) {
+      $label = t('!label <!email>', [
+        '!label' => $label,
+        '!email' => $entity->email,
+      ]);
+    }
+    elseif (isset($entity->phone) && !empty($entity->phone)) {
+      $label = t('!label <!phone>', [
+        '!label' => $label,
+        '!phone' => $entity->phone,
+      ]);
+    }
+    elseif (isset($entity->im) && !empty($entity->im)) {
+      $label = t('!label <!im>', [
+        '!label' => $label,
+        '!im'    => $entity->im,
+      ]);
+    }
+  }
+  elseif ($contact_label_setting == 'display_name_email' && !empty($entity->email)) {
+    $label = t('!label <!email>', [
       '!label' => $label,
       '!email' => $entity->email,
-    ));
+    ]);
   }
-  elseif (isset($entity->phone) && !empty($entity->phone)) {
-    $label = t('!label <!phone>', array(
+  elseif ($contact_label_setting == 'display_name_phone' && !empty($entity->phone)) {
+    $label = t('!label <!phone>', [
       '!label' => $label,
       '!phone' => $entity->phone,
-    ));
+    ]);
   }
-  elseif (isset($entity->im) && !empty($entity->im)) {
-    $label = t('!label <!im>', array(
+  elseif ($contact_label_setting == 'display_name_im' && !empty($entity->im)) {
+    $label = t('!label <!im>', [
       '!label' => $label,
-      '!im' => $entity->im,
-    ));
+      '!im'    => $entity->im,
+    ]);
   }
   return $label;
 }
@@ -3913,7 +3934,6 @@ function civicrm_entity_form_alter(&$form, &$form_state, $form_id) {
         }
       }
       $form['#validate'][] = '_civicrm_entity_manage_display_suite_forms_validate';
-
     }
   }
 }
