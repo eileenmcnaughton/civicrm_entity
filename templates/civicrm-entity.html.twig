@@ -1,0 +1,24 @@
+{#
+/**
+ * @file
+ * Default template for a CiviCRM template.
+ *
+ * The following template suggestions are available:
+ *  - civicrm-entity--ENTITY-TYPE.html.twig
+ *  - civicrm-entity--ENTITY-TYPE--VIEW-MODE.html.twig
+ *
+ * Examples:
+ *  - civicrm-entity--civicrm-event.html.twig
+ *  - civicrm-entity--civicrm-event--teaser.html.twig
+ *
+ * @see template_preprocess_civicrm_entity()
+ */
+#}
+{% set classes = [
+  'civicrm-entity',
+  entity_type ? 'civicrm-entity--type-' ~ entity_type|clean_class,
+  view_mode ? 'civicrm-entity--view-mode-' ~ view_mode|clean_class,
+] %}
+<article{{ attributes.addClass(classes) }}>
+  {{ content }}
+</article>
