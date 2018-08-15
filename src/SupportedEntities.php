@@ -2,6 +2,8 @@
 
 namespace Drupal\civicrm_entity;
 
+use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
+
 /**
  * Defines supported entities.
  *
@@ -686,6 +688,26 @@ final class SupportedEntities {
       return $info;
     }
     return isset($info[$entity_type_id]) ? $info[$entity_type_id] : [];
+  }
+
+  /**
+   * Gets Drupal entity type from CiviCRM object name.
+   *
+   * @param $objectName
+   *   The CiviCRM object name.
+   *
+   * @return string|null
+   *   The Drupal entity type, or FALSE if not defined.
+   */
+  public static function getDrupalType($objectName) {
+    $converter = new CamelCaseToSnakeCaseNameConverter();
+    $entityType = 'civicrm_' . $converter->normalize($objectName);
+
+    if (array_key_exists($entityType, static::getInfo())) {
+      return $entityType;
+    }
+
+    return NULL;
   }
 
 }

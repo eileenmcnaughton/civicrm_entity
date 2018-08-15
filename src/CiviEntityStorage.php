@@ -2,6 +2,7 @@
 
 namespace Drupal\civicrm_entity;
 
+use Drupal\civicrm_entity\Entity\CivicrmEntity;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Connection;
@@ -617,6 +618,62 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
         }
       }
     }
+  }
+
+  /**
+   * Allows CiviCRM hook to invoke presave.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity to save.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   *   If the entity identifier is invalid.
+   *
+   * @see \Drupal\Core\Entity\ContentEntityStorageBase::doPreSave
+   */
+  public function civiPreSave(EntityInterface $entity) {
+    $this->doPreSave($entity);
+  }
+
+  /**
+   * Allows CiviCRM hook to invoke postsave.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The saved entity.
+   * @param $update
+   *   Specifies whether the entity is being updated or created.
+   *
+   * @see \Drupal\Core\Entity\ContentEntityStorageBase::doPostSave
+   */
+  public function civiPostSave(EntityInterface $entity, $update) {
+    $this->doPostSave($entity, $update);
+  }
+
+  /**
+   * Allows CiviCRM hook to invoke predelete.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity to be deleted.
+   *
+   * @see \Drupal\Core\Entity\EntityStorageInterface::delete
+   */
+  public function civiPreDelete(EntityInterface $entity) {
+    CivicrmEntity::preDelete($this, [$entity]);
+    $this->invokeHook('predelete', $entity);
+  }
+
+  /**
+   * Allows CiviCRM hook to invoke delete.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity deleted.
+   *
+   * @see \Drupal\Core\Entity\EntityStorageInterface::delete
+   */
+  public function civiPostDelete(EntityInterface $entity) {
+    $this->resetCache([$entity->id()]);
+    CivicrmEntity::postDelete($this, [$entity]);
+    $this->invokeHook('delete', $entity);
   }
 
 }

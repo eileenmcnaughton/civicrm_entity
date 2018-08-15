@@ -179,3 +179,66 @@ function _civicrm_entity_get_entity_type_from_elements($elements) {
 
   return NULL;
 }
+
+/**
+ * Implements hook_civicrm_pre().
+ */
+function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
+  $operations = ['create', 'update', 'delete'];
+  if (!in_array($op, $operations) || !$entityType = SupportedEntities::getDrupalType($objectName)) {
+    return;
+  }
+
+  /** @var \Drupal\civicrm_entity\CiviEntityStorage $storage */
+  $storage = \Drupal::entityTypeManager()->getStorage($entityType);
+  $entity = $storage->create($params);
+  if ($id) {
+    $entity->set('id', $id);
+  }
+
+  switch ($op) {
+    case 'create':
+      $storage->civiPreSave($entity);
+      break;
+
+    case 'delete':
+      $storage->civiPreDelete($entity);
+      break;
+
+    case 'edit':
+      $entity->original = $entity;
+      $storage->civiPreSave($entity);
+      break;
+  }
+}
+
+/**
+ * Implements hook_civicrm_post().
+ */
+function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
+  $operations = ['create', 'update', 'delete'];
+  if (!in_array($op, $operations) || !$entityType = SupportedEntities::getDrupalType($objectName)) {
+    return;
+  }
+
+  $data = array_intersect_key(get_object_vars($objectRef), $objectRef->fields());
+
+  /** @var \Drupal\civicrm_entity\CiviEntityStorage $storage */
+  $storage = \Drupal::entityTypeManager()->getStorage($entityType);
+  $entity = $storage->create($data);
+
+  switch ($op) {
+    case 'create':
+      $storage->civiPostSave($entity, FALSE);
+      break;
+
+    case 'delete':
+      $storage->civiPostDelete($entity);
+      break;
+
+    case 'edit':
+      $entity->original = $entity;
+      $storage->civiPostSave($entity, TRUE);
+      break;
+  }
+}
