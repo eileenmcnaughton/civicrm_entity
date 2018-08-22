@@ -251,8 +251,37 @@ function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
 
   /** @var \Drupal\civicrm_entity\CiviEntityStorage $storage */
   $storage = \Drupal::entityTypeManager()->getStorage($entityType);
-  $entity = $storage->load($objectId);
 
+  // Special handling for EntityTag objects.
+  if ($entityType == 'entity_tag') {
+    foreach ($objectRef[0] as $entityTag) {
+      $object = new CRM_Core_BAO_EntityTag();
+      $object->entity_id = $entityTag;
+      $object->entity_table = 'civicrm_contact';
+      $object->tag_id = $objectId;
+      if ($object->find(TRUE)) {
+        $entity = $storage->load($entityTag);
+        _civicrm_entity_post_invoke($op, $storage, $entity);
+      }
+    }
+    return;
+  }
+
+  $entity = $storage->load($objectId);
+  _civicrm_entity_post_invoke($op, $storage, $entity);
+}
+
+/**
+ * Invokes the post save hooks for a CiviCRM entity.
+ *
+ * @param string $op
+ *   The operation being performed.
+ * @param \Drupal\civicrm_entity\CiviEntityStorage
+ *   The entity storage.
+ * @param \Drupal\Core\Entity\EntityInterface $entity
+ *   The entity.
+ */
+function _civicrm_entity_post_invoke($op, $storage, $entity) {
   switch ($op) {
     case 'create':
       $storage->civiPostSave($entity, FALSE);
