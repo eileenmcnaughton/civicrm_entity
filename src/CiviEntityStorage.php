@@ -671,6 +671,7 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
    * @see \Drupal\Core\Entity\EntityStorageInterface::delete
    */
   public function civiPostDelete(EntityInterface $entity) {
+    $this->doDeleteFieldItems([$entity]);
     $this->resetCache([$entity->id()]);
     CivicrmEntity::postDelete($this, [$entity]);
     $this->invokeHook('delete', $entity);
