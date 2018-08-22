@@ -677,4 +677,36 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
     $this->invokeHook('delete', $entity);
   }
 
+  /**
+   * Loads the EntityTag ID.
+   *
+   * When saving EntityTag objects, the 'id' that's passed to CiviCRM hooks is
+   * not the ID of the EntityTag, but rather the object to which the EntityTag
+   * applies. This provides the lookup to determing the ID of the EntityTag
+   * object itself.
+   *
+   * @param $entityId
+   *   The entity ID.
+   * @param $entityTable
+   *   The entity table.
+   *
+   * @return int|null
+   *   The EntityTag object's ID, or NULL if not found.
+   */
+  public function getEntityTagEntityId($entityId, $entityTable) {
+    $api_params = [
+      'sequential' => 1,
+      'entity_id' => $entityId,
+      'entity_table' => $entityTable,
+    ];
+    $api_results = civicrm_api3('EntityTag', 'get', $api_params);
+    if (!empty($api_results['values'])) {
+      foreach ($api_results as $delta => $result) {
+        if ($result['tag_id'] == $entityId) {
+          return $result['id'];
+        }
+      }
+    }
+  }
+
 }

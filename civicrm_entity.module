@@ -200,10 +200,15 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
 
   /** @var \Drupal\civicrm_entity\CiviEntityStorage $storage */
   $storage = \Drupal::entityTypeManager()->getStorage($entityType);
+
   if ($op == 'create') {
     $entity = $storage->create($params);
   }
   else {
+    // Special handling for EntityTag objects.
+    if ($objectName == 'EntityTag') {
+      $id = $storage->getEntityTagEntityId($params[0][0], $params[1]);
+    }
     $entity = $storage->load($id);
   }
 
@@ -226,6 +231,7 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
  * Implements hook_civicrm_post().
  */
 function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
+  // TODO: add restore.
   $operations = ['create', 'edit', 'delete'];
   if (!in_array($op, $operations)) {
     return;
