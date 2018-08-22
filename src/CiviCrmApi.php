@@ -92,6 +92,24 @@ class CiviCrmApi implements CiviCrmApiInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function getEntityNameFromCamel($entity) {
+    if ($entity == strtolower($entity)) {
+      return $entity;
+    }
+    else {
+      $entity = ltrim(strtolower(
+        str_replace('U_F', 'uf',
+          // That's CamelCase, beside an odd UFCamel that is expected as
+          // 'uf_camel'.
+          preg_replace('/(?=[A-Z])/', '_$0', $entity)
+        )), '_');
+    }
+    return $entity;
+  }
+
+  /**
    * Ensures that CiviCRM is loaded and API function available.
    */
   protected function initialize() {

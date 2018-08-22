@@ -184,8 +184,10 @@ function _civicrm_entity_get_entity_type_from_elements($elements) {
  * Implements hook_civicrm_pre().
  */
 function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
+  /** @var \Drupal\civicrm_entity\CiviCrmApiInterface $api */
+  $api = \Drupal::service('civicrm_entity.api');
   $operations = ['create', 'update', 'delete'];
-  if (!in_array($op, $operations) || !$entityType = SupportedEntities::getDrupalType($objectName)) {
+  if (!in_array($op, $operations) || !$entityType = $api->getEntityNameFromCamel($objectName)) {
     return;
   }
 

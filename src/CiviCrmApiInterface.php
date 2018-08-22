@@ -85,4 +85,26 @@ interface CiviCrmApiInterface {
    */
   public function getCount($entity, array $params);
 
+  /**
+   * Convert possibly camel name to underscore separated entity name.
+   *
+   * @see _civicrm_api_get_entity_name_from_camel()
+   *
+   * @TODO Why don't we just call the above function directly?
+   * Because the function is officially 'likely' to change as it is an internal
+   * api function and calling api functions directly is explicitly not
+   * supported.
+   *
+   * @param string $entity
+   *   Entity name in various formats e.g:
+   *     Contribution => contribution,
+   *     OptionValue => option_value,
+   *     UFJoin => uf_join.
+   *
+   * @return string
+   *   $entity entity name in underscore separated format
+   */
+  public function getEntityNameFromCamel($entity);
+
+
 }
