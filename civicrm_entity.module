@@ -184,7 +184,7 @@ function _civicrm_entity_get_entity_type_from_elements($elements) {
  * Implements hook_civicrm_pre().
  */
 function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
-  $operations = ['create', 'edit', 'delete'];
+  $operations = ['create', 'edit', 'delete', 'restore'];
   if (!in_array($op, $operations)) {
     return;
   }
@@ -221,6 +221,10 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
       $storage->civiPreDelete($entity);
       break;
 
+    case 'restore':
+      $storage->civiPreSave($entity);
+      break;
+
     case 'edit':
       $storage->civiPreSave($entity);
       break;
@@ -231,8 +235,7 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
  * Implements hook_civicrm_post().
  */
 function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
-  // TODO: add restore.
-  $operations = ['create', 'edit', 'delete'];
+  $operations = ['create', 'edit', 'delete', 'restore'];
   if (!in_array($op, $operations)) {
     return;
   }
@@ -257,6 +260,10 @@ function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
 
     case 'delete':
       $storage->civiPostDelete($entity);
+      break;
+
+    case 'restore':
+      $storage->civiPostSave($entity, TRUE);
       break;
 
     case 'edit':
