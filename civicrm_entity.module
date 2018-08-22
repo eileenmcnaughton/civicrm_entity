@@ -184,18 +184,22 @@ function _civicrm_entity_get_entity_type_from_elements($elements) {
  * Implements hook_civicrm_pre().
  */
 function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
-  /** @var \Drupal\civicrm_entity\CiviCrmApiInterface $api */
-  $api = \Drupal::service('civicrm_entity.api');
-  $operations = ['create', 'update', 'delete'];
-  if (!in_array($op, $operations) || !$entityType = $api->getEntityNameFromCamel($objectName)) {
+  $operations = ['create', 'edit', 'delete'];
+  if (!in_array($op, $operations)) {
     return;
   }
 
+  /** @var \Drupal\civicrm_entity\CiviCrmApiInterface $api */
+  $api = \Drupal::service('civicrm_entity.api');
+  $entityType = 'civicrm_' . $api->getEntityNameFromCamel($objectName);
+
   /** @var \Drupal\civicrm_entity\CiviEntityStorage $storage */
   $storage = \Drupal::entityTypeManager()->getStorage($entityType);
-  $entity = $storage->create($params);
-  if ($id) {
-    $entity->set('id', $id);
+  if ($op == 'create') {
+    $entity = $storage->create($params);
+  }
+  else {
+    $entity = $storage->load($id);
   }
 
   switch ($op) {
@@ -208,7 +212,6 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
       break;
 
     case 'edit':
-      $entity->original = $entity;
       $storage->civiPreSave($entity);
       break;
   }
@@ -218,18 +221,18 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
  * Implements hook_civicrm_post().
  */
 function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
-  /** @var \Drupal\civicrm_entity\CiviCrmApiInterface $api */
-  $api = \Drupal::service('civicrm_entity.api');
-  $operations = ['create', 'update', 'delete'];
-  if (!in_array($op, $operations) || !$entityType = $api->getEntityNameFromCamel($objectName)) {
+  $operations = ['create', 'edit', 'delete'];
+  if (!in_array($op, $operations)) {
     return;
   }
 
-  $data = array_intersect_key(get_object_vars($objectRef), $objectRef->fields());
+  /** @var \Drupal\civicrm_entity\CiviCrmApiInterface $api */
+  $api = \Drupal::service('civicrm_entity.api');
+  $entityType = 'civicrm_' . $api->getEntityNameFromCamel($objectName);
 
   /** @var \Drupal\civicrm_entity\CiviEntityStorage $storage */
   $storage = \Drupal::entityTypeManager()->getStorage($entityType);
-  $entity = $storage->create($data);
+  $entity = $storage->load($objectId);
 
   switch ($op) {
     case 'create':
@@ -241,7 +244,6 @@ function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
       break;
 
     case 'edit':
-      $entity->original = $entity;
       $storage->civiPostSave($entity, TRUE);
       break;
   }
