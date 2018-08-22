@@ -2,8 +2,6 @@
 
 namespace Drupal\civicrm_entity;
 
-use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
-
 /**
  * Defines supported entities.
  *

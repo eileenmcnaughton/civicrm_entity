@@ -218,8 +218,10 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
  * Implements hook_civicrm_post().
  */
 function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
+  /** @var \Drupal\civicrm_entity\CiviCrmApiInterface $api */
+  $api = \Drupal::service('civicrm_entity.api');
   $operations = ['create', 'update', 'delete'];
-  if (!in_array($op, $operations) || !$entityType = SupportedEntities::getDrupalType($objectName)) {
+  if (!in_array($op, $operations) || !$entityType = $api->getEntityNameFromCamel($objectName)) {
     return;
   }
 
