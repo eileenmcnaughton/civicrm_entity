@@ -3012,6 +3012,9 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
     case 'email':
       $params['name'] = $params['email'];
       break;
+    case 'display_name':
+      $params['name'] = _civicrm_entity_clean_login_name(trim($contact['display_name']));
+      break;
     default:
      drupal_set_message(filter_xss("username_format " . $username_format . " unknown!!") , 'info');
      watchdog('civicrm_entity', 'username_format  %format unknown.', array('%format' => $username_format), WATCHDOG_INFO);
@@ -3074,8 +3077,12 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
   // Note that we 'pretend' to be logging in to make it do a ufmatch
   // on just the email.
   // Try to match Individuals, failing that, anything
-  CRM_Core_BAO_UFMatch::synchronizeUFMatch($user_object, $user_object->uid, $contact['email'], 'drupal', NULL, 'Individual', TRUE)
-   || CRM_Core_BAO_UFMatch::synchronizeUFMatch($user_object, $user_object->uid, $contact['email'], 'drupal', NULL, NULL, TRUE);
+  if (!empty($contact['contact_type']) && $contact['contact_type'] == 'Individual') {
+    CRM_Core_BAO_UFMatch::synchronizeUFMatch($user_object, $user_object->uid, $contact['email'], 'drupal', NULL, 'Individual', TRUE);
+  }
+  else {
+    CRM_Core_BAO_UFMatch::synchronizeUFMatch($user_object, $user_object->uid, $contact['email'], 'drupal', NULL, NULL, TRUE);
+  }
   drupal_set_message('User with username, ' . $params['cms_name'] . ', has been created.');
 
   // If selected in action configuration, automatically sign in the
@@ -3097,6 +3104,7 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
 // function _civicrm_entity_options_username_format($field, $instance, $entity_type, $entity) {
 function _civicrm_entity_options_username_format($field, $instance) {
   $options = array(
+    'display_name' => t('Display Name'),
     'first last' => t('First Last'),
     'firstlast' => t('FirstLast'),
     'first.last' => t('First.Last'),
