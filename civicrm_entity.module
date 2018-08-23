@@ -2246,7 +2246,7 @@ function _civicrm_entity_getproperties($civicrm_entity, $context = '') {
       $info[$fieldname] = array(
         'label' => $label,
         'type' => $types[$field_specs['type']],
-        'sanitize' => 'check_plain',
+        'sanitize' => 'filter_xss',
         'setter callback' => 'entity_property_verbatim_set',
       );
 
