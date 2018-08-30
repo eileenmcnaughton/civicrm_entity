@@ -367,7 +367,7 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
           // Date time formats from CiviCRM do not match the storage
           // format for Drupal's date time fields. Add in missing "T" marker.
           else {
-            $item_values[$delta][$main_property_name] = str_replace(' ', 'T', $item[$main_property_name]);
+            $item_values[$delta][$main_property_name] = (new \DateTime($item[$main_property_name], new \DateTimeZone(drupal_get_user_timezone())))->setTimezone(new \DateTimeZone('UTC'))->format(DATETIME_DATETIME_STORAGE_FORMAT);
           }
         }
         $items->setValue($item_values);
