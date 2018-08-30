@@ -59,15 +59,12 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
           break;
 
         case (\CRM_Utils_Type::T_DATE + \CRM_Utils_Type::T_TIME):
+        case \CRM_Utils_Type::T_TIMESTAMP:
           $field = $this->getDatetimeDefinition();
           break;
 
         case \CRM_Utils_Type::T_ENUM:
           $field = BaseFieldDefinition::create('map');
-          break;
-
-        case \CRM_Utils_Type::T_TIMESTAMP:
-          $field = $this->getTimestampDefinition();
           break;
 
         case \CRM_Utils_Type::T_TIME:
@@ -324,26 +321,6 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
       ])
       ->setDisplayOptions('view', [
         'type' => 'datetime_default',
-        'weight' => 0,
-      ]);
-    return $field;
-  }
-
-  /**
-   * Gets a timestamp field definition.
-   *
-   * @return \Drupal\Core\Field\BaseFieldDefinition
-   *   The base field definition.
-   */
-  protected function getTimestampDefinition() {
-    $field = BaseFieldDefinition::create('timestamp')
-      ->setDisplayOptions('view', [
-        'label' => 'hidden',
-        'type' => 'timestamp',
-        'weight' => 0,
-      ])
-      ->setDisplayOptions('form', [
-        'type' => 'datetime_timestamp',
         'weight' => 0,
       ]);
     return $field;
