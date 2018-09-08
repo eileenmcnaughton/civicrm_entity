@@ -364,9 +364,10 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
           if (is_numeric($item[$main_property_name])) {
             $item_values[$delta][$main_property_name] = (new \DateTime())->setTimestamp($item[$main_property_name])->format(DATETIME_DATETIME_STORAGE_FORMAT);
           }
-          // Date time formats from CiviCRM do not match the storage
-          // format for Drupal's date time fields. Add in missing "T" marker.
           else {
+            // CiviCRM gives us the datetime in the users timezone (or no
+            // timezone at all) but Drupal expects it in UTC. So, we need to
+            // convert from the users timezone into UTC.
             $item_values[$delta][$main_property_name] = (new \DateTime($item[$main_property_name], new \DateTimeZone(drupal_get_user_timezone())))->setTimezone(new \DateTimeZone('UTC'))->format(DATETIME_DATETIME_STORAGE_FORMAT);
           }
         }

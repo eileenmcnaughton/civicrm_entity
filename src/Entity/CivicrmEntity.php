@@ -92,10 +92,9 @@ class CivicrmEntity extends ContentEntityBase {
       foreach ($items as $delta => $item) {
         $main_property = $item->get($main_property_name);
         if ($main_property instanceof DateTimeIso8601) {
-          $value = $main_property->getDateTime()->format('Y-m-d H:i:s');
-        }
-        elseif ($main_property instanceof Timestamp) {
-          $value = $main_property->getDateTime()->format('Y-m-d H:i:s');
+          // CiviCRM wants the datetime in the timezone of the user, but Drupal
+          // stores it in UTC.
+          $value = (new \DateTime($main_property->getValue(), new \DateTimeZone('UTC')))->setTimezone(new \DateTimeZone(\drupal_get_user_timezone()))->format('Y-m-d H:i:s');
         }
         else {
           $value = $main_property->getValue();
