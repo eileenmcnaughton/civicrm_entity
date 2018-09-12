@@ -632,6 +632,9 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
    * @see \Drupal\Core\Entity\ContentEntityStorageBase::doPreSave
    */
   public function civiPreSave(EntityInterface $entity) {
+    if (!empty($entity->drupal_crud)) {
+      return;
+    }
     $this->doPreSave($entity);
   }
 
@@ -646,6 +649,9 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
    * @see \Drupal\Core\Entity\ContentEntityStorageBase::doPostSave
    */
   public function civiPostSave(EntityInterface $entity, $update) {
+    if (!empty($entity->drupal_crud)) {
+      return;
+    }
     $this->doPostSave($entity, $update);
   }
 
@@ -658,6 +664,9 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
    * @see \Drupal\Core\Entity\EntityStorageInterface::delete
    */
   public function civiPreDelete(EntityInterface $entity) {
+    if (!empty($entity->drupal_crud)) {
+      return;
+    }
     CivicrmEntity::preDelete($this, [$entity]);
     $this->invokeHook('predelete', $entity);
   }
@@ -671,6 +680,9 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
    * @see \Drupal\Core\Entity\EntityStorageInterface::delete
    */
   public function civiPostDelete(EntityInterface $entity) {
+    if (!empty($entity->drupal_crud)) {
+      return;
+    }
     $this->doDeleteFieldItems([$entity]);
     $this->resetCache([$entity->id()]);
     CivicrmEntity::postDelete($this, [$entity]);
