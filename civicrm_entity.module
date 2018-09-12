@@ -209,6 +209,7 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
     }
     $entity = $storage->load($id);
   }
+  $entity->original = $storage->loadUnchanged($entity->id());
 
   switch ($op) {
     case 'create':
@@ -257,6 +258,7 @@ function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
       $object->tag_id = $objectId;
       if ($object->find(TRUE)) {
         $entity = $storage->load($entityTag);
+        $entity->original = $storage->loadUnchanged($entity->id());
         _civicrm_entity_post_invoke($op, $storage, $entity);
       }
     }
@@ -264,6 +266,7 @@ function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
   }
 
   $entity = $storage->load($objectId);
+  $entity->original = $storage->loadUnchanged($entity->id());
   _civicrm_entity_post_invoke($op, $storage, $entity);
 }
 
