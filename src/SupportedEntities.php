@@ -694,8 +694,8 @@ final class SupportedEntities {
    * @param string $objectName
    *   The CiviCRM object name.
    *
-   * @return string
-   *   The Drupal entity type.
+   * @return string|false
+   *   The Drupal entity type, or FALSE if not available.
    */
   public static function getEntityType($objectName) {
     switch ($objectName) {
@@ -707,6 +707,10 @@ final class SupportedEntities {
       default:
         $entity_type = 'civicrm_' . static::getEntityNameFromCamel($objectName);
         break;
+    }
+
+    if (!array_key_exists($entity_type, static::getInfo())) {
+      return FALSE;
     }
 
     return $entity_type;

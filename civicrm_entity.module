@@ -192,9 +192,7 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
   $entityType = SupportedEntities::getEntityType($objectName);
 
   // Check valid entity type.
-  $config = \Drupal::config('civicrm_entity.settings');
-  $enabled_entity_types = $config->get('enabled_entity_types') ?: [];
-  if (!in_array($entityType, $enabled_entity_types)) {
+  if (!$entityType) {
     return;
   }
 
@@ -243,9 +241,7 @@ function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
   $entityType = SupportedEntities::getEntityType($objectName);
 
   // Check valid entity type.
-  $config = \Drupal::config('civicrm_entity.settings');
-  $enabled_entity_types = $config->get('enabled_entity_types') ?: [];
-  if (!in_array($entityType, $enabled_entity_types)) {
+  if (!$entityType) {
     return;
   }
 
