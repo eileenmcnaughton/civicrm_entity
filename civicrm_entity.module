@@ -209,7 +209,9 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
     }
     $entity = $storage->load($id);
   }
-  $entity->original = $storage->loadUnchanged($entity->id());
+  if ($entity->id()) {
+    $entity->original = $storage->loadUnchanged($entity->id());
+  }
 
   switch ($op) {
     case 'create':
