@@ -27,9 +27,14 @@ class CivicrmEntity extends ContentEntityBase {
    */
   public function save() {
     // Set ::drupal_crud to indicate save is coming from Drupal.
-    $this->drupal_crud = TRUE;
-    $result = parent::save();
-    $this->drupal_crud = FALSE;
+    try {
+      $this->drupal_crud = TRUE;
+      $result = parent::save();
+    }
+    finally {
+      $this->drupal_crud = FALSE;
+    }
+
     return $result;
   }
 
@@ -38,9 +43,13 @@ class CivicrmEntity extends ContentEntityBase {
    */
   public function delete() {
     // Set ::drupal_crud to indicate delete is coming from Drupal.
-    $this->drupal_crud = TRUE;
-    parent::delete();
-    $this->drupal_crud = FALSE;
+    try {
+      $this->drupal_crud = TRUE;
+      parent::delete();
+    }
+    finally {
+      $this->drupal_crud = FALSE;
+    }
   }
 
   /**
