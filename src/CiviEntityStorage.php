@@ -2,6 +2,7 @@
 
 namespace Drupal\civicrm_entity;
 
+use Drupal\civicrm_entity\Entity\CivicrmEntity;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Connection;
@@ -614,6 +615,107 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
         }
         if ($this->entityType->isRevisionable()) {
           $revision_query->execute();
+        }
+      }
+    }
+  }
+
+  /**
+   * Allows CiviCRM hook to invoke presave.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity to save.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   *   If the entity identifier is invalid.
+   *
+   * @see \Drupal\Core\Entity\ContentEntityStorageBase::doPreSave
+   */
+  public function civiPreSave(EntityInterface $entity) {
+    if (!empty($entity->drupal_crud)) {
+      return;
+    }
+    $this->doPreSave($entity);
+  }
+
+  /**
+   * Allows CiviCRM hook to invoke postsave.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The saved entity.
+   * @param $update
+   *   Specifies whether the entity is being updated or created.
+   *
+   * @see \Drupal\Core\Entity\ContentEntityStorageBase::doPostSave
+   */
+  public function civiPostSave(EntityInterface $entity, $update) {
+    if (!empty($entity->drupal_crud)) {
+      return;
+    }
+    $this->doPostSave($entity, $update);
+  }
+
+  /**
+   * Allows CiviCRM hook to invoke predelete.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity to be deleted.
+   *
+   * @see \Drupal\Core\Entity\EntityStorageInterface::delete
+   */
+  public function civiPreDelete(EntityInterface $entity) {
+    if (!empty($entity->drupal_crud)) {
+      return;
+    }
+    CivicrmEntity::preDelete($this, [$entity]);
+    $this->invokeHook('predelete', $entity);
+  }
+
+  /**
+   * Allows CiviCRM hook to invoke delete.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity deleted.
+   *
+   * @see \Drupal\Core\Entity\EntityStorageInterface::delete
+   */
+  public function civiPostDelete(EntityInterface $entity) {
+    if (!empty($entity->drupal_crud)) {
+      return;
+    }
+    $this->doDeleteFieldItems([$entity]);
+    $this->resetCache([$entity->id()]);
+    CivicrmEntity::postDelete($this, [$entity]);
+    $this->invokeHook('delete', $entity);
+  }
+
+  /**
+   * Loads the EntityTag ID.
+   *
+   * When saving EntityTag objects, the 'id' that's passed to CiviCRM hooks is
+   * not the ID of the EntityTag, but rather the object to which the EntityTag
+   * applies. This provides the lookup to determing the ID of the EntityTag
+   * object itself.
+   *
+   * @param $entityId
+   *   The entity ID.
+   * @param $entityTable
+   *   The entity table.
+   *
+   * @return int|null
+   *   The EntityTag object's ID, or NULL if not found.
+   */
+  public function getEntityTagEntityId($entityId, $entityTable) {
+    $api_params = [
+      'sequential' => 1,
+      'entity_id' => $entityId,
+      'entity_table' => $entityTable,
+    ];
+    $api_results = civicrm_api3('EntityTag', 'get', $api_params);
+    if (!empty($api_results['values'])) {
+      foreach ($api_results as $delta => $result) {
+        if ($result['tag_id'] == $entityId) {
+          return $result['id'];
         }
       }
     }

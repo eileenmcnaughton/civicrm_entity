@@ -5,6 +5,7 @@ namespace Drupal\civicrm_entity\Entity;
 use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\TypedData\Plugin\DataType\DateTimeIso8601;
 use Drupal\Core\TypedData\Plugin\DataType\Timestamp;
 use Symfony\Component\Validator\ConstraintViolation;
@@ -24,6 +25,36 @@ class CivicrmEntity extends ContentEntityBase {
   /**
    * {@inheritdoc}
    */
+  public function save() {
+    // Set ::drupal_crud to indicate save is coming from Drupal.
+    try {
+      $this->drupal_crud = TRUE;
+      $result = parent::save();
+    }
+    finally {
+      $this->drupal_crud = FALSE;
+    }
+
+    return $result;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function delete() {
+    // Set ::drupal_crud to indicate delete is coming from Drupal.
+    try {
+      $this->drupal_crud = TRUE;
+      parent::delete();
+    }
+    finally {
+      $this->drupal_crud = FALSE;
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = [];
     $civicrm_entity_info = SupportedEntities::getInfo()[$entity_type->id()];
@@ -39,6 +70,7 @@ class CivicrmEntity extends ContentEntityBase {
       $fields[$civicrm_field['name']] = $field_definition_provider->getBaseFieldDefinition($civicrm_field);
       $fields[$civicrm_field['name']]->setRequired(isset($civicrm_required_fields[$civicrm_field['name']]));
     }
+    $fields['drupal_crud'] = BaseFieldDefinition::create('boolean')->setComputed(TRUE);
     return $fields;
   }
 

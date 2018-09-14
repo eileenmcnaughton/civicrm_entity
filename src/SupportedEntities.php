@@ -688,4 +688,66 @@ final class SupportedEntities {
     return isset($info[$entity_type_id]) ? $info[$entity_type_id] : [];
   }
 
+  /**
+   * Gets the Drupal entity type for a CiviCRM object name.
+   *
+   * @param string $objectName
+   *   The CiviCRM object name.
+   *
+   * @return string|false
+   *   The Drupal entity type, or FALSE if not available.
+   */
+  public static function getEntityType($objectName) {
+    switch ($objectName) {
+      case 'Individual':
+      case 'Household':
+      case 'Organization':
+        $entity_type = 'civicrm_contact';
+        break;
+      default:
+        $entity_type = 'civicrm_' . static::getEntityNameFromCamel($objectName);
+        break;
+    }
+
+    if (!array_key_exists($entity_type, static::getInfo())) {
+      return FALSE;
+    }
+
+    return $entity_type;
+  }
+
+  /**
+   * Convert possibly camel name to underscore separated entity name.
+   *
+   * @see _civicrm_api_get_entity_name_from_camel()
+   *
+   * @TODO Why don't we just call the above function directly?
+   * Because the function is officially 'likely' to change as it is an internal
+   * api function and calling api functions directly is explicitly not
+   * supported.
+   *
+   * @param string $entity
+   *   Entity name in various formats e.g:
+   *     Contribution => contribution,
+   *     OptionValue => option_value,
+   *     UFJoin => uf_join.
+   *
+   * @return string
+   *   $entity entity name in underscore separated format
+   */
+  public static function getEntityNameFromCamel($entity) {
+    if ($entity == strtolower($entity)) {
+      return $entity;
+    }
+    else {
+      $entity = ltrim(strtolower(
+        str_replace('U_F', 'uf',
+          // That's CamelCase, beside an odd UFCamel that is expected as
+          // 'uf_camel'.
+          preg_replace('/(?=[A-Z])/', '_$0', $entity)
+        )), '_');
+    }
+    return $entity;
+  }
+
 }

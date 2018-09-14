@@ -179,3 +179,125 @@ function _civicrm_entity_get_entity_type_from_elements($elements) {
 
   return NULL;
 }
+
+/**
+ * Implements hook_civicrm_pre().
+ */
+function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
+  $operations = ['create', 'edit', 'delete', 'restore'];
+  if (!in_array($op, $operations)) {
+    return;
+  }
+
+  $entityType = SupportedEntities::getEntityType($objectName);
+
+  // Check valid entity type.
+  if (!$entityType) {
+    return;
+  }
+
+  /** @var \Drupal\civicrm_entity\CiviEntityStorage $storage */
+  $storage = \Drupal::entityTypeManager()->getStorage($entityType);
+
+  if ($op == 'create') {
+    $entity = $storage->create($params);
+  }
+  else {
+    // Special handling for EntityTag objects.
+    if ($objectName == 'EntityTag') {
+      $id = $storage->getEntityTagEntityId($params[0][0], $params[1]);
+    }
+    $entity = $storage->load($id);
+  }
+  if ($entity->id()) {
+    $entity->original = $storage->loadUnchanged($entity->id());
+  }
+
+  switch ($op) {
+    case 'create':
+      $storage->civiPreSave($entity);
+      break;
+
+    case 'delete':
+      $storage->civiPreDelete($entity);
+      break;
+
+    case 'restore':
+      $storage->civiPreSave($entity);
+      break;
+
+    case 'edit':
+      $storage->civiPreSave($entity);
+      break;
+  }
+}
+
+/**
+ * Implements hook_civicrm_post().
+ */
+function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
+  $operations = ['create', 'edit', 'delete', 'restore'];
+  if (!in_array($op, $operations)) {
+    return;
+  }
+
+  $entityType = SupportedEntities::getEntityType($objectName);
+
+  // Check valid entity type.
+  if (!$entityType) {
+    return;
+  }
+
+  /** @var \Drupal\civicrm_entity\CiviEntityStorage $storage */
+  $storage = \Drupal::entityTypeManager()->getStorage($entityType);
+
+  // Special handling for EntityTag objects.
+  if ($entityType == 'entity_tag') {
+    foreach ($objectRef[0] as $entityTag) {
+      $object = new CRM_Core_BAO_EntityTag();
+      $object->entity_id = $entityTag;
+      $object->entity_table = 'civicrm_contact';
+      $object->tag_id = $objectId;
+      if ($object->find(TRUE)) {
+        $entity = $storage->load($entityTag);
+        $entity->original = $storage->loadUnchanged($entity->id());
+        _civicrm_entity_post_invoke($op, $storage, $entity);
+      }
+    }
+    return;
+  }
+
+  $entity = $storage->load($objectId);
+  $entity->original = $storage->loadUnchanged($entity->id());
+  _civicrm_entity_post_invoke($op, $storage, $entity);
+}
+
+/**
+ * Invokes the post save hooks for a CiviCRM entity.
+ *
+ * @param string $op
+ *   The operation being performed.
+ * @param \Drupal\civicrm_entity\CiviEntityStorage
+ *   The entity storage.
+ * @param \Drupal\Core\Entity\EntityInterface $entity
+ *   The entity.
+ */
+function _civicrm_entity_post_invoke($op, $storage, $entity) {
+  switch ($op) {
+    case 'create':
+      $storage->civiPostSave($entity, FALSE);
+      break;
+
+    case 'delete':
+      $storage->civiPostDelete($entity);
+      break;
+
+    case 'restore':
+      $storage->civiPostSave($entity, TRUE);
+      break;
+
+    case 'edit':
+      $storage->civiPostSave($entity, TRUE);
+      break;
+  }
+}
