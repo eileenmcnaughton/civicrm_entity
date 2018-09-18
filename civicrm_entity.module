@@ -55,41 +55,45 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
       continue;
     }
 
+    $entity_type_info = [
+      'provider' => 'civicrm_entity',
+      'class' => CivicrmEntity::class,
+      'originalClass' => CivicrmEntity::class,
+      'id' => $entity_type_id,
+      'civicrm_entity' => $civicrm_entity_name,
+      'civicrm_entity_ui_exposed' => in_array($entity_type_id, $enabled_entity_types),
+      'label' => new TranslatableMarkup('CiviCRM :name', [':name' => $civicrm_entity_info['civicrm entity label']]),
+      // @todo add label_singular
+      // @todo add label_plural
+      // @todo add label_count
+      'entity_keys' => [
+        'id' => 'id',
+        'label' => $civicrm_entity_info['label property'],
+      ],
+      'base_table' => $entity_type_id,
+      'admin_permission' => 'administer civicrm entity',
+      'permission_granularity' => 'entity_type',
+      'handlers' => [
+        'storage' => CiviEntityStorage::class,
+        'access' => CivicrmEntityAccessHandler::class,
+        'views_data' => CivicrmEntityViewsData::class,
+        'storage_schema' => CivicrmEntityStorageSchema::class,
+      ],
+    ];
     if (in_array($entity_type_id, $enabled_entity_types)) {
-      $entity_types[$entity_type_id] = new ContentEntityType([
-        'provider' => 'civicrm_entity',
-        'class' => CivicrmEntity::class,
-        'originalClass' => CivicrmEntity::class,
-        'id' => $entity_type_id,
-        'civicrm_entity' => $civicrm_entity_name,
-        'civicrm_entity_ui_exposed' => in_array($entity_type_id, $enabled_entity_types),
-        'label' => new TranslatableMarkup('CiviCRM :name', [':name' => $civicrm_entity_info['civicrm entity label']]),
-        // @todo add label_singular
-        // @todo add label_plural
-        // @todo add label_count
-        'entity_keys' => [
-          'id' => 'id',
-          'label' => $civicrm_entity_info['label property'],
-        ],
-        'base_table' => $entity_type_id,
-        'admin_permission' => 'administer civicrm entity',
-        'permission_granularity' => 'entity_type',
+      $entity_type_info = array_merge_recursive($entity_type_info, [
         'handlers' => [
-          'storage' => CiviEntityStorage::class,
           'list_builder' => CivicrmEntityListBuilder::class,
           'view_builder' => CiviCrmEntityViewBuilder::class,
           'route_provider' => [
             'default' => CiviCrmEntityRouteProvider::class,
           ],
-          'access' => CivicrmEntityAccessHandler::class,
           'form' => [
             'default' => CivicrmEntityForm::class,
             'add' => CivicrmEntityForm::class,
             'edit' => CivicrmEntityForm::class,
             'delete' => ContentEntityDeleteForm::class,
           ],
-          'views_data' => CivicrmEntityViewsData::class,
-          'storage_schema' => CivicrmEntityStorageSchema::class,
         ],
         // Generate route paths.
         'links' => [
@@ -102,6 +106,7 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
         'field_ui_base_route' => "entity.$entity_type_id.collection",
       ]);
     }
+    $entity_types[$entity_type_id] = new ContentEntityType($entity_type_info);
   }
 }
 
