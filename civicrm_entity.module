@@ -186,6 +186,33 @@ function _civicrm_entity_get_entity_type_from_elements($elements) {
 }
 
 /**
+ * For stashing deleted entities until we need them later.
+ *
+ * @todo Convert hooks to a service and keep this in a member variable
+ *
+ * @param string $objectName
+ *   The CiviCRM entity type.
+ * @param int $id
+ *   The id.
+ * @param \Drupal\Core\Entity\Entity|null|string $entity
+ *   The entity.
+ *
+ * @return void|\Drupal\Core\Entity\Entity
+ */
+function _civicrm_entity_stash($objectName, $id, $entity = NULL) {
+  $cache =& drupal_static(__FUNCTION__, []);
+  if (empty($entity)) {
+    return isset($cache[$objectName][$id]) ? $cache[$objectName][$id] : NULL;
+  }
+  elseif ($entity === 'clear') {
+    unset($cache[$objectName][$id]);
+  }
+  else {
+    $cache[$objectName][$id] = $entity;
+  }
+}
+
+/**
  * Implements hook_civicrm_pre().
  */
 function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
@@ -207,12 +234,20 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
   if ($op == 'create') {
     $entity = $storage->create($params);
   }
+  elseif (empty($id)) {
+    // Sometimes 'delete' is called with an $id of NULL, but we can't really do
+    // anything with that in this context, so return.
+    return;
+  }
   else {
     // Special handling for EntityTag objects.
     if ($objectName == 'EntityTag') {
       $id = $storage->getEntityTagEntityId($params[0][0], $params[1]);
     }
     $entity = $storage->load($id);
+  }
+  if (!$entity) {
+    return;
   }
   if ($entity->id()) {
     $entity->original = $storage->loadUnchanged($entity->id());
@@ -225,6 +260,7 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
 
     case 'delete':
       $storage->civiPreDelete($entity);
+      _civicrm_entity_stash($objectName, $id, $entity);
       break;
 
     case 'restore':
@@ -256,25 +292,31 @@ function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
   /** @var \Drupal\civicrm_entity\CiviEntityStorage $storage */
   $storage = \Drupal::entityTypeManager()->getStorage($entityType);
 
-  // Special handling for EntityTag objects.
-  if ($entityType == 'entity_tag') {
-    foreach ($objectRef[0] as $entityTag) {
-      $object = new CRM_Core_BAO_EntityTag();
-      $object->entity_id = $entityTag;
-      $object->entity_table = 'civicrm_contact';
-      $object->tag_id = $objectId;
-      if ($object->find(TRUE)) {
-        $entity = $storage->load($entityTag);
-        $entity->original = $storage->loadUnchanged($entity->id());
-        _civicrm_entity_post_invoke($op, $storage, $entity);
-      }
-    }
-    return;
+  if ($op == 'delete') {
+    $entity = _civicrm_entity_stash($objectName, $objectId);
   }
+  else {
+    // Special handling for EntityTag objects.
+    if ($entityType == 'entity_tag') {
+      foreach ($objectRef[0] as $entityTag) {
+        $object = new CRM_Core_BAO_EntityTag();
+        $object->entity_id = $entityTag;
+        $object->entity_table = 'civicrm_contact';
+        $object->tag_id = $objectId;
+        if ($object->find(TRUE)) {
+          $entity = $storage->load($entityTag);
+          $entity->original = $storage->loadUnchanged($entity->id());
+          _civicrm_entity_post_invoke($op, $storage, $entity);
+        }
+      }
+      return;
+    }
 
-  $entity = $storage->load($objectId);
-  $entity->original = $storage->loadUnchanged($entity->id());
+    $entity = $storage->load($objectId);
+    $entity->original = $storage->loadUnchanged($entity->id());
+  }
   _civicrm_entity_post_invoke($op, $storage, $entity);
+  _civicrm_entity_stash($objectName, $objectId, 'clear');
 }
 
 /**
