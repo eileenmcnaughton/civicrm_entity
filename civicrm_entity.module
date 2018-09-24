@@ -292,6 +292,7 @@ function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
   /** @var \Drupal\civicrm_entity\CiviEntityStorage $storage */
   $storage = \Drupal::entityTypeManager()->getStorage($entityType);
 
+  $entity = FALSE;
   if ($op == 'delete') {
     $entity = _civicrm_entity_stash($objectName, $objectId);
   }
@@ -312,10 +313,13 @@ function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
       return;
     }
 
-    $entity = $storage->load($objectId);
-    $entity->original = $storage->loadUnchanged($entity->id());
+    if ($entity = $storage->load($objectId)) {
+      $entity->original = $storage->loadUnchanged($entity->id());
+    }
   }
-  _civicrm_entity_post_invoke($op, $storage, $entity);
+  if ($entity) {
+    _civicrm_entity_post_invoke($op, $storage, $entity);
+  }
   _civicrm_entity_stash($objectName, $objectId, 'clear');
 }
 

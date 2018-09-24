@@ -180,8 +180,10 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
       $options['return'] = $field_names;
       $civicrm_entity = $this->civicrmApi->get($this->entityType->get('civicrm_entity'), $options);
       $civicrm_entity = reset($civicrm_entity);
-      $entity = $this->prepareLoadedEntity($civicrm_entity);
-      $entities[$entity->id()] = $entity;
+      if ($civicrm_entity) {
+        $entity = $this->prepareLoadedEntity($civicrm_entity);
+        $entities[$entity->id()] = $entity;
+      }
     }
     return $entities;
   }
