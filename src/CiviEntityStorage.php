@@ -180,8 +180,10 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
       $options['return'] = $field_names;
       $civicrm_entity = $this->civicrmApi->get($this->entityType->get('civicrm_entity'), $options);
       $civicrm_entity = reset($civicrm_entity);
-      $entity = $this->prepareLoadedEntity($civicrm_entity);
-      $entities[$entity->id()] = $entity;
+      if ($civicrm_entity) {
+        $entity = $this->prepareLoadedEntity($civicrm_entity);
+        $entities[$entity->id()] = $entity;
+      }
     }
     return $entities;
   }
@@ -360,9 +362,14 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
       elseif ($definition->getType() == 'datetime') {
         $item_values = $items->getValue();
         foreach ($item_values as $delta => $item) {
+          // On Contribution entities, there are dates sometimes set to the
+          // string value of 'null'.
+          if ($item[$main_property_name] === 'null') {
+            $item_values[$delta][$main_property_name] = NULL;
+          }
           // Handle if the value provided is a timestamp.
           // @note: This only occurred during test migrations.
-          if (is_numeric($item[$main_property_name])) {
+          elseif (is_numeric($item[$main_property_name])) {
             $item_values[$delta][$main_property_name] = (new \DateTime())->setTimestamp($item[$main_property_name])->format(DATETIME_DATETIME_STORAGE_FORMAT);
           }
           else {
