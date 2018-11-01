@@ -292,7 +292,16 @@ function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
   /** @var \Drupal\civicrm_entity\CiviEntityStorage $storage */
   $storage = \Drupal::entityTypeManager()->getStorage($entityType);
 
-  $entity = FALSE;
+  // Fix because $objectId is not set for participant payments, possibly other
+  // entity types.
+  if (!$objectId) {
+    // If we cannot determine the id, bail.
+    if (empty($objectRef->id)) {
+      return;
+    }
+    $objectId = $objectRef->id;
+  }
+
   if ($op == 'delete') {
     $entity = _civicrm_entity_stash($objectName, $objectId);
   }
