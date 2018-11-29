@@ -3234,13 +3234,12 @@ function civicrm_entity_get_locations() {
  *
  * @return array
  */
-function civicrm_entity_contact_has_location_element_email(&$contact, $location_type_id) {
+function civicrm_entity_contact_has_location_element_email($contact, $location_type_id) {
   if (!empty($contact->email)) {
     return TRUE;
   }
-  $email = civicrm_entity_contact_has_location_element('email', $contact, $location_type_id);
-  if (!empty($email['civicrm_email']->email)) {
-    $contact->email = $email['civicrm_email']->email;
+  $email = civicrm_entity_contact_get_location_element('email', $contact, $location_type_id);
+  if (!empty($email['fetched_email'])) {
     return TRUE;
   }
   return FALSE;
@@ -3278,7 +3277,7 @@ function civicrm_entity_contact_get_location_element($entity, &$contact, $locati
   if (!$result['count']) {
     return array('civicrm_' . $entity => '');
   }
-  return array('fetched_' . $entity => $result['values'][0]['email']);
+  return array('fetched_' . $entity => $result['values'][0][$entity]);
 }
 
 /**
