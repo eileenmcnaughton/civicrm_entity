@@ -3381,18 +3381,19 @@ function civicrm_entity_rules_action_unassign_contact_to_group($contact, $group_
  * @return array
  */
 function civicrm_entity_rules_assign_contact_group_options_list() {
-  $group_query = new EntityFieldQuery();
-  $groups = $group_query->entityCondition('entity_type', 'civicrm_group')
-    ->propertyCondition('is_active', 1)
-    ->propertyOrderBy('title', 'ASC')
-    ->execute();
+  if (!civicrm_initialize()) {
+    return [];
+  };
+  $result = civicrm_api3('Group', 'get', [
+    'return' => ["title"],
+    'is_active' => 1,
+    'options' => ['limit' => 0, 'sort' => "title ASC"],
+  ]);
+  $options = [];
 
-  $options = array();
-  if(count($groups['civicrm_group'])) {
-    $group_entities = entity_load('civicrm_group', array_keys($groups['civicrm_group']));
-
-    foreach ($group_entities AS $key => $group) {
-      $options[$key] = $group->title;
+  if (!$result['is_error'] && !empty($result['values'])) {
+    foreach ($result['values'] as $key => $value) {
+      $options[$key] = $value['title'];
     }
   }
   return $options;
