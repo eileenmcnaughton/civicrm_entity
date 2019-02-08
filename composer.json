@@ -16,7 +16,7 @@
     },
     "require": {
         "civicrm/civicrm-core": "4.7 - 5",
-        "civicrm/civicrm-drupal": "dev-8.x-master"
+        "civicrm/civicrm-drupal-8": "dev-master"
     },
     "minimum-stability": "dev"
 }
