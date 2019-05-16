@@ -3366,7 +3366,10 @@ function civicrm_entity_rules_action_unassign_contact_to_group($contact, $group_
         'contact_id' => $contact_id,
         'group_id' => $group,
       );
-      $delete_result = civicrm_api3('GroupContact', 'delete', $params);
+      $get_result = civicrm_api3('GroupContact', 'Get', $params);
+      if ($get_result['count']) {
+        $delete_result = civicrm_api3('GroupContact', 'delete', $params);
+      }
     }
   }
   catch (CiviCRM_API3_Exception $e) {
