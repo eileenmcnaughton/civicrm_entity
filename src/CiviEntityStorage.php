@@ -52,14 +52,18 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
    *   The entity type definition.
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection.
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
-   *   The entity manager.
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   *   The entity field manager.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache
    *   The cache backend to be used.
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
    *   The language manager.
    * @param \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api
    *   The CiviCRM API.
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+   *   The entity type bundle info.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
   public function __construct(EntityTypeInterface $entity_type, Connection $database, EntityManagerInterface $entity_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, CiviCrmApiInterface $civicrm_api, ConfigFactoryInterface $config_factory) {
     parent::__construct($entity_type, $database, $entity_manager, $cache, $language_manager);
@@ -74,14 +78,15 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
     return new static(
       $entity_type,
       $container->get('database'),
-      $container->get('entity.manager'),
+      $container->get('entity_field.manager'),
       $container->get('cache.entity'),
       $container->get('language_manager'),
-      $container->get('civicrm_entity.api'),
-      $container->get('config.factory')
+      $container->get('entity.memory_cache'),
+      $container->get('entity_type.bundle.info'),
+      $container->get('entity_type.manager')
     );
   }
-
+/
   /**
    * Initializes table name variables.
    */
