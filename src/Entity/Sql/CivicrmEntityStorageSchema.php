@@ -2,10 +2,6 @@
 
 namespace Drupal\civicrm_entity\Entity\Sql;
 
-use Drupal\civicrm_entity\CiviEntityStorage;
-use Drupal\Core\Database\Connection;
-use Drupal\Core\Entity\ContentEntityTypeInterface;
-use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Sql\SqlContentEntityStorageSchema;
 
@@ -30,26 +26,6 @@ class CivicrmEntityStorageSchema extends SqlContentEntityStorageSchema {
    * @var \Drupal\civicrm_entity\CiviEntityStorage
    */
   protected $storage;
-
-  /**
-   * Constructs a CivicrmEntityStorageSchema.
-   *
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
-   *   The entity manager.
-   * @param \Drupal\Core\Entity\ContentEntityTypeInterface $entity_type
-   *   The entity type.
-   * @param \Drupal\civicrm_entity\CiviEntityStorage $storage
-   *   The storage of the entity type. This must be an SQL-based storage.
-   * @param \Drupal\Core\Database\Connection $database
-   *   The database connection to be used.
-   */
-  public function __construct(EntityManagerInterface $entity_manager, ContentEntityTypeInterface $entity_type, CiviEntityStorage $storage, Connection $database) {
-    $this->entityManager = $entity_manager;
-    $this->entityType = $entity_type;
-    $this->fieldStorageDefinitions = $entity_manager->getFieldStorageDefinitions($entity_type->id());
-    $this->storage = $storage;
-    $this->database = $database;
-  }
 
   /**
    * {@inheritdoc}
@@ -79,15 +55,6 @@ class CivicrmEntityStorageSchema extends SqlContentEntityStorageSchema {
    */
   public function requiresEntityStorageSchemaChanges(EntityTypeInterface $entity_type, EntityTypeInterface $original) {
     return FALSE;
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * The entity table schema is managed by CiviCRM.
-   */
-  protected function getEntitySchemaTables() {
-    return [];
   }
 
 }
