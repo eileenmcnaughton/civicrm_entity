@@ -31,9 +31,20 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
    */
   protected function mockCiviCrmApi() {
     $civicrm_api_mock = $this->prophesize(CiviCrmApiInterface::class);
-    $civicrm_api_mock->get('event', ['id' => 1])->willReturn($this->sampleEventsData());
-    $civicrm_api_mock->getFields("event")->willReturn($this->sampleEventsGetFields());
-    $civicrm_api_mock->getFields("contact")->willReturn($this->sampleContactGetFields());
+    $civicrm_api_mock->get('event', Argument::type('array'))->willReturn($this->sampleEventsData());
+    $civicrm_api_mock->getFields('event')->willReturn($this->sampleEventsGetFields());
+    $civicrm_api_mock->getFields('event', 'create')->willReturn($this->sampleEventsGetFields());
+    $civicrm_api_mock->getFields('contact')->willReturn($this->sampleContactGetFields());
+    $civicrm_api_mock->getFields('contact', 'create')->willReturn($this->sampleContactGetFields());
+    $civicrm_api_mock->getFields(Argument::type('string'), 'create')->willReturn([
+      'id' => [
+        'name' => 'id',
+        'type' => 1,
+        'title' => 'Fake ID',
+        'description' => 'Unique Contact ID',
+        'required' => TRUE,
+      ],
+    ]);
 
     $supported_entities = SupportedEntities::getInfo();
     foreach ($supported_entities as $civicrm_entity_info) {

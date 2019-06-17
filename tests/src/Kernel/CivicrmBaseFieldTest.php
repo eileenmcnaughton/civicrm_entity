@@ -45,7 +45,7 @@ class CivicrmBaseFieldTest extends CivicrmEntityTestBase {
     $this->assertTrue(isset($base_fields['details']));
     $this->assertEquals('text_long', $base_fields['details']->getType());
     $this->assertTrue(isset($base_fields['refresh_date']));
-    $this->assertEquals('timestamp', $base_fields['refresh_date']->getType());
+    $this->assertEquals('datetime', $base_fields['refresh_date']->getType());
   }
 
 }

@@ -3,33 +3,20 @@
 namespace Drupal\civicrm_entity;
 
 use Drupal\civicrm_entity\Entity\CivicrmEntity;
-use Drupal\Core\Cache\CacheBackendInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Database\Connection;
-use Drupal\Core\Database\DatabaseExceptionWrapper;
-use Drupal\Core\Database\SchemaException;
 use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\Core\Entity\ContentEntityStorageBase;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityManagerInterface;
-use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Entity\Schema\DynamicallyFieldableEntityStorageSchemaInterface;
 use Drupal\Core\Entity\Sql\DefaultTableMapping;
 use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Language\LanguageInterface;
-use Drupal\Core\Language\LanguageManagerInterface;
-use Drupal\Core\TypedData\Plugin\DataType\DateTimeIso8601;
-use Drupal\Core\TypedData\Plugin\DataType\Timestamp;
 use Drupal\field\FieldStorageConfigInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Defines entity class for external CiviCRM entities.
  */
-class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFieldableEntityStorageSchemaInterface {
+class CiviEntityStorage extends SqlContentEntityStorage {
 
   /**
    * The CiviCRM API.
@@ -46,40 +33,45 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
   protected $configFactory;
 
   /**
-   * Constructs a ContentEntityStorageBase object.
+   * Gets the CiviCRM API
    *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type definition.
-   * @param \Drupal\Core\Database\Connection $database
-   *   The database connection.
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
-   *   The entity manager.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $cache
-   *   The cache backend to be used.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
-   *   The language manager.
-   * @param \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api
-   *   The CiviCRM API.
+   * @return \Drupal\civicrm_entity\CiviCrmApiInterface
+   *   The CiviCRM APi.
    */
-  public function __construct(EntityTypeInterface $entity_type, Connection $database, EntityManagerInterface $entity_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, CiviCrmApiInterface $civicrm_api, ConfigFactoryInterface $config_factory) {
-    parent::__construct($entity_type, $database, $entity_manager, $cache, $language_manager);
-    $this->civicrmApi = $civicrm_api;
-    $this->configFactory = $config_factory;
+  private function getCiviCrmApi() {
+    if (!$this->civicrmApi) {
+      $this->civicrmApi = \Drupal::service('civicrm_entity.api');
+    }
+    return $this->civicrmApi;
   }
 
   /**
-   * {@inheritdoc}
+   * Gets the config factory.
+   *
+   * @return \Drupal\Core\Config\ConfigFactoryInterface
+   *   The configuration factory service.
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
-    return new static(
-      $entity_type,
-      $container->get('database'),
-      $container->get('entity.manager'),
-      $container->get('cache.entity'),
-      $container->get('language_manager'),
-      $container->get('civicrm_entity.api'),
-      $container->get('config.factory')
-    );
+  private function getConfigFactory() {
+    if (!$this->configFactory) {
+      $this->configFactory = \Drupal::configFactory();
+    }
+    return $this->configFactory;
+  }
+
+  /**
+   * Get the entity field manager.
+   *
+   * This is a BC layer for Drupal 8.6 entity.manager and
+   * Drupal 8.7 entity_field.manager properties.
+   *
+   * @return \Drupal\Core\Entity\EntityFieldManagerInterface
+   *   The entity field manager.
+   */
+  private function getEntityFieldManager() {
+    if (property_exists(static::class, 'entityManager')) {
+      return $this->entityManager;
+    }
+    return $this->entityFieldManager;
   }
 
   /**
@@ -101,7 +93,7 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
     foreach ($entities as $entity) {
       try {
         $params['id'] = $entity->id();
-        $this->civicrmApi->delete($this->entityType->get('civicrm_entity'), $params);
+        $this->getCiviCrmApi()->delete($this->entityType->get('civicrm_entity'), $params);
       }
       catch (\Exception $e) {
         throw $e;
@@ -117,7 +109,7 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
     $table_mapping = $this->getTableMapping();
 
     foreach ($entities as $entity) {
-      foreach ($this->entityManager->getFieldDefinitions($entity->getEntityTypeId(), $entity->bundle()) as $field_definition) {
+      foreach ($this->getEntityFieldManager()->getFieldDefinitions($entity->getEntityTypeId(), $entity->bundle()) as $field_definition) {
         $storage_definition = $field_definition->getFieldStorageDefinition();
         if (!$table_mapping->requiresDedicatedTableStorage($storage_definition)) {
           continue;
@@ -145,7 +137,7 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
       return $definition->getName();
     }, $non_base_fields);
 
-    $result = $this->civicrmApi->save($this->entityType->get('civicrm_entity'), $params);
+    $result = $this->getCiviCrmApi()->save($this->entityType->get('civicrm_entity'), $params);
     if ($entity->isNew()) {
       $entity->{$this->idKey} = (string) $result['id'];
     }
@@ -162,7 +154,7 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
   protected function doLoadMultiple(array $ids = NULL) {
     $entities = [];
     if ($ids === NULL) {
-      $civicrm_entities = $this->civicrmApi->get($this->entityType->get('civicrm_entity'));
+      $civicrm_entities = $this->getCiviCrmApi()->get($this->entityType->get('civicrm_entity'));
       foreach ($civicrm_entities as $civicrm_entity) {
         $civicrm_entity = reset($civicrm_entity);
         $entity = $this->prepareLoadedEntity($civicrm_entity);
@@ -171,14 +163,14 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
     }
 
     // get all the fields
-    $fields = $this->civicrmApi->getFields($this->entityType->get('civicrm_entity'));
+    $fields = $this->getCiviCrmApi()->getFields($this->entityType->get('civicrm_entity'));
     foreach ($fields as $field) {
       $field_names[] = $field['name'];
     }
     foreach ($ids as $id) {
       $options = ['id' => $id];
       $options['return'] = $field_names;
-      $civicrm_entity = $this->civicrmApi->get($this->entityType->get('civicrm_entity'), $options);
+      $civicrm_entity = $this->getCiviCrmApi()->get($this->entityType->get('civicrm_entity'), $options);
       $civicrm_entity = reset($civicrm_entity);
       if ($civicrm_entity) {
         $entity = $this->prepareLoadedEntity($civicrm_entity);
@@ -266,7 +258,7 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
    * {@inheritdoc}
    */
   public function hasData() {
-    return $this->civicrmApi->getCount($this->entityTypeId) > 0;
+    return $this->getCiviCrmApi()->getCount($this->entityTypeId, []) > 0;
   }
   /**
    * {@inheritdoc}
@@ -279,7 +271,7 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
   protected function doSaveFieldItems(ContentEntityInterface $entity, array $names = []) {
     $update = !$entity->isNew();
     $table_mapping = $this->getTableMapping();
-    $storage_definitions = $this->entityManager->getFieldStorageDefinitions($this->entityTypeId);
+    $storage_definitions = $this->getEntityFieldManager()->getFieldStorageDefinitions($this->entityTypeId);
     $dedicated_table_fields = [];
 
     // Collect the name of fields to be written in dedicated tables and check
@@ -317,7 +309,7 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
    */
   public function onFieldStorageDefinitionDelete(FieldStorageDefinitionInterface $storage_definition) {
     $table_mapping = $this->getTableMapping(
-      $this->entityManager->getLastInstalledFieldStorageDefinitions($this->entityType->id())
+      $this->getEntityFieldManager()->getActiveFieldStorageDefinitions($this->entityType->id())
     );
 
     if ($storage_definition instanceof FieldStorageConfigInterface && $table_mapping->requiresDedicatedTableStorage($storage_definition)) {
@@ -341,7 +333,7 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
    */
   protected function initFieldValues(ContentEntityInterface $entity, array $values = [], array $field_names = []) {
     parent::initFieldValues($entity, $values, $field_names);
-    $civicrm_entity_settings = $this->configFactory->get('civicrm_entity.settings');
+    $civicrm_entity_settings = $this->getConfigFactory()->get('civicrm_entity.settings');
     foreach ($entity->getFieldDefinitions() as $definition) {
       $items = $entity->get($definition->getName());
       if ($items->isEmpty()) {
@@ -350,7 +342,7 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
       $main_property_name = $definition->getFieldStorageDefinition()->getMainPropertyName();
 
       // Set a default format for text fields.
-      if ($definition->getType() == 'text_long') {
+      if ($definition->getType() === 'text_long') {
         $filter_format = $civicrm_entity_settings->get('filter_format') ?: filter_fallback_format();
         $item_values = $items->getValue();
         foreach ($item_values as $delta => $item) {
@@ -359,7 +351,7 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
         $items->setValue($item_values);
       }
       // Fix DateTime values for Drupal format.
-      elseif ($definition->getType() == 'datetime') {
+      elseif ($definition->getType() === 'datetime') {
         $item_values = $items->getValue();
         foreach ($item_values as $delta => $item) {
           // On Contribution entities, there are dates sometimes set to the
@@ -395,7 +387,7 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
     }
 
     $table_mapping_class = DefaultTableMapping::class;
-    $definitions = $this->entityManager->getFieldStorageDefinitions($this->entityTypeId);
+    $definitions = $this->getEntityFieldManager()->getFieldStorageDefinitions($this->entityTypeId);
     /** @var \Drupal\Core\Entity\Sql\DefaultTableMapping|\Drupal\Core\Entity\Sql\TemporaryTableMapping $table_mapping */
     $table_mapping = new $table_mapping_class($this->entityType, $definitions);
 
@@ -440,7 +432,7 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
     $storage_definitions = [];
     $table_mapping = $this->getTableMapping();
 
-    $definitions = $this->entityManager->getFieldDefinitions($this->entityTypeId, $this->entityTypeId);
+    $definitions = $this->getEntityFieldManager()->getFieldDefinitions($this->entityTypeId, $this->entityTypeId);
     foreach ($definitions as $field_name => $field_definition) {
       $storage_definition = $field_definition->getFieldStorageDefinition();
       if ($table_mapping->requiresDedicatedTableStorage($storage_definition)) {
@@ -531,7 +523,7 @@ class CiviEntityStorage extends SqlContentEntityStorage implements DynamicallyFi
     $original = !empty($entity->original) ? $entity->original : NULL;
 
     // Determine which fields should be actually stored.
-    $definitions = $this->entityManager->getFieldDefinitions($entity_type, $bundle);
+    $definitions = $this->getEntityFieldManager()->getFieldDefinitions($entity_type, $bundle);
     if ($names) {
       $definitions = array_intersect_key($definitions, array_flip($names));
     }

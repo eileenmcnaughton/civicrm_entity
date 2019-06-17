@@ -25,6 +25,7 @@ class CivicrmFieldConfigTest extends CivicrmEntityTestBase {
     'civicrm',
     'civicrm_entity',
     'field',
+    'filter',
     'text',
     'options',
     'link',
@@ -36,7 +37,7 @@ class CivicrmFieldConfigTest extends CivicrmEntityTestBase {
    */
   public function testCreateField() {
     // Create a field.
-    $field_name = Unicode::strtolower($this->randomMachineName());
+    $field_name = mb_strtolower($this->randomMachineName());
     $field_storage = FieldStorageConfig::create([
       'field_name' => $field_name,
       'entity_type' => 'civicrm_event',
@@ -61,7 +62,7 @@ class CivicrmFieldConfigTest extends CivicrmEntityTestBase {
 
   public function testSaveAndLoadFieldConfig() {
     // Create a field.
-    $field_name = Unicode::strtolower($this->randomMachineName());
+    $field_name = mb_strtolower($this->randomMachineName());
     $field_storage = FieldStorageConfig::create([
       'field_name' => $field_name,
       'entity_type' => 'civicrm_event',
