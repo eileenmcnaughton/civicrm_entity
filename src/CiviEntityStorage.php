@@ -258,7 +258,13 @@ class CiviEntityStorage extends SqlContentEntityStorage {
    * {@inheritdoc}
    */
   public function hasData() {
-    return $this->getCiviCrmApi()->getCount($this->entityTypeId, []) > 0;
+    if (!$this->civicrmApi) {
+      $this->civicrmApi = $this->getCiviCrmApi();
+    }
+    if (substr($this->entityTypeId, 0, 8) == 'civicrm_') {
+      return $this->civicrmApi->getCount(substr($this->entityTypeId, 8)) > 0;
+     }
+    return $this->civicrmApi->getCount($this->entityTypeId) > 0;
   }
   /**
    * {@inheritdoc}
