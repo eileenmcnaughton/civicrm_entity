@@ -83,6 +83,6 @@ interface CiviCrmApiInterface {
    * @return int
    *   The number of entities.
    */
-  public function getCount($entity, array $params);
+  public function getCount($entity, array $params = []);
 
 }
