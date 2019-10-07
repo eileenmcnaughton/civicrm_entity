@@ -23,6 +23,17 @@ use Symfony\Component\Validator\ConstraintViolation;
 class CivicrmEntity extends ContentEntityBase {
 
   /**
+   * Flag to denote if the entity is currently going through Drupal CRUD hooks.
+   *
+   * We need to trigger the Drupal CRUD hooks when entities are edited in Civi,
+   * but we need a way to ensure they aren't double triggered when already
+   * going through the Drupal CRUD process.
+   *
+   * @var bool
+   */
+  public $drupal_crud = FALSE;
+
+  /**
    * {@inheritdoc}
    */
   public function save() {
@@ -70,7 +81,6 @@ class CivicrmEntity extends ContentEntityBase {
       $fields[$civicrm_field['name']] = $field_definition_provider->getBaseFieldDefinition($civicrm_field);
       $fields[$civicrm_field['name']]->setRequired(isset($civicrm_required_fields[$civicrm_field['name']]));
     }
-    $fields['drupal_crud'] = BaseFieldDefinition::create('boolean')->setComputed(TRUE);
     return $fields;
   }
 
