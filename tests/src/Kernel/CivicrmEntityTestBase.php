@@ -18,6 +18,7 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
   protected function setUp() {
     parent::setUp();
     require __DIR__ . '/../Type.php';
+    require __DIR__ . '/../Contact.php';
     $this->mockCiviCrmApi();
 
     $this->config('civicrm_entity.settings')
@@ -1516,6 +1517,25 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
         'table_name' => 'civicrm_group',
         'entity' => 'Group',
         'bao' => 'CRM_Contact_BAO_Group',
+      ],
+      'primary_contact_id' => [
+        'name' => 'primary_contact_id',
+        'type' => 1,
+        'title' => 'Household Primary Contact ID',
+        'description' => 'Optional FK to Primary Contact for this household.',
+        'where' => 'civicrm_contact.primary_contact_id',
+        'table_name' => 'civicrm_contact',
+        'entity' => 'Contact',
+        'bao' => 'CRM_Contact_BAO_Contact',
+        'localizable' => 0,
+        'FKClassName' => 'CRM_Contact_DAO_Contact',
+        'html' => [
+          'type' => 'Select',
+          'size' => 6,
+          'maxlength' => 14,
+        ],
+        'is_core_field' => TRUE,
+        'FKApiName' => 'Contact',
       ],
     ];
   }

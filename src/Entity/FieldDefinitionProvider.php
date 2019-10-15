@@ -20,7 +20,17 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
     else {
       switch ($civicrm_field['type']) {
         case \CRM_Utils_Type::T_INT:
-          $field = $this->getIntegerDefinition($civicrm_field);
+          // Check if this is an integer representing a serial identifier and
+          // is a foreign key.
+          if (isset($civicrm_field['FKClassName'])) {
+            $foreign_key_dao = '\\' . $civicrm_field['FKClassName'];
+            $field = BaseFieldDefinition::create('entity_reference')
+              ->setSetting('target_type', $foreign_key_dao::getTableName())
+              ->setSetting('handler', 'default');
+          }
+          else {
+            $field = $this->getIntegerDefinition($civicrm_field);
+          }
           break;
 
         case \CRM_Utils_Type::T_BOOLEAN:
