@@ -19,6 +19,7 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
     parent::setUp();
     require __DIR__ . '/../Type.php';
     require __DIR__ . '/../Contact.php';
+    require __DIR__ . '/../MessageTemplate.php';
     $this->mockCiviCrmApi();
 
     $this->config('civicrm_entity.settings')
@@ -1536,6 +1537,20 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
         ],
         'is_core_field' => TRUE,
         'FKApiName' => 'Contact',
+      ],
+      // Not on the contact fields, but used to test references to objects
+      // which are not mapped to entities.
+      'msg_template_id' => [
+        'name' => 'msg_template_id',
+        'type' => 1,
+        'title' => 'Mailing Message Template',
+        'description' => 'FK to the message template.',
+        'where' => 'civicrm_mailing.msg_template_id',
+        'table_name' => 'civicrm_mailing',
+        'entity' => 'Mailing',
+        'bao' => 'CRM_Mailing_BAO_Mailing',
+        'localizable' => 0,
+        'FKClassName' => 'CRM_Core_DAO_MessageTemplate',
       ],
     ];
   }

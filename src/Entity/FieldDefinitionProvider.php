@@ -2,6 +2,7 @@
 
 namespace Drupal\civicrm_entity\Entity;
 
+use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
 
@@ -24,9 +25,16 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
           // is a foreign key.
           if (isset($civicrm_field['FKClassName'])) {
             $foreign_key_dao = '\\' . $civicrm_field['FKClassName'];
-            $field = BaseFieldDefinition::create('entity_reference')
-              ->setSetting('target_type', $foreign_key_dao::getTableName())
-              ->setSetting('handler', 'default');
+            $table_name = $foreign_key_dao::getTableName();
+            // Verify the foreign key table is a valid entity type.
+            if (array_key_exists($table_name, SupportedEntities::getInfo())) {
+              $field = BaseFieldDefinition::create('entity_reference')
+                ->setSetting('target_type', $foreign_key_dao::getTableName())
+                ->setSetting('handler', 'default');
+            }
+            else {
+              $field = $this->getIntegerDefinition($civicrm_field);
+            }
           }
           else {
             $field = $this->getIntegerDefinition($civicrm_field);
