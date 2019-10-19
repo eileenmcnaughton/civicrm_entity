@@ -47,7 +47,15 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
    */
   protected function mockCiviCrmApi() {
     $civicrm_api_mock = $this->prophesize(CiviCrmApiInterface::class);
-    $civicrm_api_mock->get('event', Argument::type('array'))->willReturn($this->sampleEventsData());
+    $civicrm_api_mock->get('event', [
+      'id' => 1,
+      'return' => array_keys($this->sampleEventsGetFields()),
+    ])->willReturn($this->sampleEventsData());
+    $civicrm_api_mock->get('contact', [
+      'id' => 10,
+      'return' => array_keys($this->sampleContactGetFields()),
+    ])->willReturn($this->sampleContactData());
+
     $civicrm_api_mock->getFields('event')->willReturn($this->sampleEventsGetFields());
     $civicrm_api_mock->getFields('event', 'create')->willReturn($this->sampleEventsGetFields());
     $civicrm_api_mock->getFields('contact')->willReturn($this->sampleContactGetFields());
@@ -76,6 +84,7 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
 
     $civicrm_api_mock->save('event', Argument::type('array'))->willReturn(TRUE);
     $civicrm_api_mock->delete('event', Argument::type('array'))->willReturn(TRUE);
+
     $this->container->set('civicrm_entity.api', $civicrm_api_mock->reveal());
   }
 
@@ -1436,17 +1445,26 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
           '0' => 'contact_id',
         ],
       ],
-      'title' => [
-        'name' => 'title',
+      'display_name' => [
+        'name' => 'display_name',
         'type' => 2,
-        'title' => 'Group Title',
-        'description' => 'Name of Group.',
-        'maxlength' => 64,
+        'title' => 'Display Name',
+        'description' => 'Formatted name representing preferred format for display/print/other output.',
+        'maxlength' => 128,
         'size' => 30,
-        'table_name' => 'civicrm_group',
-        'entity' => 'Group',
-        'bao' => 'CRM_Contact_BAO_Group',
-        'api.required' => 1,
+        'where' => 'civicrm_contact.display_name',
+        'export' => TRUE,
+        'table_name' => 'civicrm_contact',
+        'entity' => 'Contact',
+        'bao' => 'CRM_Contact_BAO_Contact',
+        'localizable' => 0,
+        'html' =>
+          [
+            'type' => 'Text',
+            'maxlength' => 128,
+            'size' => 30,
+          ],
+        'is_core_field' => TRUE,
       ],
       'phone_number' => [
         'name' => 'phone_number',
@@ -1588,6 +1606,90 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
         'api.aliases' => [
           0 => 'event_id',
         ],
+      ],
+    ];
+  }
+
+  /**
+   * Provides sample contacts data.
+   *
+   * @return array
+   *   The events data.
+   */
+  protected function sampleContactData() {
+    return [
+      0 => [
+        'contact_id' => '10',
+        'contact_type' => 'Individual',
+        'contact_sub_type' => '',
+        'sort_name' => 'Neal, Emma',
+        'display_name' => 'Emma Neal',
+        'do_not_email' => '0',
+        'do_not_phone' => '0',
+        'do_not_mail' => '0',
+        'do_not_sms' => '0',
+        'do_not_trade' => '0',
+        'is_opt_out' => '0',
+        'legal_identifier' => '',
+        'external_identifier' => '',
+        'nick_name' => '',
+        'legal_name' => '',
+        'image_URL' => '',
+        'preferred_communication_method' =>
+          [
+            0 => '5',
+          ],
+        'preferred_language' => '',
+        'preferred_mail_format' => 'Both',
+        'first_name' => 'Emma',
+        'middle_name' => '',
+        'last_name' => 'Neal',
+        'prefix_id' => '',
+        'suffix_id' => '',
+        'formal_title' => '',
+        'communication_style_id' => '',
+        'job_title' => '',
+        'gender_id' => '2',
+        'birth_date' => '1982-06-28',
+        'is_deceased' => '0',
+        'deceased_date' => '',
+        'household_name' => '',
+        'organization_name' => '',
+        'sic_code' => '',
+        'contact_is_deleted' => '0',
+        'current_employer' => '',
+        'address_id' => '36',
+        'street_address' => '2262 Frances Ct',
+        'supplemental_address_1' => '',
+        'supplemental_address_2' => '',
+        'supplemental_address_3' => '',
+        'city' => 'Memphis',
+        'postal_code_suffix' => '',
+        'postal_code' => '68042',
+        'geo_code_1' => '41.095604',
+        'geo_code_2' => '-96.43168',
+        'state_province_id' => '1026',
+        'country_id' => '1228',
+        'phone_id' => '62',
+        'phone_type_id' => '1',
+        'phone' => '(555) 555-555',
+        'email_id' => '62',
+        'email' => 'emma@example.com',
+        'on_hold' => '0',
+        'im_id' => '',
+        'provider_id' => '',
+        'im' => '',
+        'worldregion_id' => '2',
+        'world_region' => 'America South, Central, North and Caribbean',
+        'languages' => '',
+        'individual_prefix' => '',
+        'individual_suffix' => '',
+        'communication_style' => '',
+        'gender' => 'Male',
+        'state_province_name' => 'Nebraska',
+        'state_province' => 'NE',
+        'country' => 'United States',
+        'id' => '10',
       ],
     ];
   }

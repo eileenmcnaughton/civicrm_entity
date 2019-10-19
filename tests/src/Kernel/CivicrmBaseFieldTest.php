@@ -21,8 +21,8 @@ class CivicrmBaseFieldTest extends CivicrmEntityTestBase {
     $this->assertTrue(isset($base_fields['id']));
     $this->assertEquals('integer', $base_fields['id']->getType());
     $this->assertEquals('civicrm_contact', $base_fields['id']->getTargetEntityTypeId());
-    $this->assertTrue(isset($base_fields['title']));
-    $this->assertEquals('string', $base_fields['title']->getType());
+    $this->assertTrue(isset($base_fields['display_name']));
+    $this->assertEquals('string', $base_fields['display_name']->getType());
     $this->assertTrue(isset($base_fields['phone_number']));
     $this->assertEquals('string', $base_fields['phone_number']->getType());
     $this->assertTrue(isset($base_fields['birth_date']));
