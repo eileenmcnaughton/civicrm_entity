@@ -46,6 +46,11 @@ class CivicrmBaseFieldTest extends CivicrmEntityTestBase {
     $this->assertEquals('text_long', $base_fields['details']->getType());
     $this->assertTrue(isset($base_fields['refresh_date']));
     $this->assertEquals('datetime', $base_fields['refresh_date']->getType());
+    $this->assertTrue(isset($base_fields['primary_contact_id']));
+    $this->assertEquals('entity_reference', $base_fields['primary_contact_id']->getType());
+    $this->assertEquals('civicrm_contact', $base_fields['primary_contact_id']->getSetting('target_type'));
+    $this->assertTrue(isset($base_fields['msg_template_id']));
+    $this->assertEquals('integer', $base_fields['msg_template_id']->getType());
   }
 
 }

@@ -18,6 +18,8 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
   protected function setUp() {
     parent::setUp();
     require __DIR__ . '/../Type.php';
+    require __DIR__ . '/../Contact.php';
+    require __DIR__ . '/../MessageTemplate.php';
     $this->mockCiviCrmApi();
 
     $this->config('civicrm_entity.settings')
@@ -1516,6 +1518,39 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
         'table_name' => 'civicrm_group',
         'entity' => 'Group',
         'bao' => 'CRM_Contact_BAO_Group',
+      ],
+      'primary_contact_id' => [
+        'name' => 'primary_contact_id',
+        'type' => 1,
+        'title' => 'Household Primary Contact ID',
+        'description' => 'Optional FK to Primary Contact for this household.',
+        'where' => 'civicrm_contact.primary_contact_id',
+        'table_name' => 'civicrm_contact',
+        'entity' => 'Contact',
+        'bao' => 'CRM_Contact_BAO_Contact',
+        'localizable' => 0,
+        'FKClassName' => 'CRM_Contact_DAO_Contact',
+        'html' => [
+          'type' => 'Select',
+          'size' => 6,
+          'maxlength' => 14,
+        ],
+        'is_core_field' => TRUE,
+        'FKApiName' => 'Contact',
+      ],
+      // Not on the contact fields, but used to test references to objects
+      // which are not mapped to entities.
+      'msg_template_id' => [
+        'name' => 'msg_template_id',
+        'type' => 1,
+        'title' => 'Mailing Message Template',
+        'description' => 'FK to the message template.',
+        'where' => 'civicrm_mailing.msg_template_id',
+        'table_name' => 'civicrm_mailing',
+        'entity' => 'Mailing',
+        'bao' => 'CRM_Mailing_BAO_Mailing',
+        'localizable' => 0,
+        'FKClassName' => 'CRM_Core_DAO_MessageTemplate',
       ],
     ];
   }
