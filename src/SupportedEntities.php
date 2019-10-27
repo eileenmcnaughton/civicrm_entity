@@ -177,7 +177,28 @@ final class SupportedEntities {
       'label property' => 'name',
       'permissions' => [
         'view' => ['view all contacts'],
-
+        'update' => [],
+        'create' => [],
+        'delete' => [],
+      ],
+    ];
+    $civicrm_entity_info['civicrm_county'] = [
+      'civicrm entity label' => t('County'),
+      'civicrm entity name' => 'county',
+      'label property' => 'name',
+      'permissions' => [
+        'view' => ['view all contacts'],
+        'update' => [],
+        'create' => [],
+        'delete' => [],
+      ],
+    ];
+    $civicrm_entity_info['civicrm_state_province'] = [
+      'civicrm entity label' => t('State / Province'),
+      'civicrm entity name' => 'state_province',
+      'label property' => 'name',
+      'permissions' => [
+        'view' => ['view all contacts'],
         'update' => [],
         'create' => [],
         'delete' => [],

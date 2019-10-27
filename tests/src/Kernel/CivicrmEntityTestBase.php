@@ -18,8 +18,7 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
   protected function setUp() {
     parent::setUp();
     require __DIR__ . '/../Type.php';
-    require __DIR__ . '/../Contact.php';
-    require __DIR__ . '/../MessageTemplate.php';
+    require __DIR__ . '/../CiviCrmDaoStubs.php';
     $this->mockCiviCrmApi();
 
     $this->config('civicrm_entity.settings')
