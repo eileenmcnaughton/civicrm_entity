@@ -101,20 +101,37 @@ class CivicrmEntityViewsData extends EntityViewsData {
     // Load all typed data definitions of all fields. This should cover each of
     // the entity base, revision, data tables.
     $field_definitions = $this->entityManager->getBaseFieldDefinitions($this->entityType->id());
-
+    /** @var \Drupal\Core\Entity\Sql\DefaultTableMapping $table_mapping */
     $table_mapping = $this->storage->getTableMapping();
-
     if ($table_mapping) {
-
-      foreach ($table_mapping->getTableNames() as $table) {
-        foreach ($table_mapping->getFieldNames($table) as $field_name) {
-          $stop = null;
-        }
-      }
-
       foreach ($field_definitions as $field_definition) {
         if ($table_mapping->allowsSharedTableStorage($field_definition->getFieldStorageDefinition())) {
           $this->mapFieldDefinition($views_base_table, $field_definition->getName(), $field_definition, $table_mapping, $data[$views_base_table]);
+
+          // Provide a reverse relationship for the entity type that is referenced by
+          // the field.
+          if ($field_definition->getType() === 'entity_reference') {
+            $target_entity_type_id = $field_definition->getFieldStorageDefinition()->getSetting('target_type');
+            $target_entity_type = $this->entityManager->getDefinition($target_entity_type_id);
+            assert($target_entity_type !== NULL);
+            $target_base_table = $target_entity_type->getDataTable() ?: $target_entity_type->getBaseTable();
+
+            $field_name = $field_definition->getName();
+            $pseudo_field_name = 'reverse__' . $this->entityType->id() . '__' . $field_name;
+            $args['@entity'] = $this->entityType->getLabel();
+            $args['@label'] = $target_entity_type->getLowercaseLabel();
+            $data[$target_base_table][$pseudo_field_name]['relationship'] = [
+              'title' => t('@entity using @field_name', $args),
+              'label' => t('@field_name', ['@field_name' => $field_name]),
+              'group' => $target_entity_type->getLabel(),
+              'help' => t('Relate each @entity with a @field_name set to the @label.', $args),
+              'id' => 'entity_reverse',
+              'base' => $this->entityType->getDataTable() ?: $this->entityType->getBaseTable(),
+              'base field' => $this->entityType->getKey('id'),
+              'field table' => $target_base_table,
+              'field field' => $field_name,
+            ];
+          }
         }
         else if ($table_mapping->requiresDedicatedTableStorage($field_definition->getFieldStorageDefinition())) {
           $table = $table_mapping->getDedicatedDataTableName($field_definition->getFieldStorageDefinition());

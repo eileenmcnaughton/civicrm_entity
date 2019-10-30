@@ -10,18 +10,6 @@ namespace Drupal\Tests\civicrm_entity\Kernel;
 class CivicrmEntityTypeTest extends CivicrmEntityTestBase {
 
   /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'civicrm',
-    'civicrm_entity',
-    'field',
-    'text',
-    'options',
-    'link',
-  ];
-
-  /**
    * Tests the generated entity type.
    */
   public function testEntityType() {

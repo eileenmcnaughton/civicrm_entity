@@ -21,17 +21,6 @@ use Prophecy\Argument;
  */
 class CivicrmFieldConfigTest extends CivicrmEntityTestBase {
 
-  protected static $modules = [
-    'civicrm',
-    'civicrm_entity',
-    'field',
-    'filter',
-    'text',
-    'options',
-    'link',
-    'datetime',
-  ];
-
   /**
    * Make sure that creating a field does not explode the entity storage.
    */

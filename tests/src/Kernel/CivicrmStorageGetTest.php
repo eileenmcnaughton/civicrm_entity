@@ -11,17 +11,6 @@ use Drupal\civicrm_entity\Entity\CivicrmEntity;
  */
 class CivicrmStorageGetTest extends CivicrmEntityTestBase {
 
-  protected static $modules = [
-    'civicrm',
-    'civicrm_entity',
-    'field',
-    'filter',
-    'text',
-    'options',
-    'link',
-    'datetime',
-  ];
-
   /**
    * Tests getting a single entity.
    */
