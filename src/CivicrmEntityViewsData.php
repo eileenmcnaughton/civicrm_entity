@@ -60,6 +60,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
     // Setup base information of the views data.
     $data[$base_table]['table']['group'] = sprintf('%s (CiviCRM Entity)', $this->entityType->getLabel());
     $data[$base_table]['table']['provider'] = $this->entityType->getProvider();
+    $data[$base_table]['table']['entity type'] = $this->entityType->id();
 
     $views_base_table = $base_table;
     $data[$views_base_table]['table']['base'] = [
@@ -118,18 +119,21 @@ class CivicrmEntityViewsData extends EntityViewsData {
 
             $field_name = $field_definition->getName();
             $pseudo_field_name = 'reverse__' . $this->entityType->id() . '__' . $field_name;
-            $args['@entity'] = $this->entityType->getLabel();
-            $args['@label'] = $target_entity_type->getLowercaseLabel();
+            $args = [
+              '@label' => $target_entity_type->getLowercaseLabel(),
+              '@field_name' => $field_name,
+              '@entity' => $this->entityType->getLabel(),
+            ];
             $data[$target_base_table][$pseudo_field_name]['relationship'] = [
               'title' => t('@entity using @field_name', $args),
               'label' => t('@field_name', ['@field_name' => $field_name]),
               'group' => $target_entity_type->getLabel(),
               'help' => t('Relate each @entity with a @field_name set to the @label.', $args),
-              'id' => 'entity_reverse',
+              'id' => 'civicrm_entity_reverse',
               'base' => $this->entityType->getDataTable() ?: $this->entityType->getBaseTable(),
+              'entity_type' => $this->entityType->id(),
               'base field' => $this->entityType->getKey('id'),
-              'field table' => $target_base_table,
-              'field field' => $field_name,
+              'field_name' => $field_name,
             ];
           }
         }
@@ -148,13 +152,6 @@ class CivicrmEntityViewsData extends EntityViewsData {
         }
       }
     }
-
-    // Add the entity type key to each table generated.
-    $entity_type_id = $this->entityType->id();
-    array_walk($data, function (&$table_data) use ($entity_type_id) {
-      $table_data['table']['entity type'] = $entity_type_id;
-    });
-
     return $data;
   }
 
