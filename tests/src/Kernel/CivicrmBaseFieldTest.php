@@ -12,26 +12,15 @@ use Drupal\civicrm_entity\Entity\CivicrmEntity;
 class CivicrmBaseFieldTest extends CivicrmEntityTestBase {
 
   /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'civicrm',
-    'civicrm_entity',
-    'field',
-    'text',
-    'options',
-    'link',
-  ];
-
-  /**
    * Tests the base fields generated.
    */
   public function testBaseFields() {
     /** @var \Drupal\Core\Field\FieldDefinitionInterface[] $base_fields */
-    $base_fields = CivicrmEntity::baseFieldDefinitions($this->container->get('entity_type.manager')->getDefinition('civicrm_contact'));
+    $base_fields = $this->container->get('entity_field.manager')->getBaseFieldDefinitions('civicrm_contact');
 
     $this->assertTrue(isset($base_fields['id']));
     $this->assertEquals('integer', $base_fields['id']->getType());
+    $this->assertEquals('civicrm_contact', $base_fields['id']->getTargetEntityTypeId());
     $this->assertTrue(isset($base_fields['title']));
     $this->assertEquals('string', $base_fields['title']->getType());
     $this->assertTrue(isset($base_fields['phone_number']));
@@ -51,6 +40,13 @@ class CivicrmBaseFieldTest extends CivicrmEntityTestBase {
     $this->assertEquals('civicrm_contact', $base_fields['primary_contact_id']->getSetting('target_type'));
     $this->assertTrue(isset($base_fields['msg_template_id']));
     $this->assertEquals('integer', $base_fields['msg_template_id']->getType());
+
+    /** @var \Drupal\Core\Field\FieldDefinitionInterface[] $base_fields */
+    $base_fields = $this->container->get('entity_field.manager')->getBaseFieldDefinitions('civicrm_address');
+    $this->assertTrue(isset($base_fields['contact_id']));
+    $this->assertEquals('entity_reference', $base_fields['contact_id']->getType());
+    $this->assertEquals('civicrm_contact', $base_fields['contact_id']->getSetting('target_type'));
+    $this->assertEquals('civicrm_address', $base_fields['contact_id']->getTargetEntityTypeId());
   }
 
 }
