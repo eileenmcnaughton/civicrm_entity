@@ -11,6 +11,8 @@ use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Language\LanguageInterface;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\field\FieldStorageConfigInterface;
 
 /**
@@ -164,6 +166,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
 
     // get all the fields
     $fields = $this->getCiviCrmApi()->getFields($this->entityType->get('civicrm_entity'));
+    $field_names = [];
     foreach ($fields as $field) {
       $field_names[] = $field['name'];
     }
@@ -362,13 +365,15 @@ class CiviEntityStorage extends SqlContentEntityStorage {
           // Handle if the value provided is a timestamp.
           // @note: This only occurred during test migrations.
           elseif (is_numeric($item[$main_property_name])) {
-            $item_values[$delta][$main_property_name] = (new \DateTime())->setTimestamp($item[$main_property_name])->format(DATETIME_DATETIME_STORAGE_FORMAT);
+            $item_values[$delta][$main_property_name] = (new \DateTime())->setTimestamp($item[$main_property_name])->format(DateTimeItemInterface::DATETIME_STORAGE_FORMAT);
           }
           else {
+            $datetime_format = $definition->getSetting('datetime_type') === DateTimeItem::DATETIME_TYPE_DATE ? DateTimeItemInterface::DATE_STORAGE_FORMAT : DateTimeItemInterface::DATETIME_STORAGE_FORMAT;
             // CiviCRM gives us the datetime in the users timezone (or no
             // timezone at all) but Drupal expects it in UTC. So, we need to
             // convert from the users timezone into UTC.
-            $item_values[$delta][$main_property_name] = (new \DateTime($item[$main_property_name], new \DateTimeZone(drupal_get_user_timezone())))->setTimezone(new \DateTimeZone('UTC'))->format(DATETIME_DATETIME_STORAGE_FORMAT);
+            $datetime_value = (new \DateTime($item[$main_property_name], new \DateTimeZone(drupal_get_user_timezone())))->setTimezone(new \DateTimeZone('UTC'))->format($datetime_format);
+            $item_values[$delta][$main_property_name] = $datetime_value;
           }
         }
         $items->setValue($item_values);
