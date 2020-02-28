@@ -22,4 +22,4 @@ For example:
        "civicrm/civicrm-drupal-8": "^5.19",
 ```
 
-By default the **RoundEarth** method uses `dev-master` for `civicrm/civicrm-drupal-8` - this is dangerous and not recommended!
+By default the **RoundEarth** method uses `dev-master` for `civicrm/civicrm-drupal-8` - this is [dangerous and not recommended](https://lab.civicrm.org/dev/drupal/issues/87#note_23534)!
