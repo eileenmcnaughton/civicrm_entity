@@ -4,19 +4,9 @@
     "description": "Expose CiviCRM entities as Drupal entities.",
     "homepage": "http://drupal.org/project/civicrm_entity",
     "license": "GPL-2.0+",
-    "repositories": {
-        "civicrm-core": {
-            "type": "vcs",
-            "url": "https://github.com/civicrm/civicrm-core.git"
-        },
-        "civicrm-drupal": {
-            "type": "vcs",
-            "url": "https://github.com/civicrm/civicrm-drupal.git"
-        }
-    },
     "require": {
-        "civicrm/civicrm-core": "4.7 - 5",
-        "civicrm/civicrm-drupal-8": "dev-master"
+        "civicrm/civicrm-core": "~5.0",
+        "civicrm/civicrm-drupal-8": "~5.0"
     },
     "minimum-stability": "dev"
 }
