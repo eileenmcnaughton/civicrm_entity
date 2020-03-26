@@ -60,6 +60,18 @@ function civicrm_entity_views_data_alter(&$data) {
   }
   // End: views_views_data_alter() snippet.
   // @codingStandardsIgnoreEnd
+
+  $data['civicrm_activity']['source_contact_id']['filter'] = [
+    'id' => 'civicrm_entity_civicrm_activity_contact_record_filter',
+  ];
+
+  $data['civicrm_activity']['assignee_id']['filter'] = [
+    'id' => 'civicrm_entity_civicrm_activity_contact_record_filter',
+  ];
+
+  $data['civicrm_activity']['target_id']['filter'] = [
+    'id' => 'civicrm_entity_civicrm_activity_contact_record_filter',
+  ];
 }
 
 /**
