@@ -337,7 +337,8 @@ class CiviEntityStorage extends SqlContentEntityStorage {
   protected function initFieldValues(ContentEntityInterface $entity, array $values = [], array $field_names = []) {
     parent::initFieldValues($entity, $values, $field_names);
     $civicrm_entity_settings = $this->getConfigFactory()->get('civicrm_entity.settings');
-    foreach ($entity->getFieldDefinitions() as $definition) {
+    $field_definitions = $entity->getFieldDefinitions();
+    foreach ($field_definitions as $definition) {
       $items = $entity->get($definition->getName());
       if ($items->isEmpty()) {
         continue;
@@ -377,6 +378,29 @@ class CiviEntityStorage extends SqlContentEntityStorage {
           }
         }
         $items->setValue($item_values);
+      }
+    }
+
+    // Handle special cases for field definitions.
+    foreach ($field_definitions as $definition) {
+      if (($field_metadata = $definition->getSetting('civicrm_entity_field_metadata')) && isset($field_metadata['custom_group_id']) && $field_metadata['data_type'] === 'File') {
+        $items = $entity->get($definition->getName());
+        $item_values = $items->getValue();
+
+        if (!empty($item_values)) {
+          $ret = [];
+          foreach ($item_values as $value) {
+            if (!isset($value['fid'])) {
+              continue;
+            }
+
+            $ret[] = ['value' => $value['fid']];
+          }
+
+          if (!empty($ret)) {
+            $items->setValue($ret);
+          }
+        }
       }
     }
   }

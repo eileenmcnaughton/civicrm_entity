@@ -750,4 +750,20 @@ final class SupportedEntities {
     return $entity;
   }
 
+  /**
+   * Get the DAO class for an entity type.
+   *
+   * @param string $entity_type_id
+   *   The entity type ID.
+   *
+   * @return string
+   *   The DAO class name.
+   */
+  public static function getEntityTypeDaoClass($entity_type_id) {
+    \Drupal::service('civicrm_entity.api')->civicrmInitialize();
+
+    $tables = \CRM_Core_DAO_AllCoreTables::getCoreTables();
+    return $tables[$entity_type_id] ?? NULL;
+  }
+
 }

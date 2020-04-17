@@ -85,4 +85,20 @@ interface CiviCrmApiInterface {
    */
   public function getCount($entity, array $params = []);
 
+  /**
+   * Initialize the CiviCRM API.
+   */
+  public function civicrmInitialize();
+
+  /**
+   * Retrieve custom field metadata for a field.
+   *
+   * @param string $field_name
+   *   The field name e.g. custom_*.
+   *
+   * @return array
+   *   Array of field metadata.
+   */
+  public function getCustomFieldMetadata($field_name);
+
 }

@@ -80,7 +80,12 @@ class CivicrmEntity extends ContentEntityBase {
 
       $fields[$civicrm_field['name']] = $field_definition_provider->getBaseFieldDefinition($civicrm_field);
       $fields[$civicrm_field['name']]->setRequired(isset($civicrm_required_fields[$civicrm_field['name']]));
+
+      if ($values = \Drupal::service('civicrm_entity.api')->getCustomFieldMetadata($civicrm_field['name'])) {
+        $fields[$civicrm_field['name']]->setSetting('civicrm_entity_field_metadata', $values);
+      }
     }
+
     return $fields;
   }
 
