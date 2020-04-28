@@ -171,18 +171,6 @@ final class SupportedEntities {
         'delete' => ['access CiviContribute', 'administer CiviCRM'],
       ],
     ];
-    $civicrm_entity_info['civicrm_country'] = [
-      'civicrm entity label' => t('Country'),
-      'civicrm entity name' => 'country',
-      'label property' => 'name',
-      'permissions' => [
-        'view' => ['view all contacts'],
-
-        'update' => [],
-        'create' => [],
-        'delete' => [],
-      ],
-    ];
     $civicrm_entity_info['civicrm_email'] = [
       'civicrm entity label' => t('Email'),
       'civicrm entity name' => 'email',
