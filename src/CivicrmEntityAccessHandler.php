@@ -28,17 +28,6 @@ class CivicrmEntityAccessHandler extends EntityAccessControlHandler {
   /**
    * {@inheritdoc}
    */
-  public function access(EntityInterface $entity, $operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
-    if (!$this->entityType->get('civicrm_entity_ui_exposed')) {
-      $result = AccessResult::forbidden();
-      return $return_as_object ? $result : $result->isAllowed();
-    }
-    return parent::access($entity, $operation, $account, $return_as_object);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
     $account = $this->prepareUser($account);
     /** @var \Drupal\Core\Access\AccessResult $result */
