@@ -125,6 +125,8 @@ class CiviCrmApi implements CiviCrmApiInterface {
             'title' => $custom_group_values['title'],
             'extends' => $custom_group_values['extends'],
             'table_name' => $custom_group_values['table_name'],
+            'is_multiple' => (bool) $custom_group_values['is_multiple'],
+            'max_multiple' => $custom_group_values['max_multiple'] ?? -1,
           ];
         }
 

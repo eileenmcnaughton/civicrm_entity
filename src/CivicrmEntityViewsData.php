@@ -301,6 +301,8 @@ class CivicrmEntityViewsData extends EntityViewsData {
 
     $views_field[$field_metadata['table_name']]['table'] = [
       'group' => $this->t('CiviCRM custom: @title', ['@title' => $field_metadata['title']]),
+      'entity type' => $field_metadata['entity_type'],
+      'entity revision' => FALSE,
       // Add automatic relationships so that custom fields from CiviCRM entities
       // are included when they are the base tables.
       'join' => [
@@ -319,6 +321,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
       'filter' => $this->getViewsFilterPlugin($field_metadata),
       'sort' => $this->getViewsSortPlugin($field_metadata),
       'relationship' => $this->getViewsRelationshipPlugin($field_metadata),
+      'entity field' => $field_metadata['name'],
     ];
   }
 
@@ -333,68 +336,11 @@ class CivicrmEntityViewsData extends EntityViewsData {
    */
   protected function getViewsFieldPlugin(array $field_metadata) {
     switch ($field_metadata['data_type']) {
-      case 'StateProvince':
-        return [
-          'id' => 'civicrm_entity_pseudoconstant',
-          'pseudo callback' => 'CRM_Core_PseudoConstant::stateProvince',
-        ];
-
-      case 'Country':
-        return [
-          'id' => 'civicrm_entity_pseudoconstant',
-          'pseudo callback' => 'CRM_Core_PseudoConstant::country',
-        ];
-
-      case 'ContactReference':
-        return [
-          'id' => 'civicrm_entity_pseudoconstant',
-          'pseudo callback' => 'CRM_Contact_DAO_Contact::buildOptions',
-          'pseudo arguments' => $field_metadata['name'],
-        ];
-
       case 'File':
         return ['id' => 'civicrm_entity_custom_file'];
     }
 
-    $type = !empty($field_metadata['pseudoconstant']) ? 'pseudoconstant' :
-      \CRM_Utils_Array::value($field_metadata['data_type'], \CRM_Core_BAO_CustomField::dataToType());
-
-    switch ($type) {
-      case \CRM_Utils_Type::T_INT:
-      case \CRM_Utils_Type::T_FLOAT:
-        return ['id' => 'numeric'];
-
-      case \CRM_Utils_Type::T_ENUM:
-      case \CRM_Utils_Type::T_STRING:
-        return ['id' => 'standard'];
-
-      case \CRM_Utils_Type::T_TEXT:
-      case \CRM_Utils_Type::T_LONGTEXT:
-        return ['id' => 'civicrm_entity_markup'];
-
-      case \CRM_Utils_Type::T_BOOLEAN:
-        return ['id' => 'boolean'];
-
-      case \CRM_Utils_Type::T_URL:
-        return ['id' => 'url'];
-
-      case \CRM_Utils_Type::T_DATE:
-      case \CRM_Utils_Type::T_TIMESTAMP:
-        return ['id' => 'civicrm_entity_date'];
-
-      case 'pseudoconstant':
-        if ($class_name = SupportedEntities::getEntityTypeDaoClass($field_metadata['entity_type'])) {
-          return [
-            'id' => 'civicrm_entity_pseudoconstant',
-            'pseudo callback' => "{$class_name}::buildOptions",
-            'pseudo arguments' => $field_metadata['name'],
-          ];
-        }
-        break;
-
-      default:
-        return ['id' => 'standard'];
-    }
+    return ['id' => 'civicrm_entity_custom_field'];
   }
 
   /**
