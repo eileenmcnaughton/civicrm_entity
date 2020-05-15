@@ -112,6 +112,9 @@ class CivicrmEntityViewsData extends EntityViewsData {
         }
       }
     }
+
+    $this->processViewsDataForSpecialFields($data, $base_table);
+
     return $data;
   }
 
@@ -197,6 +200,47 @@ class CivicrmEntityViewsData extends EntityViewsData {
     $views_field['filter']['field_name'] = $field_definition->getName();
     $views_field['argument']['id'] = 'number_list_field';
     $views_field['argument']['field_name'] = $field_definition->getName();
+  }
+
+  /**
+   * Add views integration for fields that require special handling.
+   *
+   * @param array $views_field
+   *   Array of fields from ::getViewsData().
+   * @param string $base_table
+   *   The base table, most likely the CiviCRM entity type.
+   */
+  protected function processViewsDataForSpecialFields(array &$views_field, $base_table) {
+    switch ($base_table) {
+      case 'civicrm_contact':
+        $views_field['civicrm_contact']['user'] = [
+          'title' => $this->t('User related to the CiviCRM contact'),
+          'help' => $this->t('Relate user to the CiviCRM contact.'),
+          'relationship' => [
+            'base' => 'users_field_data',
+            'base field' => 'uid',
+            'first field' => 'contact_id',
+            'second field' => 'uf_id',
+            'id' => 'civicrm_entity_civicrm_contact_user',
+            'label' => $this->t('User'),
+          ],
+        ];
+
+        $views_field['users_field_data']['civicrm_contact'] = [
+          'title' => $this->t('CiviCRM contact related to the user'),
+          'help' => $this->t('Relate CiviCRM contact to the user.'),
+          'relationship' => [
+            'base' => 'civicrm_contact',
+            'base field' => 'id',
+            'first field' => 'uf_id',
+            'second field' => 'contact_id',
+            'id' => 'civicrm_entity_civicrm_contact_user',
+            'label' => $this->t('CiviCRM contact'),
+          ],
+        ];
+
+        break;
+    }
   }
 
 }
