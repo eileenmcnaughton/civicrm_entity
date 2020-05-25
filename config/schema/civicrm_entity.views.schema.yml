@@ -1,0 +1,14 @@
+# Schema for the civicrm_entity views plugins.
+
+views.filter.civicrm_entity_in_operator:
+  type: views.filter.in_operator
+  label: 'IN operator'
+
+views.filter.civicrm_entity_date:
+  type: views.filter.date
+
+views.filter_value.civicrm_entity_date:
+  type: views.filter_value.date
+
+views.argument.civicrm_entity_date:
+  type: views.argument.date

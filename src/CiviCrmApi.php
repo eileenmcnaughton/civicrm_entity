@@ -92,6 +92,55 @@ class CiviCrmApi implements CiviCrmApiInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function civicrmInitialize() {
+    $this->civicrm->initialize();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCustomFieldMetadata($field_name) {
+    $field_name = explode('_', $field_name, 2);
+
+    // There are field names that are just single names that can't be broken
+    // down into two values.
+    if (count($field_name) < 2) {
+      return FALSE;
+    }
+
+    list(, $id) = $field_name;
+
+    try {
+      $values = $this->get('CustomField', ['id' => $id, 'is_active' => 1]);
+      $values = reset($values);
+
+      if (!empty($values)) {
+        // Include information from group.
+        if (isset($values['custom_group_id']) && ($custom_group_values = $this->get('CustomGroup', ['sequential' => 1, 'id' => $values['custom_group_id']]))) {
+          $custom_group_values = reset($custom_group_values);
+
+          $values += [
+            'title' => $custom_group_values['title'],
+            'extends' => $custom_group_values['extends'],
+            'table_name' => $custom_group_values['table_name'],
+            'is_multiple' => (bool) $custom_group_values['is_multiple'],
+            'max_multiple' => $custom_group_values['max_multiple'] ?? -1,
+          ];
+        }
+
+        return $values;
+      }
+
+      return FALSE;
+    }
+    catch (\CiviCRM_API3_Exception $e) {
+      return FALSE;
+    }
+  }
+
+  /**
    * Ensures that CiviCRM is loaded and API function available.
    */
   protected function initialize() {
