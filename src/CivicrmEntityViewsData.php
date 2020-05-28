@@ -281,6 +281,15 @@ class CivicrmEntityViewsData extends EntityViewsData {
         ];
 
         break;
+
+      case 'civicrm_address':
+        $views_field[$base_table]['proximity'] = [
+          'title' => $this->t('Proximity'),
+          'help' => $this->t('Search for addresses by proxmity.'),
+          'filter' => ['id' => 'civicrm_entity_civicrm_address_proximity'],
+        ];
+
+        break;
     }
   }
 
