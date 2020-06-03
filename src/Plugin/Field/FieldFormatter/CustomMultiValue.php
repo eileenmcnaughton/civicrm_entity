@@ -105,11 +105,14 @@ class CustomMultiValue extends OptionsDefaultFormatter {
 
       if (!empty($result)) {
         $result = reset($result);
+        $field_id = $result['id'];
+
         $result = array_filter($result, function ($key) {
           return is_int($key);
         }, ARRAY_FILTER_USE_KEY);
 
         foreach ($result as &$value) {
+          $value = \CRM_Core_BAO_CustomField::displayValue($value, $field_id, $entity->id());
           $value = is_array($value) ? implode($this->getSetting('separator'), $value) : $value;
         }
 

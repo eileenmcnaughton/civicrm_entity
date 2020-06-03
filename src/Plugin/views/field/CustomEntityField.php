@@ -104,6 +104,10 @@ class CustomEntityField extends EntityField {
 
     unset($options['click_sort_column']);
 
+    if (in_array($this->fieldMetadata['html_type'], ['Multi-Select', 'CheckBox'])) {
+      $options['type']['default'] = 'civicrm_entity_custom_multi_value';
+    }
+
     return $options;
   }
 
