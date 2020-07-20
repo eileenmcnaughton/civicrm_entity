@@ -183,6 +183,10 @@ class CustomEntityField extends EntityField {
       $build_list = NULL;
     }
 
+    if (!$build_list) {
+      return [];
+    }
+
     if ($this->options['field_api_classes']) {
       return [['rendered' => $this->renderer->render($build_list)]];
     }
