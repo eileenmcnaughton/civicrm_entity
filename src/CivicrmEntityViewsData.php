@@ -418,7 +418,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
 
     switch ($type) {
       case \CRM_Utils_Type::T_BOOLEAN:
-        return ['id' => 'boolean'];
+        return ['id' => 'boolean', 'accept_null' => TRUE];
 
       case \CRM_Utils_Type::T_INT:
       case \CRM_Utils_Type::T_FLOAT:
