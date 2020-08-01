@@ -14,13 +14,6 @@ use Drupal\Core\Entity\Sql\SqlContentEntityStorageSchema;
 class CivicrmEntityStorageSchema extends SqlContentEntityStorageSchema {
 
   /**
-   * The storage field definitions for this entity type.
-   *
-   * @var \Drupal\Core\Field\FieldStorageDefinitionInterface[]
-   */
-  protected $fieldStorageDefinitions;
-
-  /**
    * The storage object for the given entity type.
    *
    * @var \Drupal\civicrm_entity\CiviEntityStorage
