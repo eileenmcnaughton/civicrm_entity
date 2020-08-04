@@ -140,6 +140,19 @@ class CivicrmEntitySettings extends ConfigFormBase {
       '#default_value' => $config->get('enabled_entity_types'),
     ];
 
+    $form['advanced_settings'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Advanced settings'),
+      '#open' => FALSE,
+    ];
+
+    $form['advanced_settings']['disable_hooks'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Disable pre/post hooks'),
+      '#default_value' => $config->get('disable_hooks'),
+      '#description' => $this->t('Not intended for normal use. Provided to temporarily disable Drupal entity hooks for CiviCRM Entity types for special cases, such as migrations. Only disable if you know you need to.'),
+    ];
+
     return $form;
   }
 
@@ -152,6 +165,7 @@ class CivicrmEntitySettings extends ConfigFormBase {
     $this->config('civicrm_entity.settings')
       ->set('filter_format', $form_state->getValue('filter_format'))
       ->set('enabled_entity_types', $enabled_entity_type)
+      ->set('disable_hooks', $form_state->getValue('disable_hooks'))
       ->save();
 
     // Need to rebuild derivative routes.

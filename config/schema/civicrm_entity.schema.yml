@@ -11,3 +11,6 @@ civicrm_entity.settings:
       sequence:
         type: string
         label: 'Entity type'
+    disable_hooks:
+      type: boolean
+      label: 'Disable pre/post hooks'
