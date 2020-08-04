@@ -89,7 +89,7 @@ class Proximity extends FilterPluginBase {
    */
   public function valueForm(&$form, FormStateInterface $form_state) {
     $form['value']['#tree'] = TRUE;
-
+    $form['value']['#type'] = 'fieldset';
     $form['value']['value'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Postal code'),
