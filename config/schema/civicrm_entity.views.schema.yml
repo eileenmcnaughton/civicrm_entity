@@ -1,5 +1,37 @@
 # Schema for the civicrm_entity views plugins.
 
+views.filter.civicrm_entity_civicrm_activity_contact_record:
+  type: views_filter
+  label: 'Activity contact record'
+  mapping:
+    expose:
+      type: mapping
+      label: 'Exposed'
+      mapping:
+        min_placeholder:
+          type: label
+          label: 'Min placeholder'
+        max_placeholder:
+          type: label
+          label: 'Max placeholder'
+        placeholder:
+          type: label
+          label: 'Placeholder'
+
+views.filter_value.civicrm_entity_civicrm_activity_contact_record:
+  type: mapping
+  label: 'Activity contact record'
+  mapping:
+    min:
+      type: string
+      label: 'Min'
+    max:
+      type: string
+      label: 'And max'
+    value:
+      type: string
+      label: 'Value'
+
 views.filter.civicrm_entity_in_operator:
   type: views.filter.in_operator
   label: 'IN operator'

@@ -244,56 +244,6 @@ class CivicrmEntityViewsData extends EntityViewsData {
   }
 
   /**
-   * Add views integration for fields that require special handling.
-   *
-   * @param array $views_field
-   *   Array of fields from ::getViewsData().
-   * @param string $base_table
-   *   The base table, most likely the CiviCRM entity type.
-   */
-  protected function processViewsDataForSpecialFields(array &$views_field, $base_table) {
-    switch ($base_table) {
-      case 'civicrm_contact':
-        $views_field['civicrm_contact']['user'] = [
-          'title' => $this->t('User related to the CiviCRM contact'),
-          'help' => $this->t('Relate user to the CiviCRM contact.'),
-          'relationship' => [
-            'base' => 'users_field_data',
-            'base field' => 'uid',
-            'first field' => 'contact_id',
-            'second field' => 'uf_id',
-            'id' => 'civicrm_entity_civicrm_contact_user',
-            'label' => $this->t('User'),
-          ],
-        ];
-
-        $views_field['users_field_data']['civicrm_contact'] = [
-          'title' => $this->t('CiviCRM contact related to the user'),
-          'help' => $this->t('Relate CiviCRM contact to the user.'),
-          'relationship' => [
-            'base' => 'civicrm_contact',
-            'base field' => 'id',
-            'first field' => 'uf_id',
-            'second field' => 'contact_id',
-            'id' => 'civicrm_entity_civicrm_contact_user',
-            'label' => $this->t('CiviCRM contact'),
-          ],
-        ];
-
-        break;
-
-      case 'civicrm_address':
-        $views_field[$base_table]['proximity'] = [
-          'title' => $this->t('Proximity'),
-          'help' => $this->t('Search for addresses by proxmity.'),
-          'filter' => ['id' => 'civicrm_entity_civicrm_address_proximity'],
-        ];
-
-        break;
-    }
-  }
-
-  /**
    * Add views integration for custom fields.
    *
    * @param array $views_field
@@ -332,6 +282,121 @@ class CivicrmEntityViewsData extends EntityViewsData {
       'relationship' => $this->getViewsRelationshipPlugin($field_metadata),
       'entity field' => $field_metadata['name'],
     ];
+  }
+
+  /**
+   * Add views integration for fields that require special handling.
+   *
+   * @param array $views_field
+   *   Array of fields from ::getViewsData().
+   * @param string $base_table
+   *   The base table, most likely the CiviCRM entity type.
+   */
+  protected function processViewsDataForSpecialFields(array &$views_field, $base_table) {
+    switch ($base_table) {
+      case 'civicrm_activity':
+        $views_field[$base_table]['source_contact_id']['filter'] = [
+          'id' => 'civicrm_entity_civicrm_activity_contact_record',
+        ];
+
+        $views_field[$base_table]['assignee_id']['filter'] = [
+          'id' => 'civicrm_entity_civicrm_activity_contact_record',
+        ];
+
+        $views_field[$base_table]['target_id']['filter'] = [
+          'id' => 'civicrm_entity_civicrm_activity_contact_record',
+        ];
+
+        break;
+
+      case 'civicrm_contact':
+        $views_field['civicrm_contact']['user'] = [
+          'title' => $this->t('User related to the CiviCRM contact'),
+          'help' => $this->t('Relate user to the CiviCRM contact.'),
+          'relationship' => [
+            'base' => 'users_field_data',
+            'base field' => 'uid',
+            'first field' => 'contact_id',
+            'second field' => 'uf_id',
+            'id' => 'civicrm_entity_civicrm_contact_user',
+            'label' => $this->t('User'),
+          ],
+        ];
+
+        $views_field['users_field_data']['civicrm_contact'] = [
+          'title' => $this->t('CiviCRM contact related to the user'),
+          'help' => $this->t('Relate CiviCRM contact to the user.'),
+          'relationship' => [
+            'base' => 'civicrm_contact',
+            'base field' => 'id',
+            'first field' => 'uf_id',
+            'second field' => 'contact_id',
+            'id' => 'civicrm_entity_civicrm_contact_user',
+            'label' => $this->t('CiviCRM contact'),
+          ],
+        ];
+
+        break;
+
+      case 'civicrm_phone':
+        if (isset($views_field['civicrm_contact']['reverse__civicrm_phone__contact_id']['relationship'])) {
+          $views_field['civicrm_contact']['reverse__civicrm_phone__contact_id']['relationship']['id'] = 'civicrm_entity_reverse_location';
+          $views_field['civicrm_contact']['reverse__civicrm_phone__contact_id']['relationship']['label'] = $this->t('Phone');
+        }
+
+        break;
+
+      case 'civicrm_address':
+        if (isset($views_field['civicrm_contact']['reverse__civicrm_address__contact_id']['relationship'])) {
+          $views_field['civicrm_contact']['reverse__civicrm_address__contact_id']['relationship']['id'] = 'civicrm_entity_reverse_location';
+          $views_field['civicrm_contact']['reverse__civicrm_address__contact_id']['relationship']['label'] = $this->t('Address');
+        }
+
+        $views_field[$base_table]['proximity'] = [
+          'title' => $this->t('Proximity'),
+          'help' => $this->t('Search for addresses by proxmity.'),
+          'filter' => ['id' => 'civicrm_entity_civicrm_address_proximity'],
+        ];
+
+        break;
+
+      case 'civicrm_email':
+        if (isset($views_field['civicrm_contact']['reverse__civicrm_email__contact_id']['relationship'])) {
+          $views_field['civicrm_contact']['reverse__civicrm_email__contact_id']['relationship']['id'] = 'civicrm_entity_reverse_location';
+          $views_field['civicrm_contact']['reverse__civicrm_email__contact_id']['relationship']['label'] = $this->t('Email');
+        }
+
+        break;
+
+      case 'civicrm_group':
+        $views_field['civicrm_group']['civicrm_contact'] = [
+          'title' => $this->t('CiviCRM contact related to the CiviCRM group'),
+          'help' => $this->t('Relate CiviCRM contact to the CiviCRM group.'),
+          'relationship' => [
+            'base' => 'civicrm_contact',
+            'base field' => 'id',
+            'first field' => 'group_id',
+            'second field' => 'contact_id',
+            'id' => 'civicrm_entity_civicrm_group_contact',
+            'label' => $this->t('CiviCRM contact'),
+          ],
+        ];
+
+        $views_field['civicrm_contact']['civicrm_group'] = [
+          'title' => $this->t('CiviCRM group related to the CiviCRM contact'),
+          'help' => $this->t('Relate CiviCRM group to the CiviCRM contact.'),
+          'relationship' => [
+            'base' => 'civicrm_group',
+            'base field' => 'id',
+            'first field' => 'contact_id',
+            'second field' => 'group_id',
+            'id' => 'civicrm_entity_civicrm_group_contact',
+            'label' => $this->t('CiviCRM group'),
+          ],
+        ];
+
+        break;
+    }
   }
 
   /**
