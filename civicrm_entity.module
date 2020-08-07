@@ -216,6 +216,10 @@ function _civicrm_entity_stash($objectName, $id, $entity = NULL) {
  * Implements hook_civicrm_pre().
  */
 function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
+  if (\Drupal::config('civicrm_entity.settings')->get('disable_hooks')) {
+    return;
+  }
+
   $operations = ['create', 'edit', 'delete', 'restore'];
   if (!in_array($op, $operations)) {
     return;
@@ -277,6 +281,10 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
  * Implements hook_civicrm_post().
  */
 function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
+  if (\Drupal::config('civicrm_entity.settings')->get('disable_hooks')) {
+    return;
+  }
+
   $operations = ['create', 'edit', 'delete', 'restore'];
   if (!in_array($op, $operations)) {
     return;
