@@ -783,7 +783,7 @@ final class SupportedEntities {
 
     $code_version = explode('.', \CRM_Utils_System::version());
     if (version_compare($code_version[0] . '.' . $code_version[1], 4.5) >= 0) {
-      return \CRM_Utils_Hook::singleton()->invoke(1, $civicrm_entity_info,
+      return \CRM_Utils_Hook::singleton()->invoke(['civicrm_entity_info'], $civicrm_entity_info,
         \CRM_Core_DAO::$_nullObject, \CRM_Core_DAO::$_nullObject, \CRM_Core_DAO::$_nullObject, \CRM_Core_DAO::$_nullObject,
         \CRM_Core_DAO::$_nullObject,
         'civicrm_alter_drupal_entities'
