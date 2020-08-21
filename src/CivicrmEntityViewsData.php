@@ -396,6 +396,37 @@ class CivicrmEntityViewsData extends EntityViewsData {
         ];
 
         break;
+
+      case 'civicrm_case':
+        $views_field['civicrm_case']['civicrm_activity'] = [
+          'title' => $this->t('CiviCRM activity related to the CiviCRM case'),
+          'help' => $this->t('Relate CiviCRM activity to the CiviCRM case.'),
+          'relationship' => [
+            'base' => 'civicrm_activity',
+            'base field' => 'id',
+            'table' => 'civicrm_case_activity',
+            'first field' => 'case_id',
+            'second field' => 'activity_id',
+            'id' => 'civicrm_entity_civicrm_case_activity',
+            'label' => $this->t('CiviCRM activity'),
+          ],
+        ];
+
+        $views_field['civicrm_activity']['civicrm_case'] = [
+          'title' => $this->t('CiviCRM case related to the CiviCRM activity'),
+          'help' => $this->t('Relate CiviCRM case to the CiviCRM activity.'),
+          'relationship' => [
+            'base' => 'civicrm_case',
+            'base field' => 'id',
+            'table' => 'civicrm_case_activity',
+            'first field' => 'activity_id',
+            'second field' => 'case_id',
+            'id' => 'civicrm_entity_civicrm_case_activity',
+            'label' => $this->t('CiviCRM case'),
+          ],
+        ];
+
+        break;
     }
   }
 
