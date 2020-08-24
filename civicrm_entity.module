@@ -21,6 +21,8 @@ use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\views\ViewExecutable;
+use Drupal\views\Plugin\views\query\QueryPluginBase;
 
 /**
  * Implements hook_theme().
@@ -345,7 +347,7 @@ function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
  *
  * @param string $op
  *   The operation being performed.
- * @param \Drupal\civicrm_entity\CiviEntityStorage
+ * @param \Drupal\civicrm_entity\CiviEntityStorage $storage
  *   The entity storage.
  * @param \Drupal\Core\Entity\EntityInterface $entity
  *   The entity.
@@ -367,5 +369,38 @@ function _civicrm_entity_post_invoke($op, $storage, $entity) {
     case 'edit':
       $storage->civiPostSave($entity, TRUE);
       break;
+  }
+}
+
+function civicrm_entity_views_query_alter(ViewExecutable $view, QueryPluginBase $query) {
+  \Drupal::service('civicrm')->initialize();
+  $multilingual = \CRM_Core_I18n::isMultilingual();
+
+  if ($multilingual) {
+    global $dbLocale;
+    $columns = CRM_Core_I18n_SchemaStructure::columns();
+    $affectedColumns = [];
+    foreach ($columns as $table => $hash) {
+      foreach (array_keys($hash) as $column) {
+        $affectedColumns[] = "{$table}.{$column}";
+      }
+    }
+    foreach ($query->where as &$condition_group) {
+      foreach ($condition_group['conditions'] as &$condition) {
+        foreach ($affectedColumns as $colums) {
+          if (!is_object($condition['field'])) {
+            if (strpos($columns, $condition['field'])) {
+              $condition['field'] = str_replace($columns, $columns . $dbLocale, $condition['field']);
+            }
+          }
+        }
+      }
+    }
+
+    foreach ($query->fields as &$field) {
+      if (array_key_exists($field['table'], $columns) && array_key_exists($field['field'], $columns[$field['table']])) {
+        $field['field'] .= $dbLocale;
+      }
+    }
   }
 }
