@@ -625,6 +625,17 @@ final class SupportedEntities {
         'delete' => ['delete contacts'],
       ],
     ];
+    $civicrm_entity_info['civicrm_option_value'] = [
+      'civicrm entity label' => t('Option Value'),
+      'civicrm entity name' => 'option_value',
+      'label property' => 'label',
+      'permissions' => [
+        'view' => [],
+        'update' => [],
+        'create' => [],
+        'delete' => [],
+      ],
+    ];
 
     static::alterEntityInfo($civicrm_entity_info);
 
