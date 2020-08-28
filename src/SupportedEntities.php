@@ -625,6 +625,20 @@ final class SupportedEntities {
         'delete' => ['delete contacts'],
       ],
     ];
+    $civicrm_entity_info['civicrm_option_value'] = [
+      'civicrm entity label' => t('Option Value'),
+      'civicrm entity name' => 'option_value',
+      'label property' => 'label',
+      'permissions' => [
+        'view' => [],
+        'update' => [],
+        'create' => [],
+        'delete' => [],
+      ],
+    ];
+
+    static::alterEntityInfo($civicrm_entity_info);
+
     return $civicrm_entity_info;
   }
 
@@ -748,6 +762,50 @@ final class SupportedEntities {
         )), '_');
     }
     return $entity;
+  }
+
+  /**
+   * Get the DAO class for an entity type.
+   *
+   * @param string $entity_type_id
+   *   The entity type ID.
+   *
+   * @return string
+   *   The DAO class name.
+   */
+  public static function getEntityTypeDaoClass($entity_type_id) {
+    \Drupal::service('civicrm_entity.api')->civicrmInitialize();
+
+    $tables = \CRM_Core_DAO_AllCoreTables::getCoreTables();
+    return $tables[$entity_type_id] ?? NULL;
+  }
+
+  /**
+   * Allow extensions to alter entities.
+   *
+   * @param array $civicrm_entity_info
+   *   Supported civicrm_entity info.
+   *
+   * @return mixed
+   *   Altered civicrm_entity entity info.
+   */
+  public static function alterEntityInfo(&$civicrm_entity_info) {
+    \Drupal::service('civicrm_entity.api')->civicrmInitialize();
+
+    $code_version = explode('.', \CRM_Utils_System::version());
+    if (version_compare($code_version[0] . '.' . $code_version[1], 4.5) >= 0) {
+      return \CRM_Utils_Hook::singleton()->invoke(['civicrm_entity_info'], $civicrm_entity_info,
+        \CRM_Core_DAO::$_nullObject, \CRM_Core_DAO::$_nullObject, \CRM_Core_DAO::$_nullObject, \CRM_Core_DAO::$_nullObject,
+        \CRM_Core_DAO::$_nullObject,
+        'civicrm_alter_drupal_entities'
+      );
+    }
+    else {
+      return \CRM_Utils_Hook::singleton()->invoke(1, $civicrm_entity_info,
+        \CRM_Core_DAO::$_nullObject, \CRM_Core_DAO::$_nullObject, \CRM_Core_DAO::$_nullObject, \CRM_Core_DAO::$_nullObject,
+        'civicrm_alter_drupal_entities'
+      );
+    }
   }
 
 }

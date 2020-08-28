@@ -1,0 +1,64 @@
+# Schema for the civicrm_entity views plugins.
+
+views.filter.civicrm_entity_civicrm_activity_contact_record:
+  type: views_filter
+  label: 'Activity contact record'
+  mapping:
+    expose:
+      type: mapping
+      label: 'Exposed'
+      mapping:
+        min_placeholder:
+          type: label
+          label: 'Min placeholder'
+        max_placeholder:
+          type: label
+          label: 'Max placeholder'
+        placeholder:
+          type: label
+          label: 'Placeholder'
+
+views.filter_value.civicrm_entity_civicrm_activity_contact_record:
+  type: mapping
+  label: 'Activity contact record'
+  mapping:
+    min:
+      type: string
+      label: 'Min'
+    max:
+      type: string
+      label: 'And max'
+    value:
+      type: string
+      label: 'Value'
+
+views.filter.civicrm_entity_in_operator:
+  type: views.filter.in_operator
+  label: 'IN operator'
+
+views.filter.civicrm_entity_date:
+  type: views.filter.date
+
+views.filter_value.civicrm_entity_date:
+  type: views.filter_value.date
+
+views.argument.civicrm_entity_date:
+  type: views.argument.date
+
+views.filter.civicrm_entity_civicrm_address_proximity:
+  type: views_filter
+  label: 'Proximity'
+
+views.filter_value.civicrm_entity_civicrm_address_proximity:
+  type: mapping
+  label: 'Proximity'
+  mapping:
+    value:
+      type: string
+      label: 'Postal code'
+    distance:
+      type: integer
+      label: 'Distance'
+    distance_unit:
+      type: string
+      label: 'Distance unit'

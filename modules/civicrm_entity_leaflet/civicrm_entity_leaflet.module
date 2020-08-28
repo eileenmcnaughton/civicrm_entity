@@ -1,0 +1,24 @@
+<?php
+
+/**
+ * @file
+ * Contains civicrm_entity_leaflet.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function civicrm_entity_leaflet_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the civicrm_entity_leaflet module.
+    case 'help.page.civicrm_entity_leaflet':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Provides a Views style for Leaflet Maps that uses CiviCRM Address lon and lat') . '</p>';
+      return $output;
+
+    default:
+  }
+}

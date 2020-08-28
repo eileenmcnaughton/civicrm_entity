@@ -2,15 +2,48 @@
 
 namespace Drupal\civicrm_entity;
 
-use Drupal\Core\Entity\EntityTypeInterface;
-
 use Drupal\Core\Field\FieldDefinitionInterface;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\views\EntityViewsData;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\Sql\SqlEntityStorageInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\StringTranslation\TranslationInterface;
+use Drupal\Core\Entity\EntityFieldManagerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class CivicrmEntityViewsData extends EntityViewsData {
 
-  use StringTranslationTrait;
+  /**
+   * The CiviCRM API.
+   *
+   * @var \Drupal\civicrm_entity\CiviCrmApiInterface
+   */
+  protected $civicrmApi;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(EntityTypeInterface $entity_type, SqlEntityStorageInterface $storage_controller, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, TranslationInterface $translation_manager, EntityFieldManagerInterface $entity_field_manager = NULL, CiviCrmApiInterface $civicrm_api) {
+    parent::__construct($entity_type, $storage_controller, $entity_type_manager, $module_handler, $translation_manager, $entity_field_manager);
+    $this->civicrmApi = $civicrm_api;
+    $this->civicrmApi->civicrmInitialize();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+    return new static(
+      $entity_type,
+      $container->get('entity_type.manager')->getStorage($entity_type->id()),
+      $container->get('entity_type.manager'),
+      $container->get('module_handler'),
+      $container->get('string_translation'),
+      $container->get('entity_field.manager'),
+      $container->get('civicrm_entity.api')
+    );
+  }
 
   public function getViewsData() {
     $data = [];
@@ -110,8 +143,19 @@ class CivicrmEntityViewsData extends EntityViewsData {
             ],
           ];
         }
+
+        if (($field_metadata = $field_definition->getSetting('civicrm_entity_field_metadata')) && isset($field_metadata['custom_group_id'])) {
+          $this->processViewsDataForCustomFields($data, $field_metadata);
+
+          // Remove the predefined custom field property if we are able to
+          // retrieve metadata for the field.
+          unset($data[$base_table][$field_definition->getName()]);
+        }
       }
     }
+
+    $this->processViewsDataForSpecialFields($data, $base_table);
+
     return $data;
   }
 
@@ -197,6 +241,376 @@ class CivicrmEntityViewsData extends EntityViewsData {
     $views_field['filter']['field_name'] = $field_definition->getName();
     $views_field['argument']['id'] = 'number_list_field';
     $views_field['argument']['field_name'] = $field_definition->getName();
+  }
+
+  /**
+   * Add views integration for custom fields.
+   *
+   * @param array $views_field
+   *   Array of fields from ::getViewsData().
+   * @param array $field_metadata
+   *   An array of field metadata.
+   */
+  protected function processViewsDataForCustomFields(array &$views_field, array $field_metadata) {
+    $field_metadata = [
+      'pseudoconstant' => $field_metadata['option_group_id'] ?? NULL,
+      'entity_type' => SupportedEntities::getEntityType($field_metadata['extends']),
+      'name' => "custom_{$field_metadata['id']}",
+    ] + $field_metadata;
+
+    $views_field[$field_metadata['table_name']]['table'] = [
+      'group' => $this->t('CiviCRM custom: @title', ['@title' => $field_metadata['title']]),
+      'entity type' => $field_metadata['entity_type'],
+      'entity revision' => FALSE,
+      // Add automatic relationships so that custom fields from CiviCRM entities
+      // are included when they are the base tables.
+      'join' => [
+        $field_metadata['entity_type'] => [
+          'left_field' => 'id',
+          'field' => 'entity_id',
+        ],
+      ],
+    ];
+
+    $views_field[$field_metadata['table_name']][$field_metadata['column_name']] = [
+      'title' => $field_metadata['label'],
+      'help' => $this->t('@message', ['@message' => empty($field_metadata['help_post']) ? 'Custom data field.' : $field_metadata['help_post']]),
+      'field' => $this->getViewsFieldPlugin($field_metadata),
+      'argument' => $this->getViewsArgumentPlugin($field_metadata),
+      'filter' => $this->getViewsFilterPlugin($field_metadata),
+      'sort' => $this->getViewsSortPlugin($field_metadata),
+      'relationship' => $this->getViewsRelationshipPlugin($field_metadata),
+      'entity field' => $field_metadata['name'],
+    ];
+  }
+
+  /**
+   * Add views integration for fields that require special handling.
+   *
+   * @param array $views_field
+   *   Array of fields from ::getViewsData().
+   * @param string $base_table
+   *   The base table, most likely the CiviCRM entity type.
+   */
+  protected function processViewsDataForSpecialFields(array &$views_field, $base_table) {
+    switch ($base_table) {
+      case 'civicrm_activity':
+        $views_field[$base_table]['source_contact_id']['filter'] = [
+          'id' => 'civicrm_entity_civicrm_activity_contact_record',
+        ];
+
+        $views_field[$base_table]['assignee_id']['filter'] = [
+          'id' => 'civicrm_entity_civicrm_activity_contact_record',
+        ];
+
+        $views_field[$base_table]['target_id']['filter'] = [
+          'id' => 'civicrm_entity_civicrm_activity_contact_record',
+        ];
+
+        break;
+
+      case 'civicrm_contact':
+        $views_field['civicrm_contact']['user'] = [
+          'title' => $this->t('User related to the CiviCRM contact'),
+          'help' => $this->t('Relate user to the CiviCRM contact.'),
+          'relationship' => [
+            'base' => 'users_field_data',
+            'base field' => 'uid',
+            'first field' => 'contact_id',
+            'second field' => 'uf_id',
+            'id' => 'civicrm_entity_civicrm_contact_user',
+            'label' => $this->t('User'),
+          ],
+        ];
+
+        $views_field['users_field_data']['civicrm_contact'] = [
+          'title' => $this->t('CiviCRM contact related to the user'),
+          'help' => $this->t('Relate CiviCRM contact to the user.'),
+          'relationship' => [
+            'base' => 'civicrm_contact',
+            'base field' => 'id',
+            'first field' => 'uf_id',
+            'second field' => 'contact_id',
+            'id' => 'civicrm_entity_civicrm_contact_user',
+            'label' => $this->t('CiviCRM contact'),
+          ],
+        ];
+
+        break;
+
+      case 'civicrm_phone':
+        if (isset($views_field['civicrm_contact']['reverse__civicrm_phone__contact_id']['relationship'])) {
+          $views_field['civicrm_contact']['reverse__civicrm_phone__contact_id']['relationship']['id'] = 'civicrm_entity_reverse_location';
+          $views_field['civicrm_contact']['reverse__civicrm_phone__contact_id']['relationship']['label'] = $this->t('Phone');
+        }
+
+        break;
+
+      case 'civicrm_address':
+        if (isset($views_field['civicrm_contact']['reverse__civicrm_address__contact_id']['relationship'])) {
+          $views_field['civicrm_contact']['reverse__civicrm_address__contact_id']['relationship']['id'] = 'civicrm_entity_reverse_location';
+          $views_field['civicrm_contact']['reverse__civicrm_address__contact_id']['relationship']['label'] = $this->t('Address');
+        }
+
+        $views_field[$base_table]['proximity'] = [
+          'title' => $this->t('Proximity'),
+          'help' => $this->t('Search for addresses by proxmity.'),
+          'filter' => ['id' => 'civicrm_entity_civicrm_address_proximity'],
+        ];
+
+        break;
+
+      case 'civicrm_email':
+        if (isset($views_field['civicrm_contact']['reverse__civicrm_email__contact_id']['relationship'])) {
+          $views_field['civicrm_contact']['reverse__civicrm_email__contact_id']['relationship']['id'] = 'civicrm_entity_reverse_location';
+          $views_field['civicrm_contact']['reverse__civicrm_email__contact_id']['relationship']['label'] = $this->t('Email');
+        }
+
+        break;
+
+      case 'civicrm_group':
+        $views_field['civicrm_group']['civicrm_contact'] = [
+          'title' => $this->t('CiviCRM contact related to the CiviCRM group'),
+          'help' => $this->t('Relate CiviCRM contact to the CiviCRM group.'),
+          'relationship' => [
+            'base' => 'civicrm_contact',
+            'base field' => 'id',
+            'first field' => 'group_id',
+            'second field' => 'contact_id',
+            'id' => 'civicrm_entity_civicrm_group_contact',
+            'label' => $this->t('CiviCRM contact'),
+          ],
+        ];
+
+        $views_field['civicrm_contact']['civicrm_group'] = [
+          'title' => $this->t('CiviCRM group related to the CiviCRM contact'),
+          'help' => $this->t('Relate CiviCRM group to the CiviCRM contact.'),
+          'relationship' => [
+            'base' => 'civicrm_group',
+            'base field' => 'id',
+            'first field' => 'contact_id',
+            'second field' => 'group_id',
+            'id' => 'civicrm_entity_civicrm_group_contact',
+            'label' => $this->t('CiviCRM group'),
+          ],
+        ];
+
+        break;
+
+      case 'civicrm_case':
+        $views_field['civicrm_case']['civicrm_activity'] = [
+          'title' => $this->t('CiviCRM activity related to the CiviCRM case'),
+          'help' => $this->t('Relate CiviCRM activity to the CiviCRM case.'),
+          'relationship' => [
+            'base' => 'civicrm_activity',
+            'base field' => 'id',
+            'table' => 'civicrm_case_activity',
+            'first field' => 'case_id',
+            'second field' => 'activity_id',
+            'id' => 'civicrm_entity_civicrm_case_activity',
+            'label' => $this->t('CiviCRM activity'),
+          ],
+        ];
+
+        $views_field['civicrm_activity']['civicrm_case'] = [
+          'title' => $this->t('CiviCRM case related to the CiviCRM activity'),
+          'help' => $this->t('Relate CiviCRM case to the CiviCRM activity.'),
+          'relationship' => [
+            'base' => 'civicrm_case',
+            'base field' => 'id',
+            'table' => 'civicrm_case_activity',
+            'first field' => 'activity_id',
+            'second field' => 'case_id',
+            'id' => 'civicrm_entity_civicrm_case_activity',
+            'label' => $this->t('CiviCRM case'),
+          ],
+        ];
+
+        break;
+    }
+  }
+
+  /**
+   * Get the views field handler.
+   *
+   * @param array $field_metadata
+   *   An array of field metadata.
+   *
+   * @return array
+   *   An array containing the corresponding values for the 'field' key.
+   */
+  protected function getViewsFieldPlugin(array $field_metadata) {
+    switch ($field_metadata['data_type']) {
+      case 'File':
+        return ['id' => 'civicrm_entity_custom_file'];
+    }
+
+    return ['id' => 'civicrm_entity_custom_field'];
+  }
+
+  /**
+   * Get the views filter handler.
+   *
+   * @param array $field_metadata
+   *   An array of field metadata.
+   *
+   * @return array
+   *   An array containing the corresponding values for the 'sort' key.
+   */
+  protected function getViewsSortPlugin(array $field_metadata) {
+    $type = \CRM_Utils_Array::value($field_metadata['data_type'], \CRM_Core_BAO_CustomField::dataToType());
+
+    switch ($type) {
+      case \CRM_Utils_Type::T_DATE:
+      case \CRM_Utils_Type::T_TIMESTAMP:
+        return ['id' => 'date'];
+
+      default:
+        return ['id' => 'standard'];
+    }
+  }
+
+  /**
+   * Get the views sort handler.
+   *
+   * @param array $field_metadata
+   *   An array of field metadata.
+   *
+   * @return array
+   *   An array containing the corresponding values for the 'filter' key.
+   */
+  protected function getViewsFilterPlugin(array $field_metadata) {
+    switch ($field_metadata['data_type']) {
+      case 'Country':
+        $filter = [
+          'id' => 'civicrm_entity_in_operator',
+          'options callback' => 'CRM_Core_PseudoConstant::country',
+        ];
+
+        if ($field_metadata['html_type'] === 'Multi-Select Country') {
+          $filter['multi'] = TRUE;
+        }
+
+        return $filter;
+
+      case 'StateProvince':
+        $filter = [
+          'id' => 'civicrm_entity_in_operator',
+          'options callback' => 'CRM_Core_PseudoConstant::stateProvince',
+        ];
+
+        if ($field_metadata['html_type'] === 'Multi-Select State/Province') {
+          $filter['multi'] = TRUE;
+        }
+
+        return $filter;
+
+      case 'ContactReference':
+        return ['id' => 'civicrm_entity_contact_reference'];
+    }
+
+    $type = !empty($field_metadata['pseudoconstant']) ? 'pseudoconstant' :
+      \CRM_Utils_Array::value($field_metadata['data_type'], \CRM_Core_BAO_CustomField::dataToType());
+
+    switch ($type) {
+      case \CRM_Utils_Type::T_BOOLEAN:
+        return ['id' => 'boolean', 'accept_null' => TRUE];
+
+      case \CRM_Utils_Type::T_INT:
+      case \CRM_Utils_Type::T_FLOAT:
+      case \CRM_Utils_Type::T_MONEY:
+        return ['id' => 'numeric'];
+
+      case \CRM_Utils_Type::T_ENUM:
+      case \CRM_Utils_Type::T_STRING:
+      case \CRM_Utils_Type::T_TEXT:
+      case \CRM_Utils_Type::T_LONGTEXT:
+      case \CRM_Utils_Type::T_URL:
+      case \CRM_Utils_Type::T_EMAIL:
+        return ['id' => 'string'];
+
+      case \CRM_Utils_Type::T_DATE:
+      case \CRM_Utils_Type::T_TIMESTAMP:
+        return ['id' => 'civicrm_entity_date'];
+
+      case 'pseudoconstant':
+        if ($class_name = SupportedEntities::getEntityTypeDaoClass($field_metadata['entity_type'])) {
+          $filter = [
+            'id' => 'civicrm_entity_in_operator',
+            'options callback' => "{$class_name}::buildOptions",
+            'options arguments' => $field_metadata['name'],
+          ];
+
+          if (in_array($field_metadata['html_type'], ['Multi-Select', 'CheckBox'])) {
+            $filter['multi'] = TRUE;
+          }
+
+          return $filter;
+        }
+        break;
+
+      default:
+        return ['id' => 'standard'];
+    }
+  }
+
+  /**
+   * Get the views argument handler.
+   *
+   * @param array $field_metadata
+   *   An array of field metadata.
+   *
+   * @return array
+   *   An array containing the corresponding values for the 'argument' key.
+   */
+  protected function getViewsArgumentPlugin(array $field_metadata) {
+    $type = \CRM_Utils_Array::value($field_metadata['data_type'], \CRM_Core_BAO_CustomField::dataToType());
+
+    switch ($type) {
+      case \CRM_Utils_Type::T_INT:
+      case \CRM_Utils_Type::T_FLOAT:
+      case \CRM_Utils_Type::T_MONEY:
+        return ['id' => 'numeric'];
+
+      case \CRM_Utils_Type::T_ENUM:
+      case \CRM_Utils_Type::T_STRING:
+      case \CRM_Utils_Type::T_TEXT:
+      case \CRM_Utils_Type::T_LONGTEXT:
+      case \CRM_Utils_Type::T_URL:
+      case \CRM_Utils_Type::T_EMAIL:
+        return ['id' => 'string'];
+
+      case \CRM_Utils_Type::T_DATE:
+      case \CRM_Utils_Type::T_TIMESTAMP:
+        return ['id' => 'civicrm_entity_date'];
+
+      default:
+        return ['id' => 'standard'];
+    }
+  }
+
+  /**
+   * Get the views argument handler.
+   *
+   * @param array $field_metadata
+   *   An array of field metadata.
+   *
+   * @return array
+   *   An array containing the corresponding values for the 'argument' key.
+   */
+  protected function getViewsRelationshipPlugin(array $field_metadata) {
+    switch ($field_metadata['data_type']) {
+      case 'ContactReference':
+        return [
+          'id' => 'standard',
+          'base' => 'civicrm_contact',
+          'base field' => 'id',
+          'label' => $this->t('@label', ['@label' => $field_metadata['label']]),
+        ];
+
+      default:
+        return [];
+    }
   }
 
 }
