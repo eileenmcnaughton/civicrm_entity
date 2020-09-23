@@ -131,6 +131,6 @@ function civicrm_entity_actions_activity_unassign_action(&$object, $context = ar
   }
   civicrm_api3('activity', 'create', array(
     'id' => $object->id,
-    'deleteActivityAssignment' => TRUE)
+    'assignee_contact_id' => [])
   );
 }
