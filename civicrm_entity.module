@@ -488,7 +488,14 @@ function civicrm_entity_get_supported_entity_info($entity_type = NULL) {
   if (civicrm_initialize()) {
     $codeVersion = explode('.', CRM_Utils_System::version());
     // if db.ver < code.ver, time to upgrade
-    if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.5) >= 0) {
+    if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 5.28) >= 0) {
+      CRM_Utils_Hook::singleton()->invoke(['info'], $civicrm_entity_info,
+        CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject,
+        CRM_Core_DAO::$_nullObject,
+        'civicrm_entity_supported_info'
+      );
+    }
+    elseif (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.5) >= 0) {
       CRM_Utils_Hook::singleton()->invoke(1, $civicrm_entity_info,
         CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject,
         CRM_Core_DAO::$_nullObject,
@@ -2062,7 +2069,14 @@ function _civicrm_enabled_entity_alter_whitelist(&$whitelist) {
   }
   $codeVersion = explode('.', CRM_Utils_System::version());
   // if db.ver < code.ver, time to upgrade
-  if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.5) >= 0) {
+  if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 5.28) >= 0) {
+    return CRM_Utils_Hook::singleton()->invoke(['entities'], $whitelist,
+      CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject,
+      CRM_Core_DAO::$_nullObject,
+      'civicrm_alter_drupal_entities'
+    );
+  }
+  elseif (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.5) >= 0) {
     return CRM_Utils_Hook::singleton()->invoke(1, $whitelist,
       CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject,
       CRM_Core_DAO::$_nullObject,
@@ -2111,7 +2125,14 @@ function _civicrm_enabled_entity_alter_labels(&$labels) {
   }
   $codeVersion = explode('.', CRM_Utils_System::version());
   // if db.ver < code.ver, time to upgrade
-  if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.5) >= 0) {
+  if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 5.28) >= 0) {
+    return CRM_Utils_Hook::singleton()->invoke(['labels'], $labels,
+      CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject,
+      CRM_Core_DAO::$_nullObject,
+      'civicrm_alter_drupal_entity_labels'
+    );
+  }
+  elseif (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.5) >= 0) {
     return CRM_Utils_Hook::singleton()->invoke(1, $labels,
       CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject,
       CRM_Core_DAO::$_nullObject,
