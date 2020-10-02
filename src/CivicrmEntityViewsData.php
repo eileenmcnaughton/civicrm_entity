@@ -307,6 +307,41 @@ class CivicrmEntityViewsData extends EntityViewsData {
           'id' => 'civicrm_entity_civicrm_activity_contact_record',
         ];
 
+        $views_field[$base_table]['contact'] = [
+          'title' => $this->t('Contact'),
+          'help' => $this->t('Relate CiviCRM contact to CiviCRM activity.'),
+          'relationship' => [
+            'id' => 'civicrm_entity_activity_contact',
+            'base' => 'civicrm_contact',
+            'base field' => 'id',
+            'first field' => 'activity_id',
+            'second field' => 'contact_id',
+            'label' => $this->t('Contact'),
+          ],
+        ];
+
+        $views_field['civicrm_contact']['activity'] = [
+          'title' => $this->t('Activity'),
+          'help' => $this->t('Relate CiviCRM activity to CiviCRM contact.'),
+          'relationship' => [
+            'id' => 'civicrm_entity_activity_contact',
+            'base' => 'civicrm_activity',
+            'base field' => 'id',
+            'first field' => 'contact_id',
+            'second field' => 'activity_id',
+            'label' => $this->t('Activity'),
+          ],
+        ];
+
+        unset(
+          $views_field['civicrm_contact']['reverse__civicrm_activity__assignee_id'],
+          $views_field['civicrm_contact']['reverse__civicrm_activity__target_id'],
+          $views_field['civicrm_contact']['reverse__civicrm_activity__source_contact_id'],
+          $views_field[$base_table]['assignee_id']['relationship'],
+          $views_field[$base_table]['target_id']['relationship'],
+          $views_field[$base_table]['source_contact_id']['relationship']
+        );
+
         break;
 
       case 'civicrm_contact':
