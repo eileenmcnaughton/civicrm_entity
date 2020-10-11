@@ -23,7 +23,7 @@ class ContactSubtype extends ArgumentDefaultPluginBase implements CacheableDepen
    */
   public function getArgument() {
 
-    $current_user_contact_subtype = '';
+    $current_user_contact_subtype = '<none>';
 
     $civicrm_api = \Drupal::getContainer()->get('civicrm_entity.api');                                                 
 
