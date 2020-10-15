@@ -489,7 +489,7 @@ function civicrm_entity_get_supported_entity_info($entity_type = NULL) {
     $codeVersion = explode('.', CRM_Utils_System::version());
     // if db.ver < code.ver, time to upgrade
     if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.5) >= 0) {
-      CRM_Utils_Hook::singleton()->invoke(1, $civicrm_entity_info,
+      CRM_Utils_Hook::singleton()->invoke(['civicrm_entity_info'], $civicrm_entity_info,
         CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject,
         CRM_Core_DAO::$_nullObject,
         'civicrm_entity_supported_info'
@@ -2112,7 +2112,7 @@ function _civicrm_enabled_entity_alter_labels(&$labels) {
   $codeVersion = explode('.', CRM_Utils_System::version());
   // if db.ver < code.ver, time to upgrade
   if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.5) >= 0) {
-    return CRM_Utils_Hook::singleton()->invoke(1, $labels,
+    return CRM_Utils_Hook::singleton()->invoke(['civicrm_entity_labels'], $labels,
       CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject,
       CRM_Core_DAO::$_nullObject,
       'civicrm_alter_drupal_entity_labels'
