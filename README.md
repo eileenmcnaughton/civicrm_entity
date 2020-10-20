@@ -1,6 +1,10 @@
 # CiviCRM Entity for Drupal 8
 
-## Composer Installation
+## Installing 8.x-3.0-Beta2 or later.
+
+From 8.x-3.0-Beta2 onwards this module should be installable with normal Drupal composer install steps, `composer require drupal/civicrm_entity`.
+
+## Installing 8.x-3.0-Beta1 or earlier Drupal 8 versions.
 
 Due to a [bug](https://www.drupal.org/project/project_composer/issues/3051746) with Drupal.org's composer facade. It's not possible to simply `composer require drupal/civicrm_entity` without some preparation.
 
