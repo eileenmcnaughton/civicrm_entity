@@ -172,10 +172,25 @@ class CiviEntityStorage extends SqlContentEntityStorage {
     }
     foreach ($ids as $id) {
       $options = ['id' => $id];
-      $options['return'] = $field_names;
+      // $options['return'] = $field_names;
       $civicrm_entity = $this->getCiviCrmApi()->get($this->entityType->get('civicrm_entity'), $options);
       $civicrm_entity = reset($civicrm_entity);
       if ($civicrm_entity) {
+        if ($this->entityType->get('civicrm_entity') === 'participant') {
+          // Massage the values.
+          $temporary = [];
+          foreach ($civicrm_entity as $key => $value) {
+            if (strpos($key, 'participant_') === 0) {
+              $temporary[str_replace('participant_', '', $key)] = $value;
+            }
+            else {
+              $temporary[$key] = $value;
+            }
+          }
+
+          $civicrm_entity = $temporary;
+        }
+
         $entity = $this->prepareLoadedEntity($civicrm_entity);
         $entities[$entity->id()] = $entity;
       }
@@ -348,6 +363,13 @@ class CiviEntityStorage extends SqlContentEntityStorage {
       // Set a default format for text fields.
       if ($definition->getType() === 'text_long') {
         $filter_format = $civicrm_entity_settings->get('filter_format') ?: filter_fallback_format();
+
+        // @todo Comment this out for now. Need a way to know if 'basic_html'
+        // format is available as well: \Drupal::entityTypeManager()->getStorage('filter_format')->load('basic_html');
+        // if ($definition->getName() === 'details' && $definition->getTargetEntityTypeId() === 'civicrm_case') {
+        //   $filter_format = 'basic_html';
+        // }
+
         $item_values = $items->getValue();
         foreach ($item_values as $delta => $item) {
           $item_values[$delta]['format'] = $filter_format;
