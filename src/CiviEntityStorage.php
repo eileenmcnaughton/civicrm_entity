@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Sql\DefaultTableMapping;
 use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
+use Drupal\Core\Entity\Sql\SqlContentEntityStorageSchema;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Language\LanguageInterface;
@@ -622,7 +623,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
             if (!empty($attributes['serialize'])) {
               $value = serialize($value);
             }
-            $record[$column_name] = drupal_schema_get_field_value($attributes, $value);
+            $record[$column_name] = SqlContentEntityStorageSchema::castValue($attributes, $value);
           }
           $query->values($record);
           if ($this->entityType->isRevisionable()) {
