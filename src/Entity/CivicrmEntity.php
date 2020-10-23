@@ -141,7 +141,7 @@ class CivicrmEntity extends ContentEntityBase {
         if ($main_property instanceof DateTimeIso8601 && !is_array($main_property->getValue())) {
           // CiviCRM wants the datetime in the timezone of the user, but Drupal
           // stores it in UTC.
-          $value = (new \DateTime($main_property->getValue(), new \DateTimeZone('UTC')))->setTimezone(new \DateTimeZone(\drupal_get_user_timezone()))->format('Y-m-d H:i:s');
+          $value = (new \DateTime($main_property->getValue(), new \DateTimeZone('UTC')))->setTimezone(new \DateTimeZone(date_default_timezone_get()))->format('Y-m-d H:i:s');
         }
         else {
           $value = $main_property->getValue();
