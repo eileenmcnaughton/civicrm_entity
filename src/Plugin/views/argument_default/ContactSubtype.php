@@ -6,6 +6,7 @@ use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheableDependencyInterface;
 use Drupal\views\Plugin\views\argument_default\ArgumentDefaultPluginBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\civicrm_entity\CiviCrmApiInterface;
 
@@ -67,9 +68,46 @@ class ContactSubtype extends ArgumentDefaultPluginBase implements CacheableDepen
   /**
    * {@inheritdoc}
    */
+  protected function defineOptions() {
+    $options = parent::defineOptions();
+    $options['no_subtype'] = ['default' => 'none'];
+    $options['multiple_subtype'] = ['default' => 'first'];
+
+    return $options;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+    parent::buildOptionsForm($form, $form_state);
+    $form['no_subtype'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('When logged in user has no contact subtype'),
+      '#default_value' => $this->options['no_subtype'],
+      '#options' => [
+        'none' => $this->t('Show none'),
+        'all' => $this->t('Show all'),
+      ],
+    ];
+    $form['multiple_subtype'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('When logged in user has multiple contact subtypes'),
+      '#description' => $this->t('Multiple contact subtypes requires multiple values to be set for the contextual filter (see MORE below.)'),
+      '#default_value' => $this->options['multiple_subtype'],
+      '#options' => [
+        'first' => $this->t('Match first'),
+        'any' => $this->t('Match any'),
+      ],
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getArgument() {
 
-    $current_user_contact_subtype = '<none>';
+    $current_user_contact_subtype = ($this->options['no_subtype'] == 'none') ? '<none>' : 'all';
 
     $results = $this->civicrmApi->get('UFMatch', [
       'sequential' => 1,
@@ -87,8 +125,15 @@ class ContactSubtype extends ArgumentDefaultPluginBase implements CacheableDepen
 
       if (!empty($results) && !empty($results[0]['contact_sub_type'])) {
 
-         // Get first contact subtype.
-         $current_user_contact_subtype = reset($results[0]['contact_sub_type']);
+         // Get subtypes for argument.
+         if ($this->options['multiple_subtype'] == 'first') {
+           // Match first.
+           $current_user_contact_subtype = reset($results[0]['contact_sub_type']);
+         }
+         else {
+           // Match any.
+           $current_user_contact_subtype = implode('+', $results[0]['contact_sub_type']);
+         }
       }
     }
 
