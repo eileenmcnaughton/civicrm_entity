@@ -172,7 +172,12 @@ class CiviEntityStorage extends SqlContentEntityStorage {
     }
     foreach ($ids as $id) {
       $options = ['id' => $id];
-      // $options['return'] = $field_names;
+      $options['return'] = $field_names;
+
+      if ($this->entityType->get('civicrm_entity') === 'participant') {
+        unset($options['return']);
+      }
+
       $civicrm_entity = $this->getCiviCrmApi()->get($this->entityType->get('civicrm_entity'), $options);
       $civicrm_entity = reset($civicrm_entity);
       if ($civicrm_entity) {

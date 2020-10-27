@@ -9,5 +9,5 @@ namespace Drupal\civicrm_entity\Plugin\views\relationship;
  *
  * @ViewsRelationship("civicrm_entity_civicrm_contact_user")
  */
-class CiviCrmCaseContact extends CiviCrmBridgeRelationshipBase {
+class CiviCrmContactUser extends CiviCrmBridgeRelationshipBase {
 }
