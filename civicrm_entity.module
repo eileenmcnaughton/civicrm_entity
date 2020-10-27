@@ -2063,7 +2063,7 @@ function _civicrm_enabled_entity_alter_whitelist(&$whitelist) {
   $codeVersion = explode('.', CRM_Utils_System::version());
   // if db.ver < code.ver, time to upgrade
   if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.5) >= 0) {
-    return CRM_Utils_Hook::singleton()->invoke(1, $whitelist,
+    return CRM_Utils_Hook::singleton()->invoke(['civicrm_entity_entities'], $whitelist,
       CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject,
       CRM_Core_DAO::$_nullObject,
       'civicrm_alter_drupal_entities'
