@@ -369,12 +369,6 @@ class CiviEntityStorage extends SqlContentEntityStorage {
       if ($definition->getType() === 'text_long') {
         $filter_format = $civicrm_entity_settings->get('filter_format') ?: filter_fallback_format();
 
-        // @todo Comment this out for now. Need a way to know if 'basic_html'
-        // format is available as well: \Drupal::entityTypeManager()->getStorage('filter_format')->load('basic_html');
-        // if ($definition->getName() === 'details' && $definition->getTargetEntityTypeId() === 'civicrm_case') {
-        //   $filter_format = 'basic_html';
-        // }
-
         $item_values = $items->getValue();
         foreach ($item_values as $delta => $item) {
           $item_values[$delta]['format'] = $filter_format;
