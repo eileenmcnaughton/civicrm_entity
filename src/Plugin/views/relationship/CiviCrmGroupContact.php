@@ -7,7 +7,7 @@ namespace Drupal\civicrm_entity\Plugin\views\relationship;
  *
  * @ingroup views_relationship_handlers
  *
- * @ViewsRelationship("civicrm_entity_civcrm_group_contact")
+ * @ViewsRelationship("civicrm_entity_civicrm_group_contact")
  */
 class CiviCrmGroupContact extends CiviCrmBridgeRelationshipBase {
 }
