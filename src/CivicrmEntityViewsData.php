@@ -113,7 +113,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
             $field_name = $field_definition->getName();
             $pseudo_field_name = 'reverse__' . $this->entityType->id() . '__' . $field_name;
             $args = [
-              '@label' => $target_entity_type->getLowercaseLabel(),
+              '@label' => $target_entity_type->getSingularLabel(),
               '@field_name' => $field_name,
               '@entity' => $this->entityType->getLabel(),
             ];
