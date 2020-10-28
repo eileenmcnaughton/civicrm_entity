@@ -94,7 +94,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
 
     // Load all typed data definitions of all fields. This should cover each of
     // the entity base, revision, data tables.
-    $field_definitions = $this->entityManager->getBaseFieldDefinitions($this->entityType->id());
+    $field_definitions = $this->entityFieldManager->getBaseFieldDefinitions($this->entityType->id());
     /** @var \Drupal\Core\Entity\Sql\DefaultTableMapping $table_mapping */
     $table_mapping = $this->storage->getTableMapping();
     if ($table_mapping) {
@@ -106,7 +106,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
           // the field.
           if ($field_definition->getType() === 'entity_reference') {
             $target_entity_type_id = $field_definition->getFieldStorageDefinition()->getSetting('target_type');
-            $target_entity_type = $this->entityManager->getDefinition($target_entity_type_id);
+            $target_entity_type = $this->entityTypeManager->getDefinition($target_entity_type_id);
             assert($target_entity_type !== NULL);
             $target_base_table = $target_entity_type->getDataTable() ?: $target_entity_type->getBaseTable();
 
