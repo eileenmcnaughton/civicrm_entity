@@ -649,6 +649,31 @@ $civicrm_entity_info['civicrm_group_contact'] = [
         'delete' => ['delete contacts'],
       ],
     ];
+
+    $civicrm_entity_info['civicrm_mailing'] = [
+      'civicrm entity label' => t('Mailing'),
+      'civicrm entity name' => 'mailing',
+      'label property' => 'name',
+      'permissions' => [
+        'view' => ['view all mailing'],
+        'edit' => ['edit all mailing'],
+        'update' => ['edit all mailing'],
+        'create' => ['edit all mailing'],
+        'delete' => ['delete mailing'],
+      ]
+    ];
+
+    $civicrm_entity_info['civicrm_mailing_job'] = [
+      'civicrm entity label' => t('Mailing job'),
+      'civicrm entity name' => 'mailing_job',
+      'label property' => 'id',
+      'permissions' => [
+        'view' => [],
+        'update' => [],
+        'create' => [],
+        'delete' => [],
+      ],
+    ];
     $civicrm_entity_info['civicrm_option_value'] = [
       'civicrm entity label' => t('Option Value'),
       'civicrm entity name' => 'option_value',
