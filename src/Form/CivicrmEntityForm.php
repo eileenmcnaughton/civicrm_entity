@@ -5,6 +5,7 @@ namespace Drupal\civicrm_entity\Form;
 use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\ContentEntityForm;
+use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -23,7 +24,7 @@ class CivicrmEntityForm extends ContentEntityForm {
    * Constructs a NodeForm object.
    *
    * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
-   *   The entity manager.
+   *   The entity repository service.
    * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
    *   The entity type bundle service.
    * @param \Drupal\Component\Datetime\TimeInterface $time
@@ -41,7 +42,7 @@ class CivicrmEntityForm extends ContentEntityForm {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('entity.manager'),
+      $container->get('entity.repository'),
       $container->get('entity_type.bundle.info'),
       $container->get('datetime.time'),
       $container->get('current_user')
@@ -107,10 +108,10 @@ class CivicrmEntityForm extends ContentEntityForm {
 
     $t_args = ['%title' => $this->entity->toLink()->toString()];
     if ($insert) {
-      \Drupal::messanger()->addMessage($this->t('%title has been created.', $t_args));
+      $this->messenger->addMessage($this->t('%title has been created.', $t_args));
     }
     else {
-      \Drupal::messanger()->addMessage($this->t('%title has been updated.', $t_args));
+      $this->messenger->addMessage($this->t('%title has been updated.', $t_args));
     }
     $form_state->setRedirect(
       "entity.{$this->entity->getEntityTypeId()}.canonical",
