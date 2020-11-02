@@ -1,7 +1,7 @@
 name: 'CiviCRM Entity Leaflet'
 type: module
 description: 'Provides a Views style for Leaflet Maps that uses CiviCRM Address lon and lat'
-core: 8.x
+core_version_requirement: ^8.8 || ^9
 package: 'CiviCRM'
 
 dependencies:

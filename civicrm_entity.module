@@ -196,10 +196,10 @@ function _civicrm_entity_get_entity_type_from_elements($elements) {
  *   The CiviCRM entity type.
  * @param int $id
  *   The id.
- * @param \Drupal\Core\Entity\Entity|null|string $entity
+ * @param \Drupal\Core\Entity\EntityBase|null|string $entity
  *   The entity.
  *
- * @return void|\Drupal\Core\Entity\Entity
+ * @return void|\Drupal\Core\Entity\EntityBase
  */
 function _civicrm_entity_stash($objectName, $id, $entity = NULL) {
   $cache =& drupal_static(__FUNCTION__, []);

@@ -5,7 +5,6 @@ namespace Drupal\civicrm_entity\Form;
 use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\ContentEntityForm;
-use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -23,7 +22,7 @@ class CivicrmEntityForm extends ContentEntityForm {
   /**
    * Constructs a NodeForm object.
    *
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
    *   The entity manager.
    * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
    *   The entity type bundle service.
@@ -32,8 +31,8 @@ class CivicrmEntityForm extends ContentEntityForm {
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The current user.
    */
-  public function __construct(EntityManagerInterface $entity_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, AccountInterface $current_user) {
-    parent::__construct($entity_manager, $entity_type_bundle_info, $time);
+  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, AccountInterface $current_user) {
+    parent::__construct($entity_repository, $entity_type_bundle_info, $time);
     $this->currentUser = $current_user;
   }
 
@@ -108,10 +107,10 @@ class CivicrmEntityForm extends ContentEntityForm {
 
     $t_args = ['%title' => $this->entity->toLink()->toString()];
     if ($insert) {
-      drupal_set_message($this->t('%title has been created.', $t_args));
+      \Drupal::messanger()->addMessage($this->t('%title has been created.', $t_args));
     }
     else {
-      drupal_set_message($this->t('%title has been updated.', $t_args));
+      \Drupal::messanger()->addMessage($this->t('%title has been updated.', $t_args));
     }
     $form_state->setRedirect(
       "entity.{$this->entity->getEntityTypeId()}.canonical",
