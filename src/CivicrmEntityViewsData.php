@@ -307,6 +307,16 @@ class CivicrmEntityViewsData extends EntityViewsData {
           'id' => 'civicrm_entity_civicrm_activity_contact_record',
         ];
 
+        $views_field[$base_table]['attachments'] = [
+          'title' => $this->t('Attachments'),
+          'help' => $this->t('Attachments for the CiviCRM activity.'),
+          'field' => [
+            'id' => 'civicrm_entity_activity_attachments',
+            'field' => 'id',
+            'click sortable' => FALSE,
+          ],
+        ];
+
         $views_field[$base_table]['contact'] = [
           'title' => $this->t('Contact'),
           'help' => $this->t('Relate CiviCRM contact to CiviCRM activity.'),
@@ -351,6 +361,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
           'relationship' => [
             'base' => 'users_field_data',
             'base field' => 'uid',
+            'table' => 'civicrm_uf_match',
             'first field' => 'contact_id',
             'second field' => 'uf_id',
             'id' => 'civicrm_entity_civicrm_contact_user',
@@ -364,6 +375,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
           'relationship' => [
             'base' => 'civicrm_contact',
             'base field' => 'id',
+            'table' => 'civicrm_uf_match',
             'first field' => 'uf_id',
             'second field' => 'contact_id',
             'id' => 'civicrm_entity_civicrm_contact_user',
@@ -410,6 +422,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
           'relationship' => [
             'base' => 'civicrm_contact',
             'base field' => 'id',
+            'table' => 'civicrm_group_contact',
             'first field' => 'group_id',
             'second field' => 'contact_id',
             'id' => 'civicrm_entity_civicrm_group_contact',
@@ -423,6 +436,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
           'relationship' => [
             'base' => 'civicrm_group',
             'base field' => 'id',
+            'table' => 'civicrm_group_contact',
             'first field' => 'contact_id',
             'second field' => 'group_id',
             'id' => 'civicrm_entity_civicrm_group_contact',
@@ -461,6 +475,50 @@ class CivicrmEntityViewsData extends EntityViewsData {
           ],
         ];
 
+        $views_field['civicrm_case']['civicrm_contact'] = [
+          'title' => $this->t('CiviCRM contact related to the CiviCRM case'),
+          'help' => $this->t('Relate CiviCRM contact to the CiviCRM case.'),
+          'relationship' => [
+            'base' => 'civicrm_contact',
+            'base field' => 'id',
+            'table' => 'civicrm_case_contact',
+            'first field' => 'case_id',
+            'second field' => 'contact_id',
+            'id' => 'civicrm_entity_civicrm_case_contact',
+            'label' => $this->t('CiviCRM contact'),
+          ],
+        ];
+
+        $views_field['civicrm_contact']['civicrm_case'] = [
+          'title' => $this->t('CiviCRM case related to the CiviCRM contact'),
+          'help' => $this->t('Relate CiviCRM case to the CiviCRM contact.'),
+          'relationship' => [
+            'base' => 'civicrm_case',
+            'base field' => 'id',
+            'table' => 'civicrm_case_contact',
+            'first field' => 'contact_id',
+            'second field' => 'case_id',
+            'id' => 'civicrm_entity_civicrm_case_contact',
+            'label' => $this->t('CiviCRM case'),
+          ],
+        ];
+
+        unset($views_field['civicrm_case']['medium_id']);
+        unset($views_field['civicrm_case']['contact_id']['relationship']);
+
+        break;
+
+      case 'civicrm_line_item':
+        $views_field['civicrm_line_item']['entity_id'] = [
+          'title' => $this->t('CiviCRM membership'),
+          'help' => $this->t('Relate CiviCRM entity to the line item entity for membership.'),
+          'relationship' => [
+            'id' => 'standard',
+            'base field' => 'id',
+            'base' => 'civicrm_membership',
+            'label' => $this->t('Membership')
+          ],
+        ];
         break;
     }
   }

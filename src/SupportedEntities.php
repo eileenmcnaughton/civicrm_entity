@@ -107,6 +107,17 @@ final class SupportedEntities {
         'contact_id' => TRUE,
       ],
     ];
+    $civicrm_entity_info['civicrm_case_type'] = [
+      'civicrm entity label' => t('Case type'),
+      'civicrm entity name' => 'case_type',
+      'label property' => 'title',
+      'permissions' => [
+        'view' => [],
+        'update' => [],
+        'create' => [],
+        'delete' => [],
+      ],
+    ];
     $civicrm_entity_info['civicrm_contact'] = [
       'civicrm entity label' => t('Contact'),
       'civicrm entity name' => 'contact',
