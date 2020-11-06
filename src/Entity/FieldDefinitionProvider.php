@@ -4,6 +4,7 @@ namespace Drupal\civicrm_entity\Entity;
 
 use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
 
 class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
@@ -229,6 +230,12 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
           'weight' => 0,
         ]);
     }
+
+    if (isset($civicrm_field['html_type']) && $civicrm_field['html_type'] === 'CheckBox') {
+      $field->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED);
+      $field->setCustomStorage(TRUE);
+    }
+
     return $field;
   }
 
