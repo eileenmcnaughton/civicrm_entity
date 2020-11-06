@@ -108,10 +108,10 @@ class CivicrmEntityForm extends ContentEntityForm {
 
     $t_args = ['%title' => $this->entity->toLink()->toString()];
     if ($insert) {
-      $this->messenger->addMessage($this->t('%title has been created.', $t_args));
+      $this->messenger()->addMessage($this->t('%title has been created.', $t_args));
     }
     else {
-      $this->messenger->addMessage($this->t('%title has been updated.', $t_args));
+      $this->messenger()->addMessage($this->t('%title has been updated.', $t_args));
     }
     $form_state->setRedirect(
       "entity.{$this->entity->getEntityTypeId()}.canonical",
