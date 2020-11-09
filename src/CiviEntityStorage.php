@@ -772,4 +772,11 @@ class CiviEntityStorage extends SqlContentEntityStorage {
     }
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function onEntityTypeDelete(EntityTypeInterface $entity_type) {
+    // Don't do anything.
+  }
+
 }
