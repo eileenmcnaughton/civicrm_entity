@@ -404,3 +404,10 @@ function civicrm_entity_views_query_alter(ViewExecutable $view, QueryPluginBase 
     }
   }
 }
+
+/**
+ * Implements hook_theme_registry_alter().
+ */
+function civicrm_entity_theme_registry_alter(&$theme_registry) {
+  $theme_registry['civicrm_entity']['preprocess functions'][] = 'field_group_build_entity_groups';
+}
