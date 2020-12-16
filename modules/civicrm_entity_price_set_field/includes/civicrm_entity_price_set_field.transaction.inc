@@ -123,7 +123,7 @@ function _civicrm_entity_price_set_field_calculate_total($price_set_data, $entit
                     $total['line_items'][$id][$pf_id][$pfv_id] = $line_item;
                   }
                 }
-                continue;
+                continue 2;
               }
               break;
             case 'Text':
