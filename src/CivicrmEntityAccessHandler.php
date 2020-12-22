@@ -72,6 +72,13 @@ class CivicrmEntityAccessHandler extends EntityAccessControlHandler {
     if (!empty($this->civicrmEntityInfo[$this->entityTypeId]['permissions'][$operation])) {
       $permissions = $this->civicrmEntityInfo[$this->entityTypeId]['permissions'][$operation];
     }
+    if ($this->entityTypeId == 'civicrm_contact' && in_array($operation, ['view', 'edit'])) {
+      \Drupal::service('civicrm')->initialize();
+      $op = $operation == 'view' ? \CRM_Core_Permission::VIEW : \CRM_Core_Permission::EDIT;
+      if (\CRM_Contact_BAO_Contact_Permission::allow($entity->id(), $op)) {
+        return AccessResult::allowed();
+      }
+    }
     return AccessResult::allowedIfHasPermissions($account, $permissions, 'OR');
   }
 
