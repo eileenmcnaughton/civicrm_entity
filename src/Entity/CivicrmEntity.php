@@ -98,7 +98,8 @@ class CivicrmEntity extends ContentEntityBase {
     $params = $this->civicrmApiNormalize();
 
     $civicrm_api = \Drupal::getContainer()->get('civicrm_entity.api');
-    $civicrm_violations = $civicrm_api->validate('event', $params);
+    $civicrm_entity_type = $this->getEntityType()->get('civicrm_entity');
+    $civicrm_violations = $civicrm_api->validate($civicrm_entity_type, $params);
     if (!empty($civicrm_violations)) {
       foreach (reset($civicrm_violations) as $civicrm_field => $civicrm_violation) {
         $definition = $this->getFieldDefinition($civicrm_field);
