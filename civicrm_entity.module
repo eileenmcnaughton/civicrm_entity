@@ -411,3 +411,31 @@ function civicrm_entity_views_query_alter(ViewExecutable $view, QueryPluginBase 
 function civicrm_entity_theme_registry_alter(&$theme_registry) {
   $theme_registry['civicrm_entity']['preprocess functions'][] = 'field_group_build_entity_groups';
 }
+
+/**
+ * Implements hook_rebuild().
+ *
+ * This resets the field storage and entity type definitions for civicrm_entity
+ * according to the active definitions to avoid mismatches since the definitions
+ * are not necessary to be updated.
+ */
+function civicrm_entity_rebuild() {
+  /** @var \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface $entity_last_installed_repository */
+  $entity_last_installed_repository = \Drupal::service('entity.last_installed_schema.repository');
+  /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager */
+  $entity_field_manager = \Drupal::service('entity_field.manager');
+  /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager */
+  $entity_type_manager = \Drupal::service('entity_type.manager');
+
+  $supported_entities = SupportedEntities::getInfo();
+
+  foreach (array_keys($supported_entities) as $entity_type_id) {
+    // Reset field storage definitions.
+    $field_storage_definitions = $entity_field_manager->getFieldStorageDefinitions($entity_type_id);
+    $entity_last_installed_repository->setLastInstalledFieldStorageDefinitions($entity_type_id, $field_storage_definitions);
+
+    // Reset entity type definition.
+    $definition = $entity_type_manager->getDefinition($entity_type_id);
+    $entity_last_installed_repository->setLastInstalledDefinition($definition);
+  }
+}
