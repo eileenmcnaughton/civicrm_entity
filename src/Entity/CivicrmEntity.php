@@ -2,12 +2,14 @@
 
 namespace Drupal\civicrm_entity\Entity;
 
+use Drupal\civicrm_entity\Plugin\Field\ActivityEndDateFieldItemList;
 use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\TypedData\Plugin\DataType\DateTimeIso8601;
 use Drupal\Core\TypedData\Plugin\DataType\Timestamp;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
 use Symfony\Component\Validator\ConstraintViolation;
 
 /**
@@ -84,6 +86,21 @@ class CivicrmEntity extends ContentEntityBase {
       if ($values = \Drupal::service('civicrm_entity.api')->getCustomFieldMetadata($civicrm_field['name'])) {
         $fields[$civicrm_field['name']]->setSetting('civicrm_entity_field_metadata', $values);
       }
+    }
+
+    // Provide a computed base field that takes the activity start time and
+    // appends the duration to calculated and end time.
+    if ($entity_type->id() === 'civicrm_activity') {
+      $fields['activity_end_datetime'] = BaseFieldDefinition::create('datetime')
+        ->setLabel(t('Activity End Date'))
+        ->setSetting('datetime_type', DateTimeItem::DATETIME_TYPE_DATETIME)
+        ->setComputed(TRUE)
+        ->setDisplayOptions('view', [
+          'type' => 'datetime_default',
+          'weight' => 0,
+        ])
+        ->setDisplayConfigurable('form', FALSE)
+        ->setClass(ActivityEndDateFieldItemList::class);
     }
 
     return $fields;

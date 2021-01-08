@@ -316,6 +316,15 @@ class CivicrmEntityViewsData extends EntityViewsData {
             'click sortable' => FALSE,
           ],
         ];
+        $views_field[$base_table]['activity_end_datetime'] = [
+          'title' => $this->t('Activity End Date'),
+          'help' => $this->t('The calculated end date and time, for calendar integrations.'),
+          'field' => [
+            'id' => 'civicrm_entity_activity_end_datetime',
+            'field_name' => 'activity_end_datetime',
+            'click sortable' => FALSE,
+          ],
+        ];
 
         $views_field[$base_table]['contact'] = [
           'title' => $this->t('Contact'),
