@@ -3,6 +3,7 @@
 namespace Drupal\civicrm_entity\Entity;
 
 use Drupal\civicrm_entity\Plugin\Field\ActivityEndDateFieldItemList;
+use Drupal\civicrm_entity\Plugin\Field\BundleFieldItemList;
 use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -73,6 +74,16 @@ class CivicrmEntity extends ContentEntityBase {
     $civicrm_required_fields = !empty($civicrm_entity_info['required']) ? $civicrm_entity_info['required'] : [];
     $field_definition_provider = \Drupal::service('civicrm_entity.field_definition_provider');
     $civicrm_fields = \Drupal::service('civicrm_entity.api')->getFields($entity_type->get('civicrm_entity'), 'create');
+
+    if ($entity_type->hasKey('bundle')) {
+      // @todo needs a computed class to do same op as civicrm_entity_entity_bundle_info.
+      $fields[$entity_type->getKey('bundle')] = BaseFieldDefinition::create('string')
+        ->setLabel($entity_type->getBundleLabel())
+        ->setRequired(TRUE)
+        ->setReadOnly(TRUE)
+        ->setClass(BundleFieldItemList::class);
+    }
+
     foreach ($civicrm_fields as $civicrm_field) {
       // Apply any additional field data provided by the module.
       if (!empty($civicrm_entity_info['fields'][$civicrm_field['name']])) {

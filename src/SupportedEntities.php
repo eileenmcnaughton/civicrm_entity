@@ -47,6 +47,7 @@ final class SupportedEntities {
       'civicrm entity label' => t('Activity'),
       'civicrm entity name' => 'activity',
       'label property' => 'subject',
+      'bundle property' => 'activity_type_id',
       'permissions' => [
         'view' => ['view all activities'],
 
@@ -273,6 +274,7 @@ final class SupportedEntities {
       'civicrm entity label' => t('Event'),
       'civicrm entity name' => 'event',
       'label property' => 'title',
+      'bundle property' => 'event_type_id',
       'permissions' => [
         'view' => ['view event info'],
         'edit' => ['edit all events'],

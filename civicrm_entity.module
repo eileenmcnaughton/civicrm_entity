@@ -83,6 +83,18 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
         'storage_schema' => CivicrmEntityStorageSchema::class,
       ],
     ];
+
+    // If this entity has bundle support, we define the bundle field as "bundle"
+    // and will use the "bundle property" as the field to fetch field options
+    // from CiviCRM with.
+    //
+    // @see civicrm_entity_entity_bundle_info()
+    // @see \Drupal\civicrm_entity\Entity\CivicrmEntity::baseFieldDefinitions()
+    if (!empty($civicrm_entity_info['bundle property'])) {
+      $entity_type_info['entity_keys']['bundle'] = 'bundle';
+      $entity_type_info['civicrm_bundle_property'] = $civicrm_entity_info['bundle property'];
+    }
+
     if (in_array($entity_type_id, $enabled_entity_types)) {
       $entity_type_info = array_merge_recursive($entity_type_info, [
         'handlers' => [
@@ -117,20 +129,25 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
  * Implements hook_entity_bundle_info().
  */
 function civicrm_entity_entity_bundle_info() {
-  $bundles = [
-    'civicrm_activity' => [],
-  ];
-
   $transliteration = \Drupal::transliteration();
   /** @var \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api */
   $civicrm_api = \Drupal::service('civicrm_entity.api');
-  $options = $civicrm_api->getOptions('activity', 'activity_type_id');
-  foreach ($options as $option) {
-    $machine_name = $transliteration->transliterate($option, LanguageInterface::LANGCODE_DEFAULT, '_');
-    $machine_name = mb_strtolower($machine_name);
-    $machine_name = preg_replace('/[^a-z0-9_]+/', '_', $machine_name);
-    $machine_name = preg_replace('/_+/', '_', $machine_name);
-    $bundles['civicrm_activity'][$machine_name]['label'] = $option;
+
+  $bundles = [];
+  $entity_types_with_bundles = array_filter(SupportedEntities::getInfo(), static function(array $civicrm_entity_info) {
+    return !empty($civicrm_entity_info['bundle property']);
+  });
+  foreach ($entity_types_with_bundles as $entity_type_id => $civicrm_entity_info) {
+    $bundles[$entity_type_id] = [];
+    $options = $civicrm_api->getOptions($civicrm_entity_info['civicrm entity name'], $civicrm_entity_info['bundle property']);
+    foreach ($options as $option) {
+      $machine_name = $transliteration->transliterate($option, LanguageInterface::LANGCODE_DEFAULT, '_');
+      $machine_name = mb_strtolower($machine_name);
+      $machine_name = preg_replace('/[^a-z0-9_]+/', '_', $machine_name);
+      $machine_name = preg_replace('/_+/', '_', $machine_name);
+
+      $bundles[$entity_type_id][$machine_name]['label'] = $option;
+    }
   }
   return $bundles;
 }
