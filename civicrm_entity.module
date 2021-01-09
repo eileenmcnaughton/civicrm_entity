@@ -19,6 +19,7 @@ use Drupal\Core\Entity\ContentEntityDeleteForm;
 use Drupal\Core\Entity\ContentEntityType;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\views\ViewExecutable;
@@ -110,6 +111,28 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
     }
     $entity_types[$entity_type_id] = new ContentEntityType($entity_type_info);
   }
+}
+
+/**
+ * Implements hook_entity_bundle_info().
+ */
+function civicrm_entity_entity_bundle_info() {
+  $bundles = [
+    'civicrm_activity' => [],
+  ];
+
+  $transliteration = \Drupal::transliteration();
+  /** @var \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api */
+  $civicrm_api = \Drupal::service('civicrm_entity.api');
+  $options = $civicrm_api->getOptions('activity', 'activity_type_id');
+  foreach ($options as $option) {
+    $machine_name = $transliteration->transliterate($option, LanguageInterface::LANGCODE_DEFAULT, '_');
+    $machine_name = mb_strtolower($machine_name);
+    $machine_name = preg_replace('/[^a-z0-9_]+/', '_', $machine_name);
+    $machine_name = preg_replace('/_+/', '_', $machine_name);
+    $bundles['civicrm_activity'][$machine_name]['label'] = $option;
+  }
+  return $bundles;
 }
 
 /**
