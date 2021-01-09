@@ -8,7 +8,6 @@ use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\TypedData\Plugin\DataType\DateTimeIso8601;
-use Drupal\Core\TypedData\Plugin\DataType\Timestamp;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
 use Symfony\Component\Validator\ConstraintViolation;
 

@@ -3,13 +3,22 @@
 namespace Drupal\civicrm_entity\Plugin\Field;
 
 use Drupal\civicrm_entity\Entity\CivicrmEntity;
-use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Field\FieldItemList;
 use Drupal\Core\TypedData\ComputedItemListTrait;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 
 /**
  * A computed field item list for Activities to provide an end date and time.
+ *
+ * In this class, you will notice timezone conversions from the default timezone
+ * to UTC. CiviCRM stores dates in the expected timezone, and Drupal always
+ * stores them in UTC. So we have to do a bit of conversion.
+ *
+ * This is also automatically done when a CivicrmEntity instance is saved and
+ * when an entity is loaded.
+ *
+ * @see \Drupal\civicrm_entity\Entity\CivicrmEntity::civicrmApiNormalize
+ * @see \Drupal\civicrm_entity\CiviEntityStorage::initFieldValues
  */
 class ActivityEndDateFieldItemList extends FieldItemList {
   use ComputedItemListTrait;
@@ -25,15 +34,18 @@ class ActivityEndDateFieldItemList extends FieldItemList {
     if (!$activity_date_time) {
       return;
     }
-    // If there was no duration entered, set the value as the start time.
-    if (!$duration || !is_numeric($duration)) {
-      $this->list[0] = $this->createItem(0, $activity_date_time);
+    // The time is already in UTC due to ::initFieldValues in storage.
+    // @see \Drupal\civicrm_entity\CiviEntityStorage::initFieldValues
+    $date = new \DateTime($activity_date_time, new \DateTimeZone('UTC'));
+    // We have to change this _back_ to the default timezone, as initFieldValues
+    // will be called again and it assumes the value is from CiviCRM, in the
+    // default timezone.
+    $date->setTimezone(new \DateTimeZone(date_default_timezone_get()));
+
+    if (is_numeric($duration)) {
+      $date->add(new \DateInterval("PT{$duration}M"));
     }
-    else {
-      $date = new DrupalDateTime($activity_date_time);
-      $date->modify("+$duration minutes");
-      $this->list[0] = $this->createItem(0, $date->format(DateTimeItemInterface::DATETIME_STORAGE_FORMAT));
-    }
+    $this->list[0] = $this->createItem(0, $date->format(DateTimeItemInterface::DATETIME_STORAGE_FORMAT));
   }
 
   /**
@@ -44,10 +56,11 @@ class ActivityEndDateFieldItemList extends FieldItemList {
   public function onChange($delta) {
     $entity = $this->getEntity();
     assert($entity instanceof CivicrmEntity);
-    $activity_date_time = strtotime($entity->get('activity_date_time')->value);
-    $new_end_date = strtotime($this->get($delta)->value);
-    $diff = $new_end_date - $activity_date_time;
-    // Update the duration of the activity.
+    // Since we're calculating a difference in times, we can use UTC.
+    $activity_date_time = new \DateTime($entity->get('activity_date_time')->value, new \DateTimeZone('UTC'));
+    $new_end_date = new \DateTime($this->get($delta)->value, new \DateTimeZone('UTC'));
+    $diff = $new_end_date->getTimestamp() - $activity_date_time->getTimestamp();
+
     $minutes = $diff / 60;
     $entity->get('duration')->setValue($minutes);
     parent::onChange($delta);
