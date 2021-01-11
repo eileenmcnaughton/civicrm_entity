@@ -229,10 +229,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
       $bundle = $options[$bundle_value];
 
       $transliteration = \Drupal::transliteration();
-      $bundle = $transliteration->transliterate($bundle, LanguageInterface::LANGCODE_DEFAULT, '_');
-      $bundle = mb_strtolower($bundle);
-      $bundle = preg_replace('/[^a-z0-9_]+/', '_', $bundle);
-      $bundle = preg_replace('/_+/', '_', $bundle);
+      $bundle = SupportedEntities::optionToMachineName($bundle, $transliteration);
     }
     $entity = new $this->entityClass([], $this->entityTypeId, $bundle);
     // Use initFieldValues to fix CiviCRM data array to Drupal.

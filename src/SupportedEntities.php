@@ -2,6 +2,9 @@
 
 namespace Drupal\civicrm_entity;
 
+use Drupal\Component\Transliteration\TransliterationInterface;
+use Drupal\Core\Language\LanguageInterface;
+
 /**
  * Defines supported entities.
  *
@@ -857,6 +860,26 @@ $civicrm_entity_info['civicrm_group_contact'] = [
         'civicrm_alter_drupal_entities'
       );
     }
+  }
+
+  /**
+   * Transforms an option value to a machine name.
+   *
+   * This is leveraged to convert options into bundle names.
+   *
+   * @param string $value
+   *   The option value.
+   * @param \Drupal\Component\Transliteration\TransliterationInterface $transliteration
+   *   The transliteration service.
+   *
+   * @return string
+   */
+  public static function optionToMachineName($value, TransliterationInterface $transliteration) {
+    $value = $transliteration->transliterate($value, LanguageInterface::LANGCODE_DEFAULT, '_');
+    $value = mb_strtolower($value);
+    $value = preg_replace('/[^a-z0-9_]+/', '_', $value);
+    $value = preg_replace('/_+/', '_', $value);
+    return $value;
   }
 
 }

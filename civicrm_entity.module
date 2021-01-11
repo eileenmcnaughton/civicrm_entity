@@ -19,7 +19,6 @@ use Drupal\Core\Entity\ContentEntityDeleteForm;
 use Drupal\Core\Entity\ContentEntityType;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
-use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\views\ViewExecutable;
@@ -141,11 +140,7 @@ function civicrm_entity_entity_bundle_info() {
     $bundles[$entity_type_id] = [];
     $options = $civicrm_api->getOptions($civicrm_entity_info['civicrm entity name'], $civicrm_entity_info['bundle property']);
     foreach ($options as $option) {
-      $machine_name = $transliteration->transliterate($option, LanguageInterface::LANGCODE_DEFAULT, '_');
-      $machine_name = mb_strtolower($machine_name);
-      $machine_name = preg_replace('/[^a-z0-9_]+/', '_', $machine_name);
-      $machine_name = preg_replace('/_+/', '_', $machine_name);
-
+      $machine_name = SupportedEntities::optionToMachineName($option, $transliteration);
       $bundles[$entity_type_id][$machine_name]['label'] = $option;
     }
   }
