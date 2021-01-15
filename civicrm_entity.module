@@ -387,10 +387,10 @@ function civicrm_entity_views_query_alter(ViewExecutable $view, QueryPluginBase 
     }
     foreach ($query->where as &$condition_group) {
       foreach ($condition_group['conditions'] as &$condition) {
-        foreach ($affectedColumns as $columns) {
-          if (!is_object($condition['field'])) {
-            if (strpos($columns, $condition['field']) !== FALSE) {
-              $condition['field'] = str_replace($columns, $columns . $dbLocale, $condition['field']);
+        if (!is_object($condition['field'])) {
+          foreach ($affectedColumns as $aff_column) {
+            if (strpos($aff_column, $condition['field']) !== FALSE) {
+              $condition['field'] = str_replace($aff_column, $aff_column . $dbLocale, $condition['field']);
             }
           }
         }
