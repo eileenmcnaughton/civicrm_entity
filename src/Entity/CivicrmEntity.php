@@ -75,15 +75,6 @@ class CivicrmEntity extends ContentEntityBase {
     $field_definition_provider = \Drupal::service('civicrm_entity.field_definition_provider');
     $civicrm_fields = \Drupal::service('civicrm_entity.api')->getFields($entity_type->get('civicrm_entity'), 'create');
 
-    if ($entity_type->hasKey('bundle')) {
-      // @todo needs a computed class to do same op as civicrm_entity_entity_bundle_info.
-      $fields[$entity_type->getKey('bundle')] = BaseFieldDefinition::create('string')
-        ->setLabel($entity_type->getBundleLabel())
-        ->setRequired(TRUE)
-        ->setReadOnly(TRUE)
-        ->setClass(BundleFieldItemList::class);
-    }
-
     foreach ($civicrm_fields as $civicrm_field) {
       // Apply any additional field data provided by the module.
       if (!empty($civicrm_entity_info['fields'][$civicrm_field['name']])) {
@@ -96,6 +87,21 @@ class CivicrmEntity extends ContentEntityBase {
       if ($values = \Drupal::service('civicrm_entity.api')->getCustomFieldMetadata($civicrm_field['name'])) {
         $fields[$civicrm_field['name']]->setSetting('civicrm_entity_field_metadata', $values);
       }
+    }
+
+    // Placing the bundle field here is a bit of a hack work around.
+    // \Drupal\Core\Entity\ContentEntityStorageBase::initFieldValues will apply
+    // default values to all empty fields. The computed bundle field will
+    // provide a default value as well, for its related CiviCRM Entity field.
+    // By placing this field last, we avoid conflict on setting of the default
+    // value.
+    if ($entity_type->hasKey('bundle')) {
+      // @todo needs a computed class to do same op as civicrm_entity_entity_bundle_info.
+      $fields[$entity_type->getKey('bundle')] = BaseFieldDefinition::create('string')
+        ->setLabel($entity_type->getBundleLabel())
+        ->setRequired(TRUE)
+        ->setReadOnly(TRUE)
+        ->setClass(BundleFieldItemList::class);
     }
 
     // Provide a computed base field that takes the activity start time and
