@@ -83,17 +83,6 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
       ],
     ];
 
-    // If this entity has bundle support, we define the bundle field as "bundle"
-    // and will use the "bundle property" as the field to fetch field options
-    // from CiviCRM with.
-    //
-    // @see civicrm_entity_entity_bundle_info()
-    // @see \Drupal\civicrm_entity\Entity\CivicrmEntity::baseFieldDefinitions()
-    if (!empty($civicrm_entity_info['bundle property'])) {
-      $entity_type_info['entity_keys']['bundle'] = 'bundle';
-      $entity_type_info['civicrm_bundle_property'] = $civicrm_entity_info['bundle property'];
-    }
-
     if (in_array($entity_type_id, $enabled_entity_types)) {
       $entity_type_info = array_merge_recursive($entity_type_info, [
         'handlers' => [
@@ -120,6 +109,20 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
         'field_ui_base_route' => "entity.$entity_type_id.collection",
       ]);
     }
+
+    // If this entity has bundle support, we define the bundle field as "bundle"
+    // and will use the "bundle property" as the field to fetch field options
+    // from CiviCRM with.
+    //
+    // @see civicrm_entity_entity_bundle_info()
+    // @see \Drupal\civicrm_entity\Entity\CivicrmEntity::baseFieldDefinitions()
+    if (!empty($civicrm_entity_info['bundle property'])) {
+      $entity_type_info['entity_keys']['bundle'] = 'bundle';
+      $entity_type_info['civicrm_bundle_property'] = $civicrm_entity_info['bundle property'];
+      $entity_type_info['links']['add-page'] = $entity_type_info['links']['add-form'];
+      $entity_type_info['links']['add-form'] = sprintf('%s/{%s}', $entity_type_info['links']['add-form'], $entity_type_info['entity_keys']['bundle']);
+    }
+
     $entity_types[$entity_type_id] = new ContentEntityType($entity_type_info);
   }
 }

@@ -54,8 +54,14 @@ class CivicrmEntityLocalAction extends DeriverBase implements ContainerDeriverIn
 
     /** @var \Drupal\Core\Entity\EntityTypeInterface $entity_type */
     foreach ($civicrm_entities as $entity_type_id => $entity_type) {
+      if ($entity_type->hasLinkTemplate('add-page')) {
+        $route_name = "entity.$entity_type_id.add_page";
+      } else {
+        $route_name = "entity.$entity_type_id.add_form";
+      }
+
       $this->derivatives["field_storage_config_add_$entity_type_id"] = [
-        'route_name' => "entity.$entity_type_id.add_form",
+        'route_name' => $route_name,
         'title' => $this->t('Add :label', [':label' => $entity_type->getLabel()]),
         'appears_on' => ["entity.$entity_type_id.collection"],
       ] + $base_plugin_definition;
