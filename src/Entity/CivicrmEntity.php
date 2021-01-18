@@ -6,6 +6,7 @@ use Drupal\civicrm_entity\Plugin\Field\ActivityEndDateFieldItemList;
 use Drupal\civicrm_entity\Plugin\Field\BundleFieldItemList;
 use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Core\Entity\ContentEntityBase;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\TypedData\Plugin\DataType\DateTimeIso8601;
@@ -68,6 +69,27 @@ class CivicrmEntity extends ContentEntityBase {
   /**
    * {@inheritdoc}
    */
+  public static function preCreate(EntityStorageInterface $storage, array &$values) {
+    // If the `bundle` property is missing during the create operation, Drupal
+    // will error – even if our bundle is computed on other required fields.
+    // This ensures the values array has the bundle property set.
+    $entity_type = $storage->getEntityType();
+    if ($entity_type->hasKey('bundle')) {
+      $bundle_property = $entity_type->get('civicrm_bundle_property');
+      /** @var \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api */
+      $civicrm_api = \Drupal::service('civicrm_entity.api');
+      $options = $civicrm_api->getOptions($entity_type->get('civicrm_entity'), $bundle_property);
+      $raw_bundle_value = $values[$bundle_property];
+      $bundle_value = $options[$raw_bundle_value];
+      $transliteration = \Drupal::transliteration();
+      $machine_name = SupportedEntities::optionToMachineName($bundle_value, $transliteration);
+      $values[$entity_type->getKey('bundle')] = $machine_name;
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = [];
     $civicrm_entity_info = SupportedEntities::getInfo()[$entity_type->id()];
@@ -96,7 +118,6 @@ class CivicrmEntity extends ContentEntityBase {
     // By placing this field last, we avoid conflict on setting of the default
     // value.
     if ($entity_type->hasKey('bundle')) {
-      // @todo needs a computed class to do same op as civicrm_entity_entity_bundle_info.
       $fields[$entity_type->getKey('bundle')] = BaseFieldDefinition::create('string')
         ->setLabel($entity_type->getBundleLabel())
         ->setRequired(TRUE)
