@@ -62,6 +62,7 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
       'class' => CivicrmEntity::class,
       'originalClass' => CivicrmEntity::class,
       'id' => $entity_type_id,
+      'component' => $civicrm_entity_info['component'] ?? NULL,
       'civicrm_entity' => $civicrm_entity_name,
       'civicrm_entity_ui_exposed' => in_array($entity_type_id, $enabled_entity_types),
       'label' => new TranslatableMarkup('CiviCRM :name', [':name' => $civicrm_entity_info['civicrm entity label']]),
