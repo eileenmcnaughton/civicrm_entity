@@ -436,6 +436,9 @@ class CivicrmEntityViewsData extends EntityViewsData {
             'second field' => 'contact_id',
             'id' => 'civicrm_entity_civicrm_group_contact',
             'label' => $this->t('CiviCRM contact'),
+            'extra' => [
+              ['field' => 'status', 'value' => 'Added'],
+            ],
           ],
         ];
 
@@ -450,6 +453,9 @@ class CivicrmEntityViewsData extends EntityViewsData {
             'second field' => 'group_id',
             'id' => 'civicrm_entity_civicrm_group_contact',
             'label' => $this->t('CiviCRM group'),
+            'extra' => [
+              ['field' => 'status', 'value' => 'Added'],
+            ],
           ],
         ];
 

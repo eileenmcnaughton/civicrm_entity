@@ -38,6 +38,10 @@ abstract class CiviCrmBridgeRelationshipBase extends RelationshipPluginBase {
       'adjusted' => TRUE,
     ];
 
+    if (!empty($this->definition['extra'])) {
+      $first['extra'] = $this->definition['extra'];
+    }
+
     if (!empty($this->options['required'])) {
       $first['type'] = 'INNER';
     }
