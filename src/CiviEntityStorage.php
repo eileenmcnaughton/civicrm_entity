@@ -764,8 +764,8 @@ class CiviEntityStorage extends SqlContentEntityStorage {
     ];
     $api_results = civicrm_api3('EntityTag', 'get', $api_params);
     if (!empty($api_results['values'])) {
-      foreach ($api_results as $delta => $result) {
-        if ($result['tag_id'] == $entityId) {
+      foreach ($api_results['values'] as $delta => $result) {
+        if ($result['entity_id'] == $entityId) {
           return $result['id'];
         }
       }
