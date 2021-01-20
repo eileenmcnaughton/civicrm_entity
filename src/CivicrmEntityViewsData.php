@@ -535,6 +535,36 @@ class CivicrmEntityViewsData extends EntityViewsData {
           ],
         ];
         break;
+      case 'civicrm_price_set':
+        $views_field['civicrm_price_set_entity']['table'] = [
+          'group' => $this->t('CiviCRM price set entity'),
+          'base' => [
+            'field' => 'id',
+            'title' => $this->t('CiviCRM price set entity'),
+            'help'  => $this->t('View displays CiviCRM Price Set to Entity mapping info.'),
+          ],
+        ];
+
+        $views_field['civicrm_price_set_entity']['price_set_id'] = [
+          'title' => $this->t('Price set'),
+          'help' => $this->t('Price set for this entity.'),
+          'relationship' => [
+            'id' => 'standard',
+            'base' => 'civicrm_price_set',
+            'base field' => 'id',
+            'label' => $this->t('Price set'),
+          ],
+        ];
+
+        $views_field['civicrm_event']['table']['join']['civicrm_price_set_entity'] = [
+          'left_field' => 'entity_id',
+          'field' => 'id',
+        ];
+
+        $views_field['civicrm_price_set_entity']['table']['join']['civicrm_event'] = [
+          'left_field' => 'id',
+          'field' => 'entity_id',
+        ];
     }
   }
 
