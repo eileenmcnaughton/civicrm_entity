@@ -282,6 +282,11 @@ class CiviEntityStorage extends SqlContentEntityStorage {
    * {@inheritdoc}
    */
   public function hasData() {
+    if (($component = $this->entityType->get('component')) !== NULL) {
+      $components = $this->getCiviCrmApi()->getValue('Setting', ['name' => 'enable_components']);
+      return !in_array($component, $components) ? FALSE :
+        $this->getCiviCrmApi()->getCount($this->entityType->get('civicrm_entity')) > 0;
+    }
     return $this->getCiviCrmApi()->getCount($this->entityType->get('civicrm_entity')) > 0;
   }
   /**
@@ -770,6 +775,13 @@ class CiviEntityStorage extends SqlContentEntityStorage {
         }
       }
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function onEntityTypeDelete(EntityTypeInterface $entity_type) {
+    // Don't do anything.
   }
 
 }
