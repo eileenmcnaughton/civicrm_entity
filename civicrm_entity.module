@@ -62,6 +62,7 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
       'class' => CivicrmEntity::class,
       'originalClass' => CivicrmEntity::class,
       'id' => $entity_type_id,
+      'component' => $civicrm_entity_info['component'] ?? NULL,
       'civicrm_entity' => $civicrm_entity_name,
       'civicrm_entity_ui_exposed' => in_array($entity_type_id, $enabled_entity_types),
       'label' => new TranslatableMarkup('CiviCRM :name', [':name' => $civicrm_entity_info['civicrm entity label']]),
@@ -196,10 +197,10 @@ function _civicrm_entity_get_entity_type_from_elements($elements) {
  *   The CiviCRM entity type.
  * @param int $id
  *   The id.
- * @param \Drupal\Core\Entity\Entity|null|string $entity
+ * @param \Drupal\Core\Entity\EntityInterface|null|string $entity
  *   The entity.
  *
- * @return void|\Drupal\Core\Entity\Entity
+ * @return void|\Drupal\Core\Entity\EntityInterface
  */
 function _civicrm_entity_stash($objectName, $id, $entity = NULL) {
   $cache =& drupal_static(__FUNCTION__, []);
@@ -317,14 +318,14 @@ function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
   }
   else {
     // Special handling for EntityTag objects.
-    if ($entityType == 'entity_tag') {
+    if ($entityType == 'civicrm_entity_tag') {
       foreach ($objectRef[0] as $entityTag) {
         $object = new CRM_Core_BAO_EntityTag();
         $object->entity_id = $entityTag;
         $object->entity_table = 'civicrm_contact';
         $object->tag_id = $objectId;
         if ($object->find(TRUE)) {
-          $entity = $storage->load($entityTag);
+          $entity = $storage->load($object->id);
           $entity->original = $storage->loadUnchanged($entity->id());
           _civicrm_entity_post_invoke($op, $storage, $entity);
         }
@@ -387,10 +388,10 @@ function civicrm_entity_views_query_alter(ViewExecutable $view, QueryPluginBase 
     }
     foreach ($query->where as &$condition_group) {
       foreach ($condition_group['conditions'] as &$condition) {
-        foreach ($affectedColumns as $colums) {
-          if (!is_object($condition['field'])) {
-            if (strpos($columns, $condition['field'])) {
-              $condition['field'] = str_replace($columns, $columns . $dbLocale, $condition['field']);
+        if (!is_object($condition['field'])) {
+          foreach ($affectedColumns as $aff_column) {
+            if (strpos($aff_column, $condition['field']) !== FALSE) {
+              $condition['field'] = str_replace($aff_column, $aff_column . $dbLocale, $condition['field']);
             }
           }
         }
@@ -402,5 +403,40 @@ function civicrm_entity_views_query_alter(ViewExecutable $view, QueryPluginBase 
         $field['field'] .= $dbLocale;
       }
     }
+  }
+}
+
+/**
+ * Implements hook_theme_registry_alter().
+ */
+function civicrm_entity_theme_registry_alter(&$theme_registry) {
+  $theme_registry['civicrm_entity']['preprocess functions'][] = 'field_group_build_entity_groups';
+}
+
+/**
+ * Implements hook_rebuild().
+ *
+ * This resets the field storage and entity type definitions for civicrm_entity
+ * according to the active definitions to avoid mismatches since the definitions
+ * are not necessary to be updated.
+ */
+function civicrm_entity_rebuild() {
+  /** @var \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface $entity_last_installed_repository */
+  $entity_last_installed_repository = \Drupal::service('entity.last_installed_schema.repository');
+  /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager */
+  $entity_field_manager = \Drupal::service('entity_field.manager');
+  /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager */
+  $entity_type_manager = \Drupal::service('entity_type.manager');
+
+  $supported_entities = SupportedEntities::getInfo();
+
+  foreach (array_keys($supported_entities) as $entity_type_id) {
+    // Reset field storage definitions.
+    $field_storage_definitions = $entity_field_manager->getFieldStorageDefinitions($entity_type_id);
+    $entity_last_installed_repository->setLastInstalledFieldStorageDefinitions($entity_type_id, $field_storage_definitions);
+
+    // Reset entity type definition.
+    $definition = $entity_type_manager->getDefinition($entity_type_id);
+    $entity_last_installed_repository->setLastInstalledDefinition($definition);
   }
 }

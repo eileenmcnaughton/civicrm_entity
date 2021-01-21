@@ -606,6 +606,90 @@ class CivicrmEntityAddressLeafletMap extends StylePluginBase implements Containe
     $icon_options = $this->options['icon'];
     $form['icon'] = $this->generateIconFormElement($icon_options, $form);
 
+    // Add Replacement pattern
+    // code from LeafletSettingsElementsTrait.php
+    if (method_exists($this, 'getProvider') && $this->getProvider() == 'civicrm_entity_leaflet') {
+      $twig_link = $this->link->generate('Twig', Url::fromUri('http://twig.sensiolabs.org/documentation', [
+        'absolute' => TRUE,
+        'attributes' => ['target' => 'blank'],
+      ])
+      );
+
+      $icon_url_description .= '<br>' . $this->t('You may include @twig_link. You may enter data from this view as per the "Replacement patterns" below.', [
+        '@twig_link' => $twig_link,
+      ]);
+
+      $form['icon']['iconUrl']['#description'] .= $icon_url_description;
+      $form['icon']['shadowUrl']['#description'] .= $icon_url_description;
+
+      // Setup the tokens for views fields.
+      // Code is snatched from Drupal\views\Plugin\views\field\FieldPluginBase.
+      $options = [];
+      $optgroup_fields = (string) t('Fields');
+      if (isset($this->displayHandler)) {
+        foreach ($this->displayHandler->getHandlers('field') as $id => $field) {
+          /* @var \Drupal\views\Plugin\views\field\EntityField $field */
+          $options[$optgroup_fields]["{{ $id }}"] = substr(strrchr($field->label(), ":"), 2);
+        }
+      }
+
+      // Default text.
+      $output = [];
+      // We have some options, so make a list.
+      if (!empty($options)) {
+        $output[] = [
+          '#markup' => '<p>' . $this->t("The following replacement tokens are available. Fields may be marked as <em>Exclude from display</em> if you prefer.") . '</p>',
+        ];
+        foreach (array_keys($options) as $type) {
+          if (!empty($options[$type])) {
+            $items = [];
+            foreach ($options[$type] as $key => $value) {
+              $items[] = $key;
+            }
+            $item_list = [
+              '#theme' => 'item_list',
+              '#items' => $items,
+            ];
+            $output[] = $item_list;
+          }
+        }
+      }
+
+      # Locate where insert available patterns
+      $key_idx=0;
+      foreach ($form['icon'] as $key => $value){
+        # just below 'shadowUrl'
+        if ($key == 'shadowUrl') {
+          $key_idx++;
+          break;
+        } 
+        else {
+          $key_idx++;
+        }
+      }
+      
+      if ($key_idx > 0) {
+        # if key found, insert help below
+        $array_tmp = array_slice($form['icon'], 0, $key_idx);
+        $array_tmp['help'] = [
+          '#type' => 'details',
+          '#title' => $this->t('Replacement patterns'),
+          '#value' => $output,
+        ];
+        $array_tmp=array_merge($array_tmp, array_slice($form['icon'], $key_idx));
+        $form['icon']=$array_tmp;
+        unset($array_tmp);
+      }
+      else {
+        # insert at the end form
+        $form['icon']['help'] = [
+          '#type' => 'details',
+          '#title' => $this->t('Replacement patterns'),
+          '#value' => $output,
+        ];
+      }
+    }
+    
     // Set Map Marker Cluster Element.
     $this->setMapMarkerclusterElement($form, $this->options);
 

@@ -4,6 +4,7 @@ namespace Drupal\civicrm_entity\Entity\Sql;
 
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Sql\SqlContentEntityStorageSchema;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 
 /**
  * Implementation of the SqlContentEntityStorageSchema for CiviCRM entities.
@@ -12,13 +13,6 @@ use Drupal\Core\Entity\Sql\SqlContentEntityStorageSchema;
  * CiviCRM for full data of the entity.
  */
 class CivicrmEntityStorageSchema extends SqlContentEntityStorageSchema {
-
-  /**
-   * The storage field definitions for this entity type.
-   *
-   * @var \Drupal\Core\Field\FieldStorageDefinitionInterface[]
-   */
-  protected $fieldStorageDefinitions;
 
   /**
    * The storage object for the given entity type.
@@ -54,6 +48,13 @@ class CivicrmEntityStorageSchema extends SqlContentEntityStorageSchema {
    * {@inheritdoc}
    */
   public function requiresEntityStorageSchemaChanges(EntityTypeInterface $entity_type, EntityTypeInterface $original) {
+    return FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function requiresFieldStorageSchemaChanges(FieldStorageDefinitionInterface $storage_definition, FieldStorageDefinitionInterface $original) {
     return FALSE;
   }
 

@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Sql\DefaultTableMapping;
 use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
+use Drupal\Core\Entity\Sql\SqlContentEntityStorageSchema;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Language\LanguageInterface;
@@ -173,9 +174,29 @@ class CiviEntityStorage extends SqlContentEntityStorage {
     foreach ($ids as $id) {
       $options = ['id' => $id];
       $options['return'] = $field_names;
+
+      if ($this->entityType->get('civicrm_entity') === 'participant') {
+        unset($options['return']);
+      }
+
       $civicrm_entity = $this->getCiviCrmApi()->get($this->entityType->get('civicrm_entity'), $options);
       $civicrm_entity = reset($civicrm_entity);
       if ($civicrm_entity) {
+        if ($this->entityType->get('civicrm_entity') === 'participant') {
+          // Massage the values.
+          $temporary = [];
+          foreach ($civicrm_entity as $key => $value) {
+            if (strpos($key, 'participant_') === 0) {
+              $temporary[str_replace('participant_', '', $key)] = $value;
+            }
+            else {
+              $temporary[$key] = $value;
+            }
+          }
+
+          $civicrm_entity = $temporary;
+        }
+
         $entity = $this->prepareLoadedEntity($civicrm_entity);
         $entities[$entity->id()] = $entity;
       }
@@ -261,6 +282,11 @@ class CiviEntityStorage extends SqlContentEntityStorage {
    * {@inheritdoc}
    */
   public function hasData() {
+    if (($component = $this->entityType->get('component')) !== NULL) {
+      $components = $this->getCiviCrmApi()->getValue('Setting', ['name' => 'enable_components']);
+      return !in_array($component, $components) ? FALSE :
+        $this->getCiviCrmApi()->getCount($this->entityType->get('civicrm_entity')) > 0;
+    }
     return $this->getCiviCrmApi()->getCount($this->entityType->get('civicrm_entity')) > 0;
   }
   /**
@@ -348,6 +374,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
       // Set a default format for text fields.
       if ($definition->getType() === 'text_long') {
         $filter_format = $civicrm_entity_settings->get('filter_format') ?: filter_fallback_format();
+
         $item_values = $items->getValue();
         foreach ($item_values as $delta => $item) {
           $item_values[$delta]['format'] = $filter_format;
@@ -373,7 +400,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
             // CiviCRM gives us the datetime in the users timezone (or no
             // timezone at all) but Drupal expects it in UTC. So, we need to
             // convert from the users timezone into UTC.
-            $datetime_value = (new \DateTime($item[$main_property_name], new \DateTimeZone(drupal_get_user_timezone())))->setTimezone(new \DateTimeZone('UTC'))->format($datetime_format);
+            $datetime_value = (new \DateTime($item[$main_property_name], new \DateTimeZone(date_default_timezone_get())))->setTimezone(new \DateTimeZone('UTC'))->format($datetime_format);
             $item_values[$delta][$main_property_name] = $datetime_value;
           }
         }
@@ -622,7 +649,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
             if (!empty($attributes['serialize'])) {
               $value = serialize($value);
             }
-            $record[$column_name] = drupal_schema_get_field_value($attributes, $value);
+            $record[$column_name] = SqlContentEntityStorageSchema::castValue($attributes, $value);
           }
           $query->values($record);
           if ($this->entityType->isRevisionable()) {
@@ -742,12 +769,19 @@ class CiviEntityStorage extends SqlContentEntityStorage {
     ];
     $api_results = civicrm_api3('EntityTag', 'get', $api_params);
     if (!empty($api_results['values'])) {
-      foreach ($api_results as $delta => $result) {
-        if ($result['tag_id'] == $entityId) {
+      foreach ($api_results['values'] as $delta => $result) {
+        if ($result['entity_id'] == $entityId) {
           return $result['id'];
         }
       }
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function onEntityTypeDelete(EntityTypeInterface $entity_type) {
+    // Don't do anything.
   }
 
 }

@@ -94,7 +94,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
 
     // Load all typed data definitions of all fields. This should cover each of
     // the entity base, revision, data tables.
-    $field_definitions = $this->entityManager->getBaseFieldDefinitions($this->entityType->id());
+    $field_definitions = $this->entityFieldManager->getBaseFieldDefinitions($this->entityType->id());
     /** @var \Drupal\Core\Entity\Sql\DefaultTableMapping $table_mapping */
     $table_mapping = $this->storage->getTableMapping();
     if ($table_mapping) {
@@ -106,14 +106,14 @@ class CivicrmEntityViewsData extends EntityViewsData {
           // the field.
           if ($field_definition->getType() === 'entity_reference') {
             $target_entity_type_id = $field_definition->getFieldStorageDefinition()->getSetting('target_type');
-            $target_entity_type = $this->entityManager->getDefinition($target_entity_type_id);
+            $target_entity_type = $this->entityTypeManager->getDefinition($target_entity_type_id);
             assert($target_entity_type !== NULL);
             $target_base_table = $target_entity_type->getDataTable() ?: $target_entity_type->getBaseTable();
 
             $field_name = $field_definition->getName();
             $pseudo_field_name = 'reverse__' . $this->entityType->id() . '__' . $field_name;
             $args = [
-              '@label' => $target_entity_type->getLowercaseLabel(),
+              '@label' => $target_entity_type->getSingularLabel(),
               '@field_name' => $field_name,
               '@entity' => $this->entityType->getLabel(),
             ];
@@ -307,6 +307,60 @@ class CivicrmEntityViewsData extends EntityViewsData {
           'id' => 'civicrm_entity_civicrm_activity_contact_record',
         ];
 
+        $views_field[$base_table]['attachments'] = [
+          'title' => $this->t('Attachments'),
+          'help' => $this->t('Attachments for the CiviCRM activity.'),
+          'field' => [
+            'id' => 'civicrm_entity_activity_attachments',
+            'field' => 'id',
+            'click sortable' => FALSE,
+          ],
+        ];
+        $views_field[$base_table]['activity_end_datetime'] = [
+          'title' => $this->t('Activity End Date'),
+          'help' => $this->t('The calculated end date and time, for calendar integrations.'),
+          'field' => [
+            'id' => 'civicrm_entity_activity_end_datetime',
+            'field_name' => 'activity_end_datetime',
+            'click sortable' => FALSE,
+          ],
+        ];
+
+        $views_field[$base_table]['contact'] = [
+          'title' => $this->t('Contact'),
+          'help' => $this->t('Relate CiviCRM contact to CiviCRM activity.'),
+          'relationship' => [
+            'id' => 'civicrm_entity_activity_contact',
+            'base' => 'civicrm_contact',
+            'base field' => 'id',
+            'first field' => 'activity_id',
+            'second field' => 'contact_id',
+            'label' => $this->t('Contact'),
+          ],
+        ];
+
+        $views_field['civicrm_contact']['activity'] = [
+          'title' => $this->t('Activity'),
+          'help' => $this->t('Relate CiviCRM activity to CiviCRM contact.'),
+          'relationship' => [
+            'id' => 'civicrm_entity_activity_contact',
+            'base' => 'civicrm_activity',
+            'base field' => 'id',
+            'first field' => 'contact_id',
+            'second field' => 'activity_id',
+            'label' => $this->t('Activity'),
+          ],
+        ];
+
+        unset(
+          $views_field['civicrm_contact']['reverse__civicrm_activity__assignee_id'],
+          $views_field['civicrm_contact']['reverse__civicrm_activity__target_id'],
+          $views_field['civicrm_contact']['reverse__civicrm_activity__source_contact_id'],
+          $views_field[$base_table]['assignee_id']['relationship'],
+          $views_field[$base_table]['target_id']['relationship'],
+          $views_field[$base_table]['source_contact_id']['relationship']
+        );
+
         break;
 
       case 'civicrm_contact':
@@ -316,6 +370,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
           'relationship' => [
             'base' => 'users_field_data',
             'base field' => 'uid',
+            'table' => 'civicrm_uf_match',
             'first field' => 'contact_id',
             'second field' => 'uf_id',
             'id' => 'civicrm_entity_civicrm_contact_user',
@@ -329,6 +384,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
           'relationship' => [
             'base' => 'civicrm_contact',
             'base field' => 'id',
+            'table' => 'civicrm_uf_match',
             'first field' => 'uf_id',
             'second field' => 'contact_id',
             'id' => 'civicrm_entity_civicrm_contact_user',
@@ -375,10 +431,14 @@ class CivicrmEntityViewsData extends EntityViewsData {
           'relationship' => [
             'base' => 'civicrm_contact',
             'base field' => 'id',
+            'table' => 'civicrm_group_contact',
             'first field' => 'group_id',
             'second field' => 'contact_id',
             'id' => 'civicrm_entity_civicrm_group_contact',
             'label' => $this->t('CiviCRM contact'),
+            'extra' => [
+              ['field' => 'status', 'value' => 'Added'],
+            ],
           ],
         ];
 
@@ -388,10 +448,14 @@ class CivicrmEntityViewsData extends EntityViewsData {
           'relationship' => [
             'base' => 'civicrm_group',
             'base field' => 'id',
+            'table' => 'civicrm_group_contact',
             'first field' => 'contact_id',
             'second field' => 'group_id',
             'id' => 'civicrm_entity_civicrm_group_contact',
             'label' => $this->t('CiviCRM group'),
+            'extra' => [
+              ['field' => 'status', 'value' => 'Added'],
+            ],
           ],
         ];
 
@@ -426,7 +490,81 @@ class CivicrmEntityViewsData extends EntityViewsData {
           ],
         ];
 
+        $views_field['civicrm_case']['civicrm_contact'] = [
+          'title' => $this->t('CiviCRM contact related to the CiviCRM case'),
+          'help' => $this->t('Relate CiviCRM contact to the CiviCRM case.'),
+          'relationship' => [
+            'base' => 'civicrm_contact',
+            'base field' => 'id',
+            'table' => 'civicrm_case_contact',
+            'first field' => 'case_id',
+            'second field' => 'contact_id',
+            'id' => 'civicrm_entity_civicrm_case_contact',
+            'label' => $this->t('CiviCRM contact'),
+          ],
+        ];
+
+        $views_field['civicrm_contact']['civicrm_case'] = [
+          'title' => $this->t('CiviCRM case related to the CiviCRM contact'),
+          'help' => $this->t('Relate CiviCRM case to the CiviCRM contact.'),
+          'relationship' => [
+            'base' => 'civicrm_case',
+            'base field' => 'id',
+            'table' => 'civicrm_case_contact',
+            'first field' => 'contact_id',
+            'second field' => 'case_id',
+            'id' => 'civicrm_entity_civicrm_case_contact',
+            'label' => $this->t('CiviCRM case'),
+          ],
+        ];
+
+        unset($views_field['civicrm_case']['medium_id']);
+        unset($views_field['civicrm_case']['contact_id']['relationship']);
+
         break;
+
+      case 'civicrm_line_item':
+        $views_field['civicrm_line_item']['entity_id'] = [
+          'title' => $this->t('CiviCRM membership'),
+          'help' => $this->t('Relate CiviCRM entity to the line item entity for membership.'),
+          'relationship' => [
+            'id' => 'standard',
+            'base field' => 'id',
+            'base' => 'civicrm_membership',
+            'label' => $this->t('Membership')
+          ],
+        ];
+        break;
+      case 'civicrm_price_set':
+        $views_field['civicrm_price_set_entity']['table'] = [
+          'group' => $this->t('CiviCRM price set entity'),
+          'base' => [
+            'field' => 'id',
+            'title' => $this->t('CiviCRM price set entity'),
+            'help'  => $this->t('View displays CiviCRM Price Set to Entity mapping info.'),
+          ],
+        ];
+
+        $views_field['civicrm_price_set_entity']['price_set_id'] = [
+          'title' => $this->t('Price set'),
+          'help' => $this->t('Price set for this entity.'),
+          'relationship' => [
+            'id' => 'standard',
+            'base' => 'civicrm_price_set',
+            'base field' => 'id',
+            'label' => $this->t('Price set'),
+          ],
+        ];
+
+        $views_field['civicrm_event']['table']['join']['civicrm_price_set_entity'] = [
+          'left_field' => 'entity_id',
+          'field' => 'id',
+        ];
+
+        $views_field['civicrm_price_set_entity']['table']['join']['civicrm_event'] = [
+          'left_field' => 'id',
+          'field' => 'entity_id',
+        ];
     }
   }
 

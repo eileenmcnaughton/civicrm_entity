@@ -278,14 +278,14 @@ class CustomEntityField extends EntityField {
    * @see \Drupal\civicrm_entity\CiviEntityStorage::initFieldValues()
    */
   protected function getItemValue($value, FieldDefinitionInterface $definition) {
-    if (!$value) {
+    if (is_null($value)) {
       return NULL;
     }
 
     switch ($definition->getType()) {
       case 'datetime':
         $datetime_format = $definition->getSetting('datetime_type') === DateTimeItem::DATETIME_TYPE_DATE ? DateTimeItemInterface::DATE_STORAGE_FORMAT : DateTimeItemInterface::DATETIME_STORAGE_FORMAT;
-        return (new \DateTime($value, new \DateTimeZone(drupal_get_user_timezone())))->setTimezone(new \DateTimeZone('UTC'))->format($datetime_format);
+        return (new \DateTime($value, new \DateTimeZone(date_default_timezone_get())))->setTimezone(new \DateTimeZone('UTC'))->format($datetime_format);
     }
 
     return $value;

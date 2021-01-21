@@ -17,8 +17,8 @@ use Drupal\field\FieldStorageConfigInterface;
  * @see views_views_data_alter()
  */
 function civicrm_entity_views_data_alter(&$data) {
-  $entity_manager = \Drupal::entityManager();
-  if (!$entity_manager->hasDefinition('field_storage_config')) {
+  $entity_type_manager = \Drupal::entityTypeManager();
+  if (!$entity_type_manager->hasDefinition('field_storage_config')) {
     return;
   }
 
@@ -30,7 +30,7 @@ function civicrm_entity_views_data_alter(&$data) {
   $module_handler = \Drupal::moduleHandler();
 
   /** @var \Drupal\field\FieldStorageConfigInterface $field_storage */
-  foreach ($entity_manager->getStorage('field_storage_config')->loadMultiple() as $field_storage) {
+  foreach ($entity_type_manager->getStorage('field_storage_config')->loadMultiple() as $field_storage) {
     if (_civicrm_entity_field_get_entity_type_storage($field_storage)) {
       $result = (array) $module_handler->invoke($field_storage->getTypeProvider(), 'field_views_data', [$field_storage]);
       if (empty($result)) {
@@ -50,7 +50,7 @@ function civicrm_entity_views_data_alter(&$data) {
   // Start: views_views_data_alter() snippet.
 
   /** @var \Drupal\field\FieldStorageConfigInterface $field_storage */
-  foreach ($entity_manager->getStorage('field_storage_config')->loadMultiple() as $field_storage) {
+  foreach ($entity_type_manager->getStorage('field_storage_config')->loadMultiple() as $field_storage) {
     if (_civicrm_entity_field_get_entity_type_storage($field_storage)) {
       $function = $field_storage->getTypeProvider() . '_field_views_data_views_data_alter';
       if (function_exists($function)) {
@@ -131,9 +131,9 @@ function civicrm_entity_field_default_views_data(FieldStorageConfigInterface $fi
 
   // Grab information about the entity type tables.
   // We need to join to both the base table and the data table, if available.
-  $entity_manager = \Drupal::entityManager();
+  $entity_type_manager = \Drupal::entityTypeManager();
   $entity_type_id = $field_storage->getTargetEntityTypeId();
-  $entity_type = $entity_manager->getDefinition($entity_type_id);
+  $entity_type = $entity_type_manager->getDefinition($entity_type_id);
   // EDIT: We ensure the base table is set to the entity type ID, which matches
   // the CiviCRM table pattern of `civicrm_*`
   if (!$base_table = $entity_type->getBaseTable()) {

@@ -4,6 +4,7 @@ namespace Drupal\civicrm_entity\Entity;
 
 use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
 
 class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
@@ -12,6 +13,10 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
    * {@inheritdoc}
    */
   public function getBaseFieldDefinition(array $civicrm_field) {
+    if (($civicrm_field['name'] === 'contact_id' && $civicrm_field['title'] === 'Case Client')) {
+      $civicrm_field['FKClassName'] = 'CRM_Contact_DAO_Contact';
+    }
+
     if ($civicrm_field['name'] == 'id') {
       $field = $this->getIdentifierDefinition();
     }
@@ -61,6 +66,7 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
 
         case \CRM_Utils_Type::T_TEXT:
         case \CRM_Utils_Type::T_LONGTEXT:
+        case \CRM_Utils_Type::T_BLOB:
           $field = $this->getTextDefinition($civicrm_field);
           break;
 
@@ -224,6 +230,12 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
           'weight' => 0,
         ]);
     }
+
+    if (isset($civicrm_field['html_type']) && $civicrm_field['html_type'] === 'CheckBox') {
+      $field->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED);
+      $field->setCustomStorage(TRUE);
+    }
+
     return $field;
   }
 
@@ -252,6 +264,10 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
     }
     else {
       $field_type = 'string_long';
+    }
+
+    if ($civicrm_field['name'] === 'details' && $civicrm_field['entity'] === 'Case') {
+      $field_type = 'text_long';
     }
 
     $field = BaseFieldDefinition::create($field_type)

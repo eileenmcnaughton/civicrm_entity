@@ -18,6 +18,11 @@ use Drupal\Core\Database\Query\Condition;
 class Proximity extends FilterPluginBase {
 
   /**
+   * Hardcoded country ID.
+   */
+  const COUNTRY_ID = 1228;
+
+  /**
    * The CiviCRM API.
    *
    * @var \Drupal\civicrm_entity\CiviCrmApiInterface
@@ -65,6 +70,9 @@ class Proximity extends FilterPluginBase {
     $options['value'] = [
       'contains' => [
         'value' => ['default' => ''],
+        'city' => ['default' => ''],
+        'state_province_id' => ['default' => ''],
+        // 'country' => ['default' => ''],
         'distance' => ['default' => ''],
         'distance_unit' => ['default' => ''],
       ],
@@ -90,6 +98,29 @@ class Proximity extends FilterPluginBase {
   public function valueForm(&$form, FormStateInterface $form_state) {
     $form['value']['#tree'] = TRUE;
     $form['value']['#type'] = 'fieldset';
+    $form['value']['city'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('City'),
+      '#size' => 30,
+      '#default_value' => $this->value['city'],
+    ];
+
+    $values = $this->civicrmApi->get('StateProvince', [
+      'sequential' => 1,
+      'country_id' => static::COUNTRY_ID,
+      'options' => ['limit' => 0],
+    ]);
+
+    $form['value']['state_province_id'] = [
+      '#type' => 'select',
+      '#options' => ['' => $this->t('- Any -')] + array_combine(
+        array_column($values, 'id'),
+        array_column($values, 'name')
+      ),
+      '#title' => $this->t('State/Province'),
+      '#default_value' => $this->value['state_province_id'],
+    ];
+
     $form['value']['value'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Postal code'),
@@ -120,52 +151,63 @@ class Proximity extends FilterPluginBase {
   public function query() {
     // Make sure that postal code and distance are set before altering the
     // query.
-    if (empty($this->value['value']) || empty($this->value['distance'])) {
-      return;
+    if ((!empty($this->value['value']) || !empty($this->value['city']) || !empty($this->value['state_province_id'])) && !empty($this->value['distance'])) {
+      $distance = $this->getCalculatedDistance($this->value['distance'], $this->value['distance_unit']);
+
+      $countries = $this
+        ->civicrmApi
+        ->get('Country', ['sequential' => 1, 'id' => static::COUNTRY_ID, 'return' => ['name']]);
+
+      $proximity_address = [
+        'postal_code' => $this->value['value'],
+        'state_province_id' => $this->value['state_province_id'],
+        'city' => $this->value['city'],
+        'country' => !empty($countries) ? $countries[0]['name'] : '',
+        'country_id' => static::COUNTRY_ID,
+        'distance_unit' => $this->value['distance_unit'],
+      ];
+
+      $geocoded_address = $this->getGeocodedAddress($proximity_address);
+
+      list($min_longitude, $max_longitude) = \CRM_Contact_BAO_ProximityQuery::earthLongitudeRange($geocoded_address['longitude'], $geocoded_address['latitude'], $distance);
+      list($min_latitude, $max_latitude) = \CRM_Contact_BAO_ProximityQuery::earthLatitudeRange($geocoded_address['longitude'], $geocoded_address['latitude'], $distance);
+
+      $this->ensureMyTable();
+
+      $condition = new Condition('AND');
+
+      if (!is_nan($min_latitude)) {
+        $condition->condition("{$this->tableAlias}.geo_code_1", $min_latitude, '>=');
+      }
+
+      if (!is_nan($max_latitude)) {
+        $condition->condition("{$this->tableAlias}.geo_code_1", $max_latitude, '<=');
+      }
+
+      if (!is_nan($min_longitude)) {
+        $condition->condition("{$this->tableAlias}.geo_code_2", $min_longitude, '>=');
+      }
+
+      if (!is_nan($max_longitude)) {
+        $condition->condition("{$this->tableAlias}.geo_code_2", $max_longitude, '<=');
+      }
+
+      if ($condition->count() > 0) {
+        $this->query->addWhere($this->options['group'], $condition);
+      }
+
+      $expression = "
+        ACOS(
+          COS(RADIANS({$this->tableAlias}.geo_code_1)) *
+          COS(RADIANS({$geocoded_address['latitude']})) *
+          COS(RADIANS({$this->tableAlias}.geo_code_2) - RADIANS({$geocoded_address['longitude']})) +
+          SIN(RADIANS({$this->tableAlias}.geo_code_1)) *
+          SIN(RADIANS({$geocoded_address['latitude']}))
+        ) * 6378137
+      ";
+
+      $this->query->addWhereExpression($this->options['group'], "$expression <= $distance");
     }
-
-    $distance = $this->getCalculatedDistance($this->value['distance'], $this->value['distance_unit']);
-    $proximity_address = ['postal_code' => $this->value['value']];
-    $geocoded_address = $this->getGeocodedAddress($proximity_address);
-
-    list($min_longitude, $max_longitude) = \CRM_Contact_BAO_ProximityQuery::earthLongitudeRange($geocoded_address['longitude'], $geocoded_address['latitude'], $distance);
-    list($min_latitude, $max_latitude) = \CRM_Contact_BAO_ProximityQuery::earthLatitudeRange($geocoded_address['longitude'], $geocoded_address['latitude'], $distance);
-
-    $this->ensureMyTable();
-
-    $condition = new Condition('AND');
-
-    if (!is_nan($min_latitude)) {
-      $condition->condition("{$this->tableAlias}.geo_code_1", $min_latitude, '>=');
-    }
-
-    if (!is_nan($max_latitude)) {
-      $condition->condition("{$this->tableAlias}.geo_code_1", $max_latitude, '<=');
-    }
-
-    if (!is_nan($min_longitude)) {
-      $condition->condition("{$this->tableAlias}.geo_code_2", $min_longitude, '>=');
-    }
-
-    if (!is_nan($max_longitude)) {
-      $condition->condition("{$this->tableAlias}.geo_code_2", $max_longitude, '<=');
-    }
-
-    if ($condition->count() > 0) {
-      $this->query->addWhere($this->options['group'], $condition);
-    }
-
-    $expression = "
-      ACOS(
-        COS(RADIANS({$this->tableAlias}.geo_code_1)) *
-        COS(RADIANS({$geocoded_address['latitude']})) *
-        COS(RADIANS({$this->tableAlias}.geo_code_2) - RADIANS({$geocoded_address['longitude']})) +
-        SIN(RADIANS({$this->tableAlias}.geo_code_1)) *
-        SIN(RADIANS({$geocoded_address['latitude']}))
-      ) * 6378137
-    ";
-
-    $this->query->addWhereExpression($this->options['group'], "$expression <= $distance");
   }
 
   /**
@@ -208,6 +250,8 @@ class Proximity extends FilterPluginBase {
    * @see CRM_Core_BAO_Address::addGeocoderData()
    */
   protected function getGeocodedAddress(array $address) {
+    $address = array_filter($address);
+
     if (!\CRM_Core_BAO_Address::addGeocoderData($address)) {
       throw new \Exception('Unable to properly geocode address.');
     }

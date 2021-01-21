@@ -94,6 +94,15 @@ class CiviCrmApi implements CiviCrmApiInterface {
   /**
    * {@inheritdoc}
    */
+  public function getValue($entity, array $params = []) {
+    $this->initialize();
+    $result = civicrm_api3($entity, 'getvalue', $params);
+    return $result;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function civicrmInitialize() {
     $this->civicrm->initialize();
   }

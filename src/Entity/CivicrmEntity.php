@@ -2,12 +2,13 @@
 
 namespace Drupal\civicrm_entity\Entity;
 
+use Drupal\civicrm_entity\Plugin\Field\ActivityEndDateFieldItemList;
 use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\TypedData\Plugin\DataType\DateTimeIso8601;
-use Drupal\Core\TypedData\Plugin\DataType\Timestamp;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
 use Symfony\Component\Validator\ConstraintViolation;
 
 /**
@@ -86,6 +87,21 @@ class CivicrmEntity extends ContentEntityBase {
       }
     }
 
+    // Provide a computed base field that takes the activity start time and
+    // appends the duration to calculated and end time.
+    if ($entity_type->id() === 'civicrm_activity') {
+      $fields['activity_end_datetime'] = BaseFieldDefinition::create('datetime')
+        ->setLabel(t('Activity End Date'))
+        ->setSetting('datetime_type', DateTimeItem::DATETIME_TYPE_DATETIME)
+        ->setComputed(TRUE)
+        ->setDisplayOptions('view', [
+          'type' => 'datetime_default',
+          'weight' => 0,
+        ])
+        ->setDisplayConfigurable('form', FALSE)
+        ->setClass(ActivityEndDateFieldItemList::class);
+    }
+
     return $fields;
   }
 
@@ -98,7 +114,8 @@ class CivicrmEntity extends ContentEntityBase {
     $params = $this->civicrmApiNormalize();
 
     $civicrm_api = \Drupal::getContainer()->get('civicrm_entity.api');
-    $civicrm_violations = $civicrm_api->validate('event', $params);
+    $civicrm_entity_type = $this->getEntityType()->get('civicrm_entity');
+    $civicrm_violations = $civicrm_api->validate($civicrm_entity_type, $params);
     if (!empty($civicrm_violations)) {
       foreach (reset($civicrm_violations) as $civicrm_field => $civicrm_violation) {
         $definition = $this->getFieldDefinition($civicrm_field);
@@ -141,7 +158,7 @@ class CivicrmEntity extends ContentEntityBase {
         if ($main_property instanceof DateTimeIso8601 && !is_array($main_property->getValue())) {
           // CiviCRM wants the datetime in the timezone of the user, but Drupal
           // stores it in UTC.
-          $value = (new \DateTime($main_property->getValue(), new \DateTimeZone('UTC')))->setTimezone(new \DateTimeZone(\drupal_get_user_timezone()))->format('Y-m-d H:i:s');
+          $value = (new \DateTime($main_property->getValue(), new \DateTimeZone('UTC')))->setTimezone(new \DateTimeZone(date_default_timezone_get()))->format('Y-m-d H:i:s');
         }
         else {
           $value = $main_property->getValue();
