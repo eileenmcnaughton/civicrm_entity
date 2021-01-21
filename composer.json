@@ -6,7 +6,7 @@
     "license": "GPL-2.0+",
     "require": {
         "civicrm/civicrm-core": "~5.0",
-        "civicrm/civicrm-drupal-8": "~5.0"
+        "civicrm/civicrm-drupal-8": ">=5.13"
     },
     "minimum-stability": "dev"
 }
