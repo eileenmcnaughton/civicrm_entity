@@ -125,8 +125,10 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
     if (!empty($civicrm_entity_info['bundle property'])) {
       $entity_type_info['entity_keys']['bundle'] = 'bundle';
       $entity_type_info['civicrm_bundle_property'] = $civicrm_entity_info['bundle property'];
-      $entity_type_info['links']['add-page'] = $entity_type_info['links']['add-form'];
-      $entity_type_info['links']['add-form'] = sprintf('%s/{%s}', $entity_type_info['links']['add-form'], $entity_type_info['entity_keys']['bundle']);
+      if (isset($entity_type_info['links'])) {
+        $entity_type_info['links']['add-page'] = $entity_type_info['links']['add-form'];
+        $entity_type_info['links']['add-form'] = sprintf('%s/{%s}', $entity_type_info['links']['add-form'], $entity_type_info['entity_keys']['bundle']);
+      }
     }
 
     $entity_types[$entity_type_id] = new ContentEntityType($entity_type_info);
