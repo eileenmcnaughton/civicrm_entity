@@ -296,6 +296,11 @@ class CiviEntityStorage extends SqlContentEntityStorage {
    * {@inheritdoc}
    */
   public function hasData() {
+    if (($component = $this->entityType->get('component')) !== NULL) {
+      $components = $this->getCiviCrmApi()->getValue('Setting', ['name' => 'enable_components']);
+      return !in_array($component, $components) ? FALSE :
+        $this->getCiviCrmApi()->getCount($this->entityType->get('civicrm_entity')) > 0;
+    }
     return $this->getCiviCrmApi()->getCount($this->entityType->get('civicrm_entity')) > 0;
   }
   /**
@@ -778,12 +783,19 @@ class CiviEntityStorage extends SqlContentEntityStorage {
     ];
     $api_results = civicrm_api3('EntityTag', 'get', $api_params);
     if (!empty($api_results['values'])) {
-      foreach ($api_results as $delta => $result) {
-        if ($result['tag_id'] == $entityId) {
+      foreach ($api_results['values'] as $delta => $result) {
+        if ($result['entity_id'] == $entityId) {
           return $result['id'];
         }
       }
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function onEntityTypeDelete(EntityTypeInterface $entity_type) {
+    // Don't do anything.
   }
 
 }

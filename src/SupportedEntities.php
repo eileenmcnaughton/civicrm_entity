@@ -509,6 +509,7 @@ $civicrm_entity_info['civicrm_group_contact'] = [
         'create' => ['edit pledges'],
         'delete' => ['edit pledges', 'administer CiviCRM'],
       ],
+      'component' => 'CiviPledge',
     ];
     $civicrm_entity_info['civicrm_pledge_payment'] = [
       'civicrm entity label' => t('Pledge payment'),

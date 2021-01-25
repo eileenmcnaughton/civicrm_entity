@@ -17,3 +17,11 @@ services:
     arguments: [ '@entity_type.manager' ]
     tags:
       - { name: event_subscriber }
+
+  civicrm_entity.module_installer:
+    class: Drupal\civicrm_entity\ModuleInstaller
+    decorates: module_installer
+    public: false
+    arguments: ['@civicrm_entity.module_installer.inner', '@app.root', '@module_handler', '@kernel']
+    tags:
+      - { name: service_collector, tag: 'module_install.uninstall_validator', call: addUninstallValidator }
