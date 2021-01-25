@@ -11,3 +11,9 @@ services:
     arguments: ['@civicrm_entity.api']
     tags:
       - { name: backend_overridable }
+
+  civicrm_entity.field_ui_route_subscriber:
+    class: Drupal\civicrm_entity\Routing\RouteSubscriber
+    arguments: [ '@entity_type.manager' ]
+    tags:
+      - { name: event_subscriber }

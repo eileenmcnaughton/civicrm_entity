@@ -79,7 +79,14 @@ class CivicrmEntity extends ContentEntityBase {
       /** @var \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api */
       $civicrm_api = \Drupal::service('civicrm_entity.api');
       $options = $civicrm_api->getOptions($entity_type->get('civicrm_entity'), $bundle_property);
-      $raw_bundle_value = $values[$bundle_property];
+
+      if (isset($values[$entity_type->getKey('bundle')]) && $values[$entity_type->getKey('bundle')] === $entity_type->id()) {
+        $raw_bundle_value = key($options);
+      }
+      else {
+        $raw_bundle_value = $values[$bundle_property];
+      }
+
       $bundle_value = $options[$raw_bundle_value];
       $transliteration = \Drupal::transliteration();
       $machine_name = SupportedEntities::optionToMachineName($bundle_value, $transliteration);

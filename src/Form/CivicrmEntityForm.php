@@ -5,6 +5,8 @@ namespace Drupal\civicrm_entity\Form;
 use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\ContentEntityForm;
+use Drupal\Core\Entity\Display\EntityFormDisplayInterface;
+use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -21,7 +23,7 @@ class CivicrmEntityForm extends ContentEntityForm {
   protected $currentUser;
 
   /**
-   * Constructs a NodeForm object.
+   * Constructs a CivicrmEntityForm object.
    *
    * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
    *   The entity repository service.
@@ -47,6 +49,25 @@ class CivicrmEntityForm extends ContentEntityForm {
       $container->get('datetime.time'),
       $container->get('current_user')
     );
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * If this CiviCRM Entity type supports bundles, we hijack the loaded entity
+   * form display to be one for the root entity, not the bundle.
+   */
+  public function setFormDisplay(EntityFormDisplayInterface $form_display, FormStateInterface $form_state) {
+    $entity_type = $this->entity->getEntityType();
+    if ($entity_type->hasKey('bundle')) {
+      $entity_display_repository = \Drupal::service('entity_display.repository');
+      assert($entity_display_repository instanceof EntityDisplayRepositoryInterface);
+      $form_display = $entity_display_repository->getFormDisplay(
+        $entity_type->id(),
+        $entity_type->id()
+      );
+    }
+    return parent::setFormDisplay($form_display, $form_state);
   }
 
   /**
