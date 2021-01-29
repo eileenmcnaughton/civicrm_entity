@@ -14,6 +14,13 @@ class CivicrmEntityListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function buildHeader() {
+    if ($this->entityType->hasKey('bundle')) {
+      return [
+          'id' => $this->t('ID'),
+          'bundle' => $this->entityType->getBundleLabel(),
+          'label' => $this->t('Label'),
+        ] + parent::buildHeader();
+    }
     return [
       'id' => $this->t('ID'),
       'label' => $this->t('Label'),
@@ -24,6 +31,13 @@ class CivicrmEntityListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
+    if ($this->entityType->hasKey('bundle')) {
+      return [
+          'id' => $entity->id(),
+          'bundle' => $entity->bundle(),
+          'label' => $entity->toLink(),
+        ] + parent::buildRow($entity);
+    }
     return [
       'id' => $entity->id(),
       'label' => $entity->toLink(),
