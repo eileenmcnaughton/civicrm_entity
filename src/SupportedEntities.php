@@ -687,6 +687,18 @@ $civicrm_entity_info['civicrm_group_contact'] = [
       ],
     ];
 
+    $civicrm_entity_info['civicrm_contribution_soft'] = [
+      'civicrm entity label' => t('Soft Contribution'),
+      'civicrm entity name' => 'contribution_soft',
+      'label property' => 'id',
+      'permissions' => [
+        'view' => [],
+        'update' => [],
+        'create' => [],
+        'delete' => [],
+      ],
+    ];
+
     static::alterEntityInfo($civicrm_entity_info);
 
     return $civicrm_entity_info;
