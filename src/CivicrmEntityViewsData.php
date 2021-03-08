@@ -392,6 +392,40 @@ class CivicrmEntityViewsData extends EntityViewsData {
           ],
         ];
 
+        $views_field['civicrm_contact']['civicrm_tag'] = [
+          'title' => $this->t('CiviCRM tag related to the CiviCRM contact'),
+          'help' => $this->t('Relate CiviCRM tag to the CiviCRM contact.'),
+          'relationship' => [
+            'base' => 'civicrm_tag',
+            'base field' => 'id',
+            'table' => 'civicrm_entity_tag',
+            'first field' => 'entity_id',
+            'second field' => 'tag_id',
+            'id' => 'civicrm_entity_civicrm_bridge',
+            'label' => $this->t('CiviCRM tag'),
+            'extra' => [
+              ['field' => 'entity_table', 'value' => 'civicrm_contact'],
+            ],
+          ],
+        ];
+
+        $views_field['civicrm_tag']['civicrm_contact'] = [
+          'title' => $this->t('CiviCRM contact related to the CiviCRM tag'),
+          'help' => $this->t('Relate CiviCRM contact to the CiviCRM tag.'),
+          'relationship' => [
+            'base' => 'civicrm_contact',
+            'base field' => 'id',
+            'table' => 'civicrm_entity_tag',
+            'first field' => 'tag_id',
+            'second field' => 'entity_id',
+            'id' => 'civicrm_entity_civicrm_bridge',
+            'label' => $this->t('CiviCRM contact'),
+            'extra' => [
+              ['field' => 'entity_table', 'value' => 'civicrm_contact'],
+            ],
+          ],
+        ];
+
         break;
 
       case 'civicrm_phone':
