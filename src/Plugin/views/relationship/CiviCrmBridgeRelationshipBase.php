@@ -18,8 +18,10 @@ use Drupal\views\Views;
  *   the base table.
  *
  * @ingroup views_relationship_handlers
+ *
+ * @ViewsRelationship("civicrm_entity_civicrm_bridge")
  */
-abstract class CiviCrmBridgeRelationshipBase extends RelationshipPluginBase {
+class CiviCrmBridgeRelationshipBase extends RelationshipPluginBase {
 
   /**
    * {@inheritdoc}
