@@ -544,7 +544,7 @@ function _civicrm_entity_price_set_field_setup_event_registration_form_fapi(&$fo
       if (is_array($form_state['event']->payment_processor)) {
         foreach ($form_state['event']->payment_processor as $pp_delta => $pp_id) {
           $pp = entity_load_single('civicrm_payment_processor', $pp_id);
-          $payment_processor_options[$pp_id] = $pp->name;
+          $payment_processor_options[$pp_id] = ( empty($pp->title) ? $pp->name : $pp->title );
           if (!empty($pp->is_default)) {
             $pp_default = $pp_id;
           }
@@ -552,7 +552,7 @@ function _civicrm_entity_price_set_field_setup_event_registration_form_fapi(&$fo
       }
       else {
         $pp = entity_load_single('civicrm_payment_processor', $form_state['event']->payment_processor);
-        $payment_processor_options[$form_state['event']->payment_processor] = $pp->name;
+        $payment_processor_options[$form_state['event']->payment_processor] = ( empty($pp->title) ? $pp->name : $pp->title );
         $pp_default = $form_state['event']->payment_processor;
       }
       $form['registration_form']['registration_cc_block']['payment_processor_selection'] = array(
