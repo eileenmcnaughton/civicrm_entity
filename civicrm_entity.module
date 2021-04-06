@@ -24,6 +24,7 @@ use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Url;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\FieldConfigInterface;
 use Drupal\views\ViewExecutable;
@@ -79,6 +80,7 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
         'label' => $civicrm_entity_info['label property'],
       ],
       'base_table' => $entity_type_id,
+      'uri_callback' => 'entity_uri',
       'admin_permission' => 'administer civicrm entity',
       'permission_granularity' => 'entity_type',
       'handlers' => [
@@ -133,6 +135,18 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
 
     $entity_types[$entity_type_id] = new ContentEntityType($entity_type_info);
   }
+}
+
+/**
+ * Entity URI callback used in hook_entity_type_build().
+ */
+function entity_uri($entity) {
+  if ($entity->getEntityTypeId() == 'civicrm_contact') {
+    return Url::fromUri('internal:/civicrm/contact/view', [
+      'query' => ['cid' => $entity->id(), 'reset' => 1],
+    ]);
+  }
+  return NULL;
 }
 
 /**
