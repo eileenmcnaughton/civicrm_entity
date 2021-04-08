@@ -26,17 +26,27 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *      "is_active" = @ContextDefinition("boolean",
  *        label = @Translation("Activate account"),
  *        description = @Translation("Set account to active."),
- *        default_value = TRUE
+ *        assignment_restriction = "input",
+ *        default_value = TRUE,
+ *        required = FALSE
  *      ),
  *      "notify" = @ContextDefinition("boolean",
  *        label = @Translation("Send account notification email"),
  *        description = @Translation("Send account notification email."),
- *        default_value = TRUE
+ *        assignment_restriction = "input",
+ *        default_value = TRUE,
+ *        required = FALSE
  *      ),
  *      "signin" = @ContextDefinition("boolean",
  *        label = @Translation("Instant signin"),
  *        description = @Translation("Automatically log in as the created user."),
- *        default_value = TRUE
+ *        assignment_restriction = "input",
+ *        default_value = TRUE,
+ *        required = FALSE
+ *      ),
+ *      "format" = @ContextDefinition("string",
+ *        label = @Translation("Format"),
+ *        description = @Translation("Format of the username."),
  *      )
  *   },
  *   provides = {
@@ -105,7 +115,7 @@ class UserCreate extends RulesActionBase implements ContainerFactoryPluginInterf
   /**
    * {@inheritdoc}
    */
-  public function doExecute($contact_id, $is_active, $notify, $signin) {
+  public function doExecute($contact_id, $is_active, $notify, $signin, $format) {
     $contact = $this->civicrmApi->getSingle('Contact', [
       'return' => ['email', 'contact_type'],
       'id' => $contact_id,
@@ -116,11 +126,21 @@ class UserCreate extends RulesActionBase implements ContainerFactoryPluginInterf
     }
 
     $params = [
-      'name' => $contact['email'],
+      'name' => $format,
       'mail' => $contact['email'],
       'init' => $contact['email'],
-      'status' => (int) filter_var($is_active, FILTER_VALIDATE_BOOLEAN)
+      'status' => (bool) $is_active,
     ];
+
+    $this->civicrmApi->civicrmInitialize();
+    $config = \CRM_Core_Config::singleton();
+
+    if ($this->checkUserNameExists($params, $config->userSystem)) {
+      $counter = 0;
+      do {
+        $params['name'] = $params['name'] . '_' . $counter++;
+      } while ($this->checkUserNameExists($params, $config->userSystem));
+    }
 
     /** @var \Drupal\user\UserInterface $user */
     $user = $this->userStorage->create($params);
@@ -139,14 +159,34 @@ class UserCreate extends RulesActionBase implements ContainerFactoryPluginInterf
         ->messenger
         ->addStatus($this->t('User with username @name has been created.', ['@name' => $user->getUsername()]));
 
-      if ((int) filter_var($signin, FILTER_VALIDATE_BOOLEAN)) {
+      $this->setProvidedValue('civicrm_user', $user);
+
+      if ((bool) $signin) {
         user_login_finalize($user);
       }
 
-      if ((int) filter_var($notify, FILTER_VALIDATE_BOOLEAN)) {
+      if ((bool) $notify) {
         _user_mail_notify('register_no_approval_required', $user);
       }
     }
+  }
+
+  /**
+   * Check if username exists.
+   *
+   * @param array $params
+   *   The parameters.
+   * @param \CRM_Utils_System_Base $userSystem
+   *   The user system.
+   *
+   * @return boolean
+   *   TRUE if username exists; otherwise FALSE.
+   */
+  protected function checkUserNameExists(array $params, \CRM_Utils_System_Base $userSystem) {
+    $errors = [];
+    $userSystem->checkUserNameEmailExists($params, $errors);
+
+    return isset($errors['cms_name']);
   }
 
 }
