@@ -278,7 +278,7 @@ class CustomEntityField extends EntityField {
    * @see \Drupal\civicrm_entity\CiviEntityStorage::initFieldValues()
    */
   protected function getItemValue($value, FieldDefinitionInterface $definition) {
-    if (!$value) {
+    if (is_null($value)) {
       return NULL;
     }
 

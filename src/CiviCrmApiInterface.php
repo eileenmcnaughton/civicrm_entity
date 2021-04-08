@@ -99,6 +99,19 @@ interface CiviCrmApiInterface {
   public function getSingle($entity, array $params = []);
 
   /**
+   * Get values from the CiviCRM entity.
+   *
+   * @param string $entity
+   *   The entity name.
+   * @param array $params
+   *   Optional additional parameters.
+   *
+   * @return array
+   *   The array of values.
+   */
+  public function getValue($entity, array $params = []);
+
+  /**
    * Initialize the CiviCRM API.
    */
   public function civicrmInitialize();

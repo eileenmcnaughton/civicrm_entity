@@ -2,6 +2,9 @@
 
 namespace Drupal\civicrm_entity;
 
+use Drupal\Component\Transliteration\TransliterationInterface;
+use Drupal\Core\Language\LanguageInterface;
+
 /**
  * Defines supported entities.
  *
@@ -47,6 +50,7 @@ final class SupportedEntities {
       'civicrm entity label' => t('Activity'),
       'civicrm entity name' => 'activity',
       'label property' => 'subject',
+      'bundle property' => 'activity_type_id',
       'permissions' => [
         'view' => ['view all activities'],
 
@@ -273,6 +277,7 @@ final class SupportedEntities {
       'civicrm entity label' => t('Event'),
       'civicrm entity name' => 'event',
       'label property' => 'title',
+      'bundle property' => 'event_type_id',
       'permissions' => [
         'view' => ['view event info'],
         'edit' => ['edit all events'],
@@ -504,6 +509,7 @@ $civicrm_entity_info['civicrm_group_contact'] = [
         'create' => ['edit pledges'],
         'delete' => ['edit pledges', 'administer CiviCRM'],
       ],
+      'component' => 'CiviPledge',
     ];
     $civicrm_entity_info['civicrm_pledge_payment'] = [
       'civicrm entity label' => t('Pledge payment'),
@@ -686,6 +692,18 @@ $civicrm_entity_info['civicrm_group_contact'] = [
       ],
     ];
 
+    $civicrm_entity_info['civicrm_contribution_soft'] = [
+      'civicrm entity label' => t('Soft Contribution'),
+      'civicrm entity name' => 'contribution_soft',
+      'label property' => 'id',
+      'permissions' => [
+        'view' => [],
+        'update' => [],
+        'create' => [],
+        'delete' => [],
+      ],
+    ];
+
     static::alterEntityInfo($civicrm_entity_info);
 
     return $civicrm_entity_info;
@@ -855,6 +873,26 @@ $civicrm_entity_info['civicrm_group_contact'] = [
         'civicrm_alter_drupal_entities'
       );
     }
+  }
+
+  /**
+   * Transforms an option value to a machine name.
+   *
+   * This is leveraged to convert options into bundle names.
+   *
+   * @param string $value
+   *   The option value.
+   * @param \Drupal\Component\Transliteration\TransliterationInterface $transliteration
+   *   The transliteration service.
+   *
+   * @return string
+   */
+  public static function optionToMachineName($value, TransliterationInterface $transliteration) {
+    $value = $transliteration->transliterate($value, LanguageInterface::LANGCODE_DEFAULT, '_');
+    $value = mb_strtolower($value);
+    $value = preg_replace('/[^a-z0-9_]+/', '_', $value);
+    $value = preg_replace('/_+/', '_', $value);
+    return $value;
   }
 
 }

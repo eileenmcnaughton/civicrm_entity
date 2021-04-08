@@ -17,10 +17,15 @@ use Drupal\civicrm_entity\Routing\CiviCrmEntityRouteProvider;
 use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Core\Entity\ContentEntityDeleteForm;
 use Drupal\Core\Entity\ContentEntityType;
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\FieldConfigInterface;
 use Drupal\views\ViewExecutable;
 use Drupal\views\Plugin\views\query\QueryPluginBase;
 
@@ -62,6 +67,7 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
       'class' => CivicrmEntity::class,
       'originalClass' => CivicrmEntity::class,
       'id' => $entity_type_id,
+      'component' => $civicrm_entity_info['component'] ?? NULL,
       'civicrm_entity' => $civicrm_entity_name,
       'civicrm_entity_ui_exposed' => in_array($entity_type_id, $enabled_entity_types),
       'label' => new TranslatableMarkup('CiviCRM :name', [':name' => $civicrm_entity_info['civicrm entity label']]),
@@ -82,6 +88,7 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
         'storage_schema' => CivicrmEntityStorageSchema::class,
       ],
     ];
+
     if (in_array($entity_type_id, $enabled_entity_types)) {
       $entity_type_info = array_merge_recursive($entity_type_info, [
         'handlers' => [
@@ -108,7 +115,107 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
         'field_ui_base_route' => "entity.$entity_type_id.collection",
       ]);
     }
+
+    // If this entity has bundle support, we define the bundle field as "bundle"
+    // and will use the "bundle property" as the field to fetch field options
+    // from CiviCRM with.
+    //
+    // @see civicrm_entity_entity_bundle_info()
+    // @see \Drupal\civicrm_entity\Entity\CivicrmEntity::baseFieldDefinitions()
+    if (!empty($civicrm_entity_info['bundle property'])) {
+      $entity_type_info['entity_keys']['bundle'] = 'bundle';
+      $entity_type_info['civicrm_bundle_property'] = $civicrm_entity_info['bundle property'];
+      if (isset($entity_type_info['links'])) {
+        $entity_type_info['links']['add-page'] = $entity_type_info['links']['add-form'];
+        $entity_type_info['links']['add-form'] = sprintf('%s/{%s}', $entity_type_info['links']['add-form'], $entity_type_info['entity_keys']['bundle']);
+      }
+    }
+
     $entity_types[$entity_type_id] = new ContentEntityType($entity_type_info);
+  }
+}
+
+/**
+ * Implements hook_entity_bundle_info().
+ */
+function civicrm_entity_entity_bundle_info() {
+  $transliteration = \Drupal::transliteration();
+  /** @var \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api */
+  $civicrm_api = \Drupal::service('civicrm_entity.api');
+
+  $bundles = [];
+  $entity_types_with_bundles = array_filter(SupportedEntities::getInfo(), static function(array $civicrm_entity_info) {
+    return !empty($civicrm_entity_info['bundle property']);
+  });
+  foreach ($entity_types_with_bundles as $entity_type_id => $civicrm_entity_info) {
+    // We keep a bundle that is the same as the entity type ID. This allows us
+    // to create fields as if this entity has no bundles.
+    $bundles[$entity_type_id] = [
+      $entity_type_id => [
+        'label' => $civicrm_entity_info['civicrm entity label'],
+      ],
+    ];
+    $options = $civicrm_api->getOptions($civicrm_entity_info['civicrm entity name'], $civicrm_entity_info['bundle property']);
+    foreach ($options as $option) {
+      $machine_name = SupportedEntities::optionToMachineName($option, $transliteration);
+      $bundles[$entity_type_id][$machine_name]['label'] = $option;
+    }
+  }
+  return $bundles;
+}
+
+/**
+ * Implements hook_entity_bundle_field_info().
+ *
+ * This ensures CiviCRM Entity entity types have their field config instances
+ * across all bundles. It's a copy of the Field module's logic, but clones
+ * field config definitions.
+ *
+ * @see field_entity_bundle_field_info().
+ */
+function civicrm_entity_entity_bundle_field_info(EntityTypeInterface $entity_type, $bundle, array $base_field_definitions) {
+  $result = [];
+  if ($entity_type->get('civicrm_entity_ui_exposed') && $entity_type->hasKey('bundle')) {
+    // Query by filtering on the ID as this is more efficient than filtering
+    // on the entity_type property directly.
+    $ids = \Drupal::entityQuery('field_config')
+      ->condition('id', $entity_type->id() . '.', 'STARTS_WITH')
+      ->execute();
+    // Fetch all fields and key them by field name.
+    $field_configs = FieldConfig::loadMultiple($ids);
+
+    // Clone the field configs, so that we can modify them and change the
+    // target bundle type without manipulating the statically cached entries
+    // in the entity storage;
+    $cloned_field_configs = array_map(static function (FieldConfigInterface $field) use ($bundle) {
+      $cloned = clone $field;
+      $cloned->set('bundle', $bundle);
+      return $cloned;
+    }, $field_configs);
+    foreach ($cloned_field_configs as $field_instance) {
+      $result[$field_instance->getName()] = $field_instance;
+    }
+  }
+  return $result;
+}
+
+/**
+ * Implements hook_entity_view_display_alter().
+ *
+ * There is no way to handle this in the entity type's view builder.
+ */
+function civicrm_entity_entity_view_display_alter(EntityViewDisplayInterface $display, array $context) {
+  $entity_type = \Drupal::entityTypeManager()->getDefinition($context['entity_type']);
+  assert($entity_type !== NULL);
+  if ($entity_type->get('civicrm_entity') && $entity_type->hasKey('bundle')) {
+    $entity_display_repository = \Drupal::service('entity_display.repository');
+    assert($entity_display_repository instanceof EntityDisplayRepositoryInterface);
+    $root_display = $entity_display_repository->getViewDisplay(
+      $entity_type->id(),
+      $entity_type->id()
+    );
+    $display->set('content', $root_display->get('content'));
+    $display->set('hidden', $root_display->get('hidden'));
   }
 }
 
@@ -317,14 +424,14 @@ function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
   }
   else {
     // Special handling for EntityTag objects.
-    if ($entityType == 'entity_tag') {
+    if ($entityType == 'civicrm_entity_tag') {
       foreach ($objectRef[0] as $entityTag) {
         $object = new CRM_Core_BAO_EntityTag();
         $object->entity_id = $entityTag;
         $object->entity_table = 'civicrm_contact';
         $object->tag_id = $objectId;
         if ($object->find(TRUE)) {
-          $entity = $storage->load($entityTag);
+          $entity = $storage->load($object->id);
           $entity->original = $storage->loadUnchanged($entity->id());
           _civicrm_entity_post_invoke($op, $storage, $entity);
         }

@@ -5,6 +5,7 @@ namespace Drupal\civicrm_entity;
 use Drupal\civicrm_entity\Entity\CivicrmEntity;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Sql\DefaultTableMapping;
 use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
@@ -217,7 +218,20 @@ class CiviEntityStorage extends SqlContentEntityStorage {
    */
   protected function prepareLoadedEntity(array $civicrm_entity) {
     $this->loadFromDedicatedTables($civicrm_entity);
-    $entity = new $this->entityClass([], $this->entityTypeId);
+    $bundle = FALSE;
+    if ($this->bundleKey) {
+      $bundle_property = $this->entityType->get('civicrm_bundle_property');
+      if (!isset($civicrm_entity[$bundle_property])) {
+        throw new EntityStorageException('Missing bundle for entity type ' . $this->entityTypeId);
+      }
+      $bundle_value = $civicrm_entity[$bundle_property];
+      $options = $this->civicrmApi->getOptions($this->entityType->get('civicrm_entity'), $bundle_property);
+      $bundle = $options[$bundle_value];
+
+      $transliteration = \Drupal::transliteration();
+      $bundle = SupportedEntities::optionToMachineName($bundle, $transliteration);
+    }
+    $entity = new $this->entityClass([], $this->entityTypeId, $bundle);
     // Use initFieldValues to fix CiviCRM data array to Drupal.
     $this->initFieldValues($entity, $civicrm_entity);
     return $entity;
@@ -282,6 +296,11 @@ class CiviEntityStorage extends SqlContentEntityStorage {
    * {@inheritdoc}
    */
   public function hasData() {
+    if (($component = $this->entityType->get('component')) !== NULL) {
+      $components = $this->getCiviCrmApi()->getValue('Setting', ['name' => 'enable_components']);
+      return !in_array($component, $components) ? FALSE :
+        $this->getCiviCrmApi()->getCount($this->entityType->get('civicrm_entity')) > 0;
+    }
     return $this->getCiviCrmApi()->getCount($this->entityType->get('civicrm_entity')) > 0;
   }
   /**
@@ -764,12 +783,19 @@ class CiviEntityStorage extends SqlContentEntityStorage {
     ];
     $api_results = civicrm_api3('EntityTag', 'get', $api_params);
     if (!empty($api_results['values'])) {
-      foreach ($api_results as $delta => $result) {
-        if ($result['tag_id'] == $entityId) {
+      foreach ($api_results['values'] as $delta => $result) {
+        if ($result['entity_id'] == $entityId) {
           return $result['id'];
         }
       }
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function onEntityTypeDelete(EntityTypeInterface $entity_type) {
+    // Don't do anything.
   }
 
 }

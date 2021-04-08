@@ -18,8 +18,10 @@ use Drupal\views\Views;
  *   the base table.
  *
  * @ingroup views_relationship_handlers
+ *
+ * @ViewsRelationship("civicrm_entity_civicrm_bridge")
  */
-abstract class CiviCrmBridgeRelationshipBase extends RelationshipPluginBase {
+class CiviCrmBridgeRelationshipBase extends RelationshipPluginBase {
 
   /**
    * {@inheritdoc}
@@ -37,6 +39,10 @@ abstract class CiviCrmBridgeRelationshipBase extends RelationshipPluginBase {
       'field' => $this->definition['first field'],
       'adjusted' => TRUE,
     ];
+
+    if (!empty($this->definition['extra'])) {
+      $first['extra'] = $this->definition['extra'];
+    }
 
     if (!empty($this->options['required'])) {
       $first['type'] = 'INNER';
