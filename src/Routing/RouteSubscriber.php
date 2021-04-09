@@ -69,6 +69,9 @@ final class RouteSubscriber extends RouteSubscriberBase {
         "entity.entity_view_display.{$entity_type_id}.view_mode" => [
           'bundle' => $entity_type_id,
         ],
+        "layout_builder.defaults.$entity_type_id.view" => [
+          'bundle' => $entity_type_id,
+        ],
       ];
       foreach ($field_ui_routes as $route_name => $defaults) {
         $route = $collection->get($route_name);
