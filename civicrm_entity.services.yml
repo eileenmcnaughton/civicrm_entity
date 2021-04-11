@@ -14,7 +14,7 @@ services:
 
   civicrm_entity.field_ui_route_subscriber:
     class: Drupal\civicrm_entity\Routing\RouteSubscriber
-    arguments: [ '@entity_type.manager' ]
+    arguments: [ '@entity_type.manager', '@module_handler' ]
     tags:
       - { name: event_subscriber }
 

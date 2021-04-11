@@ -126,7 +126,9 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
       $entity_type_info['entity_keys']['bundle'] = 'bundle';
       $entity_type_info['civicrm_bundle_property'] = $civicrm_entity_info['bundle property'];
       if (isset($entity_type_info['links'])) {
-        $entity_type_info['links']['add-page'] = $entity_type_info['links']['add-form'];
+        // For entities with bundles that are exposed, add the `bundle` key to
+        // the add-form route. In CiviCrmEntityRouteProvider::getAddFormRoute
+        // we default the value, so that it isn't actually required in the URL.
         $entity_type_info['links']['add-form'] = sprintf('%s/{%s}', $entity_type_info['links']['add-form'], $entity_type_info['entity_keys']['bundle']);
       }
     }
