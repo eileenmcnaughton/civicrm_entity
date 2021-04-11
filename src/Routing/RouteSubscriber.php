@@ -48,6 +48,8 @@ final class RouteSubscriber extends RouteSubscriberBase {
     if (!$this->moduleHandler->moduleExists('field_ui')) {
       return;
     }
+
+    $has_layout_builder = $this->moduleHandler->moduleExists('layout_builder');
     foreach ($this->entityTypeManager->getDefinitions() as $entity_type_id => $entity_type) {
       if (!$entity_type->get('civicrm_entity_ui_exposed')) {
         continue;
@@ -85,6 +87,20 @@ final class RouteSubscriber extends RouteSubscriberBase {
           'bundle' => $entity_type_id,
         ],
       ];
+
+      if ($has_layout_builder) {
+        // @todo we should iterate over the section storage definitions.
+        //   that means we'd need to conditionally inject the manage service.
+        // @see \Drupal\layout_builder\Plugin\SectionStorage\DefaultsSectionStorage::buildRoutes
+        $field_ui_routes["layout_builder.defaults.$entity_type_id.view"] = [
+          'bundle' => $entity_type_id,
+        ];
+        // @see \Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage::buildRoutes
+        $field_ui_routes["layout_builder.overrides.$entity_type_id.view"] = [
+          'bundle' => $entity_type_id,
+        ];
+      }
+
       foreach ($field_ui_routes as $route_name => $defaults) {
         $route = $collection->get($route_name);
         assert($route !== NULL);
