@@ -26,6 +26,7 @@ use Drupal\Core\Render\Element;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\FieldConfigInterface;
+use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\views\ViewExecutable;
 use Drupal\views\Plugin\views\query\QueryPluginBase;
 
@@ -126,7 +127,9 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
       $entity_type_info['entity_keys']['bundle'] = 'bundle';
       $entity_type_info['civicrm_bundle_property'] = $civicrm_entity_info['bundle property'];
       if (isset($entity_type_info['links'])) {
-        $entity_type_info['links']['add-page'] = $entity_type_info['links']['add-form'];
+        // For entities with bundles that are exposed, add the `bundle` key to
+        // the add-form route. In CiviCrmEntityRouteProvider::getAddFormRoute
+        // we default the value, so that it isn't actually required in the URL.
         $entity_type_info['links']['add-form'] = sprintf('%s/{%s}', $entity_type_info['links']['add-form'], $entity_type_info['entity_keys']['bundle']);
       }
     }
@@ -216,6 +219,13 @@ function civicrm_entity_entity_view_display_alter(EntityViewDisplayInterface $di
     );
     $display->set('content', $root_display->get('content'));
     $display->set('hidden', $root_display->get('hidden'));
+
+    if ($root_display instanceof LayoutBuilderEntityViewDisplay) {
+      $layout_builder_settings = $root_display->getThirdPartySettings('layout_builder');
+      foreach ($layout_builder_settings as $setting_key => $setting) {
+        $display->setThirdPartySetting('layout_builder', $setting_key, $setting);
+      }
+    }
   }
 }
 
