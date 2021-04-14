@@ -99,6 +99,14 @@ final class RouteSubscriber extends RouteSubscriberBase {
         $field_ui_routes["layout_builder.overrides.$entity_type_id.view"] = [
           'bundle' => $entity_type_id,
         ];
+
+        $field_ui_routes["layout_builder.defaults.$entity_type_id.discard_changes"] = [
+          'bundle' => $entity_type_id,
+        ];
+
+        $field_ui_routes["layout_builder.defaults.$entity_type_id.disable"] = [
+          'bundle' => $entity_type_id,
+        ];
       }
 
       foreach ($field_ui_routes as $route_name => $defaults) {
