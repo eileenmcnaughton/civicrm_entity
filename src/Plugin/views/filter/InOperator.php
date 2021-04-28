@@ -118,6 +118,7 @@ class InOperator extends BaseInOperator {
           $this
             ->query
             ->addWhereExpression($this->options['group'], "CAST({$field} AS BINARY) RLIKE BINARY :arg1", [':arg1' => implode('|', $values)]);
+
           break;
 
         case 'not in':
