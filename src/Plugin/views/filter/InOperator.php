@@ -111,8 +111,6 @@ class InOperator extends BaseInOperator {
     else {
       switch ($this->operator) {
         case 'in':
-          $condition = new Condition('OR');
-
           $values = array_map(function($value) {
             return \CRM_Core_DAO::VALUE_SEPARATOR . $value . \CRM_Core_DAO::VALUE_SEPARATOR;
           }, $values);
