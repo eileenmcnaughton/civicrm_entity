@@ -145,7 +145,22 @@ class UserCreate extends RulesActionBase implements ContainerFactoryPluginInterf
     /** @var \Drupal\user\UserInterface $user */
     $user = $this->userStorage->create($params);
 
-    if ($user->validate()->count() === 0 && $user->save()) {
+    $violations = $user->validate()->getByFields(array_keys($params));
+
+    if ($violations->count() > 0) {
+      $messages = 'Unable to create user for %email due to the following error(s):<ul>';
+
+      /** @var \Symfony\Component\Validator\ConstraintViolation $violation */
+      foreach ($violations as $violation) {
+        $messages .= '<li>' . $violation->getMessage() . '</li>';
+      }
+
+      $messages .= '</ul>';
+
+      \Drupal::logger('civicrm_entity')->error($messages, ['%email' => $params['mail']]);
+    }
+
+    if ($violations->count() === 0 && $user->save()) {
       $this->civicrmApi->civicrmInitialize();
 
       if ($contact['contact_type'] === 'Individual') {
