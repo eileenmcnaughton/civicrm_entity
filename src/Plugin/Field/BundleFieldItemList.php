@@ -57,7 +57,10 @@ class BundleFieldItemList extends FieldItemList {
     }, $options);
     $options = array_flip($options);
 
-    $entity->get($civicrm_bundle_property)->setValue($options[$values]);
+    if (!is_array($values)) {
+      $entity->get($civicrm_bundle_property)->setValue($options[$values]);
+    }
+
     parent::setValue($values, $notify);
     $this->valueComputed = TRUE;
   }
