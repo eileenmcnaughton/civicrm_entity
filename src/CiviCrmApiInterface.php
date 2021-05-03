@@ -86,6 +86,19 @@ interface CiviCrmApiInterface {
   public function getCount($entity, array $params = []);
 
   /**
+   * Get single from the CiviCRM entity.
+   *
+   * @param string $entity
+   *   The entity name.
+   * @param array $params
+   *   Optional additional parameters.
+   *
+   * @return array
+   *   The array of values.
+   */
+  public function getSingle($entity, array $params = []);
+
+  /**
    * Get values from the CiviCRM entity.
    *
    * @param string $entity
