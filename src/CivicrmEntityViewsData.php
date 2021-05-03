@@ -785,4 +785,17 @@ class CivicrmEntityViewsData extends EntityViewsData {
     }
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  protected function processViewsDataForTextLong($table, FieldDefinitionInterface $field_definition, array &$views_field, $field_column_name) {
+    if ($field_column_name === 'value') {
+      $views_field['real field'] = $field_definition->getName();
+    }
+
+    if ($field_column_name === 'format') {
+      $views_field = NULL;
+    }
+  }
+
 }
