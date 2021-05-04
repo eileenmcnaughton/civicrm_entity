@@ -158,12 +158,10 @@ class CiviEntityStorage extends SqlContentEntityStorage {
   protected function doLoadMultiple(array $ids = NULL) {
     $entities = [];
     if ($ids === NULL) {
-      $civicrm_entities = $this->getCiviCrmApi()->get($this->entityType->get('civicrm_entity'));
-      foreach ($civicrm_entities as $civicrm_entity) {
-        $civicrm_entity = reset($civicrm_entity);
-        $entity = $this->prepareLoadedEntity($civicrm_entity);
-        $entities[$entity->id()] = $entity;
-      }
+      $civicrm_entity = $this->getCiviCrmApi()->get($this->entityType->get('civicrm_entity'));
+      $civicrm_entity = reset($civicrm_entity);
+      $entity = $this->prepareLoadedEntity($civicrm_entity);
+      $entities[$entity->id()] = $entity;
     }
 
     // get all the fields
@@ -172,35 +170,37 @@ class CiviEntityStorage extends SqlContentEntityStorage {
     foreach ($fields as $field) {
       $field_names[] = $field['name'];
     }
-    foreach ($ids as $id) {
-      $options = ['id' => $id];
-      $options['return'] = $field_names;
 
+    $options = [
+      'id' => ['IN' => $ids],
+      'return' => $field_names,
+      'options' => ['limit' => 0],
+    ];
+
+    if ($this->entityType->get('civicrm_entity') === 'participant') {
+      unset($options['return']);
+    }
+
+    $civicrm_entities = $this->getCiviCrmApi()->get($this->entityType->get('civicrm_entity'), $options);
+
+    foreach ($civicrm_entities as $civicrm_entity) {
       if ($this->entityType->get('civicrm_entity') === 'participant') {
-        unset($options['return']);
-      }
-
-      $civicrm_entity = $this->getCiviCrmApi()->get($this->entityType->get('civicrm_entity'), $options);
-      $civicrm_entity = reset($civicrm_entity);
-      if ($civicrm_entity) {
-        if ($this->entityType->get('civicrm_entity') === 'participant') {
-          // Massage the values.
-          $temporary = [];
-          foreach ($civicrm_entity as $key => $value) {
-            if (strpos($key, 'participant_') === 0) {
-              $temporary[str_replace('participant_', '', $key)] = $value;
-            }
-            else {
-              $temporary[$key] = $value;
-            }
+        // Massage the values.
+        $temporary = [];
+        foreach ($civicrm_entity as $key => $value) {
+          if (strpos($key, 'participant_') === 0) {
+            $temporary[str_replace('participant_', '', $key)] = $value;
           }
-
-          $civicrm_entity = $temporary;
+          else {
+            $temporary[$key] = $value;
+          }
         }
 
-        $entity = $this->prepareLoadedEntity($civicrm_entity);
-        $entities[$entity->id()] = $entity;
+        $civicrm_entity = $temporary;
       }
+
+      $entity = $this->prepareLoadedEntity($civicrm_entity);
+      $entities[$entity->id()] = $entity;
     }
     return $entities;
   }
