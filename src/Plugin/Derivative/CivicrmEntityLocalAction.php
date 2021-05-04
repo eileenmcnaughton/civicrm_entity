@@ -49,16 +49,21 @@ class CivicrmEntityLocalAction extends DeriverBase implements ContainerDeriverIn
     $this->derivatives = [];
 
     $civicrm_entities = array_filter($this->entityTypeManager->getDefinitions(), function (EntityTypeInterface $type) {
-      return $type->getProvider() == 'civicrm_entity' && $type->get('civicrm_entity_ui_exposed');
+      return $type->getProvider() === 'civicrm_entity' && $type->get('civicrm_entity_ui_exposed');
     });
 
     /** @var \Drupal\Core\Entity\EntityTypeInterface $entity_type */
     foreach ($civicrm_entities as $entity_type_id => $entity_type) {
-      $this->derivatives["field_storage_config_add_$entity_type_id"] = [
+      $this->derivatives["civicrm_entity_add_$entity_type_id"] = [
         'route_name' => "entity.$entity_type_id.add_form",
         'title' => $this->t('Add :label', [':label' => $entity_type->getLabel()]),
         'appears_on' => ["entity.$entity_type_id.collection"],
       ] + $base_plugin_definition;
+      if ($entity_type->hasKey('bundle')) {
+        $this->derivatives["civicrm_entity_add_$entity_type_id"]['route_parameters'] = [
+          $entity_type->getKey('bundle') => $entity_type_id,
+        ];
+      }
     }
 
     return $this->derivatives;

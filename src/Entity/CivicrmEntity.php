@@ -3,8 +3,10 @@
 namespace Drupal\civicrm_entity\Entity;
 
 use Drupal\civicrm_entity\Plugin\Field\ActivityEndDateFieldItemList;
+use Drupal\civicrm_entity\Plugin\Field\BundleFieldItemList;
 use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Core\Entity\ContentEntityBase;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\TypedData\Plugin\DataType\DateTimeIso8601;
@@ -67,12 +69,41 @@ class CivicrmEntity extends ContentEntityBase {
   /**
    * {@inheritdoc}
    */
+  public static function preCreate(EntityStorageInterface $storage, array &$values) {
+    // If the `bundle` property is missing during the create operation, Drupal
+    // will error – even if our bundle is computed on other required fields.
+    // This ensures the values array has the bundle property set.
+    $entity_type = $storage->getEntityType();
+    if ($entity_type->hasKey('bundle')) {
+      $bundle_property = $entity_type->get('civicrm_bundle_property');
+      /** @var \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api */
+      $civicrm_api = \Drupal::service('civicrm_entity.api');
+      $options = $civicrm_api->getOptions($entity_type->get('civicrm_entity'), $bundle_property);
+
+      if (isset($values[$entity_type->getKey('bundle')]) && $values[$entity_type->getKey('bundle')] === $entity_type->id()) {
+        $raw_bundle_value = key($options);
+      }
+      else {
+        $raw_bundle_value = $values[$bundle_property];
+      }
+
+      $bundle_value = $options[$raw_bundle_value];
+      $transliteration = \Drupal::transliteration();
+      $machine_name = SupportedEntities::optionToMachineName($bundle_value, $transliteration);
+      $values[$entity_type->getKey('bundle')] = $machine_name;
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = [];
     $civicrm_entity_info = SupportedEntities::getInfo()[$entity_type->id()];
     $civicrm_required_fields = !empty($civicrm_entity_info['required']) ? $civicrm_entity_info['required'] : [];
     $field_definition_provider = \Drupal::service('civicrm_entity.field_definition_provider');
     $civicrm_fields = \Drupal::service('civicrm_entity.api')->getFields($entity_type->get('civicrm_entity'), 'create');
+
     foreach ($civicrm_fields as $civicrm_field) {
       // Apply any additional field data provided by the module.
       if (!empty($civicrm_entity_info['fields'][$civicrm_field['name']])) {
@@ -84,7 +115,22 @@ class CivicrmEntity extends ContentEntityBase {
 
       if ($values = \Drupal::service('civicrm_entity.api')->getCustomFieldMetadata($civicrm_field['name'])) {
         $fields[$civicrm_field['name']]->setSetting('civicrm_entity_field_metadata', $values);
+        $fields[$civicrm_field['name']]->setRequired((bool) $civicrm_field['is_required']);
       }
+    }
+
+    // Placing the bundle field here is a bit of a hack work around.
+    // \Drupal\Core\Entity\ContentEntityStorageBase::initFieldValues will apply
+    // default values to all empty fields. The computed bundle field will
+    // provide a default value as well, for its related CiviCRM Entity field.
+    // By placing this field last, we avoid conflict on setting of the default
+    // value.
+    if ($entity_type->hasKey('bundle')) {
+      $fields[$entity_type->getKey('bundle')] = BaseFieldDefinition::create('string')
+        ->setLabel($entity_type->getBundleLabel())
+        ->setRequired(TRUE)
+        ->setReadOnly(TRUE)
+        ->setClass(BundleFieldItemList::class);
     }
 
     // Provide a computed base field that takes the activity start time and

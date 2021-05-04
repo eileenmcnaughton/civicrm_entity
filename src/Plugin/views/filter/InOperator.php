@@ -111,13 +111,14 @@ class InOperator extends BaseInOperator {
     else {
       switch ($this->operator) {
         case 'in':
-          $condition = new Condition('OR');
+          $values = array_map(function($value) {
+            return \CRM_Core_DAO::VALUE_SEPARATOR . $value . \CRM_Core_DAO::VALUE_SEPARATOR;
+          }, $values);
 
-          foreach ($values as $value) {
-            $condition->condition($field, '%' . $this->connection->escapeLike($value) . '%', 'LIKE');
-          }
+          $this
+            ->query
+            ->addWhereExpression($this->options['group'], "CAST({$field} AS BINARY) RLIKE BINARY :arg1", [':arg1' => implode('|', $values)]);
 
-          $this->query->addWhere($this->options['group'], $condition);
           break;
 
         case 'not in':

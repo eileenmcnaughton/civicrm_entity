@@ -256,7 +256,8 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
    *   The base field definition.
    */
   protected function getTextDefinition(array $civicrm_field) {
-    if (!empty($civicrm_field['html']) && $civicrm_field['html']['type'] == 'RichTextEditor') {
+    if ((!empty($civicrm_field['html']['type']) && $civicrm_field['html']['type'] == 'RichTextEditor') ||
+      (!empty($civicrm_field['html_type']) && $civicrm_field['html_type'] == 'RichTextEditor')) {
       $field_type = 'text_long';
     }
     elseif (!empty($civicrm_field['description']) && strpos($civicrm_field['description'], 'Text and html allowed.') !== FALSE) {
