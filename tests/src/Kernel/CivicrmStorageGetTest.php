@@ -19,14 +19,20 @@ class CivicrmStorageGetTest extends CivicrmEntityTestBase {
    */
   public function testGet() {
     $result = $this->container->get('civicrm_entity.api')->get('event', [
-      'id' => 1,
+      'id' => [
+        'IN' => [1]
+      ],
       'return' => array_keys($this->sampleEventsGetFields()),
+      'options' => ['limit' => 0],
     ]);
     $this->assertEquals('Fall Fundraiser Dinner', $result[0]['title']);
 
     $result = $this->container->get('civicrm_entity.api')->get('contact', [
-      'id' => 10,
+      'id' => [
+        'IN' => [10]
+      ],
       'return' => array_keys($this->sampleContactGetFields()),
+      'options' => ['limit' => 0],
     ]);
     $this->assertEquals('Emma Neal', $result[0]['display_name']);
   }
@@ -43,7 +49,7 @@ class CivicrmStorageGetTest extends CivicrmEntityTestBase {
     $this->assertEquals($entity->get('title')->value, 'Fall Fundraiser Dinner');
     $this->assertEquals('2018-05-02T07:00:00', $entity->get('start_date')->value);
     $this->assertEquals('2018/05/02', $entity->get('start_date')->date->format('Y/m/d'));
-    $this->assertTrue($entity->get('is_public')->value);
+    $this->assertTrue((bool) $entity->get('is_public')->first()->value);
   }
 
   /**

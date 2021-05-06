@@ -127,6 +127,8 @@ class CivicrmEntityViewsData extends EntityViewsData {
               'entity_type' => $this->entityType->id(),
               'base field' => $this->entityType->getKey('id'),
               'field_name' => $field_name,
+              'field table' => $target_base_table,
+              'field field' => $field_name,
             ];
           }
         }
