@@ -3,20 +3,24 @@
 namespace Drupal\Tests\civicrm_entity\Kernel;
 
 use Drupal\civicrm_entity\CiviCrmApiInterface;
-use Drupal\civicrm_entity\SupportedEntities;
+use Drupal\Core\Database\Database;
+use Drupal\Core\DependencyInjection\ContainerBuilder;
+use Drupal\Core\DependencyInjection\ServiceModifierInterface;
 use Drupal\KernelTests\KernelTestBase;
 use Prophecy\Argument;
+use Prophecy\Promise;
 
 /**
  * Test base to aid in mocking the CiviCRM API.
  */
-abstract class CivicrmEntityTestBase extends KernelTestBase {
+abstract class CivicrmEntityTestBase extends KernelTestBase implements ServiceModifierInterface {
 
   /**
    * {@inheritdoc}
    */
   protected static $modules = [
     'system',
+    'user',
     'civicrm',
     'civicrm_entity',
     'field',
@@ -27,33 +31,105 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
     'datetime',
   ];
 
+  public function alter(ContainerBuilder $container) {
+    $this->mockCiviCrmApi($container);
+  }
+
   /**
    * {@inheritdoc}
    */
   protected function setUp() {
     parent::setUp();
-    require __DIR__ . '/../Type.php';
-    require __DIR__ . '/../CiviCrmDaoStubs.php';
-    $this->mockCiviCrmApi();
+    define('CIVICRM_CONTAINER_CACHE', 'never');
+    define('CIVICRM_TEST', 'never');
 
+    // Add file_private_path, required to properly set templateCompilePath.
+    $file_private_path = $this->siteDirectory . 'files/private';
+    $this->setSetting('file_private_path', $file_private_path);
+    mkdir($file_private_path, 0775);
+
+    module_load_install('civicrm');
+    $setup = _civicrm_setup();
+    $installed = $setup->checkInstalled();
+    if ($installed->isSettingInstalled() || $installed->isDatabaseInstalled()) {
+      throw new \Exception("CiviCRM appears to have already been installed. Skipping full installation.");
+    }
+
+    \Civi\Setup::dispatcher()
+      ->addListener('civi.setup.installFiles', function (\Civi\Setup\Event\InstallFilesEvent $e) use ($file_private_path) {
+        $model = $e->getModel();
+        $model->settingsPath = implode(DIRECTORY_SEPARATOR, [$this->siteDirectory, 'civicrm.settings.php']);
+        $model->templateCompilePath = implode(DIRECTORY_SEPARATOR, [$file_private_path, 'civicrm', 'templates_c']);
+      }, 900);
+
+    $setup->installFiles();
+    $setup->installDatabase();
+
+    // @todo we need an event subscriber to rebuild definitions if this saves.
     $this->config('civicrm_entity.settings')
       ->set('enabled_entity_types', [
         'civicrm_event',
       ])->save();
+    $this->container->get('entity_type.manager')->clearCachedDefinitions();
+  }
+
+  protected function bootEnvironment() {
+    parent::bootEnvironment();
+    $connection_info = Database::getConnectionInfo('default');
+    // CiviCRM does not leverage table prefixes, so we unset it. This way any
+    // `civicrm_` tables are more easily cleaned up at the end of the test.
+    $civicrm_connection_info = $connection_info['default'];
+    unset($civicrm_connection_info['prefix']);
+    Database::addConnectionInfo('civicrm_test', 'default', $civicrm_connection_info);
+    Database::addConnectionInfo('civicrm', 'default', $civicrm_connection_info);
+
+    // Assert that there are no `civicrm_` tables in the test database.
+    $connection = Database::getConnection('default', 'civicrm_test');
+    $schema = $connection->schema();
+    $tables = $schema->findTables('civicrm_%');
+    if (count($tables) > 0) {
+      throw new \RuntimeException('The provided database connection in SIMPLETEST_DB contains CiviCRM tables, use a different database.');
+    }
+  }
+
+  protected function tearDown() {
+    $civicrm_test_conn = Database::getConnection('default', 'civicrm_test');
+    // Disable foreign key checks so that tables can be dropped.
+    $civicrm_test_conn->query('SET FOREIGN_KEY_CHECKS = 0;')->execute();
+    $civicrm_schema = $civicrm_test_conn->schema();
+    $tables = $civicrm_schema->findTables('%');
+    // Comment out if you want to view the tables/contents before deleting them
+    // throw new \Exception(var_export($tables, TRUE));
+    foreach ($tables as $table) {
+      if ($civicrm_schema->dropTable($table)) {
+        unset($tables[$table]);
+      }
+    }
+    $civicrm_test_conn->query('SET FOREIGN_KEY_CHECKS = 1;')->execute();
+    parent::tearDown();
   }
 
   /**
    * Mocks the CiviCRM API.
    */
-  protected function mockCiviCrmApi() {
+  protected function mockCiviCrmApi(ContainerBuilder $container) {
     $civicrm_api_mock = $this->prophesize(CiviCrmApiInterface::class);
+    $civicrm_api_mock->civicrmInitialize()->willReturn();
+    $civicrm_api_mock->getCustomFieldMetadata(Argument::any())->willReturn();
+
     $civicrm_api_mock->get('event', [
-      'id' => 1,
+      'id' => [
+        'IN' => [1]
+      ],
       'return' => array_keys($this->sampleEventsGetFields()),
+      'options' => ['limit' => 0],
     ])->willReturn($this->sampleEventsData());
     $civicrm_api_mock->get('contact', [
-      'id' => 10,
+      'id' => [
+        'IN' => [10]
+      ],
       'return' => array_keys($this->sampleContactGetFields()),
+      'options' => ['limit' => 0],
     ])->willReturn($this->sampleContactData());
 
     $civicrm_api_mock->getFields('event')->willReturn($this->sampleEventsGetFields());
@@ -73,19 +149,20 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
       ],
     ]);
 
-    $supported_entities = SupportedEntities::getInfo();
-    foreach ($supported_entities as $civicrm_entity_info) {
-      $civicrm_entity_name = $civicrm_entity_info['civicrm entity name'];
-      if (in_array($civicrm_entity_name, ['event', 'contact'])) {
-        continue;
-      }
-      $civicrm_api_mock->getFields($civicrm_entity_name)->willReturn($this->minimalGenericGetFields());
-    }
-
     $civicrm_api_mock->save('event', Argument::type('array'))->willReturn(TRUE);
     $civicrm_api_mock->delete('event', Argument::type('array'))->willReturn(TRUE);
 
-    $this->container->set('civicrm_entity.api', $civicrm_api_mock->reveal());
+    $civicrm_api_mock->getOptions('activity', 'activity_type_id')->willReturn([
+      'Foo' => 'Foo',
+      'Bar' => 'Bar',
+    ]);
+    $civicrm_api_mock->getOptions('event', 'event_type_id')->willReturn([
+      'Baz' => 'Baz',
+      'Zoo' => 'Zoo',
+      'Conference' => 'Conference',
+    ]);
+
+    $container->set('civicrm_entity.api', $civicrm_api_mock->reveal());
   }
 
   /**
@@ -1709,7 +1786,7 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
         'summary' => 'Kick up your heels at our Fall Fundraiser Dinner/Dance at Glen Echo Park! Come by yourself or bring a partner, friend or the entire family!',
         'description' => 'This event benefits our teen programs. Admission includes a full 3 course meal and wine or soft drinks. Grab your dancing shoes, bring the kids and come join the party!',
         'event_description' => 'This event benefits our teen programs. Admission includes a full 3 course meal and wine or soft drinks. Grab your dancing shoes, bring the kids and come join the party!',
-        'event_type_id' => '3',
+        'event_type_id' => 'Conference',
         'participant_listing_id' => '1',
         'is_public' => '1',
         'start_date' => '2018-05-02 17:00:00',
