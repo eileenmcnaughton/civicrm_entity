@@ -778,6 +778,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
           'base' => 'civicrm_contact',
           'base field' => 'id',
           'label' => $this->t('@label', ['@label' => $field_metadata['label']]),
+          'join_id' => isset($field_metadata['serialize']) && $field_metadata['serialize'] ? 'civicrm_entity_contact_reference' : 'standard',
         ];
 
       default:

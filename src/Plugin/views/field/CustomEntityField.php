@@ -10,8 +10,6 @@ use Drupal\Core\Field\FieldTypePluginManagerInterface;
 use Drupal\Core\Field\FormatterPluginManager;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
-use Drupal\Core\Render\BubbleableMetadata;
-use Drupal\Core\Render\Element;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\ResultRow;
@@ -94,6 +92,11 @@ class CustomEntityField extends EntityField {
     }
 
     parent::init($view, $display, $options);
+
+    // Do not support multiple value custom fields.
+    if (isset($this->fieldMetadata) && isset($this->fieldMetadata['custom_group_id'])) {
+      $this->multiple = FALSE;
+    }
   }
 
   /**
@@ -164,46 +167,7 @@ class CustomEntityField extends EntityField {
    * {@inheritdoc}
    */
   public function getItems(ResultRow $values) {
-    $display = [
-      'type' => $this->options['type'],
-      'settings' => $this->options['settings'],
-      'label' => 'hidden',
-    ];
-
-    if (($entity = $this->getEntity($values)) && isset($entity->{$this->definition['field_name']})) {
-      $entity = $this->createEntity($entity);
-
-      if (isset($this->aliases['id']) && isset($values->{$this->aliases['id']})) {
-        $values->delta = $this->getDelta($values->{$this->aliases['id']});
-      }
-
-      $build_list = $entity->{$this->definition['field_name']}->view($display);
-    }
-    else {
-      $build_list = NULL;
-    }
-
-    if (!$build_list) {
-      return [];
-    }
-
-    if ($this->options['field_api_classes']) {
-      return [['rendered' => $this->renderer->render($build_list)]];
-    }
-
-    $items = [];
-    $bubbleable = BubbleableMetadata::createFromRenderArray($build_list);
-    foreach (Element::children($build_list) as $delta) {
-      BubbleableMetadata::createFromRenderArray($build_list[$delta])
-        ->merge($bubbleable)
-        ->applyTo($build_list[$delta]);
-      $items[$delta] = [
-        'rendered' => $build_list[$delta],
-        'raw' => $build_list['#items'][$delta],
-      ];
-    }
-
-    return $items;
+    return parent::getItems($values);
   }
 
   /**
