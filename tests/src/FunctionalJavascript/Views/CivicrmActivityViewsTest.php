@@ -19,8 +19,12 @@ final class CivicrmActivityViewsTest extends CivicrmEntityViewsTestBase {
     // TODO: Implement createSampleData() method.
   }
 
-  protected function addAndConfigureFields() {
+  protected function doSetupCreateView() {
     // TODO: Implement addAndConfigureFields() method.
+  }
+
+  protected function assertCreateViewResults() {
+    // TODO: Implement assertCreateViewResults() method.
   }
 
 }

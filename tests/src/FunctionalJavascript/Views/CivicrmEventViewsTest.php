@@ -7,6 +7,9 @@ use Drupal\Tests\civicrm_entity\FunctionalJavascript\CivicrmEntityViewsTestBase;
 final class CivicrmEventViewsTest extends CivicrmEntityViewsTestBase {
 
   protected static $civicrmEntityTypeId = 'civicrm_event';
+  protected static $civicrmEntityPermissions = [
+    'view event info'
+  ];
 
   public function testAddWizardValues() {
     parent::testAddWizardValues();
@@ -17,7 +20,7 @@ final class CivicrmEventViewsTest extends CivicrmEntityViewsTestBase {
 
   protected function createSampleData() {
     $civicrm_api = $this->container->get('civicrm_entity.api');
-    $civicrm_api->save('Event', [
+    $result = $civicrm_api->save('Event', [
       'title' => 'Annual CiviCRM meet',
       'summary' => 'If you have any CiviCRM related issues or want to track where CiviCRM is heading, Sign up now',
       'description' => 'This event is intended to give brief idea about progress of CiviCRM and giving solutions to common user issues',
@@ -36,21 +39,10 @@ final class CivicrmEventViewsTest extends CivicrmEntityViewsTestBase {
     ]);
   }
 
-  // @todo should we have a func which returns field names and a "configureField" method to adjust it further?
-  protected function addAndConfigureFields() {
-    $page = $this->getSession()->getPage();
-    $page->checkField('name[civicrm_event.description__value]');
-    $page->checkField('name[civicrm_event.end_date]');
-    $page->checkField('name[civicrm_event.start_date]');
-    // Add the fields.
-    $this->submitViewsDialog();
-
-    // configure and submit the description field.
-    $this->submitViewsDialog();
-    // configure and submit the end date field.
-    $this->submitViewsDialog();
-    // configure and submit the start date field.
-    $this->submitViewsDialog();
+  protected function doSetupCreateView() {
+    $this->addFieldToDisplay('name[civicrm_event.description__value]');
+    $this->addFieldToDisplay('name[civicrm_event.end_date]');
+    $this->addFieldToDisplay('name[civicrm_event.start_date]');
   }
 
   protected function assertCreateViewResults() {

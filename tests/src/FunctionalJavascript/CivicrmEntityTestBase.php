@@ -27,7 +27,6 @@ abstract class CivicrmEntityTestBase extends CiviCrmTestBase {
    */
   protected function enableCivicrmEntityTypes(array $entity_types): void {
     $this->drupalGet(Url::fromRoute('civicrm_entity.settings'));
-    $this->htmlOutput();
     $page = $this->getSession()->getPage();
     foreach ($entity_types as $entity_type) {
       $page->checkField("enabled_entity_types[$entity_type]");

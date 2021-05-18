@@ -3,6 +3,7 @@
 namespace Drupal\civicrm_entity\Form;
 
 use Drupal\civicrm_entity\SupportedEntities;
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
@@ -173,6 +174,8 @@ class CivicrmEntitySettings extends ConfigFormBase {
     $this->routeBuilder->rebuild();
     $this->localActionManager->clearCachedDefinitions();
     $this->localTaskManager->clearCachedDefinitions();
+    // @todo inject views.views_data and call \Drupal\views\ViewsData::clear().
+    Cache::invalidateTags(['views_data']);
   }
 
 }

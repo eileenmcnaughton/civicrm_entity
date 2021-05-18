@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\civicrm_entity\FunctionalJavascript;
 
+use Behat\Mink\Exception\ElementNotFoundException;
 use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Core\Url;
 
@@ -14,13 +15,15 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
 
   protected static $civicrmEntityTypeId = NULL;
 
+  protected static $civicrmEntityPermissions = [];
+
   protected function setUp() {
     parent::setUp();
     $admin_user = $this->createUser([
       'access content',
       'administer civicrm entity',
       'administer views',
-    ]);
+    ] + static::$civicrmEntityPermissions);
     $this->drupalLogin($admin_user);
     $this->enableCivicrmEntityTypes([static::$civicrmEntityTypeId]);
   }
@@ -65,12 +68,10 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
     $page->pressButton('Save and edit');
     $this->assertSession()->pageTextContains('The view ' . static::$civicrmEntityTypeId . ' view has been saved.');
     $this->assertSession()->assertWaitOnAjaxRequest();
-    $this->htmlOutput();
-    $page->clickLink('views-add-field');
-    $this->assertSession()->assertWaitOnAjaxRequest();
-    $this->addAndConfigureFields();
+    $this->doSetupCreateView();
 
     $this->drupalGet('/' . static::$civicrmEntityTypeId);
+    $this->htmlOutput();
     $this->assertCreateViewResults();
   }
 
@@ -78,9 +79,18 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
   // @todo testCreateViewWithSorts()
   // @todo testCreateViewWithRelationships()
 
-  protected abstract function createSampleData();
+  abstract protected function createSampleData();
 
-  protected abstract function addAndConfigureFields();
+  abstract protected function doSetupCreateView();
+  abstract protected function assertCreateViewResults();
+
+  protected function addFieldToDisplay(string $name_locator, array $configuration = []) {
+    $this->clickAjaxLink('views-add-field');
+    $this->getSession()->getPage()->checkField($name_locator);
+    $this->submitViewsDialog();
+    // @todo process configuration.
+    $this->submitViewsDialog();
+  }
 
   protected function submitViewsDialog() {
     $button = $this->assertSession()->waitForElementVisible('css', '.views-ui-dialog button[type="button"].button--primary');
@@ -89,6 +99,18 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
     $this->assertSession()->assertWaitOnAjaxRequest();
   }
 
-  abstract protected function assertCreateViewResults();
+  /**
+   * Clicks link with specified locator.
+   *
+   * @param string $locator
+   *    The link id, title, text or image alt.
+   *
+   * @throws ElementNotFoundException
+   */
+  protected function clickAjaxLink(string $locator) {
+    $this->getSession()->getPage()->clickLink($locator);
+    $this->assertSession()->assertWaitOnAjaxRequest();
+  }
+
 
 }
