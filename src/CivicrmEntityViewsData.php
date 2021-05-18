@@ -60,6 +60,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
       'field' => $base_field,
       'title' => $this->entityType->getLabel(),
       'cache_contexts' => $this->entityType->getListCacheContexts(),
+      'database' => drupal_valid_test_ua() ? 'civicrm_test' : 'civicrm',
     ];
     $data[$base_table]['table']['entity revision'] = FALSE;
     if ($label_key = $this->entityType->getKey('label')) {

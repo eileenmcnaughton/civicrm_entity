@@ -26,6 +26,14 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
     ] + static::$civicrmEntityPermissions);
     $this->drupalLogin($admin_user);
     $this->enableCivicrmEntityTypes([static::$civicrmEntityTypeId]);
+
+    // Disable automatic live preview to make the sequence of calls clearer. And
+    // prevent errors on saving the view with the preview ajax load that are
+    // cancelled.
+    \Drupal::configFactory()
+      ->getEditable('views.settings')
+      ->set('ui.always_live_preview', FALSE)
+      ->save();
   }
 
   /**
