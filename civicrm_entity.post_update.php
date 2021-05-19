@@ -17,6 +17,8 @@ function civicrm_entity_post_update_entity_bundles(&$sandbox) {
  * Rebuild Views cache for improved support.
  */
 function civicrm_entity_post_update_views_data() {
-  \Drupal::getContainer()->get('plugin.manager.views.query')->clearCachedDefinitions();
-  \Drupal::getContainer()->get('views.views_data')->clear();;
+  // Discover the new civicrm_views_query plugin.
+  \Drupal::service('plugin.manager.views.query')->clearCachedDefinitions();
+  // Rebuild CiviCRM Entity views data (database and query_id keys.)
+  \Drupal::service('views.views_data')->clear();
 }

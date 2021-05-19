@@ -67,12 +67,4 @@ class CivicrmSql extends Sql {
     parent::init($view, $display, $options);
   }
 
-  public function query($get_count = FALSE) {
-    return parent::query($get_count);
-  }
-
-  public function build(ViewExecutable $view) {
-    parent::build($view);
-  }
-
 }
