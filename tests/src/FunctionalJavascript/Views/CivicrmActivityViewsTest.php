@@ -6,7 +6,7 @@ use Drupal\Tests\civicrm_entity\FunctionalJavascript\CivicrmEntityViewsTestBase;
 
 final class CivicrmActivityViewsTest extends CivicrmEntityViewsTestBase {
 
-  protected static $civicrmEntityType = 'civicrm_activity';
+  protected static $civicrmEntityTypeId = 'civicrm_activity';
 
   public function testAddWizardValues() {
     parent::testAddWizardValues();
@@ -24,7 +24,8 @@ final class CivicrmActivityViewsTest extends CivicrmEntityViewsTestBase {
   }
 
   protected function assertCreateViewResults() {
-    // TODO: Implement assertCreateViewResults() method.
+    // @todo write tests.
+    $this->doesNotPerformAssertions();
   }
 
 }

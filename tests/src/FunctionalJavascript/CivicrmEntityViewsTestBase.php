@@ -4,6 +4,7 @@ namespace Drupal\Tests\civicrm_entity\FunctionalJavascript;
 
 use Behat\Mink\Exception\ElementNotFoundException;
 use Drupal\civicrm_entity\SupportedEntities;
+use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
 
 abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
@@ -16,6 +17,34 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
   protected static $civicrmEntityTypeId = NULL;
 
   protected static $civicrmEntityPermissions = [];
+
+  protected function doInstall() {
+    parent::doInstall();
+
+    // @todo remove this for a BC shim, or find a way to test with/without.
+    // The database information was added inside of our test environment,
+    // but it wasn't added to the Drupal settings to make it available for
+    // directly queries via Views.
+    // @todo This needs to be documented for all users wanting Views integration.
+    // @see \Drupal\Core\Installer\Form\SiteSettingsForm::submitForm
+    // @see \Drupal\Tests\civicrm\FunctionalJavascript\CiviCrmTestBase::changeDatabasePrefix
+    $connection = Database::getConnection('default', 'civicrm_test')->getConnectionOptions();
+    $settings['databases']['civicrm_test']['default'] = (object) [
+      'value'    => [
+        'driver' => $connection['driver'],
+        'username' => $connection['username'],
+        'password' => $connection['password'],
+        'host' => $connection['host'],
+        'database' => $connection['database'],
+        'namespace' => $connection['namespace'],
+        'port' => $connection['port'],
+        // CiviCRM does not use prefixes.
+        'prefix' => '',
+      ],
+      'required' => TRUE,
+    ];
+    $this->writeSettings($settings);
+  }
 
   protected function setUp() {
     parent::setUp();
@@ -60,7 +89,6 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
 
   /**
    * Tests creating a basic view with the entity type.
-   * @group debug
    */
   public function testCreateView() {
     $this->createSampleData();
@@ -77,7 +105,7 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
     $this->assertSession()->pageTextContains('The view ' . static::$civicrmEntityTypeId . ' view has been saved.');
     $this->assertSession()->assertWaitOnAjaxRequest();
     $this->doSetupCreateView();
-
+    $this->htmlOutput();
     $this->drupalGet('/' . static::$civicrmEntityTypeId);
     $this->htmlOutput();
     $this->assertCreateViewResults();
