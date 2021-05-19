@@ -21,13 +21,16 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
   protected function doInstall() {
     parent::doInstall();
 
-    // @todo remove this for a BC shim, or find a way to test with/without.
     // The database information was added inside of our test environment,
     // but it wasn't added to the Drupal settings to make it available for
     // directly queries via Views.
     // @todo This needs to be documented for all users wanting Views integration.
+    // @todo There is a workaround in CivicrmSql::init, that is why this is
+    //   commented out. This way we can test the workaround.
     // @see \Drupal\Core\Installer\Form\SiteSettingsForm::submitForm
     // @see \Drupal\Tests\civicrm\FunctionalJavascript\CiviCrmTestBase::changeDatabasePrefix
+    // @see \Drupal\civicrm_entity\Plugin\views\query\CivicrmSql::init
+    /*
     $connection = Database::getConnection('default', 'civicrm_test')->getConnectionOptions();
     $settings['databases']['civicrm_test']['default'] = (object) [
       'value'    => [
@@ -44,6 +47,7 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
       'required' => TRUE,
     ];
     $this->writeSettings($settings);
+    */
   }
 
   protected function setUp() {

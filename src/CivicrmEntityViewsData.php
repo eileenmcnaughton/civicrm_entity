@@ -62,6 +62,10 @@ class CivicrmEntityViewsData extends EntityViewsData {
       'cache_contexts' => $this->entityType->getListCacheContexts(),
       // If we're in a test site, use the civicrm_test database connection.
       'database' => drupal_valid_test_ua() ? 'civicrm_test' : 'civicrm',
+      // Specify our own views query plugin, to support ensuring the CiviCRM
+      // database connection exists in Drupal.
+      // @see \Drupal\views\Plugin\views\display\DisplayPluginBase::getPlugin
+      'query_id' => 'civicrm_views_query',
     ];
     $data[$base_table]['table']['entity revision'] = FALSE;
     if ($label_key = $this->entityType->getKey('label')) {
