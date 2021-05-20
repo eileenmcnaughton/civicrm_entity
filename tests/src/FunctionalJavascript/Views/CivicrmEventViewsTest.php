@@ -57,6 +57,7 @@ final class CivicrmEventViewsTest extends CivicrmEntityViewsTestBase {
    */
   protected function doSetupCreateView() {
     $this->addFieldToDisplay('name[civicrm_event.description__value]');
+    $this->addFieldToDisplay('name[civicrm_event.summary]');
     $this->addFieldToDisplay('name[civicrm_event.end_date]');
     $this->addFieldToDisplay('name[civicrm_event.start_date]');
   }
@@ -67,9 +68,10 @@ final class CivicrmEventViewsTest extends CivicrmEntityViewsTestBase {
   protected function assertCreateViewResults() {
     $assert_session = $this->assertSession();
     $assert_session->pageTextContainsOnce('Annual CiviCRM meet');
-    // @todo why doesn't this render?
-    // $assert_session->pageTextContainsOnce('This event is intended to give brief idea about progress of CiviCRM and giving solutions to common user issues');
-    // @todo assert Start Date, End Date.
+    $assert_session->pageTextContainsOnce('This event is intended to give brief idea about progress of CiviCRM and giving solutions to common user issues');
+    $assert_session->pageTextContainsOnce('If you have any CiviCRM related issues or want to track where CiviCRM is heading, Sign up now');
+    $assert_session->pageTextContainsOnce('Thu, 10/23/2008 - 00:00');
+    $assert_session->pageTextContainsOnce('Tue, 10/21/2008 - 00:00');
   }
 
 }

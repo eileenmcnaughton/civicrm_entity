@@ -132,6 +132,7 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
     $this->assertSession()->assertWaitOnAjaxRequest();
     $this->doSetupCreateView();
     $this->htmlOutput();
+    $page->pressButton('Save');
     $this->drupalGet('/' . static::$civicrmEntityTypeId);
     $this->htmlOutput();
     $this->assertCreateViewResults();
