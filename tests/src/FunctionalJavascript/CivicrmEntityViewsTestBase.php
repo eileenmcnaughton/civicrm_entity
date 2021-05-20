@@ -4,20 +4,39 @@ namespace Drupal\Tests\civicrm_entity\FunctionalJavascript;
 
 use Behat\Mink\Exception\ElementNotFoundException;
 use Drupal\civicrm_entity\SupportedEntities;
-use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
 
 abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected static $modules = [
     'views',
     'views_ui',
   ];
 
+  /**
+   * The tested entity type.
+   *
+   * Tests must specify a value for the test to run properly.
+   *
+   * @var string
+   */
   protected static $civicrmEntityTypeId = NULL;
 
+  /**
+   * The entity permissions.
+   *
+   * Permissions required to view the entity type.
+   *
+   * @var string[]
+   */
   protected static $civicrmEntityPermissions = [];
 
+  /**
+   * {@inheritdoc}
+   */
   protected function doInstall() {
     parent::doInstall();
 
@@ -50,6 +69,9 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
     */
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp() {
     parent::setUp();
     $admin_user = $this->createUser([
@@ -93,8 +115,6 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
 
   /**
    * Tests creating a basic view with the entity type.
-   *
-   * @group debug
    */
   public function testCreateView() {
     $this->createSampleData();
@@ -121,11 +141,36 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
   // @todo testCreateViewWithSorts()
   // @todo testCreateViewWithRelationships()
 
+  /**
+   * Creates sample data for each test.
+   *
+   * @return void
+   */
   abstract protected function createSampleData();
 
+  /**
+   * Runs setup for the ::testCreateView test.
+   *
+   * @return void
+   */
   abstract protected function doSetupCreateView();
+
+  /**
+   * Runs assertions for the ::testCreateView test.
+   * @return void
+   */
   abstract protected function assertCreateViewResults();
 
+  /**
+   * Adds a field to a Views display.
+   *
+   * @param string $name_locator
+   *   The field's checkbox locator
+   * @param array $configuration
+   *   The field's display configuration.
+   *
+   * @throws \Behat\Mink\Exception\ElementNotFoundException
+   */
   protected function addFieldToDisplay(string $name_locator, array $configuration = []) {
     $this->clickAjaxLink('views-add-field');
     $this->getSession()->getPage()->checkField($name_locator);
@@ -134,7 +179,10 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
     $this->submitViewsDialog();
   }
 
-  protected function submitViewsDialog() {
+  /**
+   * Submits a dialog when editing a View.
+   */
+  protected function submitViewsDialog(): void {
     $button = $this->assertSession()->waitForElementVisible('css', '.views-ui-dialog button[type="button"].button--primary');
     $this->assertNotEmpty($button);
     $button->click();
@@ -142,14 +190,14 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
   }
 
   /**
-   * Clicks link with specified locator.
+   * Clicks an AJAX link with specified locator.
    *
    * @param string $locator
    *    The link id, title, text or image alt.
    *
    * @throws ElementNotFoundException
    */
-  protected function clickAjaxLink(string $locator) {
+  protected function clickAjaxLink(string $locator): void {
     $this->getSession()->getPage()->clickLink($locator);
     $this->assertSession()->assertWaitOnAjaxRequest();
   }

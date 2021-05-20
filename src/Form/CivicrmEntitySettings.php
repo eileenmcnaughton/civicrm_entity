@@ -3,7 +3,6 @@
 namespace Drupal\civicrm_entity\Form;
 
 use Drupal\civicrm_entity\SupportedEntities;
-use Drupal\Core\Cache\Cache;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;

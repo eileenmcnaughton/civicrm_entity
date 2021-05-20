@@ -6,11 +6,21 @@ use Drupal\Tests\civicrm_entity\FunctionalJavascript\CivicrmEntityViewsTestBase;
 
 final class CivicrmEventViewsTest extends CivicrmEntityViewsTestBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected static $civicrmEntityTypeId = 'civicrm_event';
+
+  /**
+   * {@inheritdoc}
+   */
   protected static $civicrmEntityPermissions = [
     'view event info'
   ];
 
+  /**
+   * {@inheritdoc}
+   */
   public function testAddWizardValues() {
     parent::testAddWizardValues();
     // Specific bundles are present.
@@ -18,9 +28,12 @@ final class CivicrmEventViewsTest extends CivicrmEntityViewsTestBase {
     $this->assertSession()->optionExists('show[type]', 'workshop');
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function createSampleData() {
     $civicrm_api = $this->container->get('civicrm_entity.api');
-    $result = $civicrm_api->save('Event', [
+    $civicrm_api->save('Event', [
       'title' => 'Annual CiviCRM meet',
       'summary' => 'If you have any CiviCRM related issues or want to track where CiviCRM is heading, Sign up now',
       'description' => 'This event is intended to give brief idea about progress of CiviCRM and giving solutions to common user issues',
@@ -39,12 +52,18 @@ final class CivicrmEventViewsTest extends CivicrmEntityViewsTestBase {
     ]);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function doSetupCreateView() {
     $this->addFieldToDisplay('name[civicrm_event.description__value]');
     $this->addFieldToDisplay('name[civicrm_event.end_date]');
     $this->addFieldToDisplay('name[civicrm_event.start_date]');
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function assertCreateViewResults() {
     $assert_session = $this->assertSession();
     $assert_session->pageTextContainsOnce('Annual CiviCRM meet');
