@@ -174,8 +174,6 @@ class CivicrmEntitySettings extends ConfigFormBase {
     $this->routeBuilder->rebuild();
     $this->localActionManager->clearCachedDefinitions();
     $this->localTaskManager->clearCachedDefinitions();
-    // @todo inject views.views_data and call \Drupal\views\ViewsData::clear().
-    Cache::invalidateTags(['views_data']);
   }
 
 }

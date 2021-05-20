@@ -93,6 +93,8 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
 
   /**
    * Tests creating a basic view with the entity type.
+   *
+   * @group debug
    */
   public function testCreateView() {
     $this->createSampleData();
