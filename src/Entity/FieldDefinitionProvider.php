@@ -36,6 +36,9 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
               $field = BaseFieldDefinition::create('entity_reference')
                 ->setSetting('target_type', $foreign_key_dao::getTableName())
                 ->setSetting('handler', 'default');
+              if (!empty($civicrm_field['pseudoconstant'])) {
+                $field->setSetting('allowed_values_function', 'civicrm_entity_pseudoconstant_options');
+              }
             }
             else {
               $field = $this->getIntegerDefinition($civicrm_field);

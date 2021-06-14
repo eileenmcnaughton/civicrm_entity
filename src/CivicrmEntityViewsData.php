@@ -252,6 +252,16 @@ class CivicrmEntityViewsData extends EntityViewsData {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  protected function processViewsDataForEntityReference($table, FieldDefinitionInterface $field_definition, array &$views_field, $field_column_name) {
+    parent::processViewsDataForEntityReference($table, $field_definition, $views_field, $field_column_name);
+    if (!empty($field_definition->getItemDefinition()->getSetting('allowed_values_function'))) {
+      $this->processViewsDataForListString($table, $field_definition, $views_field, $field_column_name);
+    }
+  }
+
+  /**
    * Add views integration for custom fields.
    *
    * @param array $views_field
