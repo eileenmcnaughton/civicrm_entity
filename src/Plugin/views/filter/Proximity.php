@@ -18,11 +18,6 @@ use Drupal\Core\Database\Query\Condition;
 class Proximity extends FilterPluginBase {
 
   /**
-   * Hardcoded country ID.
-   */
-  const COUNTRY_ID = 1228;
-
-  /**
    * The CiviCRM API.
    *
    * @var \Drupal\civicrm_entity\CiviCrmApiInterface
@@ -105,9 +100,10 @@ class Proximity extends FilterPluginBase {
       '#default_value' => $this->value['city'],
     ];
 
+    $config = \CRM_Core_Config::singleton();
     $values = $this->civicrmApi->get('StateProvince', [
       'sequential' => 1,
-      'country_id' => static::COUNTRY_ID,
+      'country_id' => $config->defaultContactCountry,
       'options' => ['limit' => 0],
     ]);
 
@@ -154,16 +150,17 @@ class Proximity extends FilterPluginBase {
     if ((!empty($this->value['value']) || !empty($this->value['city']) || !empty($this->value['state_province_id'])) && !empty($this->value['distance'])) {
       $distance = $this->getCalculatedDistance($this->value['distance'], $this->value['distance_unit']);
 
+      $config = \CRM_Core_Config::singleton();
       $countries = $this
         ->civicrmApi
-        ->get('Country', ['sequential' => 1, 'id' => static::COUNTRY_ID, 'return' => ['name']]);
+        ->get('Country', ['sequential' => 1, 'id' => $config->defaultContactCountry, 'return' => ['name']]);
 
       $proximity_address = [
         'postal_code' => $this->value['value'],
         'state_province_id' => $this->value['state_province_id'],
         'city' => $this->value['city'],
         'country' => !empty($countries) ? $countries[0]['name'] : '',
-        'country_id' => static::COUNTRY_ID,
+        'country_id' => $config->defaultContactCountry,
         'distance_unit' => $this->value['distance_unit'],
       ];
 
