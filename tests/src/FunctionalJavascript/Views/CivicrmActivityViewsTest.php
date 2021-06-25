@@ -61,7 +61,7 @@ final class CivicrmActivityViewsTest extends CivicrmEntityViewsTestBase {
     $assert_session = $this->assertSession();
     $assert_session->pageTextContains('Meeting about new seeds');
     $assert_session->pageTextContains('We need to find more seeds!');
-    $assert_session->pageTextContains('Pennsylvania!');
+    $assert_session->pageTextContains('Pennsylvania');
   }
 
   protected function doSetupViewWithRelationships() {
