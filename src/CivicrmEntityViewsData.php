@@ -2,6 +2,7 @@
 
 namespace Drupal\civicrm_entity;
 
+use Drupal\Core\Database\Database;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\views\EntityViewsData;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -382,13 +383,17 @@ class CivicrmEntityViewsData extends EntityViewsData {
         break;
 
       case 'civicrm_contact':
+        $user_definition = $this->entityTypeManager->getDefinition('user');
+        assert($user_definition !== NULL);
+        $drupal_connection = Database::getConnectionInfo();
+        $database = $drupal_connection['default']['database'];
         $views_field['civicrm_contact']['user'] = [
           'title' => $this->t('User related to the CiviCRM contact'),
           'help' => $this->t('Relate user to the CiviCRM contact.'),
           'relationship' => [
             // @todo: add the Drupal database name as a prefix `db.user_field_data`.
-            'base' => 'users_field_data',
-            'base field' => 'uid',
+            'base' => $database . '.' . $user_definition->getDataTable(),
+            'base field' => $user_definition->getKey('id'),
             'table' => 'civicrm_uf_match',
             'first field' => 'contact_id',
             'second field' => 'uf_id',
