@@ -69,6 +69,7 @@ final class CivicrmActivityViewsTest extends CivicrmEntityViewsTestBase {
       // Set relationship to source
       'options[record_type_id]' => '2',
     ]);
+    $this->addRelationshipToDisplay('name[civicrm_contact.user]');
     $this->addFieldToDisplay('name[civicrm_contact.display_name]');
   }
 

@@ -386,6 +386,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
           'title' => $this->t('User related to the CiviCRM contact'),
           'help' => $this->t('Relate user to the CiviCRM contact.'),
           'relationship' => [
+            // @todo: add the Drupal database name as a prefix `db.user_field_data`.
             'base' => 'users_field_data',
             'base field' => 'uid',
             'table' => 'civicrm_uf_match',
