@@ -385,14 +385,11 @@ class CivicrmEntityViewsData extends EntityViewsData {
       case 'civicrm_contact':
         $user_definition = $this->entityTypeManager->getDefinition('user');
         assert($user_definition !== NULL);
-        $drupal_connection = Database::getConnectionInfo();
-        $database = $drupal_connection['default']['database'];
         $views_field['civicrm_contact']['user'] = [
           'title' => $this->t('User related to the CiviCRM contact'),
           'help' => $this->t('Relate user to the CiviCRM contact.'),
           'relationship' => [
-            // @todo: add the Drupal database name as a prefix `db.user_field_data`.
-            'base' => $database . '.' . $user_definition->getDataTable(),
+            'base' => Database::getConnection()->getFullQualifiedTableName($user_definition->getDataTable()),
             'base field' => $user_definition->getKey('id'),
             'table' => 'civicrm_uf_match',
             'first field' => 'contact_id',
