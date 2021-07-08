@@ -389,7 +389,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
           'title' => $this->t('User related to the CiviCRM contact'),
           'help' => $this->t('Relate user to the CiviCRM contact.'),
           'relationship' => [
-            'base' => Database::getConnection()->getFullQualifiedTableName($user_definition->getDataTable()),
+            'base' => $user_definition->getDataTable(),
             'base field' => $user_definition->getKey('id'),
             'table' => 'civicrm_uf_match',
             'first field' => 'contact_id',

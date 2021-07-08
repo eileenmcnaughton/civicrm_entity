@@ -2,6 +2,7 @@
 
 namespace Drupal\civicrm_entity\Plugin\views\relationship;
 
+use Drupal\Core\Database\Database;
 use Drupal\views\Plugin\views\relationship\RelationshipPluginBase;
 use Drupal\views\Views;
 
@@ -52,10 +53,16 @@ class CiviCrmBridgeRelationshipBase extends RelationshipPluginBase {
     $first_alias = $this->query->addTable($this->definition['table'], $this->relationship, $first_join);
 
     // Relate the first join to the base table defined.
+    // @todo probably should allow altering the join plugin ID and handle it there?
+    // \Drupal\views\Plugin\views\join\Standard. Or a new key.
+    $table = $this->definition['base'];
+    if ($table === 'users_field_data') {
+      $table = Database::getConnection()->getFullQualifiedTableName($table);
+    }
     $second = [
       'left_table' => $first_alias,
       'left_field' => $this->definition['second field'],
-      'table' => $this->definition['base'],
+      'table' => $table,
       'field' => $this->definition['base field'],
       'adjusted' => TRUE,
     ];
