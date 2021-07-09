@@ -53,10 +53,11 @@ class CiviCrmBridgeRelationshipBase extends RelationshipPluginBase {
     $first_alias = $this->query->addTable($this->definition['table'], $this->relationship, $first_join);
 
     // Relate the first join to the base table defined.
-    // @todo probably should allow altering the join plugin ID and handle it there?
-    // \Drupal\views\Plugin\views\join\Standard. Or a new key.
+    // If the table is _not_ a CiviCRM table, assume it is for the default
+    // connection, and provide the fully qualified table name so that we can
+    // query across the databases.
     $table = $this->definition['base'];
-    if ($table === 'users_field_data') {
+    if (strpos($table, 'civicrm_') !== 0) {
       $table = Database::getConnection()->getFullQualifiedTableName($table);
     }
     $second = [
