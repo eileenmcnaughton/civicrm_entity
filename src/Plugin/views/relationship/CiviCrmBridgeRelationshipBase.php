@@ -2,7 +2,6 @@
 
 namespace Drupal\civicrm_entity\Plugin\views\relationship;
 
-use Drupal\Core\Database\Database;
 use Drupal\views\Plugin\views\relationship\RelationshipPluginBase;
 use Drupal\views\Views;
 
@@ -52,18 +51,10 @@ class CiviCrmBridgeRelationshipBase extends RelationshipPluginBase {
     $first_join = Views::pluginManager('join')->createInstance('standard', $first);
     $first_alias = $this->query->addTable($this->definition['table'], $this->relationship, $first_join);
 
-    // Relate the first join to the base table defined.
-    // If the table is _not_ a CiviCRM table, assume it is for the default
-    // connection, and provide the fully qualified table name so that we can
-    // query across the databases.
-    $table = $this->definition['base'];
-    if (strpos($table, 'civicrm_') !== 0) {
-      $table = Database::getConnection()->getFullQualifiedTableName($table);
-    }
     $second = [
       'left_table' => $first_alias,
       'left_field' => $this->definition['second field'],
-      'table' => $table,
+      'table' => $this->definition['base'],
       'field' => $this->definition['base field'],
       'adjusted' => TRUE,
     ];
