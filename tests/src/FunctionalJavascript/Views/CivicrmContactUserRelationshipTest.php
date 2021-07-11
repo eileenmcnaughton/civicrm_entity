@@ -7,7 +7,9 @@ use Drupal\Tests\civicrm_entity\FunctionalJavascript\CivicrmEntityTestBase;
 
 final class CivicrmContactUserRelationshipTest extends CivicrmEntityTestBase {
 
-    /**
+  protected $strictConfigSchema = FALSE;
+
+  /**
    * {@inheritdoc}
    */
   protected static $modules = [
