@@ -25,6 +25,12 @@ final class CivicrmContactUserRelationshipTest extends CivicrmEntityTestBase {
 
     parent::setUp();
 
+    $admin_user = $this->createUser([
+      'access content',
+      'administer civicrm entity',
+      'administer views',
+    ]);
+    $this->drupalLogin($admin_user);
     $this->enableCivicrmEntityTypes(['civicrm_activity', 'civicrm_contact']);
 
     $user = $this->createUser([], 'johnny');
