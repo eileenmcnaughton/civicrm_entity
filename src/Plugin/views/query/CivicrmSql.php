@@ -48,6 +48,7 @@ class CivicrmSql extends Sql {
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
+    assert($instance instanceof self);
     $instance->setCivicrm($container->get('civicrm'));
     return $instance;
   }
@@ -73,8 +74,9 @@ class CivicrmSql extends Sql {
     // Do not modify $base as it'll ruin aliases and other look ups down the
     // road, like when fetching Views data about the table.
     if (strpos($join->table, 'civicrm_') !== 0) {
-      $connection = Database::getConnection();
-//      $join->table = $connection->getFullQualifiedTableName($join->table);
+      // TODO: Commented out to run tests in original state.
+      // $connection = Database::getConnection();
+      // $join->table = $connection->getFullQualifiedTableName($join->table);
     }
     return parent::addRelationship($alias, $join, $base, $link_point);
   }
@@ -82,8 +84,9 @@ class CivicrmSql extends Sql {
   protected function adjustJoin($join, $relationship) {
     parent::adjustJoin($join, $relationship);
     if (strpos($join->table, 'civicrm_') !== 0 && strpos($join->table, '.') === FALSE) {
-      $connection = Database::getConnection();
-//      $join->table = $connection->getFullQualifiedTableName($join->table);
+      // TODO: Commented out to run tests in original state.
+      // $connection = Database::getConnection();
+      // $join->table = $connection->getFullQualifiedTableName($join->table);
     }
     return $join;
   }
@@ -95,9 +98,9 @@ class CivicrmSql extends Sql {
 
     foreach ($query->getTables() as &$table) {
       if (strpos($table['table'], 'civicrm_') !== 0 && strpos($table['table'], '.') === FALSE) {
-        $table['table'] = $connection->getFullQualifiedTableName($table['table']);
+        // TODO: Commented out to run tests in original state.
+        // $table['table'] = $connection->getFullQualifiedTableName($table['table']);
       }
-      $stop = null;
     }
     return $query;
   }
