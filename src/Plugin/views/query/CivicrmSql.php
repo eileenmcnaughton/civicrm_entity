@@ -70,36 +70,17 @@ class CivicrmSql extends Sql {
     parent::init($view, $display, $options);
   }
 
-  public function addRelationship($alias, JoinPluginBase $join, $base, $link_point = NULL) {
-    // Do not modify $base as it'll ruin aliases and other look ups down the
-    // road, like when fetching Views data about the table.
-    if (strpos($join->table, 'civicrm_') !== 0) {
-      // TODO: Commented out to run tests in original state.
-      // $connection = Database::getConnection();
-      // $join->table = $connection->getFullQualifiedTableName($join->table);
-    }
-    return parent::addRelationship($alias, $join, $base, $link_point);
-  }
-
-  protected function adjustJoin($join, $relationship) {
-    parent::adjustJoin($join, $relationship);
-    if (strpos($join->table, 'civicrm_') !== 0 && strpos($join->table, '.') === FALSE) {
-      // TODO: Commented out to run tests in original state.
-      // $connection = Database::getConnection();
-      // $join->table = $connection->getFullQualifiedTableName($join->table);
-    }
-    return $join;
-  }
-
   public function query($get_count = FALSE) {
     $query = parent::query($get_count);
     assert($query instanceof Select);
     $connection = Database::getConnection();
 
     foreach ($query->getTables() as &$table) {
+      // If the table is not prefixed with civicrm_, assume it is a Drupal table
+      // and convert it to a fully qualified table name. But, make sure it has
+      // not already been converted.
       if (strpos($table['table'], 'civicrm_') !== 0 && strpos($table['table'], '.') === FALSE) {
-        // TODO: Commented out to run tests in original state.
-        // $table['table'] = $connection->getFullQualifiedTableName($table['table']);
+         $table['table'] = $connection->getFullQualifiedTableName($table['table']);
       }
     }
     return $query;

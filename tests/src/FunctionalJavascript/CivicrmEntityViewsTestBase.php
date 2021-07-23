@@ -134,8 +134,6 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
 
   /**
    * Tests creating a view with relationships for the entity type.
-   *
-   * @group debug
    */
   public function testViewWithRelationships() {
     $this->createNewView();

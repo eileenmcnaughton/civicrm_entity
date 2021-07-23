@@ -383,14 +383,12 @@ class CivicrmEntityViewsData extends EntityViewsData {
         break;
 
       case 'civicrm_contact':
-        $user_definition = $this->entityTypeManager->getDefinition('user');
-        assert($user_definition !== NULL);
         $views_field['civicrm_contact']['user'] = [
           'title' => $this->t('User related to the CiviCRM contact'),
           'help' => $this->t('Relate user to the CiviCRM contact.'),
           'relationship' => [
-            'base' => $user_definition->getDataTable(),
-            'base field' => $user_definition->getKey('id'),
+            'base' => 'users_field_data',
+            'base field' => 'uid',
             'table' => 'civicrm_uf_match',
             'first field' => 'contact_id',
             'second field' => 'uf_id',
