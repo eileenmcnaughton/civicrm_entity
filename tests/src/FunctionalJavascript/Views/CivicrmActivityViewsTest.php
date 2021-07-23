@@ -64,6 +64,9 @@ final class CivicrmActivityViewsTest extends CivicrmEntityViewsTestBase {
     $assert_session->pageTextContains('Pennsylvania');
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function doSetupViewWithRelationships() {
     $this->addRelationshipToDisplay('name[civicrm_activity.contact]', [
       // Set relationship to source
@@ -73,6 +76,9 @@ final class CivicrmActivityViewsTest extends CivicrmEntityViewsTestBase {
     $this->addFieldToDisplay('name[civicrm_contact.display_name]');
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function assertViewWithRelationshipsResults() {
     $assert_session = $this->assertSession();
     $assert_session->pageTextContains('Meeting about new seeds');
