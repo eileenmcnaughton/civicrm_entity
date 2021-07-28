@@ -74,4 +74,26 @@ final class CivicrmEventViewsTest extends CivicrmEntityViewsTestBase {
     $assert_session->pageTextContainsOnce('Tue, 10/21/2008 - 00:00');
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function testViewWithRelationships() {
+    // @todo implement setup and assert, then remove this.
+    $this->markTestSkipped('Needs to be implemented');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function doSetupViewWithRelationships() {
+    // TODO: Implement doSetupViewWithRelationships() method.
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function assertViewWithRelationshipsResults() {
+    // TODO: Implement assertViewWithRelationshipsResults() method.
+  }
+
 }

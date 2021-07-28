@@ -30,6 +30,9 @@ jobs:
           - 3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     steps:
+      - name: Setup secondary database for CiviCRM
+        run: |
+          mysql -uroot -h127.0.0.1 -P${{ job.services.mysql.ports[3306] }} -e 'CREATE DATABASE IF NOT EXISTS db_civicrm;'
       - uses: actions/checkout@v2
       - uses: shivammathur/setup-php@v2
         with:
@@ -83,6 +86,7 @@ jobs:
         env:
           SYMFONY_DEPRECATIONS_HELPER: weak
           SIMPLETEST_DB: mysql://root:@127.0.0.1:${{ job.services.mysql.ports[3306] }}/db
+          SIMPLETEST_CIVICRM_DB: mysql://root:@127.0.0.1:${{ job.services.mysql.ports[3306] }}/db_civicrm
           SIMPLETEST_BASE_URL: http://127.0.0.1:8080
           MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu", "--no-sandbox", "--headless"]}}, "http://127.0.0.1:9515"]'
           BROWSERTEST_OUTPUT_DIRECTORY: '${{ runner.temp }}/browser_output'

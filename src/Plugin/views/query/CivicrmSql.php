@@ -4,7 +4,9 @@ namespace Drupal\civicrm_entity\Plugin\views\query;
 
 use Drupal\civicrm\Civicrm;
 use Drupal\Core\Database\Database;
+use Drupal\Core\Database\Query\Select;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
+use Drupal\views\Plugin\views\join\JoinPluginBase;
 use Drupal\views\Plugin\views\query\Sql;
 use Drupal\views\ViewExecutable;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -46,6 +48,7 @@ class CivicrmSql extends Sql {
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
+    assert($instance instanceof self);
     $instance->setCivicrm($container->get('civicrm'));
     return $instance;
   }
@@ -65,6 +68,22 @@ class CivicrmSql extends Sql {
       Database::addConnectionInfo($connection_name, 'default', $civicrm_connection_info);
     }
     parent::init($view, $display, $options);
+  }
+
+  public function query($get_count = FALSE) {
+    $query = parent::query($get_count);
+    assert($query instanceof Select);
+    $connection = Database::getConnection();
+
+    foreach ($query->getTables() as &$table) {
+      // If the table is not prefixed with civicrm_, assume it is a Drupal table
+      // and convert it to a fully qualified table name. But, make sure it has
+      // not already been converted.
+      if (strpos($table['table'], 'civicrm_') !== 0 && strpos($table['table'], '.') === FALSE) {
+         $table['table'] = $connection->getFullQualifiedTableName($table['table']);
+      }
+    }
+    return $query;
   }
 
 }

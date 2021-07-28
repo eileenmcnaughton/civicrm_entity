@@ -51,7 +51,6 @@ class CiviCrmBridgeRelationshipBase extends RelationshipPluginBase {
     $first_join = Views::pluginManager('join')->createInstance('standard', $first);
     $first_alias = $this->query->addTable($this->definition['table'], $this->relationship, $first_join);
 
-    // Relate the first join to the base table defined.
     $second = [
       'left_table' => $first_alias,
       'left_field' => $this->definition['second field'],

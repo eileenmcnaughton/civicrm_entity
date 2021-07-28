@@ -2,6 +2,7 @@
 
 namespace Drupal\civicrm_entity;
 
+use Drupal\Core\Database\Database;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\views\EntityViewsData;
 use Drupal\Core\Entity\EntityTypeInterface;

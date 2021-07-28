@@ -82,12 +82,19 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
     $this->drupalLogin($admin_user);
     $this->enableCivicrmEntityTypes([static::$civicrmEntityTypeId]);
 
+    // Generate the sample data.
+    $this->createSampleData();
+
     // Disable automatic live preview to make the sequence of calls clearer. And
     // prevent errors on saving the view with the preview ajax load that are
     // cancelled.
+    //
+    // We also want the advanced column to be open, so that it's easier to add
+    // relationships.
     \Drupal::configFactory()
       ->getEditable('views.settings')
       ->set('ui.always_live_preview', FALSE)
+      ->set('ui.show.advanced_column', TRUE)
       ->save();
   }
 
@@ -117,30 +124,30 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
    * Tests creating a basic view with the entity type.
    */
   public function testCreateView() {
-    $this->createSampleData();
-
-    $this->drupalGet(Url::fromRoute('views_ui.add'));
-    $page = $this->getSession()->getPage();
-    $page->fillField('label', static::$civicrmEntityTypeId . ' view');
-    $this->assertJsCondition('jQuery("#edit-label-machine-name-suffix .machine-name-value").html() !== ""');
-    $page->selectFieldOption('show[wizard_key]', 'standard:' . static::$civicrmEntityTypeId);
-    $this->assertSession()->assertWaitOnAjaxRequest();
-    $page->checkField('page[create]');
-    $page->fillField('page[path]', '/' . static::$civicrmEntityTypeId);
-    $page->pressButton('Save and edit');
-    $this->assertSession()->pageTextContains('The view ' . static::$civicrmEntityTypeId . ' view has been saved.');
-    $this->assertSession()->assertWaitOnAjaxRequest();
+    $this->createNewView();
     $this->doSetupCreateView();
-    $this->htmlOutput();
-    $page->pressButton('Save');
+    $this->getSession()->getPage()->pressButton('Save');
     $this->drupalGet('/' . static::$civicrmEntityTypeId);
     $this->htmlOutput();
     $this->assertCreateViewResults();
   }
 
+  /**
+   * Tests creating a view with relationships for the entity type.
+   */
+  public function testViewWithRelationships() {
+    $this->createNewView();
+    $this->doSetupViewWithRelationships();
+    $this->getSession()->getPage()->pressButton('Save');
+    $this->drupalGet('/' . static::$civicrmEntityTypeId);
+    $this->htmlOutput();
+    $this->assertViewWithRelationshipsResults();
+  }
+
   // @todo testCreateViewWithFilters()
   // @todo testCreateViewWithSorts()
   // @todo testCreateViewWithRelationships()
+
 
   /**
    * Creates sample data for each test.
@@ -158,9 +165,42 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
 
   /**
    * Runs assertions for the ::testCreateView test.
+   *
    * @return void
    */
   abstract protected function assertCreateViewResults();
+
+  /**
+   * Runs setup for the ::testViewWithRelationships test.
+   *
+   * @return void
+   */
+  abstract protected function doSetupViewWithRelationships();
+
+  /**
+   * Runs assertions for the ::testViewWithRelationships test.
+   *
+   * @return void
+   */
+  abstract protected function assertViewWithRelationshipsResults();
+
+  /**
+   * Creates a new View for the tested entity type.
+   *
+   * The test lands on the Edit form for the View.
+   */
+  protected function createNewView() {
+    $this->drupalGet(Url::fromRoute('views_ui.add'));
+    $page = $this->getSession()->getPage();
+    $page->fillField('label', static::$civicrmEntityTypeId . ' view');
+    $this->assertJsCondition('jQuery("#edit-label-machine-name-suffix .machine-name-value").html() !== ""');
+    $page->selectFieldOption('show[wizard_key]', 'standard:' . static::$civicrmEntityTypeId);
+    $this->assertSession()->assertWaitOnAjaxRequest();
+    $page->checkField('page[create]');
+    $page->fillField('page[path]', '/' . static::$civicrmEntityTypeId);
+    $page->pressButton('Save and edit');
+    $this->assertSession()->pageTextContains('The view ' . static::$civicrmEntityTypeId . ' view has been saved.');
+  }
 
   /**
    * Adds a field to a Views display.
@@ -174,9 +214,24 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
    */
   protected function addFieldToDisplay(string $name_locator, array $configuration = []) {
     $this->clickAjaxLink('views-add-field');
+    $this->htmlOutput();
     $this->getSession()->getPage()->checkField($name_locator);
     $this->submitViewsDialog();
-    // @todo process configuration.
+    foreach ($configuration as $field_name => $value) {
+      $field = $this->assertSession()->fieldExists($field_name);
+      $field->setValue($value);
+    }
+    $this->submitViewsDialog();
+  }
+
+  protected function addRelationshipToDisplay(string $name_locator, array $configuration = []) {
+    $this->clickAjaxLink('views-add-relationship');
+    $this->getSession()->getPage()->checkField($name_locator);
+    $this->submitViewsDialog();
+    foreach ($configuration as $field_name => $value) {
+      $field = $this->assertSession()->fieldExists($field_name);
+      $field->setValue($value);
+    }
     $this->submitViewsDialog();
   }
 
