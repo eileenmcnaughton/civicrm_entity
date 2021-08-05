@@ -411,10 +411,8 @@ class CiviEntityStorage extends SqlContentEntityStorage {
           }
           else {
             $datetime_format = $definition->getSetting('datetime_type') === DateTimeItem::DATETIME_TYPE_DATE ? DateTimeItemInterface::DATE_STORAGE_FORMAT : DateTimeItemInterface::DATETIME_STORAGE_FORMAT;
-            // CiviCRM gives us the datetime in the users timezone (or no
-            // timezone at all) but Drupal expects it in UTC. So, we need to
-            // convert from the users timezone into UTC.
-            $datetime_value = (new \DateTime($item[$main_property_name], new \DateTimeZone(date_default_timezone_get())))->setTimezone(new \DateTimeZone('UTC'))->format($datetime_format);
+            $default_timezone = \Drupal::config('system.date')->get('timezone.default');
+            $datetime_value = (new \DateTime($item[$main_property_name], new \DateTimeZone($default_timezone)))->setTimezone(new \DateTimeZone('UTC'))->format($datetime_format);
             $item_values[$delta][$main_property_name] = $datetime_value;
           }
         }
