@@ -9,18 +9,18 @@ use Drupal\Core\TypedData\Type\StringInterface;
 use Drupal\typed_data\DataFilterBase;
 
 /**
- * A data filter providing a default value if no value is set.
+ * A data filter which changes a string to upper case.
  *
  * @DataFilter(
- *   id = "FirstLast",
- *   label = @Translation("Drupal Username : FirstnameLastname."),
+ *   id = "firstdotlast",
+ *   label = @Translation("Format username : firstname.lastname"),
  * )
  */
-class FirstLAstFilter extends DataFilterBase {
+class FirstDotLastFilter extends DataFilterBase {
 
-  /**
-   * {@inheritdoc}
-   */
+    /**
+     * {@inheritdoc}
+     */
     public function canFilter(DataDefinitionInterface $definition) {
       if ($definition->getConstraints()['EntityType'] == "civicrm_contact") {
           return true;
@@ -28,6 +28,7 @@ class FirstLAstFilter extends DataFilterBase {
       else {
           return false;
       }
+    // return is_subclass_of($definition->getClass(), StringInterface::class);
   }
 
   /**
@@ -37,13 +38,12 @@ class FirstLAstFilter extends DataFilterBase {
     return DataDefinition::create('string');
   }
 
-    /**
+  /**
    * {@inheritdoc}
    */
   public function filter(DataDefinitionInterface $definition, $value, array $arguments, BubbleableMetadata $bubbleable_metadata = NULL) {
-    $login = str_replace(' ', '', ucfirst(strtolower($value->get('first_name')->getString()))) . ucfirst(strtolower($value->get('last_name')->getString()));
+    $login = str_replace(' ', '', strtolower($value->get('first_name')->getString())) . '.' . strtolower($value->get('last_name')->getString());
 
     return filter_var($login, FILTER_SANITIZE_EMAIL);
   }
-
 }

@@ -12,22 +12,22 @@ use Drupal\typed_data\DataFilterBase;
  * A data filter providing a default value if no value is set.
  *
  * @DataFilter(
- *   id = "FirstLast",
- *   label = @Translation("Drupal Username : FirstnameLastname."),
+ *   id = "initialdotlast",
+ *   label = @Translation("Drupal Username : initial.lastname."),
  * )
  */
-class FirstLAstFilter extends DataFilterBase {
+class InitialDotLastFilter extends DataFilterBase {
 
   /**
    * {@inheritdoc}
    */
-    public function canFilter(DataDefinitionInterface $definition) {
-      if ($definition->getConstraints()['EntityType'] == "civicrm_contact") {
-          return true;
-      }
-      else {
-          return false;
-      }
+  public function canFilter(DataDefinitionInterface $definition) {
+    if ($definition->getConstraints()['EntityType'] == "civicrm_contact") {
+        return true;
+    }
+    else {
+        return false;
+    }
   }
 
   /**
@@ -37,13 +37,18 @@ class FirstLAstFilter extends DataFilterBase {
     return DataDefinition::create('string');
   }
 
-    /**
+  /**
    * {@inheritdoc}
    */
   public function filter(DataDefinitionInterface $definition, $value, array $arguments, BubbleableMetadata $bubbleable_metadata = NULL) {
-    $login = str_replace(' ', '', ucfirst(strtolower($value->get('first_name')->getString()))) . ucfirst(strtolower($value->get('last_name')->getString()));
+    $c = preg_match_all("/(?<=\b)[a-z]/i", ($value->get('first_name')->getString()), $m);
+    if ($c > 0) {
+      $login = strtolower(implode('', $m[0])) . '.' . strtolower($value->get('last_name')->getString());
+    }
+    else {
+      $login = strtolower($value->get('last_name')->getString());
+    }
 
     return filter_var($login, FILTER_SANITIZE_EMAIL);
   }
-
 }
