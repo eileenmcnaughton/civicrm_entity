@@ -561,5 +561,14 @@ function civicrm_entity_rebuild() {
  * Implements hook_rules_action_info_alter().
  */
 function civicrm_entity_rules_action_info_alter(&$rules_actions) {
-  $rules_actions['civicrm_entity_user_create']['context']['format']->setDescription(t('Format of the username. Use <a href="@url">Twig style</a> tokens for using the available data.', ['@url' => 'https://www.drupal.org/docs/8/modules/typed-data-api-enhancements/typeddata-tokens']));
+  $definitions = \Drupal::service('plugin.manager.typed_data_filter')->getDefinitions();
+  $filters = "";
+  foreach ($definitions as $key) {
+    if ($key['provider'] == 'civicrm_entity') {
+      $filters .= ($filters == '' ? '' : ', ') . $key['id'];
+    }
+  }
+  $rules_actions['civicrm_entity_user_create']['context']['format']->setDescription(t('Format of the username. Use <a href="@url">Twig style</a> tokens for using the available data.<br>Civicrm Entity filters available : @filters.',
+    ['@url' => 'https://www.drupal.org/docs/8/modules/typed-data-api-enhancements/typeddata-tokens',
+    '@filters' => $filters]));
 }
