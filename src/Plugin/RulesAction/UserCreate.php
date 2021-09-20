@@ -25,7 +25,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *      ),
  *      "is_active" = @ContextDefinition("boolean",
  *        label = @Translation("Activate account"),
- *        description = @Translation("Set to TRUE to activate account. Leave empty to not activate the account. Defaults to TRUE."),
+ *        description = @Translation("Set to FALSE to NOT activate account. Leave empty to activate the account. Defaults to TRUE."),
  *        assignment_restriction = "input",
  *        default_value = TRUE,
  *        required = FALSE
@@ -34,14 +34,14 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *        label = @Translation("Send account notification email"),
  *        description = @Translation("Set to TRUE to send a notification email. Leave empty to not send an account notification email."),
  *        assignment_restriction = "input",
- *        default_value = TRUE,
+ *        default_value = FALSE,
  *        required = FALSE
  *      ),
  *      "signin" = @ContextDefinition("boolean",
  *        label = @Translation("Instant signin"),
  *        description = @Translation("Set to TRUE to automatically log in the user. Leave empty to not automatically log in the user."),
  *        assignment_restriction = "input",
- *        default_value = TRUE,
+ *        default_value = FALSE,
  *        required = FALSE
  *      ),
  *      "format" = @ContextDefinition("string",
