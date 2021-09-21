@@ -138,6 +138,32 @@ class CivicrmEntityViewsData extends EntityViewsData {
               'field field' => $field_name,
             ];
           }
+          elseif ($field_definition->getType() === 'datetime') {
+            $arguments = [
+              'year' => $this->t('Date in the form of YYYY.'),
+              'month' => $this->t('Date in the form of MM (01 - 12).'),
+              'day' => $this->t('Date in the form of DD (01 - 31).'),
+              'week' => $this->t('Date in the form of WW (01 - 53).'),
+              'year_month' => $this->t('Date in the form of YYYYMM.'),
+              'full_date' => $this->t('Date in the form of CCYYMMDD.'),
+            ];
+
+            foreach ($arguments as $argument_type => $help_text) {
+              $data[$base_table][$field_definition->getName() . '_' . $argument_type] = [
+                'title' => t('@label (@argument)', [
+                  '@label' => $field_definition->getLabel(),
+                  '@argument' => $argument_type,
+                ]),
+                'help' => $help_text,
+                'argument' => [
+                  'field' => $field_definition->getName(),
+                  'id' => 'datetime_' . $argument_type,
+                  'entity_type' => $field_definition->getTargetEntityTypeId(),
+                  'field_name' => $field_definition->getName(),
+                ],
+              ];
+            }
+          }
         }
         else if ($table_mapping->requiresDedicatedTableStorage($field_definition->getFieldStorageDefinition())) {
           $table = $table_mapping->getDedicatedDataTableName($field_definition->getFieldStorageDefinition());
