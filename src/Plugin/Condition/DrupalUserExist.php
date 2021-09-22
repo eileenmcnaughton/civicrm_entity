@@ -38,17 +38,12 @@ class DrupalUserExist extends RulesConditionBase {
    */
   protected function doEvaluate($civi_contact) {
     $id = (int)$civi_contact->get('id')->getString();
-    if (is_int($id)) {
-      $result = civicrm_api3('UFMatch', 'get', [
-        'sequential' => 1,
-        'return' => ["uf_id"],
-        'contact_id' => $id,
-      ]);
-
-      return $result['is_error'] == 0 && $result['count'] == 1;
+    try {
+      $result = \Drupal::service('civicrm_entity.api')->getSingle('UFMatch', ['sequential' => 1,'return' => ["uf_id"],'contact_id' => $id]);
+      return TRUE;
     }
-    else {
-      return false;
+    catch (\CiviCRM_API3_Exception $e) {
+      return FALSE;
     }
   }
 
