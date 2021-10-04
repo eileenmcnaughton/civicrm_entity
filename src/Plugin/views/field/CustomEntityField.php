@@ -18,6 +18,8 @@ use Drupal\civicrm_entity\CiviCrmApiInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Render\BubbleableMetadata;
+use Drupal\Core\Render\Element;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 
@@ -86,17 +88,12 @@ class CustomEntityField extends EntityField {
     if ($settings = $field_definition->getSetting('civicrm_entity_field_metadata')) {
       $this->fieldMetadata = $settings;
 
-      if ($this->fieldMetadata['is_multiple']) {
+      if ($this->fieldMetadata['is_multiple'] || (isset($this->fieldMetadata['serialize']) && $this->fieldMetadata['serialize'])) {
         $this->fieldDefinition->setCardinality($this->fieldMetadata['max_multiple']);
       }
     }
 
     parent::init($view, $display, $options);
-
-    // Do not support multiple value custom fields.
-    if (isset($this->fieldMetadata) && isset($this->fieldMetadata['custom_group_id'])) {
-      $this->multiple = FALSE;
-    }
   }
 
   /**
@@ -167,7 +164,46 @@ class CustomEntityField extends EntityField {
    * {@inheritdoc}
    */
   public function getItems(ResultRow $values) {
-    return parent::getItems($values);
+    $display = [
+      'type' => $this->options['type'],
+      'settings' => $this->options['settings'],
+      'label' => 'hidden',
+    ];
+
+    if (($entity = $this->getEntity($values)) && isset($entity->{$this->definition['field_name']})) {
+      $entity = $this->createEntity($entity);
+
+      if (isset($this->aliases['id']) && isset($values->{$this->aliases['id']})) {
+        $values->delta = $this->getDelta($values->{$this->aliases['id']});
+      }
+
+      $build_list = $entity->{$this->definition['field_name']}->view($display);
+    }
+    else {
+      $build_list = NULL;
+    }
+
+    if (!$build_list) {
+      return [];
+    }
+
+    if ($this->options['field_api_classes']) {
+      return [['rendered' => $this->renderer->render($build_list)]];
+    }
+
+    $items = [];
+    $bubbleable = BubbleableMetadata::createFromRenderArray($build_list);
+    foreach (Element::children($build_list) as $delta) {
+      BubbleableMetadata::createFromRenderArray($build_list[$delta])
+        ->merge($bubbleable)
+        ->applyTo($build_list[$delta]);
+      $items[$delta] = [
+        'rendered' => $build_list[$delta],
+        'raw' => $build_list['#items'][$delta],
+      ];
+    }
+
+    return $items;
   }
 
   /**
@@ -210,6 +246,10 @@ class CustomEntityField extends EntityField {
         $result = array_filter($result, function ($key) {
           return is_int($key);
         }, ARRAY_FILTER_USE_KEY);
+
+        if (is_array($result)) {
+          $result = reset($result);
+        }
 
         if (!empty($result)) {
           $this->customValues = $result;
