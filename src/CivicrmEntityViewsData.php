@@ -678,7 +678,11 @@ class CivicrmEntityViewsData extends EntityViewsData {
         return $filter;
 
       case 'ContactReference':
-        return ['id' => 'civicrm_entity_contact_reference'];
+        return [
+          'id' => 'civicrm_entity_contact_reference',
+          'allow empty' => TRUE,
+          'multi' => TRUE,
+        ];
     }
 
     $type = !empty($field_metadata['pseudoconstant']) ? 'pseudoconstant' :
