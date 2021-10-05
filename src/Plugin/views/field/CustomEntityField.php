@@ -247,11 +247,11 @@ class CustomEntityField extends EntityField {
           return is_int($key);
         }, ARRAY_FILTER_USE_KEY);
 
-        if (is_array($result)) {
-          $result = reset($result);
-        }
-
         if (!empty($result)) {
+          if (is_array($result[0])) {
+            $result = reset($result);
+          }
+
           $this->customValues = $result;
           $field_definition = $this->getFieldDefinition();
 
