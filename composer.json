@@ -5,8 +5,7 @@
     "homepage": "http://drupal.org/project/civicrm_entity",
     "license": "GPL-2.0+",
     "require": {
-        "civicrm/civicrm-core": "~5.0",
-        "civicrm/civicrm-drupal-8": ">=5.13"
+	"civicrm/civicrm-drupal-8": "*",
     },
     "minimum-stability": "dev"
 }
