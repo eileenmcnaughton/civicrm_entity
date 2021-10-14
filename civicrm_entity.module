@@ -561,5 +561,5 @@ function civicrm_entity_rebuild() {
  * Implements hook_rules_action_info_alter().
  */
 function civicrm_entity_rules_action_info_alter(&$rules_actions) {
-  $rules_actions['civicrm_entity_user_create']['context']['format']->setDescription(t('Format of the username. Use <a href="@url">Twig style</a> tokens for using the available data.', ['@url' => 'https://www.drupal.org/docs/8/modules/typed-data-api-enhancements/typeddata-tokens']));
+  $rules_actions['civicrm_entity_user_create']['context_definitions']['format']->setDescription(t('Format of the username. Use <a href="@url">Twig style</a> tokens for using the available data.', ['@url' => 'https://www.drupal.org/docs/8/modules/typed-data-api-enhancements/typeddata-tokens']));
 }
