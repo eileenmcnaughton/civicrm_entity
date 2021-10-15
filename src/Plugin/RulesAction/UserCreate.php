@@ -17,7 +17,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   id = "civicrm_entity_user_create",
  *   label = @Translation("Create linked drupal user account"),
  *   category = @Translation("CiviCRM"),
- *   context = {
+ *   context_definitions = {
  *      "contact_id" = @ContextDefinition("integer",
  *        label = @Translation("CiviCRM contact ID"),
  *        description = @Translation("The CiviCRM contact ID."),
@@ -183,7 +183,7 @@ class UserCreate extends RulesActionBase implements ContainerFactoryPluginInterf
 
       $this
         ->messenger
-        ->addStatus($this->t('User with username @name has been created.', ['@name' => $user->getUsername()]));
+        ->addStatus($this->t('User with username @name has been created.', ['@name' => $user->getDisplayName()]));
 
       $this->setProvidedValue('civicrm_user', $user);
 
