@@ -92,6 +92,9 @@ final class ActivityFullcalendarViewTest extends CivicrmEntityTestBase {
     $this->assertSession()->elementExists('css', '.fc-event-container', $fullcalendar);
     $this->assertSession()->elementTextContains('css', '.fc-event-container .fc-time', '12:00 pm');
     $this->assertSession()->elementTextContains('css', '.fc-event-container .fc-title', 'Meeting about new seeds');
+
+    // @todo The dialog opened is extremely difficult to target.
+    $this->click('.fc-event-container .fc-event');
   }
 
   /**
@@ -106,26 +109,26 @@ final class ActivityFullcalendarViewTest extends CivicrmEntityTestBase {
     $event = $this->assertSession()->elementExists('css', '.fc-event-container .fc-event', $fullcalendar);
     $destination = $this->assertSession()->elementExists('css', ".fc-bg [data-date='$previous_day_formatted']", $fullcalendar);
 
-    // @todo WebDriver\Exception\UnexpectedAlertOpen exception fix
-    // Why doesn't \Drupal\FunctionalJavascriptTests\Ajax\CommandsTest::testAjaxCommands fail?
-    // Or \Drupal\FunctionalJavascriptTests\BrowserWithJavascriptTest::drupalGetWithAlert
-    $event->dragTo($destination);
-    // Wait for the alert to appear.
-    $this->getSession()->getPage()->waitFor(10, function () {
-      try {
-        $driver = $this->getSession()->getDriver();
-        assert($driver instanceof DrupalSelenium2Driver);
-        $driver->getWebDriverSession()->getAlert_text();
-        return TRUE;
-      }
-      catch (\Exception $e) {
-        return FALSE;
-      }
-    });
+    // Using dragTo causes exceptions due to an alert appearing during the
+    // "drop" event.
+    // $event->dragTo($destination);
+    $driver = $this->getSession()->getDriver();
+    assert($driver instanceof DrupalSelenium2Driver);
+    $webdriver_session = $driver->getWebDriverSession();
+
+    $webdriver_session->moveto([
+      'element' => $webdriver_session->element('xpath', $event->getXpath())->getID(),
+    ]);
+    $webdriver_session->buttondown();
+    $webdriver_session->moveto([
+      'element' => $webdriver_session->element('xpath', $destination->getXpath())->getID(),
+    ]);
+    $webdriver_session->buttonup();
+
     $driver = $this->getSession()->getDriver();
     assert($driver instanceof DrupalSelenium2Driver);
     $alert_text = $driver->getWebDriverSession()->getAlert_text();
-    $this->assertEquals('Alert', $alert_text);
+    $this->assertEquals('Meeting about new seeds start is now 2021-10-18 12:00:00 and end is now 2021-10-18 14:00:00 - Do you want to save this change?', $alert_text);
     $driver->getWebDriverSession()->accept_alert();
     $this->assertSession()->assertWaitOnAjaxRequest();
     $this->createScreenshot('../calendar.png');
@@ -134,6 +137,7 @@ final class ActivityFullcalendarViewTest extends CivicrmEntityTestBase {
     $activity = $civicrm_api->get('activity', [
       'id' => $this->activityId,
     ]);
+    $this->assertEquals($previous_day_formatted . ' 12:00:00', $activity[$this->activityId]['activity_date_time']);
   }
 
 }
