@@ -520,9 +520,11 @@ function civicrm_entity_views_query_alter(ViewExecutable $view, QueryPluginBase 
       }
     }
 
-    foreach ($query->fields as &$field) {
-      if (array_key_exists($field['table'], $columns) && array_key_exists($field['field'], $columns[$field['table']])) {
-        $field['field'] .= $dbLocale;
+    if ($query->fields) {
+      foreach ($query->fields as &$field) {
+        if (array_key_exists($field['table'], $columns) && array_key_exists($field['field'], $columns[$field['table']])) {
+          $field['field'] .= $dbLocale;
+        }
       }
     }
   }
