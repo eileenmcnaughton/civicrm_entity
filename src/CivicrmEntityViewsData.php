@@ -2,6 +2,7 @@
 
 namespace Drupal\civicrm_entity;
 
+use Drupal\Core\Database\Database;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\views\EntityViewsData;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -60,6 +61,12 @@ class CivicrmEntityViewsData extends EntityViewsData {
       'field' => $base_field,
       'title' => $this->entityType->getLabel(),
       'cache_contexts' => $this->entityType->getListCacheContexts(),
+      // If we're in a test site, use the civicrm_test database connection.
+      'database' => drupal_valid_test_ua() ? 'civicrm_test' : 'civicrm',
+      // Specify our own views query plugin, to support ensuring the CiviCRM
+      // database connection exists in Drupal.
+      // @see \Drupal\views\Plugin\views\display\DisplayPluginBase::getPlugin
+      'query_id' => 'civicrm_views_query',
     ];
     $data[$base_table]['table']['entity revision'] = FALSE;
     if ($label_key = $this->entityType->getKey('label')) {
@@ -127,7 +134,35 @@ class CivicrmEntityViewsData extends EntityViewsData {
               'entity_type' => $this->entityType->id(),
               'base field' => $this->entityType->getKey('id'),
               'field_name' => $field_name,
+              'field table' => $target_base_table,
+              'field field' => $field_name,
             ];
+          }
+          elseif ($field_definition->getType() === 'datetime') {
+            $arguments = [
+              'year' => $this->t('Date in the form of YYYY.'),
+              'month' => $this->t('Date in the form of MM (01 - 12).'),
+              'day' => $this->t('Date in the form of DD (01 - 31).'),
+              'week' => $this->t('Date in the form of WW (01 - 53).'),
+              'year_month' => $this->t('Date in the form of YYYYMM.'),
+              'full_date' => $this->t('Date in the form of CCYYMMDD.'),
+            ];
+
+            foreach ($arguments as $argument_type => $help_text) {
+              $data[$base_table][$field_definition->getName() . '_' . $argument_type] = [
+                'title' => t('@label (@argument)', [
+                  '@label' => $field_definition->getLabel(),
+                  '@argument' => $argument_type,
+                ]),
+                'help' => $help_text,
+                'argument' => [
+                  'field' => $field_definition->getName(),
+                  'id' => 'datetime_' . $argument_type,
+                  'entity_type' => $field_definition->getTargetEntityTypeId(),
+                  'field_name' => $field_definition->getName(),
+                ],
+              ];
+            }
           }
         }
         else if ($table_mapping->requiresDedicatedTableStorage($field_definition->getFieldStorageDefinition())) {
@@ -241,6 +276,16 @@ class CivicrmEntityViewsData extends EntityViewsData {
     $views_field['filter']['field_name'] = $field_definition->getName();
     $views_field['argument']['id'] = 'number_list_field';
     $views_field['argument']['field_name'] = $field_definition->getName();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function processViewsDataForEntityReference($table, FieldDefinitionInterface $field_definition, array &$views_field, $field_column_name) {
+    parent::processViewsDataForEntityReference($table, $field_definition, $views_field, $field_column_name);
+    if (!empty($field_definition->getItemDefinition()->getSetting('allowed_values_function'))) {
+      $this->processViewsDataForListString($table, $field_definition, $views_field, $field_column_name);
+    }
   }
 
   /**
@@ -493,6 +538,15 @@ class CivicrmEntityViewsData extends EntityViewsData {
           ],
         ];
 
+        break;
+
+      case 'civicrm_relationship':
+        if (isset($views_field['civicrm_contact']['reverse__civicrm_relationship__contact_id_a']['relationship'])) {
+          $views_field['civicrm_contact']['reverse__civicrm_relationship__contact_id_a']['relationship']['id'] = 'civicrm_entity_civicrm_relationship';
+        }
+        elseif (isset($views_field['civicrm_contact']['reverse__civicrm_relationship__contact_id_b']['relationship'])) {
+          $views_field['civicrm_contact']['reverse__civicrm_relationship__contact_id_b']['relationship']['id'] = 'civicrm_entity_civicrm_relationship';
+        }
         break;
 
       case 'civicrm_case':

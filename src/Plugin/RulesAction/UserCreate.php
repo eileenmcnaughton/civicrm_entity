@@ -17,7 +17,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   id = "civicrm_entity_user_create",
  *   label = @Translation("Create linked drupal user account"),
  *   category = @Translation("CiviCRM"),
- *   context = {
+ *   context_definitions = {
  *      "contact_id" = @ContextDefinition("integer",
  *        label = @Translation("CiviCRM contact ID"),
  *        description = @Translation("The CiviCRM contact ID."),
@@ -46,7 +46,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *      ),
  *      "format" = @ContextDefinition("string",
  *        label = @Translation("Format"),
- *        description = @Translation("Format of the username."),
+ *        description = @Translation("Format of the username.")
  *      )
  *   },
  *   provides = {
@@ -138,8 +138,12 @@ class UserCreate extends RulesActionBase implements ContainerFactoryPluginInterf
     if ($this->checkUserNameExists($params, $config->userSystem)) {
       $counter = 0;
       do {
-        $params['name'] = $params['name'] . '_' . $counter++;
-      } while ($this->checkUserNameExists($params, $config->userSystem));
+        // Try to add an extension to username.
+        $params['name'] = $format . '_' . $counter++;
+      } while ($this->checkUserNameExists($params, $config->userSystem)
+              // exit loop if to many errors
+              // Invalid charater in username for example
+              && $counter < 10);
     }
 
     /** @var \Drupal\user\UserInterface $user */
@@ -172,7 +176,7 @@ class UserCreate extends RulesActionBase implements ContainerFactoryPluginInterf
 
       $this
         ->messenger
-        ->addStatus($this->t('User with username @name has been created.', ['@name' => $user->getUsername()]));
+        ->addStatus($this->t('User with username @name has been created.', ['@name' => $user->getDisplayName()]));
 
       $this->setProvidedValue('civicrm_user', $user);
 
