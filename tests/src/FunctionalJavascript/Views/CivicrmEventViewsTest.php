@@ -33,6 +33,13 @@ final class CivicrmEventViewsTest extends CivicrmEntityViewsTestBase {
    */
   protected function createSampleData() {
     $civicrm_api = $this->container->get('civicrm_entity.api');
+    $result = $civicrm_api->save('Contact', [
+      'contact_type' => 'Individual',
+      'first_name' => 'Johnny',
+      'last_name' => 'Appleseed',
+      'email' => 'johnny@example.com',
+    ]);
+    $contact_id = $result['id'];
     $civicrm_api->save('Event', [
       'title' => 'Annual CiviCRM meet',
       'summary' => 'If you have any CiviCRM related issues or want to track where CiviCRM is heading, Sign up now',
@@ -49,6 +56,7 @@ final class CivicrmEventViewsTest extends CivicrmEntityViewsTestBase {
       'is_monetary' => 0,
       'is_active' => 1,
       'is_show_location' => 0,
+      'created_id' => $contact_id,
     ]);
   }
 
@@ -77,23 +85,19 @@ final class CivicrmEventViewsTest extends CivicrmEntityViewsTestBase {
   /**
    * {@inheritdoc}
    */
-  public function testViewWithRelationships() {
-    // @todo implement setup and assert, then remove this.
-    $this->markTestSkipped('Needs to be implemented');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   protected function doSetupViewWithRelationships() {
-    // TODO: Implement doSetupViewWithRelationships() method.
+    $this->addRelationshipToDisplay('name[civicrm_event.created_id]');
+    $this->addRelationshipToDisplay('name[civicrm_contact.user]');
+    $this->addFieldToDisplay('name[civicrm_contact.display_name]');
   }
 
   /**
    * {@inheritdoc}
    */
   protected function assertViewWithRelationshipsResults() {
-    // TODO: Implement assertViewWithRelationshipsResults() method.
+    $assert_session = $this->assertSession();
+    $assert_session->pageTextContains('Annual CiviCRM meet');
+    $assert_session->pageTextContains('Johnny Appleseed');
   }
 
 }
