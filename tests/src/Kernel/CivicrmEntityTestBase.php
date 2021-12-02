@@ -69,6 +69,7 @@ abstract class CivicrmEntityTestBase extends KernelTestBase implements ServiceMo
     $this->config('civicrm_entity.settings')
       ->set('enabled_entity_types', [
         'civicrm_event',
+        'civicrm_address',
       ])->save();
     $this->container->get('entity_type.manager')->clearCachedDefinitions();
   }

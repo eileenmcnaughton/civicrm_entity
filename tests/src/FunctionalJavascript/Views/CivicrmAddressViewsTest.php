@@ -60,9 +60,14 @@ final class CivicrmAddressViewsTest extends CivicrmEntityViewsTestBase {
    * {@inheritdoc}
    */
   protected function doSetupViewWithRelationships() {
-    $this->addRelationshipToDisplay('name[civicrm_event.created_id]');
+    $this->addRelationshipToDisplay('name[civicrm_address.contact_id]');
     $this->addRelationshipToDisplay('name[civicrm_contact.user]');
     $this->addFieldToDisplay('name[civicrm_contact.display_name]');
+    $this->addFieldToDisplay('name[civicrm_address.location_type_id]');
+    $this->addFieldToDisplay('name[civicrm_address.country_id]');
+    $this->addFieldToDisplay('name[civicrm_address.postal_code]');
+    $this->addFieldToDisplay('name[civicrm_address.state_province_id]');
+    $this->addFieldToDisplay('name[civicrm_address.street_address]');
   }
 
   /**
@@ -70,8 +75,12 @@ final class CivicrmAddressViewsTest extends CivicrmEntityViewsTestBase {
    */
   protected function assertViewWithRelationshipsResults() {
     $assert_session = $this->assertSession();
-    $assert_session->pageTextContains('Annual CiviCRM meet');
-    $assert_session->pageTextContains('Johnny Appleseed');
+    $assert_session->pageTextContainsOnce('Home');
+    $assert_session->pageTextContainsOnce('United States');
+    $assert_session->pageTextContainsOnce('35005');
+    $assert_session->pageTextContainsOnce('Alabama');
+    $assert_session->pageTextContainsOnce('Test');
+    $assert_session->pageTextContainsOnce('Johnny Appleseed');
   }
 
 }
