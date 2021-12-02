@@ -168,7 +168,22 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
     $this->assertViewWithSortsResults();
   }
 
-  // @todo testCreateViewWithRelationships()
+  /**
+   * Tests creating a view with arguments for the entity type.
+   *
+   * @param array $arguments
+   *   The views arguments.
+   *
+   * @dataProvider dataArgumentValues
+   */
+  public function testViewWithArguments(array $arguments) {
+    $this->createNewView();
+    $this->doSetupViewWithArguments();
+    $this->getSession()->getPage()->pressButton('Save');
+    $this->drupalGet('/' . static::$civicrmEntityTypeId . '/' . implode('/', $arguments));
+    $this->htmlOutput();
+    $this->assertViewWithArgumentsResults($arguments);
+  }
 
   /**
    * Creates sample data for each test.
@@ -229,11 +244,36 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
   abstract protected function doSetupViewWithSorts();
 
   /**
-   * Runs assertions for the ::testViewWithFilters test.
+   * Runs assertions for the ::testViewWithSorts test.
    *
    * @return void
    */
   abstract protected function assertViewWithSortsResults();
+
+  /**
+   * Runs setup for the ::testViewWithArguments test.
+   *
+   * @return void
+   */
+  abstract protected function doSetupViewWithArguments();
+
+  /**
+   * Runs assertions for the ::testViewWithArguments test.
+   *
+   * @param array $arguments
+   *   The views arguments.
+   *
+   * @return void
+   */
+  abstract protected function assertViewWithArgumentsResults(array $arguments);
+
+  /**
+   * The arguments test data provider.
+   *
+   * @return \Generator
+   *   The arguments test data.
+   */
+  abstract public function dataArgumentValues();
 
   /**
    * Creates a new View for the tested entity type.
@@ -307,7 +347,7 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
    * @throws \Behat\Mink\Exception\ElementNotFoundException
    */
   protected function addSortToDisplay(string $name_locator, array $configuration = []) {
-    $this->clickAjaxLink('views-sort-filter');
+    $this->clickAjaxLink('views-add-sort');
     $this->getSession()->getPage()->checkField($name_locator);
     $this->submitViewsDialog();
     foreach ($configuration as $field_name => $value) {
@@ -337,6 +377,28 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
     }
     $this->submitViewsDialog();
   }
+
+  /**
+   * Adds a argument to a Views display.
+   *
+   * @param string $name_locator
+   *   The filter's checkbox locator.
+   * @param array $configuration
+   *   The filter's display configuration.
+   *
+   * @throws \Behat\Mink\Exception\ElementNotFoundException
+   */
+  protected function addArgumentToDisplay(string $name_locator, array $configuration = []) {
+    $this->clickAjaxLink('views-add-argument');
+    $this->getSession()->getPage()->checkField($name_locator);
+    $this->submitViewsDialog();
+    foreach ($configuration as $field_name => $value) {
+      $field = $this->assertSession()->fieldExists($field_name);
+      $field->setValue($value);
+    }
+    $this->submitViewsDialog();
+  }
+
   /**
    * Submits a dialog when editing a View.
    */
