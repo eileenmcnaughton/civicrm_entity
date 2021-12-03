@@ -167,8 +167,8 @@ final class CivicrmEventViewsTest extends CivicrmEntityViewsTestBase {
     $assert_session->elementTextContains('css', '.views-row:first-child', 'Annual Drupal meet');
     $assert_session->elementTextContains('css', '.views-row:first-child', 'This event is intended to give brief idea about progress of Drupal and giving solutions to common user issues');
     $assert_session->elementTextContains('css', '.views-row:first-child', 'If you have any Drupal related issues or want to track where Drupal is heading, Sign up now');
-    $assert_session->elementTextContains('css', '.views-row:first-child', 'Thu, 10/23/2009 - 00:00');
-    $assert_session->elementTextContains('css', '.views-row:first-child', 'Tue, 10/21/2009 - 00:00');
+    $assert_session->elementTextContains('css', '.views-row:first-child', 'Fri, 10/23/2009 - 00:00');
+    $assert_session->elementTextContains('css', '.views-row:first-child', 'Wed, 10/21/2009 - 00:00');
   }
 
   /**
@@ -201,8 +201,8 @@ final class CivicrmEventViewsTest extends CivicrmEntityViewsTestBase {
         $assert_session->pageTextContainsOnce('Annual Drupal meet');
         $assert_session->pageTextContainsOnce('This event is intended to give brief idea about progress of Drupal and giving solutions to common user issues');
         $assert_session->pageTextContainsOnce('If you have any Drupal related issues or want to track where Drupal is heading, Sign up now');
-        $assert_session->pageTextContainsOnce('Thu, 10/23/2009 - 00:00');
-        $assert_session->pageTextContainsOnce('Tue, 10/21/2009 - 00:00');
+        $assert_session->pageTextContainsOnce('Fri, 10/23/2009 - 00:00');
+        $assert_session->pageTextContainsOnce('Wed, 10/21/2009 - 00:00');
         break;
     }
   }
