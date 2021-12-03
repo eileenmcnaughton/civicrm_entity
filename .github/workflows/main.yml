@@ -92,7 +92,7 @@ jobs:
           cd ~/drupal/web
           ../vendor/bin/phpunit -c core modules/contrib/civicrm_entity
         env:
-          SYMFONY_DEPRECATIONS_HELPER: weak
+          SYMFONY_DEPRECATIONS_HELPER: disabled
           SIMPLETEST_DB: mysql://root:@127.0.0.1:${{ job.services.mysql.ports[3306] }}/db
           SIMPLETEST_CIVICRM_DB: mysql://root:@127.0.0.1:${{ job.services.mysql.ports[3306] }}/db_civicrm
           SIMPLETEST_BASE_URL: http://127.0.0.1:8080
