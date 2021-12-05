@@ -540,6 +540,15 @@ class CivicrmEntityViewsData extends EntityViewsData {
 
         break;
 
+      case 'civicrm_relationship':
+        if (isset($views_field['civicrm_contact']['reverse__civicrm_relationship__contact_id_a']['relationship'])) {
+          $views_field['civicrm_contact']['reverse__civicrm_relationship__contact_id_a']['relationship']['id'] = 'civicrm_entity_civicrm_relationship';
+        }
+        elseif (isset($views_field['civicrm_contact']['reverse__civicrm_relationship__contact_id_b']['relationship'])) {
+          $views_field['civicrm_contact']['reverse__civicrm_relationship__contact_id_b']['relationship']['id'] = 'civicrm_entity_civicrm_relationship';
+        }
+        break;
+
       case 'civicrm_case':
         $views_field['civicrm_case']['civicrm_activity'] = [
           'title' => $this->t('CiviCRM activity related to the CiviCRM case'),

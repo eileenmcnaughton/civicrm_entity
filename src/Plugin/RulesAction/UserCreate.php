@@ -46,7 +46,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *      ),
  *      "format" = @ContextDefinition("string",
  *        label = @Translation("Format"),
- *        description = @Translation("Format of the username."),
+ *        description = @Translation("Format of the username.")
  *      )
  *   },
  *   provides = {
@@ -149,8 +149,12 @@ class UserCreate extends RulesActionBase implements ContainerFactoryPluginInterf
     if ($this->checkUserNameExists($params, $config->userSystem)) {
       $counter = 0;
       do {
-        $params['name'] = $params['name'] . '_' . $counter++;
-      } while ($this->checkUserNameExists($params, $config->userSystem));
+        // Try to add an extension to username.
+        $params['name'] = $format . '_' . $counter++;
+      } while ($this->checkUserNameExists($params, $config->userSystem)
+              // exit loop if to many errors
+              // Invalid charater in username for example
+              && $counter < 10);
     }
 
     /** @var \Drupal\user\UserInterface $user */

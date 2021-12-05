@@ -502,7 +502,13 @@ function civicrm_entity_views_query_alter(ViewExecutable $view, QueryPluginBase 
         $affectedColumns[] = "{$table}.{$column}";
       }
     }
-    foreach ($query->where as &$condition_group) {
+    $class = get_class($query);
+    if ($class == 'Drupal\search_api\Plugin\views\query\SearchApiQuery') {
+      $where = $query->getWhere();
+    } else {
+      $where = $query->where;
+    }
+    foreach ($where as &$condition_group) {
       foreach ($condition_group['conditions'] as &$condition) {
         if (!is_object($condition['field'])) {
           foreach ($affectedColumns as $aff_column) {
@@ -514,9 +520,11 @@ function civicrm_entity_views_query_alter(ViewExecutable $view, QueryPluginBase 
       }
     }
 
-    foreach ($query->fields as &$field) {
-      if (array_key_exists($field['table'], $columns) && array_key_exists($field['field'], $columns[$field['table']])) {
-        $field['field'] .= $dbLocale;
+    if ($query->fields) {
+      foreach ($query->fields as &$field) {
+        if (array_key_exists($field['table'], $columns) && array_key_exists($field['field'], $columns[$field['table']])) {
+          $field['field'] .= $dbLocale;
+        }
       }
     }
   }
