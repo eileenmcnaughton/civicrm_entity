@@ -21,13 +21,8 @@ class FirstLAstFilter extends DataFilterBase {
   /**
    * {@inheritdoc}
    */
-    public function canFilter(DataDefinitionInterface $definition) {
-      if ($definition->getConstraints()['EntityType'] == "civicrm_contact") {
-          return true;
-      }
-      else {
-          return false;
-      }
+   public function canFilter(DataDefinitionInterface $definition) {
+      return $definition->getConstraints()['EntityType'] == "civicrm_contact";
   }
 
   /**
