@@ -2,10 +2,6 @@
 
 namespace Drupal\Tests\civicrm_entity\Kernel\Handler;
 
-use Drupal\Core\Config\FileStorage;
-use Drupal\Core\DependencyInjection\ContainerBuilder;
-use Drupal\Tests\civicrm_entity\Kernel\CivicrmEntityTestBase;
-use Drupal\views\Tests\ViewResultAssertionTrait;
 use Drupal\views\Views;
 
 /**
@@ -13,17 +9,20 @@ use Drupal\views\Views;
  *
  * @group civicrim_entity
  */
-final class FilterInOperatorTest extends CivicrmEntityTestBase {
-
-  use ViewResultAssertionTrait;
-
-  public function alter(ContainerBuilder $container) {
-    // Disable mocks.
-  }
+final class FilterInOperatorTest extends KernelHandlerTestBase {
 
   protected static $modules = [
-    'views',
-    'civicrm_entity_views_test',
+    'system',
+    'user',
+    'civicrm',
+    'civicrm_entity',
+    'field',
+    'filter',
+    'text',
+    'options',
+    'link',
+    'datetime',
+    'civicrm_entity_test_views',
   ];
 
   public static $testViews = ['test_view'];
@@ -32,54 +31,6 @@ final class FilterInOperatorTest extends CivicrmEntityTestBase {
     'contact_type' => 'contact_type',
     'display_name' => 'display_name',
   ];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp() {
-    parent::setUp();
-
-    $this->createTestViews(static::$testViews);
-    /** @var \Drupal\civicrm_entity\CiviCrmApi $civicrm_api */
-    $civicrm_api = $this->container->get('civicrm_entity.api');
-
-    $option_group_result = $civicrm_api->save('OptionGroup', ['name' => 'Test options']);
-    $option_group_result = reset($option_group_result['values']);
-
-    $options = [
-      ['label' => 'Test', 'value' => 1],
-      ['label' => 'Test 1', 'value' => 2],
-      ['label' => 'Test 2', 'value' => 3],
-    ];
-
-    foreach ($options as $option) {
-      $civicrm_api->save('OptionValue', $option + ['option_group_id' => $option_group_result['id']]);
-    }
-
-    $result = $civicrm_api->save('CustomGroup', [
-      'title' => 'Test',
-      'extends' => 'Individual',
-    ]);
-
-    $result = reset($result['values']);
-
-    $civicrm_api->save('CustomField', [
-      'custom_group_id' => $result['id'],
-      'label' => 'Test select',
-      'serialize' => 1,
-      'data_type' => 'String',
-      'html_type' => 'Multi-Select',
-      'option_group_id' => $option_group_result['id'],
-    ]);
-
-    $contacts = $this->createSampleData();
-
-    foreach ($contacts as $contact) {
-      $civicrm_api->save('Contact', $contact);
-    }
-
-    drupal_flush_all_caches();
-  }
 
   /**
    * Test civicrm_entity_in_operator pllgin.
@@ -227,25 +178,48 @@ final class FilterInOperatorTest extends CivicrmEntityTestBase {
   }
 
   /**
-   * Create the views configurations.
+   * {@inheritdoc}
    */
-  protected function createTestViews(array $views) {
-    $storage = \Drupal::entityTypeManager()->getStorage('view');
-    $module_handler = \Drupal::moduleHandler();
+  protected function setUpFixtures() {
+    /** @var \Drupal\civicrm_entity\CiviCrmApi $civicrm_api */
+    $civicrm_api = $this->container->get('civicrm_entity.api');
 
-    $config_dir = \Drupal::service('extension.list.module')->getPath('civicrm_entity_views_test') . '/config/install';
-    if (is_dir($config_dir) && $module_handler->moduleExists('civicrm_entity_views_test')) {
-      $file_storage = new FileStorage($config_dir);
-      $available_views = $file_storage->listAll('views.view.');
-      foreach ($views as $id) {
-        $config_name = 'views.view.' . $id;
-        if (in_array($config_name, $available_views)) {
-          $storage
-            ->create($file_storage->read($config_name))
-            ->save();
-        }
-      }
+    $option_group_result = $civicrm_api->save('OptionGroup', ['name' => 'Test options']);
+    $option_group_result = reset($option_group_result['values']);
+
+    $options = [
+      ['label' => 'Test', 'value' => 1],
+      ['label' => 'Test 1', 'value' => 2],
+      ['label' => 'Test 2', 'value' => 3],
+    ];
+
+    foreach ($options as $option) {
+      $civicrm_api->save('OptionValue', $option + ['option_group_id' => $option_group_result['id']]);
     }
+
+    $result = $civicrm_api->save('CustomGroup', [
+      'title' => 'Test',
+      'extends' => 'Individual',
+    ]);
+
+    $result = reset($result['values']);
+
+    $civicrm_api->save('CustomField', [
+      'custom_group_id' => $result['id'],
+      'label' => 'Test select',
+      'serialize' => 1,
+      'data_type' => 'String',
+      'html_type' => 'Multi-Select',
+      'option_group_id' => $option_group_result['id'],
+    ]);
+
+    $contacts = $this->createSampleData();
+
+    foreach ($contacts as $contact) {
+      $civicrm_api->save('Contact', $contact);
+    }
+
+    drupal_flush_all_caches();
   }
 
   /**
