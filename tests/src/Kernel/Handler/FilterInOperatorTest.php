@@ -31,7 +31,6 @@ final class FilterInOperatorTest extends CivicrmEntityTestBase {
   protected $columnMap = [
     'contact_type' => 'contact_type',
     'display_name' => 'display_name',
-    // 'organization_name' => 'organization_name',
   ];
 
   /**
@@ -41,10 +40,11 @@ final class FilterInOperatorTest extends CivicrmEntityTestBase {
     parent::setUp();
 
     $this->createTestViews(static::$testViews);
-    $this->container->get('civicrm')->initialize();
+    /** @var \Drupal\civicrm_entity\CiviCrmApi $civicrm_api */
+    $civicrm_api = $this->container->get('civicrm_entity.api');
 
-    $params = ['name' => 'Test options'];
-    $option_group_result = \CRM_Core_BAO_OptionGroup::add($params);
+    $option_group_result = $civicrm_api->save('OptionGroup', ['name' => 'Test options']);
+    $option_group_result = reset($option_group_result['values']);
 
     $options = [
       ['label' => 'Test', 'value' => 1],
@@ -53,29 +53,32 @@ final class FilterInOperatorTest extends CivicrmEntityTestBase {
     ];
 
     foreach ($options as $option) {
-      $params = $option + ['option_group_id' => $option_group_result->id];
-      \CRM_Core_BAO_OptionValue::create($params);
+      $civicrm_api->save('OptionValue', $option + ['option_group_id' => $option_group_result['id']]);
     }
 
-    $params = [
+    $result = $civicrm_api->save('CustomGroup', [
       'title' => 'Test',
       'extends' => 'Individual',
-    ];
+    ]);
 
-    $result = \CRM_Core_BAO_CustomGroup::create($params);
+    $result = reset($result['values']);
 
-    $params = [
-      'custom_group_id' => $result->id,
+    $civicrm_api->save('CustomField', [
+      'custom_group_id' => $result['id'],
       'label' => 'Test select',
       'serialize' => 1,
       'data_type' => 'String',
       'html_type' => 'Multi-Select',
-      'option_group_id' => $option_group_result->id,
-    ];
+      'option_group_id' => $option_group_result['id'],
+    ]);
 
-    $result = \CRM_Core_BAO_CustomField::create($params);
+    $contacts = $this->createSampleData();
 
-    $this->createSampleData();
+    foreach ($contacts as $contact) {
+      $civicrm_api->save('Contact', $contact);
+    }
+
+    drupal_flush_all_caches();
   }
 
   /**
@@ -103,10 +106,6 @@ final class FilterInOperatorTest extends CivicrmEntityTestBase {
 
     $expected_result = [
       [
-        'display_name' => 'Emma Neal',
-        'contact_type' => 'Individual',
-      ],
-      [
         'display_name' => 'John Smith',
         'contact_type' => 'Individual',
       ],
@@ -118,13 +117,17 @@ final class FilterInOperatorTest extends CivicrmEntityTestBase {
         'display_name' => 'John Doe',
         'contact_type' => 'Individual',
       ],
+      [
+        'display_name' => 'Jane Doe',
+        'contact_type' => 'Individual',
+      ],
     ];
 
     $this->assertCount(4, $view->result);
     $this->assertIdenticalResultset($view, $expected_result, $this->columnMap);
 
-    $view->destroy();
-    $view->setDisplay();
+    // $view->destroy();
+    // $view->setDisplay();
 
     // $view->displayHandlers->get('default')->overrideOption('filters', [
     //   'contact_type' => [
@@ -156,8 +159,8 @@ final class FilterInOperatorTest extends CivicrmEntityTestBase {
     // $this->assertCount(2, $view->result);
     // $this->assertIdenticalResultset($view, $expected_result, $this->columnMap);
 
-    // $view->destroy();
-    // $view->setDisplay();
+    $view->destroy();
+    $view->setDisplay();
 
     $view->displayHandlers->get('default')->overrideOption('filters', [
       'test_select_1' => [
@@ -177,19 +180,17 @@ final class FilterInOperatorTest extends CivicrmEntityTestBase {
 
     $expected_result = [
       [
-        'display_name' => 'Emma Neal',
+        'display_name' => 'John Smith',
         'contact_type' => 'Individual',
       ],
       [
-        'display_name' => 'John Smith',
+        'display_name' => 'Jane Smith',
         'contact_type' => 'Individual',
       ],
     ];
 
     $this->assertCount(2, $view->result);
     $this->assertIdenticalResultset($view, $expected_result, $this->columnMap);
-
-    return;
 
     $view->destroy();
     $view->setDisplay();
@@ -199,7 +200,7 @@ final class FilterInOperatorTest extends CivicrmEntityTestBase {
         'id' => 'test_select_1',
         'field' => 'test_select_1',
         'table' => 'civicrm_value_test_1',
-        'value' => [1 => 1, 2 => 2],
+        'value' => [1 => '1', 2 => '2'],
         'operator' => 'not in',
         'entity_type' => 'civicrm_contact',
         'entity_field' => 'custom_1',
@@ -212,11 +213,11 @@ final class FilterInOperatorTest extends CivicrmEntityTestBase {
 
     $expected_result = [
       [
-        'display_name' => 'Jane Smith',
+        'display_name' => 'John Doe',
         'contact_type' => 'Individual',
       ],
       [
-        'display_name' => 'John Doe',
+        'display_name' => 'Jane Doe',
         'contact_type' => 'Individual',
       ],
     ];
@@ -251,25 +252,35 @@ final class FilterInOperatorTest extends CivicrmEntityTestBase {
    * Create sample data.
    */
   protected function createSampleData() {
-    $contacts = $this->sampleContactData();
-    $contacts = array_map(function ($contact) {
-      $params = [
-        'first_name' => $contact['first_name'],
-        'last_name' => $contact['last_name'],
-        'contact_type' => $contact['contact_type'],
-        'organization_name' => $contact['organization_name'],
-      ];
-
-      if (isset($contact['custom_1'])) {
-        $params['custom_1'] = $contact['custom_1'];
-      }
-
-      return $params;
-    }, $contacts);
-
-    foreach ($contacts as $contact) {
-      civicrm_api3('Contact', 'create', $contact);
-    }
+    return [
+      [
+        'first_name' => 'John',
+        'last_name' => 'Smith',
+        'contact_type' => 'Individual',
+        'custom_1' => [1],
+      ],
+      [
+        'first_name' => 'Jane',
+        'last_name' => 'Smith',
+        'contact_type' => 'Individual',
+        'custom_1' => [2],
+      ],
+      [
+        'first_name' => 'John',
+        'last_name' => 'Doe',
+        'contact_type' => 'Individual',
+        'custom_1' => [],
+      ],
+      [
+        'first_name' => 'Jane',
+        'last_name' => 'Doe',
+        'contact_type' => 'Individual',
+      ],
+      [
+        'organization_name' => 'The Trevor Project',
+        'contact_type' => 'organization',
+      ],
+    ];
   }
 
 }
