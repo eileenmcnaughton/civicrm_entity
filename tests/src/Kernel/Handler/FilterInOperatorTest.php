@@ -216,14 +216,13 @@ final class FilterInOperatorTest extends CivicrmEntityTestBase {
         'display_name' => 'John Doe',
         'contact_type' => 'Individual',
       ],
-      // [
-      //   'display_name' => 'Jane Doe',
-      //   'contact_type' => 'Individual',
-      // ],
+      [
+        'display_name' => 'Jane Doe',
+        'contact_type' => 'Individual',
+      ],
     ];
 
-    // $this->assertCount(2, $view->result);
-    $this->assertCount(1, $view->result);
+    $this->assertCount(2, $view->result);
     $this->assertIdenticalResultset($view, $expected_result, $this->columnMap);
   }
 
@@ -272,14 +271,15 @@ final class FilterInOperatorTest extends CivicrmEntityTestBase {
         'contact_type' => 'Individual',
         'custom_1' => [],
       ],
-      // @todo There is bug with civicrm_entity_in_operator for custom fields
-      // not yet initialized. These are not included even if it has no value for
-      // "not in" operator.
-      // [
-      //   'first_name' => 'Jane',
-      //   'last_name' => 'Doe',
-      //   'contact_type' => 'Individual',
-      // ],
+      [
+        'first_name' => 'Jane',
+        'last_name' => 'Doe',
+        'contact_type' => 'Individual',
+        // @todo There is bug with civicrm_entity_in_operator for custom fields
+        // not yet initialized. These are not included even if it has no value for
+        // "not in" operator. Remove this line once the bug is fixed.
+        'custom_1' => [],
+      ],
       [
         'organization_name' => 'The Trevor Project',
         'contact_type' => 'organization',
