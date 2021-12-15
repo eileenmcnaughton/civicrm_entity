@@ -14,7 +14,7 @@ abstract class KernelHandlerTestBase extends ViewsKernelTestBase {
 
   use CivicrmEntityTrait;
 
-  protected static $modules = [
+  public static $modules = [
     'system',
     'user',
     'civicrm',
