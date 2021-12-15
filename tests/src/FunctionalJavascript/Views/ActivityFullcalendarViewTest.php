@@ -92,11 +92,27 @@ final class ActivityFullcalendarViewTest extends CivicrmEntityTestBase {
 
     // @todo The dialog opened is extremely difficult to target.
     $this->click('.fc-event-container .fc-event');
+    $this->assertSession()->waitForElement('css', '.jsframe-titlebar-focused');
+    $this->assertSession()->elementTextContains('css', '.jsframe-titlebar-focused', 'Meeting about new seeds');
+
+    $modal = $this->assertSession()->elementExists('css', 'div[id^="window_"][id$="_canvas"]');
+    self::assertNotNull($modal);
+    $this->assertSession()->elementTextContains('css', 'div[id^="window_"][id$="_canvas"]', 'Meeting about new seeds');
+    $this->assertSession()->elementTextContains('css', 'div[id^="window_"][id$="_canvas"]','johnny');
+
+    $civicrm_api = $this->container->get('civicrm_entity.api');
+    $activity = $civicrm_api->get('activity', [
+      'id' => $this->activityId,
+    ]);
+
+    $date = new DrupalDateTime($activity[$this->activityId]['activity_date_time']);
+    $duration = $activity[$this->activityId]['duration'];
+    $start_formatted = $date->format('D, m/d/Y - H:i');
+    $date->add(new \DateInterval("PT{$duration}M"));
+    $end_formatted = $date->format('D, m/d/Y - H:i');
+    $this->assertSession()->pageTextContains($start_formatted . ' - ' . $end_formatted);
   }
 
-  /**
-   * @group debug
-   */
   public function testActivityDragAndUpdate(): void {
     $previous_day = new DrupalDateTime('-1 day');
     $previous_day_formatted = $previous_day->format('Y-m-d');
@@ -134,7 +150,6 @@ final class ActivityFullcalendarViewTest extends CivicrmEntityTestBase {
     );
     $driver->getWebDriverSession()->accept_alert();
     $this->assertSession()->assertWaitOnAjaxRequest();
-    $this->createScreenshot('../calendar.png');
 
     $civicrm_api = $this->container->get('civicrm_entity.api');
     $activity = $civicrm_api->get('activity', [
