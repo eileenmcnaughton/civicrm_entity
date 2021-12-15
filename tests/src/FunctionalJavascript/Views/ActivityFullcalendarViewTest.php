@@ -85,11 +85,11 @@ final class ActivityFullcalendarViewTest extends CivicrmEntityTestBase {
       ->save();
   }
 
-  public function testFullcalendarDisplay() {
+  public function testFullcalendarDisplay(): void {
     $this->drupalGet('/activity-fullcalendar');
     $this->createScreenshot('../calendar.png');
     $fullcalendar = $this->assertSession()->elementExists('css', '.js-drupal-fullcalendar');
-    $this->assertSession()->elementExists('css', '.fc-event-container', $fullcalendar);
+    $this->assertSession()->waitForElement('css', '.fc-event-container');
     $this->assertSession()->elementTextContains('css', '.fc-event-container .fc-time', '12:00 pm');
     $this->assertSession()->elementTextContains('css', '.fc-event-container .fc-title', 'Meeting about new seeds');
 
@@ -100,13 +100,13 @@ final class ActivityFullcalendarViewTest extends CivicrmEntityTestBase {
   /**
    * @group debug
    */
-  public function testActivityDragAndUpdate() {
+  public function testActivityDragAndUpdate(): void {
     $previous_day = new DrupalDateTime('-1 day');
     $previous_day_formatted = $previous_day->format('Y-m-d');
 
     $this->drupalGet('/activity-fullcalendar');
     $fullcalendar = $this->assertSession()->elementExists('css', '.js-drupal-fullcalendar');
-    $event = $this->assertSession()->elementExists('css', '.fc-event-container .fc-event', $fullcalendar);
+    $event = $this->assertSession()->waitForElement('css', '.fc-event-container .fc-event');
     $destination = $this->assertSession()->elementExists('css', ".fc-bg [data-date='$previous_day_formatted']", $fullcalendar);
 
     // Using dragTo causes exceptions due to an alert appearing during the
@@ -128,7 +128,10 @@ final class ActivityFullcalendarViewTest extends CivicrmEntityTestBase {
     $driver = $this->getSession()->getDriver();
     assert($driver instanceof DrupalSelenium2Driver);
     $alert_text = $driver->getWebDriverSession()->getAlert_text();
-    $this->assertEquals('Meeting about new seeds start is now 2021-10-18 12:00:00 and end is now 2021-10-18 14:00:00 - Do you want to save this change?', $alert_text);
+    self::assertMatchesRegularExpression(
+      '/^Meeting about new seeds start is now ([0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9]) (2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9]) and end is now ([0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9]) (2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9]) - Do you want to save this change\?$/',
+      $alert_text
+    );
     $driver->getWebDriverSession()->accept_alert();
     $this->assertSession()->assertWaitOnAjaxRequest();
     $this->createScreenshot('../calendar.png');
