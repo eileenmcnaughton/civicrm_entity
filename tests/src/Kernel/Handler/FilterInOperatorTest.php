@@ -11,20 +11,6 @@ use Drupal\views\Views;
  */
 final class FilterInOperatorTest extends KernelHandlerTestBase {
 
-  protected static $modules = [
-    'system',
-    'user',
-    'civicrm',
-    'civicrm_entity',
-    'field',
-    'filter',
-    'text',
-    'options',
-    'link',
-    'datetime',
-    'civicrm_entity_test_views',
-  ];
-
   public static $testViews = ['test_view'];
 
   protected $columnMap = [
@@ -33,7 +19,7 @@ final class FilterInOperatorTest extends KernelHandlerTestBase {
   ];
 
   /**
-   * Test civicrm_entity_in_operator pllgin.
+   * Test civicrm_entity_in_operator plugin.
    */
   public function testFilterInOperatorSimple() {
     $view = Views::getView('test_view');
@@ -52,8 +38,7 @@ final class FilterInOperatorTest extends KernelHandlerTestBase {
       ],
     ]);
 
-    $view->preExecute();
-    $view->execute();
+    $this->executeView($view);
 
     $expected_result = [
       [
@@ -126,8 +111,7 @@ final class FilterInOperatorTest extends KernelHandlerTestBase {
       ],
     ]);
 
-    $view->preExecute();
-    $view->execute();
+    $this->executeView($view);
 
     $expected_result = [
       [
@@ -159,8 +143,7 @@ final class FilterInOperatorTest extends KernelHandlerTestBase {
       ],
     ]);
 
-    $view->preExecute();
-    $view->execute();
+    $this->executeView($view);
 
     $expected_result = [
       [
