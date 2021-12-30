@@ -29,6 +29,7 @@ use Drupal\field\FieldConfigInterface;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\views\ViewExecutable;
 use Drupal\views\Plugin\views\query\QueryPluginBase;
+use Drupal\Core\Database\Database;
 
 /**
  * Implements hook_theme().
@@ -490,6 +491,19 @@ function _civicrm_entity_post_invoke($op, $storage, $entity) {
 }
 
 function civicrm_entity_views_query_alter(ViewExecutable $view, QueryPluginBase $query) {
+  // Provide fully qualified table name in all Views queries
+  $civicrm_connection_name = drupal_valid_test_ua() ? 'civicrm_test' : 'civicrm';
+  $civicrm_connection = Database::getConnection('default', $civicrm_connection_name);
+  $table_queue =& $query->getTableQueue();
+  foreach ($table_queue as $alias => &$table_info) {
+    if (strpos($table_info['table'], 'civicrm_') === 0 && strpos($table_info['table'], '.') === FALSE) {
+      $table_info['table'] = $civicrm_connection->getFullQualifiedTableName($table_info['table']);
+    }
+    if (!empty($table_info['join']->table) && strpos($table_info['join']->table, 'civicrm_') === 0 && strpos($table_info['join']->table, '.') === FALSE) {
+      $table_info['join']->table = $civicrm_connection->getFullQualifiedTableName($table_info['join']->table);
+    }
+  }
+
   \Drupal::service('civicrm')->initialize();
   $multilingual = \CRM_Core_I18n::isMultilingual();
 
