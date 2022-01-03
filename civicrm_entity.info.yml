@@ -8,3 +8,4 @@ dependencies:
   - drupal:datetime
   - drupal:filter
   - drupal:options
+  - drupal:views_bulk_operations

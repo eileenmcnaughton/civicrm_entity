@@ -5,7 +5,8 @@
     "homepage": "http://drupal.org/project/civicrm_entity",
     "license": "GPL-2.0+",
     "require": {
-        "civicrm/civicrm-drupal-8": "*"
+        "civicrm/civicrm-drupal-8": "*",
+        "drupal/views_bulk_operations": "^4"
     },
     "require-dev": {
         "drupal/fullcalendar_view": "^5.0",
