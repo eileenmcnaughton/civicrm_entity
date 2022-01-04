@@ -60,6 +60,81 @@ function civicrm_entity_views_data_alter(&$data) {
   }
   // End: views_views_data_alter() snippet.
   // @codingStandardsIgnoreEnd
+
+  $civicrm_mailing_events = [
+    'civicrm_mailing_event_bounce' => [
+      'title' => t('Bounces'),
+      'description' => t('Total count of Bounces.'),
+      'bao' => 'CRM_Mailing_Event_BAO_Bounce',
+    ],
+    'civicrm_mailing_event_confirm' => [
+      'title' => t('Confirm'),
+      'description' => t('Total count of Confirmations.'),
+      'bao' => 'CRM_Mailing_Event_BAO_Confirm',
+    ],
+    'civicrm_mailing_event_delivered' => [
+      'title' => t('Delivered'),
+      'description' => t('Total count of Delivered.'),
+      'bao' => 'CRM_Mailing_Event_BAO_Delivered',
+    ],
+    'civicrm_mailing_event_forward' => [
+      'title' => t('Forward'),
+      'description' => t('Total count of Forwarded.'),
+      'bao' => 'CRM_Mailing_Event_BAO_Forward',
+    ],
+    'civicrm_mailing_event_opened' => [
+      'title' => t('Opened'),
+      'description' => t('Total count of Opened.'),
+      'bao' => 'CRM_Mailing_Event_BAO_Opened',
+    ],
+    'civicrm_mailing_event_unique_opened' => [
+      'title' => t('Unique Opened'),
+      'description' => t('Total count of Unique Opened.'),
+      'bao' => 'CRM_Mailing_Event_BAO_Opened',
+      'distinct' => TRUE,
+    ],
+    'civicrm_mailing_event_reply' => [
+      'title' => t('Reply'),
+      'description' => t('Total count of Replies.'),
+      'bao' => 'CRM_Mailing_Event_BAO_Reply',
+    ],
+    'civicrm_mailing_event_subscribe' => [
+      'title' => t('Subscribe'),
+      'description' => t('Total count of Subscriptions.'),
+      'bao' => 'CRM_Mailing_Event_BAO_Subscribe',
+    ],
+    'civicrm_mailing_event_trackable_url_open' => [
+      'title' => t('Trackable URL Open'),
+      'description' => t('Total count of Trackable URL Opened.'),
+      'bao' => 'CRM_Mailing_Event_BAO_TrackableURLOpen',
+    ],
+    'civicrm_mailing_event_unsubscribe' => [
+      'title' => t('Unsubscribe'),
+      'description' => t('Total count of Unsubscribes.'),
+      'bao' => 'CRM_Mailing_Event_BAO_Unsubscribe',
+    ],
+  ];
+
+  foreach ($civicrm_mailing_events as $table => $value) {
+    $key = str_replace('civicrm_mailing_event_', '', $table);
+    $data['civicrm_mailing'][$key] = [
+      'title' => $value['title'],
+      'help' => $value['description'],
+      'real field' => 'id',
+      'field' => [
+        'id' => 'civicrm_entity_mailing_event',
+        'bao' => $value['bao'],
+        'distinct' => !empty($value['distinct']) ? TRUE : FALSE,
+      ],
+    ];
+  }
+
+  $data['civicrm_mailing']['opened_rate'] = [
+    'title' => t('Opened Rate'),
+    'help' => t('Total count of Opened Rate.'),
+    'real field' => 'id',
+    'field' => ['id' => 'civicrm_entity_mailing_event_opened_rate'],
+  ];
 }
 
 /**

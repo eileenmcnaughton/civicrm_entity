@@ -17,7 +17,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   id = "civicrm_entity_user_create",
  *   label = @Translation("Create linked drupal user account"),
  *   category = @Translation("CiviCRM"),
- *   context = {
+ *   context_definitions = {
  *      "contact_id" = @ContextDefinition("integer",
  *        label = @Translation("CiviCRM contact ID"),
  *        description = @Translation("The CiviCRM contact ID."),
@@ -25,7 +25,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *      ),
  *      "is_active" = @ContextDefinition("boolean",
  *        label = @Translation("Activate account"),
- *        description = @Translation("Set to TRUE to activate account. Leave empty to not activate the account. Defaults to TRUE."),
+ *        description = @Translation("Set to FALSE to NOT activate account. Leave empty to activate the account. Defaults to TRUE."),
  *        assignment_restriction = "input",
  *        default_value = TRUE,
  *        required = FALSE
@@ -34,19 +34,19 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *        label = @Translation("Send account notification email"),
  *        description = @Translation("Set to TRUE to send a notification email. Leave empty to not send an account notification email."),
  *        assignment_restriction = "input",
- *        default_value = TRUE,
+ *        default_value = FALSE,
  *        required = FALSE
  *      ),
  *      "signin" = @ContextDefinition("boolean",
  *        label = @Translation("Instant signin"),
  *        description = @Translation("Set to TRUE to automatically log in the user. Leave empty to not automatically log in the user."),
  *        assignment_restriction = "input",
- *        default_value = TRUE,
+ *        default_value = FALSE,
  *        required = FALSE
  *      ),
  *      "format" = @ContextDefinition("string",
  *        label = @Translation("Format"),
- *        description = @Translation("Format of the username."),
+ *        description = @Translation("Format of the username.")
  *      )
  *   },
  *   provides = {
@@ -125,6 +125,17 @@ class UserCreate extends RulesActionBase implements ContainerFactoryPluginInterf
       return;
     }
 
+    	// get default value for empty boolean
+    if (empty($is_active)) {
+      $is_active = $this->getContextDefinition('is_active')->getDefaultValue();
+    }
+    if (empty($signin)) {
+      $signin = $this->getContextDefinition('signin')->getDefaultValue();
+    }
+    if (empty($notify)) {
+      $notify = $this->getContextDefinition('notify')->getDefaultValue();
+    }
+
     $params = [
       'name' => $format,
       'mail' => $contact['email'],
@@ -138,8 +149,12 @@ class UserCreate extends RulesActionBase implements ContainerFactoryPluginInterf
     if ($this->checkUserNameExists($params, $config->userSystem)) {
       $counter = 0;
       do {
-        $params['name'] = $params['name'] . '_' . $counter++;
-      } while ($this->checkUserNameExists($params, $config->userSystem));
+        // Try to add an extension to username.
+        $params['name'] = $format . '_' . $counter++;
+      } while ($this->checkUserNameExists($params, $config->userSystem)
+              // exit loop if to many errors
+              // Invalid charater in username for example
+              && $counter < 10);
     }
 
     /** @var \Drupal\user\UserInterface $user */
@@ -172,7 +187,7 @@ class UserCreate extends RulesActionBase implements ContainerFactoryPluginInterf
 
       $this
         ->messenger
-        ->addStatus($this->t('User with username @name has been created.', ['@name' => $user->getUsername()]));
+        ->addStatus($this->t('User with username @name has been created.', ['@name' => $user->getDisplayName()]));
 
       $this->setProvidedValue('civicrm_user', $user);
 

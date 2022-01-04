@@ -158,12 +158,10 @@ class CiviEntityStorage extends SqlContentEntityStorage {
   protected function doLoadMultiple(array $ids = NULL) {
     $entities = [];
     if ($ids === NULL) {
-      $civicrm_entities = $this->getCiviCrmApi()->get($this->entityType->get('civicrm_entity'));
-      foreach ($civicrm_entities as $civicrm_entity) {
-        $civicrm_entity = reset($civicrm_entity);
-        $entity = $this->prepareLoadedEntity($civicrm_entity);
-        $entities[$entity->id()] = $entity;
-      }
+      $civicrm_entity = $this->getCiviCrmApi()->get($this->entityType->get('civicrm_entity'));
+      $civicrm_entity = reset($civicrm_entity);
+      $entity = $this->prepareLoadedEntity($civicrm_entity);
+      $entities[$entity->id()] = $entity;
     }
 
     // get all the fields
@@ -172,40 +170,42 @@ class CiviEntityStorage extends SqlContentEntityStorage {
     foreach ($fields as $field) {
       $field_names[] = $field['name'];
     }
-    foreach ($ids as $id) {
-      $options = ['id' => $id];
-      $options['return'] = $field_names;
 
-      if ($this->entityType->get('civicrm_entity') === 'participant') {
-        unset($options['return']);
-      }
+    $options = [
+      'id' => ['IN' => $ids],
+      'return' => $field_names,
+      'options' => ['limit' => 0],
+    ];
 
-      try {
-        $civicrm_entity = $this->getCiviCrmApi()->get($this->entityType->get('civicrm_entity'), $options);
-        $civicrm_entity = reset($civicrm_entity);
-        if ($civicrm_entity) {
-          if ($this->entityType->get('civicrm_entity') === 'participant') {
-            // Massage the values.
-            $temporary = [];
-            foreach ($civicrm_entity as $key => $value) {
-              if (strpos($key, 'participant_') === 0) {
-                $temporary[str_replace('participant_', '', $key)] = $value;
-              }
-              else {
-                $temporary[$key] = $value;
-              }
+    if ($this->entityType->get('civicrm_entity') === 'participant') {
+      unset($options['return']);
+    }
+
+    try {
+      $civicrm_entities = $this->getCiviCrmApi()->get($this->entityType->get('civicrm_entity'), $options);
+
+      foreach ($civicrm_entities as $civicrm_entity) {
+        if ($this->entityType->get('civicrm_entity') === 'participant') {
+          // Massage the values.
+          $temporary = [];
+          foreach ($civicrm_entity as $key => $value) {
+            if (strpos($key, 'participant_') === 0) {
+              $temporary[str_replace('participant_', '', $key)] = $value;
             }
-
-            $civicrm_entity = $temporary;
+            else {
+              $temporary[$key] = $value;
+            }
           }
 
-          $entity = $this->prepareLoadedEntity($civicrm_entity);
-          $entities[$entity->id()] = $entity;
+          $civicrm_entity = $temporary;
         }
+
+        $entity = $this->prepareLoadedEntity($civicrm_entity);
+        $entities[$entity->id()] = $entity;
       }
-      catch (\Exception $e) {
-        watchdog_exception('civicrm_entity', $e);
-      }
+    }
+    catch (\Exception $e) {
+      watchdog_exception('civicrm_entity', $e);
     }
     return $entities;
   }
@@ -416,10 +416,8 @@ class CiviEntityStorage extends SqlContentEntityStorage {
           }
           else {
             $datetime_format = $definition->getSetting('datetime_type') === DateTimeItem::DATETIME_TYPE_DATE ? DateTimeItemInterface::DATE_STORAGE_FORMAT : DateTimeItemInterface::DATETIME_STORAGE_FORMAT;
-            // CiviCRM gives us the datetime in the users timezone (or no
-            // timezone at all) but Drupal expects it in UTC. So, we need to
-            // convert from the users timezone into UTC.
-            $datetime_value = (new \DateTime($item[$main_property_name], new \DateTimeZone(date_default_timezone_get())))->setTimezone(new \DateTimeZone('UTC'))->format($datetime_format);
+            $default_timezone = \Drupal::config('system.date')->get('timezone.default') ?? date_default_timezone_get();
+            $datetime_value = (new \DateTime($item[$main_property_name], new \DateTimeZone($default_timezone)))->setTimezone(new \DateTimeZone('UTC'))->format($datetime_format);
             $item_values[$delta][$main_property_name] = $datetime_value;
           }
         }

@@ -5,8 +5,11 @@
     "homepage": "http://drupal.org/project/civicrm_entity",
     "license": "GPL-2.0+",
     "require": {
-        "civicrm/civicrm-core": "~5.0",
-        "civicrm/civicrm-drupal-8": ">=5.13"
+        "civicrm/civicrm-drupal-8": "*"
+    },
+    "require-dev": {
+        "drupal/fullcalendar_view": "^5.0",
+        "drupal/leaflet": "^2"
     },
     "minimum-stability": "dev"
 }

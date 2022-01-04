@@ -3,20 +3,25 @@
 namespace Drupal\Tests\civicrm_entity\Kernel;
 
 use Drupal\civicrm_entity\CiviCrmApiInterface;
-use Drupal\civicrm_entity\SupportedEntities;
+use Drupal\Core\DependencyInjection\ContainerBuilder;
+use Drupal\Core\DependencyInjection\ServiceModifierInterface;
 use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\civicrm_entity\Traits\CivicrmEntityTrait;
 use Prophecy\Argument;
 
 /**
  * Test base to aid in mocking the CiviCRM API.
  */
-abstract class CivicrmEntityTestBase extends KernelTestBase {
+abstract class CivicrmEntityTestBase extends KernelTestBase implements ServiceModifierInterface {
+
+  use CivicrmEntityTrait;
 
   /**
    * {@inheritdoc}
    */
   protected static $modules = [
     'system',
+    'user',
     'civicrm',
     'civicrm_entity',
     'field',
@@ -27,33 +32,48 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
     'datetime',
   ];
 
+  public function alter(ContainerBuilder $container) {
+    $this->mockCiviCrmApi($container);
+  }
+
   /**
    * {@inheritdoc}
    */
   protected function setUp() {
     parent::setUp();
-    require __DIR__ . '/../Type.php';
-    require __DIR__ . '/../CiviCrmDaoStubs.php';
-    $this->mockCiviCrmApi();
+    $this->setUpCivicrm();
+  }
 
-    $this->config('civicrm_entity.settings')
-      ->set('enabled_entity_types', [
-        'civicrm_event',
-      ])->save();
+  protected function bootEnvironment() {
+    parent::bootEnvironment();
+    $this->bootEnvironmentCivicrm();
+  }
+
+  protected function tearDown() {
+    $this->tearDownCivicrm();
   }
 
   /**
    * Mocks the CiviCRM API.
    */
-  protected function mockCiviCrmApi() {
+  protected function mockCiviCrmApi(ContainerBuilder $container) {
     $civicrm_api_mock = $this->prophesize(CiviCrmApiInterface::class);
+    $civicrm_api_mock->civicrmInitialize()->willReturn();
+    $civicrm_api_mock->getCustomFieldMetadata(Argument::any())->willReturn();
+
     $civicrm_api_mock->get('event', [
-      'id' => 1,
+      'id' => [
+        'IN' => [1]
+      ],
       'return' => array_keys($this->sampleEventsGetFields()),
+      'options' => ['limit' => 0],
     ])->willReturn($this->sampleEventsData());
     $civicrm_api_mock->get('contact', [
-      'id' => 10,
+      'id' => [
+        'IN' => [10]
+      ],
       'return' => array_keys($this->sampleContactGetFields()),
+      'options' => ['limit' => 0],
     ])->willReturn($this->sampleContactData());
 
     $civicrm_api_mock->getFields('event')->willReturn($this->sampleEventsGetFields());
@@ -73,19 +93,20 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
       ],
     ]);
 
-    $supported_entities = SupportedEntities::getInfo();
-    foreach ($supported_entities as $civicrm_entity_info) {
-      $civicrm_entity_name = $civicrm_entity_info['civicrm entity name'];
-      if (in_array($civicrm_entity_name, ['event', 'contact'])) {
-        continue;
-      }
-      $civicrm_api_mock->getFields($civicrm_entity_name)->willReturn($this->minimalGenericGetFields());
-    }
-
     $civicrm_api_mock->save('event', Argument::type('array'))->willReturn(TRUE);
     $civicrm_api_mock->delete('event', Argument::type('array'))->willReturn(TRUE);
 
-    $this->container->set('civicrm_entity.api', $civicrm_api_mock->reveal());
+    $civicrm_api_mock->getOptions('activity', 'activity_type_id')->willReturn([
+      'Foo' => 'Foo',
+      'Bar' => 'Bar',
+    ]);
+    $civicrm_api_mock->getOptions('event', 'event_type_id')->willReturn([
+      'Baz' => 'Baz',
+      'Zoo' => 'Zoo',
+      'Conference' => 'Conference',
+    ]);
+
+    $container->set('civicrm_entity.api', $civicrm_api_mock->reveal());
   }
 
   /**
@@ -1709,7 +1730,7 @@ abstract class CivicrmEntityTestBase extends KernelTestBase {
         'summary' => 'Kick up your heels at our Fall Fundraiser Dinner/Dance at Glen Echo Park! Come by yourself or bring a partner, friend or the entire family!',
         'description' => 'This event benefits our teen programs. Admission includes a full 3 course meal and wine or soft drinks. Grab your dancing shoes, bring the kids and come join the party!',
         'event_description' => 'This event benefits our teen programs. Admission includes a full 3 course meal and wine or soft drinks. Grab your dancing shoes, bring the kids and come join the party!',
-        'event_type_id' => '3',
+        'event_type_id' => 'Conference',
         'participant_listing_id' => '1',
         'is_public' => '1',
         'start_date' => '2018-05-02 17:00:00',

@@ -1,7 +1,9 @@
 name: Integration Tests
 on:
+  workflow_dispatch:
   push:
   pull_request:
+    types: [assigned, opened, synchronize, reopened]
     branches:
       - 8.x-3.x
 
@@ -9,16 +11,17 @@ jobs:
   phpunit:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
-          - drupal: '^8.9'
-            civicrm: '~5.33'
-          - drupal: '^8.9'
-            civicrm: '~5.35'
-          - drupal: '^9.1'
-            civicrm: '~5.36'
-          - drupal: '^9.1'
-            civicrm: '5.37.x-dev'
+          - drupal: '8.9.*'
+            civicrm: '5.35.*'
+          - drupal: '8.9.*'
+            civicrm: '5.39.*'
+          - drupal: '9.3.*'
+            civicrm: '5.44.x-dev'
+          - drupal: '9.3.*'
+            civicrm: 'dev-master'
     name: Drupal ${{ matrix.drupal }} | CiviCRM ${{ matrix.civicrm }}
     services:
       mysql:
@@ -30,13 +33,16 @@ jobs:
           - 3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     steps:
+      - name: Setup secondary database for CiviCRM
+        run: |
+          mysql -uroot -h127.0.0.1 -P${{ job.services.mysql.ports[3306] }} -e 'CREATE DATABASE IF NOT EXISTS db_civicrm;'
       - uses: actions/checkout@v2
       - uses: shivammathur/setup-php@v2
         with:
-            php-version: 7.3
+            php-version: 7.4
             extensions: dom, curl, libxml, mbstring, zip, pdo, mysql, pdo_mysql, bcmath, soap, intl, gd, exif, iconv
             coverage: none
-            tools: composer:v1
+            tools: composer:v2
       - name: Get composer cache directory
         id: composercache
         run: echo "::set-output name=dir::$(composer config cache-files-dir)"
@@ -62,6 +68,11 @@ jobs:
           composer config repositories.0 path $GITHUB_WORKSPACE
           composer config repositories.1 composer https://packages.drupal.org/8
           COMPOSER_MEMORY_LIMIT=-1 composer require drupal/core-dev-pinned:${{ matrix.drupal }} --no-suggest
+      - name: Deal with https://lab.civicrm.org/dev/drupal/-/issues/164
+        # This is temporary until no longer testing anything less than 5.41. A more sophisticated way would be to make this conditional on civi version so that for 5.41+ it doesn't do this, giving a closer approximation to real installs for 5.41+, but as far as I know this is only used by compile-lib to make some bootstrap css files.
+        run: |
+          cd ~/drupal
+          COMPOSER_MEMORY_LIMIT=-1 composer require scssphp/scssphp:1.6.0
       - name: Install CiviCRM ${{ matrix.civicrm }}
         run: |
           cd ~/drupal
@@ -70,6 +81,10 @@ jobs:
         run: |
           cd ~/drupal
           COMPOSER_MEMORY_LIMIT=-1 composer require drupal/civicrm_entity *@dev
+      - name: Install integration test modules
+        run: |
+          cd ~/drupal
+          COMPOSER_MEMORY_LIMIT=-1 composer require drupal/leaflet drupal/fullcalendar_view
       - uses: nanasess/setup-chromedriver@master
       - name: Run chromedriver
         run: chromedriver &
@@ -81,8 +96,9 @@ jobs:
           cd ~/drupal/web
           ../vendor/bin/phpunit -c core modules/contrib/civicrm_entity
         env:
-          SYMFONY_DEPRECATIONS_HELPER: weak
+          SYMFONY_DEPRECATIONS_HELPER: disabled
           SIMPLETEST_DB: mysql://root:@127.0.0.1:${{ job.services.mysql.ports[3306] }}/db
+          SIMPLETEST_CIVICRM_DB: mysql://root:@127.0.0.1:${{ job.services.mysql.ports[3306] }}/db_civicrm
           SIMPLETEST_BASE_URL: http://127.0.0.1:8080
           MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu", "--no-sandbox", "--headless"]}}, "http://127.0.0.1:9515"]'
           BROWSERTEST_OUTPUT_DIRECTORY: '${{ runner.temp }}/browser_output'
