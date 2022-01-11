@@ -471,6 +471,15 @@ class CivicrmEntityViewsData extends EntityViewsData {
           ],
         ];
 
+        $field_definitions = $this->entityFieldManager->getBaseFieldDefinitions('civicrm_contact');
+        if (!empty($field_definitions) && isset($field_definitions['contact_sub_type'])) {
+          $field_definition = $field_definitions['contact_sub_type'];
+          $views_field['civicrm_contact']['contact_sub_type']['filter']['id'] = 'civicrm_entity_in_operator';
+          $views_field['civicrm_contact']['contact_sub_type']['filter']['options callback'] = 'civicrm_entity_pseudoconstant_options';
+          $views_field['civicrm_contact']['contact_sub_type']['filter']['options arguments'] = $field_definition->getFieldStorageDefinition();
+          $views_field['civicrm_contact']['contact_sub_type']['filter']['multi'] = TRUE;
+        }
+
         break;
 
       case 'civicrm_phone':
