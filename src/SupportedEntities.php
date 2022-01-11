@@ -321,7 +321,7 @@ $civicrm_entity_info['civicrm_group_contact'] = [
     'delete' => ['edit groups', 'administer CiviCRM'],
   ],
 ];
-
+/*
     $civicrm_entity_info['civicrm_grant'] = [
       'civicrm entity label' => t('Grant'),
       'civicrm entity name' => 'grant',
@@ -333,7 +333,7 @@ $civicrm_entity_info['civicrm_group_contact'] = [
         'create' => ['access CiviGrant', 'edit grants'],
         'delete' => ['access CiviGrant', 'edit grants'],
       ],
-    ];
+    ];*/
     $civicrm_entity_info['civicrm_im'] = [
       'civicrm entity label' => t('IM'),
       'civicrm entity name' => 'im',
