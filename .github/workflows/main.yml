@@ -19,7 +19,7 @@ jobs:
           - drupal: '8.9.*'
             civicrm: '5.39.*'
           - drupal: '9.3.*'
-            civicrm: '5.44.x-dev'
+            civicrm: '5.45.x-dev'
           - drupal: '9.3.*'
             civicrm: 'dev-master'
     name: Drupal ${{ matrix.drupal }} | CiviCRM ${{ matrix.civicrm }}
