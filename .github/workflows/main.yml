@@ -2,6 +2,7 @@ name: Integration Tests
 on:
   workflow_dispatch:
   push:
+    branches: [ 8.x-3.x ]
   pull_request:
     types: [assigned, opened, synchronize, reopened]
     branches:
