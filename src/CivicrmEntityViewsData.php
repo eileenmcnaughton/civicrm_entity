@@ -471,6 +471,13 @@ class CivicrmEntityViewsData extends EntityViewsData {
           ],
         ];
 
+        if (isset($views_field['civicrm_contact']['contact_sub_type'])) {
+          $views_field['civicrm_contact']['contact_sub_type']['filter']['id'] = 'civicrm_entity_in_operator';
+          $views_field['civicrm_contact']['contact_sub_type']['filter']['options callback'] = '\CRM_Contact_DAO_Contact::buildOptions';
+          $views_field['civicrm_contact']['contact_sub_type']['filter']['options arguments'] = 'contact_sub_type';
+          $views_field['civicrm_contact']['contact_sub_type']['filter']['multi'] = TRUE;
+        }
+
         break;
 
       case 'civicrm_phone':
