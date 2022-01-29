@@ -732,7 +732,11 @@ class CivicrmEntityViewsData extends EntityViewsData {
         return $filter;
 
       case 'ContactReference':
-        return ['id' => 'civicrm_entity_contact_reference'];
+        return [
+          'id' => 'civicrm_entity_contact_reference',
+          'allow empty' => TRUE,
+          'multi' => TRUE,
+        ];
     }
 
     $type = !empty($field_metadata['pseudoconstant']) ? 'pseudoconstant' :
@@ -832,6 +836,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
           'base' => 'civicrm_contact',
           'base field' => 'id',
           'label' => $this->t('@label', ['@label' => $field_metadata['label']]),
+          'join_id' => isset($field_metadata['serialize']) && $field_metadata['serialize'] ? 'civicrm_entity_contact_reference' : 'standard',
         ];
 
       default:
