@@ -135,6 +135,9 @@ function civicrm_entity_views_data_alter(&$data) {
     'real field' => 'id',
     'field' => ['id' => 'civicrm_entity_mailing_event_opened_rate'],
   ];
+
+  $data['civicrm_contact']['current_employer']['real field'] = 'organization_name';
+  $data['civicrm_contact']['employer_id']['field']['id'] = 'standard';
 }
 
 /**
