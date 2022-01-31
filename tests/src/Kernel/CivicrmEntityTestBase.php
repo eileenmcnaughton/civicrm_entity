@@ -162,6 +162,13 @@ abstract class CivicrmEntityTestBase extends KernelTestBase implements ServiceMo
       'Conference' => 'Conference',
     ]);
 
+    $civicrm_api_mock->get('entity', Argument::type('array'))->willReturn([
+      'Event',
+      'Activity',
+      'Contact',
+      'Address',
+    ]);
+
     $container->set('civicrm_entity.api', $civicrm_api_mock->reveal());
   }
 
