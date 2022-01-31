@@ -8,7 +8,7 @@ use Drupal\Core\Datetime\DateFormatterInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * An "In" handler to include CiviCRM API.
+ * An "Date" handler to include CiviCRM API.
  *
  * @ingroup views_filter_handlers
  *
