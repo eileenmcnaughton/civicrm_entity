@@ -88,7 +88,7 @@ final class FilterDateTest extends KernelHandlerTestBase {
   /**
    * Tests the filter operator between/not between.
    */
-  protected function testBetween() {
+  public function testBetween() {
     $view = Views::getView('test_view');
 
     // Test between with just max.
@@ -110,20 +110,12 @@ final class FilterDateTest extends KernelHandlerTestBase {
 
     $expected_result = [
       [
-        'display_name' => 'John Smith',
-        'contact_type' => 'Individual',
-      ],
-      [
         'display_name' => 'Jane Smith',
-        'contact_type' => 'Individual',
-      ],
-      [
-        'display_name' => 'John Doe',
         'contact_type' => 'Individual',
       ],
     ];
 
-    $this->assertCount(3, $view->result);
+    $this->assertCount(1, $view->result);
     $this->assertIdenticalResultset($view, $expected_result, $this->columnMap);
 
     $view->destroy();
@@ -147,7 +139,7 @@ final class FilterDateTest extends KernelHandlerTestBase {
 
     $expected_result = [
       [
-        'display_name' => 'John Smith',
+        'display_name' => 'Jane Smith',
         'contact_type' => 'Individual',
       ],
       [
@@ -184,12 +176,16 @@ final class FilterDateTest extends KernelHandlerTestBase {
         'contact_type' => 'Individual',
       ],
       [
+        'display_name' => 'Jane Smith',
+        'contact_type' => 'Individual',
+      ],
+      [
         'display_name' => 'John Doe',
         'contact_type' => 'Individual',
       ],
     ];
 
-    $this->assertCount(2, $view->result);
+    $this->assertCount(3, $view->result);
     $this->assertIdenticalResultset($view, $expected_result, $this->columnMap);
   }
 
