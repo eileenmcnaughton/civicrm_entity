@@ -705,7 +705,18 @@ $civicrm_entity_info['civicrm_group_contact'] = [
     ];
 
     static::alterEntityInfo($civicrm_entity_info);
-
+    // Check if API finds each entity type.
+    // Necessary for tests/civi upgrade after CiviGrant moved to extension in 5.47.
+    $civicrm_api = \Drupal::service('civicrm_entity.api');
+    $api_entity_types = $civicrm_api->get('entity', ['sequential' => FALSE]);
+    array_walk($api_entity_types, function(&$value) {
+      $value = static::getEntityNameFromCamel($value);
+    });
+    foreach ($civicrm_entity_info as $entity_type => $entity_info) {
+      if (!in_array($entity_info['civicrm entity name'], $api_entity_types)) {
+        unset($civicrm_entity_info[$entity_type]);
+      }
+    }
     return $civicrm_entity_info;
   }
 

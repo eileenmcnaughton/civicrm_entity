@@ -181,26 +181,31 @@ class CiviEntityStorage extends SqlContentEntityStorage {
       unset($options['return']);
     }
 
-    $civicrm_entities = $this->getCiviCrmApi()->get($this->entityType->get('civicrm_entity'), $options);
+    try {
+      $civicrm_entities = $this->getCiviCrmApi()->get($this->entityType->get('civicrm_entity'), $options);
 
-    foreach ($civicrm_entities as $civicrm_entity) {
-      if ($this->entityType->get('civicrm_entity') === 'participant') {
-        // Massage the values.
-        $temporary = [];
-        foreach ($civicrm_entity as $key => $value) {
-          if (strpos($key, 'participant_') === 0) {
-            $temporary[str_replace('participant_', '', $key)] = $value;
+      foreach ($civicrm_entities as $civicrm_entity) {
+        if ($this->entityType->get('civicrm_entity') === 'participant') {
+          // Massage the values.
+          $temporary = [];
+          foreach ($civicrm_entity as $key => $value) {
+            if (strpos($key, 'participant_') === 0) {
+              $temporary[str_replace('participant_', '', $key)] = $value;
+            }
+            else {
+              $temporary[$key] = $value;
+            }
           }
-          else {
-            $temporary[$key] = $value;
-          }
+
+          $civicrm_entity = $temporary;
         }
 
-        $civicrm_entity = $temporary;
+        $entity = $this->prepareLoadedEntity($civicrm_entity);
+        $entities[$entity->id()] = $entity;
       }
-
-      $entity = $this->prepareLoadedEntity($civicrm_entity);
-      $entities[$entity->id()] = $entity;
+    }
+    catch (\Exception $e) {
+      watchdog_exception('civicrm_entity', $e);
     }
     return $entities;
   }
