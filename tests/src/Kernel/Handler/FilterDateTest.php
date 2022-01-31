@@ -88,7 +88,7 @@ final class FilterDateTest extends KernelHandlerTestBase {
   /**
    * Tests the filter operator between/not between.
    */
-  protected function testBetween() {
+  public function testBetween() {
     $view = Views::getView('test_view');
 
     // Test between with just max.
