@@ -66,7 +66,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
       // Specify our own views query plugin, to support ensuring the CiviCRM
       // database connection exists in Drupal.
       // @see \Drupal\views\Plugin\views\display\DisplayPluginBase::getPlugin
-      // 'query_id' => 'civicrm_views_query',
+      'query_id' => 'civicrm_views_query',
     ];
     $data[$base_table]['table']['entity revision'] = FALSE;
     if ($label_key = $this->entityType->getKey('label')) {
