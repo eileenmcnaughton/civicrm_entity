@@ -660,6 +660,12 @@ class CivicrmEntityViewsData extends EntityViewsData {
           'left_field' => 'id',
           'field' => 'entity_id',
         ];
+
+        break;
+
+      case 'civicrm_participant':
+        $views_field[$base_table]['transferred_to_contact_id']['help'] = $this->t('FK to "Transferred to" Contact ID');
+        break;
     }
   }
 
