@@ -510,6 +510,19 @@ function civicrm_entity_get_supported_entity_info($entity_type = NULL) {
     }
   }
 
+  // Check if API finds each entity type.
+  // Necessary for tests/civi upgrade after CiviGrant moved to extension in 5.47.
+  $api_entity_types = civicrm_api3('entity', 'get', ['sequential' => FALSE]);
+  $api_entity_types = array_values($api_entity_types['values']);
+  array_walk($api_entity_types, function(&$value) {
+    $value = _civicrm_entity_get_entity_name_from_camel($value);
+  });
+  foreach ($civicrm_entity_info as $et => $entity_info) {
+    if (!in_array($entity_info['civicrm entity name'], $api_entity_types)) {
+      unset($civicrm_entity_info[$et]);
+    }
+  }
+
   if (empty($entity_type)) {
     return $civicrm_entity_info;
   }
