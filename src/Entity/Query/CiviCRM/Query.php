@@ -57,10 +57,8 @@ class Query extends QueryBase implements QueryInterface {
 
     $this->initializePager();
     if ($this->range) {
-      $params['options'] = [
-        'limit' => $this->range['length'],
-        'offset' => $this->range['start'],
-      ];
+      $params['options']['limit'] = $this->range['length'];
+      $params['options']['offset'] = $this->range['start'];
     }
 
     if ($this->count) {
