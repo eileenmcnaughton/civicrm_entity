@@ -48,6 +48,13 @@ class Query extends QueryBase implements QueryInterface {
       }
     }
 
+    $sort = [];
+    foreach ($this->sort as $s) {
+      $sort[] = $s['field'] . ' ' . $s['direction'];
+    }
+
+    $params['options']['sort'] = implode(',', $sort);
+
     $this->initializePager();
     if ($this->range) {
       $params['options'] = [
