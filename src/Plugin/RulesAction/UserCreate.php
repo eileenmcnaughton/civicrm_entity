@@ -25,7 +25,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *      ),
  *      "is_active" = @ContextDefinition("boolean",
  *        label = @Translation("Activate account"),
- *        description = @Translation("Set to FALSE to NOT activate account. Leave empty to activate the account. Defaults to TRUE."),
+ *        description = @Translation("Set to TRUE to activate account. Leave empty to NOT activate the account. Defaults to TRUE."),
  *        assignment_restriction = "input",
  *        default_value = TRUE,
  *        required = FALSE
@@ -125,16 +125,9 @@ class UserCreate extends RulesActionBase implements ContainerFactoryPluginInterf
       return;
     }
 
-    	// get default value for empty boolean
-    if (empty($is_active)) {
-      $is_active = $this->getContextDefinition('is_active')->getDefaultValue();
-    }
-    if (empty($signin)) {
-      $signin = $this->getContextDefinition('signin')->getDefaultValue();
-    }
-    if (empty($notify)) {
-      $notify = $this->getContextDefinition('notify')->getDefaultValue();
-    }
+    $is_active = filter_var($is_active, FILTER_VALIDATE_BOOLEAN);
+    $signin = filter_var($signin, FILTER_VALIDATE_BOOLEAN);
+    $notify = filter_var($notify, FILTER_VALIDATE_BOOLEAN);
 
     $params = [
       'name' => $format,
