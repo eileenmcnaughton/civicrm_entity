@@ -471,6 +471,13 @@ class CivicrmEntityViewsData extends EntityViewsData {
           ],
         ];
 
+        if (isset($views_field['civicrm_contact']['contact_sub_type'])) {
+          $views_field['civicrm_contact']['contact_sub_type']['filter']['id'] = 'civicrm_entity_in_operator';
+          $views_field['civicrm_contact']['contact_sub_type']['filter']['options callback'] = '\CRM_Contact_DAO_Contact::buildOptions';
+          $views_field['civicrm_contact']['contact_sub_type']['filter']['options arguments'] = 'contact_sub_type';
+          $views_field['civicrm_contact']['contact_sub_type']['filter']['multi'] = TRUE;
+        }
+
         break;
 
       case 'civicrm_phone':
@@ -544,7 +551,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
         if (isset($views_field['civicrm_contact']['reverse__civicrm_relationship__contact_id_a']['relationship'])) {
           $views_field['civicrm_contact']['reverse__civicrm_relationship__contact_id_a']['relationship']['id'] = 'civicrm_entity_civicrm_relationship';
         }
-        elseif (isset($views_field['civicrm_contact']['reverse__civicrm_relationship__contact_id_b']['relationship'])) {
+        if (isset($views_field['civicrm_contact']['reverse__civicrm_relationship__contact_id_b']['relationship'])) {
           $views_field['civicrm_contact']['reverse__civicrm_relationship__contact_id_b']['relationship']['id'] = 'civicrm_entity_civicrm_relationship';
         }
         break;
@@ -732,7 +739,11 @@ class CivicrmEntityViewsData extends EntityViewsData {
         return $filter;
 
       case 'ContactReference':
-        return ['id' => 'civicrm_entity_contact_reference'];
+        return [
+          'id' => 'civicrm_entity_contact_reference',
+          'allow empty' => TRUE,
+          'multi' => TRUE,
+        ];
     }
 
     $type = !empty($field_metadata['pseudoconstant']) ? 'pseudoconstant' :
@@ -832,6 +843,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
           'base' => 'civicrm_contact',
           'base field' => 'id',
           'label' => $this->t('@label', ['@label' => $field_metadata['label']]),
+          'join_id' => isset($field_metadata['serialize']) && $field_metadata['serialize'] ? 'civicrm_entity_contact_reference' : 'standard',
         ];
 
       default:

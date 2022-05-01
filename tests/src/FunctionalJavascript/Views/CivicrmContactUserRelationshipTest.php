@@ -20,7 +20,7 @@ final class CivicrmContactUserRelationshipTest extends CivicrmEntityTestBase {
   protected static $modules = [
     'views',
     'views_ui',
-    'civicrm_entity_views_test',
+    'civicrm_entity_test_views',
   ];
 
   /**
