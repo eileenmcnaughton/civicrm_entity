@@ -27,7 +27,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *        label = @Translation("Activate account"),
  *        description = @Translation("Set to TRUE to activate account. Leave empty to NOT activate the account. Defaults to TRUE."),
  *        assignment_restriction = "input",
- *        default_value = TRUE,
+ *        default_value = "TRUE",
  *        required = FALSE
  *      ),
  *      "notify" = @ContextDefinition("boolean",
