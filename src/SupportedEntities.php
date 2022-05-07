@@ -120,7 +120,7 @@ final class SupportedEntities {
         'delete' => ['delete in CiviCase'],
       ],
     ];
-    $civicrm_entity_info['civicrm_contact'] = [
+    $civicrm_entity_info['civicrm_contact'] = $civicrm_entity_info['civicrm_contact_reference'] = [
       'civicrm entity label' => t('Contact'),
       'civicrm entity name' => 'contact',
       'label property' => 'display_name',
@@ -140,6 +140,7 @@ final class SupportedEntities {
         'display_name' => TRUE,
       ],
     ];
+    $civicrm_entity_info['civicrm_contact_reference']['permissions']['view'][] = 'access all custom data';
     $civicrm_entity_info['civicrm_contribution'] = [
       'civicrm entity label' => t('Contribution'),
       'civicrm entity name' => 'contribution',

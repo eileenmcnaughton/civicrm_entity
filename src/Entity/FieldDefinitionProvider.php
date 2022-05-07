@@ -49,7 +49,7 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
           }
           elseif (isset($civicrm_field['data_type']) && $civicrm_field['data_type'] === 'ContactReference') {
             $field = BaseFieldDefinition::create('entity_reference')
-              ->setSetting('target_type', 'civicrm_contact')
+              ->setSetting('target_type', 'civicrm_contact_reference')
               ->setSetting('handler', 'default');
 
             if (isset($civicrm_field['serialize']) && $civicrm_field['serialize']) {
