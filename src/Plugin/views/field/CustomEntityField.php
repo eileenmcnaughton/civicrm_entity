@@ -85,6 +85,7 @@ class CustomEntityField extends EntityField {
    */
   public function init(ViewExecutable $view, DisplayPluginBase $display, array &$options = NULL) {
     $field_definition = $this->getFieldDefinition();
+
     if ($settings = $field_definition->getSetting('civicrm_entity_field_metadata')) {
       $this->fieldMetadata = $settings;
 
@@ -92,7 +93,6 @@ class CustomEntityField extends EntityField {
         $this->fieldDefinition->setCardinality($this->fieldMetadata['max_multiple']);
       }
     }
-
     parent::init($view, $display, $options);
   }
 
@@ -260,6 +260,12 @@ class CustomEntityField extends EntityField {
           }, $result);
         }
       }
+      else if ($this->getFieldDefinition()->getType() == 'boolean') {
+        // CiviCRM API3 will return no result when quering a custom
+        // field row that has no values. In this case we want to set
+        // the field to NULL otherwise it defaults to false.
+        $processed_entity->{$this->definition['field_name']} = NULL;
+      }
     }
     catch (\CiviCRM_API3_Exception $e) {
       // Don't do anything.
@@ -282,7 +288,7 @@ class CustomEntityField extends EntityField {
    * @see \Drupal\civicrm_entity\CiviEntityStorage::initFieldValues()
    */
   protected function getItemValue($value, FieldDefinitionInterface $definition) {
-    if (is_null($value)) {
+    if (is_null($value) ) {
       return NULL;
     }
 
@@ -291,6 +297,12 @@ class CustomEntityField extends EntityField {
         if (!empty($value)) {
           $datetime_format = $definition->getSetting('datetime_type') === DateTimeItem::DATETIME_TYPE_DATE ? DateTimeItemInterface::DATE_STORAGE_FORMAT : DateTimeItemInterface::DATETIME_STORAGE_FORMAT;
           return (new \DateTime($value, new \DateTimeZone(date_default_timezone_get())))->setTimezone(new \DateTimeZone('UTC'))->format($datetime_format);
+        }
+        break;
+      case 'boolean':
+        // For booleans we want to convert the empty string to NULL to avoid it being displayed as false
+        if ($value == '') {
+          return NULL;
         }
     }
 
