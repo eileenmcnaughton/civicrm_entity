@@ -11,6 +11,10 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\civicrm_entity\CiviCrmApi;
 
+if (!class_exists('Drupal\views_bulk_operations\Action\ViewsBulkOperationsActionBase')) {
+  return;
+}
+
 /**
  * Action to add CiviCRM Contact to a CiviCRM group
  *
