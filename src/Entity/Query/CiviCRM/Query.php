@@ -62,6 +62,7 @@ class Query extends QueryBase implements QueryInterface {
     }
 
     if ($this->count) {
+      unset($params['options']['sort']);
       return $this->civicrmApi->getCount($this->entityType->get('civicrm_entity'), $params);
     }
     else {
