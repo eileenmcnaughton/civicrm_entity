@@ -40,9 +40,7 @@ class CiviCrmBridgeRelationshipBase extends RelationshipPluginBase {
       'adjusted' => TRUE,
     ];
 
-    if (!empty($this->definition['extra'])) {
-      $first['extra'] = $this->definition['extra'];
-    }
+    $first['extra'] = $this->getExtras();
 
     if (!empty($this->options['required'])) {
       $first['type'] = 'INNER';
@@ -69,6 +67,13 @@ class CiviCrmBridgeRelationshipBase extends RelationshipPluginBase {
     $alias = $this->definition['base'] . '_' . $this->definition['table'];
 
     $this->alias = $this->query->addRelationship($alias, $second_join, $this->definition['base'], $this->relationship);
+  }
+
+  /**
+   * Gets extra conditions.
+   */
+  protected function getExtras() {
+    return $this->definition['extra'] ?? NULL;
   }
 
 }
