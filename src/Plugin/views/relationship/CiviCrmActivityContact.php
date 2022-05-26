@@ -51,8 +51,9 @@ class CiviCrmActivityContact extends RelationshipPluginBase {
    */
   public function buildOptionsForm(&$form, FormStateInterface $form_state) {
     $form['record_type_id'] = [
-      '#type' => 'radios',
-      '#options' => ['' => $this->t('- Any -')] + $this->recordTypeMapping,
+      '#type' => 'select',
+      '#multiple' => TRUE,
+      '#options' => $this->recordTypeMapping,
       '#title' => $this->t('Activity contact type'),
       '#default_value' => $this->options['record_type_id'],
     ];
@@ -68,11 +69,14 @@ class CiviCrmActivityContact extends RelationshipPluginBase {
 
     $this->definition['extra'] = [];
     if (!empty($this->options['record_type_id'])) {
-      $this->definition['extra'][] = [
-        'field' => 'record_type_id',
-        'value' => $this->options['record_type_id'],
-        'numeric' => TRUE,
-      ];
+      $record_type = !is_array($this->options['record_type_id']) ? [$this->options['record_type_id']] : $this->options['record_type_id'];
+      foreach ($record_type as $type) {
+        $this->definition['extra'][] = [
+          'field' => 'record_type_id',
+          'value' => $type,
+          'numeric' => TRUE,
+        ];
+      }
     }
   }
 
@@ -100,6 +104,7 @@ class CiviCrmActivityContact extends RelationshipPluginBase {
 
     if (!empty($this->definition['extra'])) {
       $first['extra'] = $this->definition['extra'];
+      $first['extra_operator'] = 'OR';
     }
 
     $first_join = Views::pluginManager('join')->createInstance('standard', $first);
