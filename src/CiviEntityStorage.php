@@ -205,8 +205,9 @@ class CiviEntityStorage extends SqlContentEntityStorage {
       }
     }
     catch (\Exception $e) {
-      watchdog_exception('civicrm_entity', $e);
+      // No-op.
     }
+
     return $entities;
   }
 
