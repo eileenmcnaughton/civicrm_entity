@@ -77,7 +77,7 @@ jobs:
       - name: Install CiviCRM ${{ matrix.civicrm }}
         run: |
           cd ~/drupal
-          COMPOSER_MEMORY_LIMIT=-1 composer require civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-{core,packages}:${{ matrix.civicrm }} --no-suggest --prefer-dist
+          COMPOSER_MEMORY_LIMIT=-1 composer require civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-{core,packages,drupal-8}:${{ matrix.civicrm }} --no-suggest --prefer-dist
       - name: Install civicrm_entity
         run: |
           cd ~/drupal
