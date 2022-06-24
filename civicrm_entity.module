@@ -214,11 +214,9 @@ function civicrm_entity_entity_view_display_alter(EntityViewDisplayInterface $di
   if ($entity_type->get('civicrm_entity') && $entity_type->hasKey('bundle')) {
     $entity_display_repository = \Drupal::service('entity_display.repository');
     assert($entity_display_repository instanceof EntityDisplayRepositoryInterface);
-    $view_mode = !empty($context['view_mode']) ? $context['view_mode'] : $entity_display_repository::DEFAULT_DISPLAY_MODE;
     $root_display = $entity_display_repository->getViewDisplay(
       $entity_type->id(),
-      $entity_type->id(),
-      $view_mode
+      $entity_type->id()
     );
     $display->set('content', $root_display->get('content'));
     $display->set('hidden', $root_display->get('hidden'));
