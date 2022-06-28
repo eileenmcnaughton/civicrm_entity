@@ -215,6 +215,11 @@ function civicrm_entity_entity_view_display_alter(EntityViewDisplayInterface $di
     $entity_display_repository = \Drupal::service('entity_display.repository');
     assert($entity_display_repository instanceof EntityDisplayRepositoryInterface);
     $view_mode = !empty($context['view_mode']) ? $context['view_mode'] : $entity_display_repository::DEFAULT_DISPLAY_MODE;
+
+    if (($display instanceof LayoutBuilderEntityViewDisplay) && $view_mode == 'full') {
+      $view_mode = $entity_display_repository::DEFAULT_DISPLAY_MODE;
+    }
+
     $root_display = $entity_display_repository->getViewDisplay(
       $entity_type->id(),
       $entity_type->id(),
