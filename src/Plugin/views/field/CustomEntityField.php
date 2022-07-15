@@ -303,7 +303,8 @@ class CustomEntityField extends EntityField {
         // For booleans we want to convert the empty string to NULL to avoid it being displayed as false
         if ($value == '') {
           return NULL;
-        }
+	}
+	break;
     }
 
     return $value;
