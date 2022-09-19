@@ -306,7 +306,12 @@ class CiviEntityStorage extends SqlContentEntityStorage {
       return !in_array($component, $components) ? FALSE :
         $this->getCiviCrmApi()->getCount($this->entityType->get('civicrm_entity')) > 0;
     }
-    return $this->getCiviCrmApi()->getCount($this->entityType->get('civicrm_entity')) > 0;
+    else {
+      $enabled_components_as_entity = $this->getConfigFactory()->get('civicrm_entity.settings')->get('enabled_entity_types');
+      $component = $this->entityType->get('civicrm_entity');
+      return !in_array($component, $enabled_components_as_entity) ? FALSE :
+        $this->getCiviCrmApi()->getCount($this->entityType->get('civicrm_entity')) > 0;
+    }
   }
   /**
    * {@inheritdoc}
