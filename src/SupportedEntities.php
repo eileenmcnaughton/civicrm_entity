@@ -145,7 +145,7 @@ final class SupportedEntities {
     $civicrm_entity_info['civicrm_contribution'] = [
       'civicrm entity label' => t('Contribution'),
       'civicrm entity name' => 'contribution',
-      'label property' => 'source',
+      'label property' => 'contribution_source',
       'permissions' => [
         'view' => ['access CiviContribute', 'administer CiviCRM'],
         'edit' => ['edit contributions', 'administer CiviCRM'],

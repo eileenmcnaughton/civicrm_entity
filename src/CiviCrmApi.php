@@ -31,6 +31,12 @@ class CiviCrmApi implements CiviCrmApiInterface {
    */
   public function get($entity, array $params = []) {
     $this->initialize();
+
+    if ($entity == 'contribution') {
+      $params['return'][] = 'contribution_source';
+      $params['return'] = array_diff($params['return'], ['source']);
+    }
+
     $result = civicrm_api3($entity, 'get', $params);
     return $result['values'];
   }
@@ -70,6 +76,12 @@ class CiviCrmApi implements CiviCrmApiInterface {
       // 'sequential' => 1,
       'action' => $action,
     ]);
+
+    if ($entity == 'contribution' && isset($result['values']['source'])) {
+      $result['values']['contribution_source'] = $result['values']['source'];
+      unset($result['values']['source']);
+    }
+
     return $result['values'];
   }
 
