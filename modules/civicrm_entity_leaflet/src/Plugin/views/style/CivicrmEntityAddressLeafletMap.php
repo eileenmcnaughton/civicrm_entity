@@ -447,13 +447,13 @@ class CivicrmEntityAddressLeafletMap extends LeafletMap {
                       // Generate correct Absolute iconUrl & shadowUrl,
                       // if not external.
                       if (!empty($feature['icon']['iconUrl'])) {
-                        $feature['icon']['iconUrl'] = $this->leafletService->pathToAbsolute($feature['icon']['iconUrl']);
+                        $feature['icon']['iconUrl'] = $this->leafletService->generateAbsoluteString($feature['icon']['iconUrl']);
                       }
                     }
                     if (!empty($this->options['icon']['shadowUrl'])) {
                       $feature['icon']['shadowUrl'] = str_replace(["\n", "\r"], "", $this->viewsTokenReplace($this->options['icon']['shadowUrl'], $tokens));
                       if (!empty($feature['icon']['shadowUrl'])) {
-                        $feature['icon']['shadowUrl'] = $this->leafletService->pathToAbsolute($feature['icon']['shadowUrl']);
+                        $feature['icon']['shadowUrl'] = $this->leafletService->generateAbsoluteString($feature['icon']['shadowUrl']);
                       }
                     }
 
