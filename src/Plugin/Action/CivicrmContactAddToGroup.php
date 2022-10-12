@@ -84,7 +84,7 @@ class CivicrmContactAddToGroup extends ViewsBulkOperationsActionBase implements 
   /**
    * {@inheritdoc}
    */
-  public function buildPreConfigurationForm(array $form, array $values, FormStateInterface $form_state) {
+  public function buildPreConfigurationForm(array $form, array $values, FormStateInterface $form_state): array {
     $groups = $this->fetchGroups();
 
     $form['allowed_groups'] = [
