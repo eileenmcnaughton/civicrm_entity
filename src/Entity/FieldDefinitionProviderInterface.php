@@ -2,6 +2,9 @@
 
 namespace Drupal\civicrm_entity\Entity;
 
+/**
+ * Provides an interface for defining fields in civicrm entities.
+ */
 interface FieldDefinitionProviderInterface {
 
   /**

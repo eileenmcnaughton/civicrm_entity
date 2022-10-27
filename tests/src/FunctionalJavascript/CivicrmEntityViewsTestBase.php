@@ -1,11 +1,15 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Drupal\Tests\civicrm_entity\FunctionalJavascript;
 
-use Behat\Mink\Exception\ElementNotFoundException;
 use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Core\Url;
 
+/**
+ * Base class for CiviCRM entity views tests.
+ */
 abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
 
   /**
@@ -52,21 +56,21 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
     /*
     $connection = Database::getConnection('default', 'civicrm_test')->getConnectionOptions();
     $settings['databases']['civicrm_test']['default'] = (object) [
-      'value'    => [
-        'driver' => $connection['driver'],
-        'username' => $connection['username'],
-        'password' => $connection['password'],
-        'host' => $connection['host'],
-        'database' => $connection['database'],
-        'namespace' => $connection['namespace'],
-        'port' => $connection['port'],
-        // CiviCRM does not use prefixes.
-        'prefix' => '',
-      ],
-      'required' => TRUE,
+    'value'    => [
+    'driver' => $connection['driver'],
+    'username' => $connection['username'],
+    'password' => $connection['password'],
+    'host' => $connection['host'],
+    'database' => $connection['database'],
+    'namespace' => $connection['namespace'],
+    'port' => $connection['port'],
+    // CiviCRM does not use prefixes.
+    'prefix' => '',
+    ],
+    'required' => TRUE,
     ];
     $this->writeSettings($settings);
-    */
+     */
   }
 
   /**
@@ -297,7 +301,7 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
    * Adds a field to a Views display.
    *
    * @param string $name_locator
-   *   The field's checkbox locator
+   *   The field's checkbox locator.
    * @param array $configuration
    *   The field's display configuration.
    *
@@ -413,9 +417,9 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
    * Clicks an AJAX link with specified locator.
    *
    * @param string $locator
-   *    The link id, title, text or image alt.
+   *   The link id, title, text or image alt.
    *
-   * @throws ElementNotFoundException
+   * @throws \Behat\Mink\Exception\ElementNotFoundException
    */
   protected function clickAjaxLink(string $locator): void {
     $this->getSession()->getPage()->clickLink($locator);

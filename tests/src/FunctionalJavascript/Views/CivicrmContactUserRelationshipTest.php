@@ -1,10 +1,15 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Drupal\Tests\civicrm_entity\FunctionalJavascript\Views;
 
 use Drupal\Core\Database\Database;
 use Drupal\Tests\civicrm_entity\FunctionalJavascript\CivicrmEntityTestBase;
 
+/**
+ * Class for CiviCRM contact and user relationship tests.
+ */
 final class CivicrmContactUserRelationshipTest extends CivicrmEntityTestBase {
 
   /**
@@ -82,7 +87,7 @@ final class CivicrmContactUserRelationshipTest extends CivicrmEntityTestBase {
       ->save();
   }
 
-    /**
+  /**
    * {@inheritdoc}
    */
   protected function changeDatabasePrefix() {

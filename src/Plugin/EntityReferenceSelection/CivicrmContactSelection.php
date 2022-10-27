@@ -2,10 +2,7 @@
 
 namespace Drupal\civicrm_entity\Plugin\EntityReferenceSelection;
 
-use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\Plugin\EntityReferenceSelection\DefaultSelection;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\taxonomy\Entity\Vocabulary;
 
 /**
  * Provides specific access control for the civicrm_contact entity type.
@@ -30,6 +27,9 @@ class CivicrmContactSelection extends DefaultSelection {
     return parent::getReferenceableEntities($match, '=', $limit);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function countReferenceableEntities($match = NULL, $match_operator = 'CONTAINS') {
     return parent::countReferenceableEntities($match, '=');
   }

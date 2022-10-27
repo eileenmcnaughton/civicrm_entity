@@ -5,7 +5,6 @@ namespace Drupal\civicrm_entity\Plugin\TypedDataFilter;
 use Drupal\Core\Render\BubbleableMetadata;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\Core\TypedData\DataDefinitionInterface;
-use Drupal\Core\TypedData\Type\StringInterface;
 use Drupal\typed_data\DataFilterBase;
 
 /**
@@ -23,10 +22,10 @@ class InitialDotLastFilter extends DataFilterBase {
    */
   public function canFilter(DataDefinitionInterface $definition) {
     if ($definition->getConstraints()['EntityType'] == "civicrm_contact") {
-        return true;
+      return TRUE;
     }
     else {
-        return false;
+      return FALSE;
     }
   }
 
@@ -51,4 +50,5 @@ class InitialDotLastFilter extends DataFilterBase {
 
     return filter_var($login, FILTER_SANITIZE_EMAIL);
   }
+
 }

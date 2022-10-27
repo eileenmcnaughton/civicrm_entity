@@ -292,7 +292,7 @@ final class SupportedEntities {
       ],
       'fields' => [
         'summary' => [
-          'description' => 'Brief summary of event.'
+          'description' => 'Brief summary of event.',
         ],
       ],
     ];
@@ -309,18 +309,18 @@ final class SupportedEntities {
       ],
     ];
 
-$civicrm_entity_info['civicrm_group_contact'] = [
-  'civicrm entity label' => t('Group Contact'),
-  'civicrm entity name' => 'group_contact',
-  'label property' => 'id',
-    'permissions' => [
-    'view' => ['edit groups'],
-    'edit' => ['edit groups'],
-    'update' => ['edit groups'],
-    'create' => ['edit groups'],
-    'delete' => ['edit groups', 'administer CiviCRM'],
-  ],
-];
+    $civicrm_entity_info['civicrm_group_contact'] = [
+      'civicrm entity label' => t('Group Contact'),
+      'civicrm entity name' => 'group_contact',
+      'label property' => 'id',
+      'permissions' => [
+        'view' => ['edit groups'],
+        'edit' => ['edit groups'],
+        'update' => ['edit groups'],
+        'create' => ['edit groups'],
+        'delete' => ['edit groups', 'administer CiviCRM'],
+      ],
+    ];
 
     $civicrm_entity_info['civicrm_grant'] = [
       'civicrm entity label' => t('Grant'),
@@ -666,7 +666,7 @@ $civicrm_entity_info['civicrm_group_contact'] = [
         'update' => ['edit all mailing'],
         'create' => ['edit all mailing'],
         'delete' => ['delete mailing'],
-      ]
+      ],
     ];
 
     $civicrm_entity_info['civicrm_mailing_job'] = [
@@ -709,7 +709,7 @@ $civicrm_entity_info['civicrm_group_contact'] = [
     // Necessary for tests/civi upgrade after CiviGrant moved to extension in 5.47.
     $civicrm_api = \Drupal::service('civicrm_entity.api');
     $api_entity_types = $civicrm_api->get('entity', ['sequential' => FALSE]);
-    array_walk($api_entity_types, function(&$value) {
+    array_walk($api_entity_types, function (&$value) {
       $value = static::getEntityNameFromCamel($value);
     });
     foreach ($civicrm_entity_info as $entity_type => $entity_info) {
@@ -796,6 +796,7 @@ $civicrm_entity_info['civicrm_group_contact'] = [
       case 'Organization':
         $entity_type = 'civicrm_contact';
         break;
+
       default:
         $entity_type = 'civicrm_' . static::getEntityNameFromCamel($objectName);
         break;
@@ -813,7 +814,7 @@ $civicrm_entity_info['civicrm_group_contact'] = [
    *
    * @see _civicrm_api_get_entity_name_from_camel()
    *
-   * @TODO Why don't we just call the above function directly?
+   * @todo Why don't we just call the above function directly?
    * Because the function is officially 'likely' to change as it is an internal
    * api function and calling api functions directly is explicitly not
    * supported.

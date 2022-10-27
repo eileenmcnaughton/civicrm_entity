@@ -7,7 +7,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\civicrm_entity\CiviCrmApiInterface;
 use Drupal\user\Entity\User;
-use Drupal\civicrm_entity\Entity\CivicrmEntity;
 
 /**
  * Provides a 'Drupal linked User exists' condition.
@@ -24,7 +23,6 @@ use Drupal\civicrm_entity\Entity\CivicrmEntity;
  *      )
  *   }
  * )
- *
  */
 class DrupalUserExistsContactId extends RulesConditionBase implements ContainerFactoryPluginInterface {
 
@@ -77,7 +75,7 @@ class DrupalUserExistsContactId extends RulesConditionBase implements ContainerF
     try {
       $id = $civicrm_contact_id;
       if (!empty($id) && is_numeric($id)) {
-        $result = $this->civicrmApi->get('UFMatch', ['sequential' => 1,'return' => ["uf_id"],'contact_id' => (int)$id]);
+        $result = $this->civicrmApi->get('UFMatch', ['sequential' => 1, 'return' => ["uf_id"], 'contact_id' => (int) $id]);
         if (!empty($result[0]['uf_id'])) {
           $account = User::load($result[0]['uf_id']);
           if (is_object($account)) {

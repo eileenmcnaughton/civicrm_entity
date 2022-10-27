@@ -44,7 +44,10 @@ class CiviCrmApi implements CiviCrmApiInterface {
     return $result['values'];
   }
 
-  public function validate($entity, $params) {
+  /**
+   * {@inheritdoc}
+   */
+  public function validate($entity, array $params) {
     $this->initialize();
     if (!function_exists('_civicrm_api3_validate')) {
       require_once 'api/v3/utils.php';

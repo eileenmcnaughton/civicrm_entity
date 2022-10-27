@@ -4,7 +4,6 @@ namespace Drupal\Tests\civicrm_entity\Kernel;
 
 use Drupal\civicrm_entity\CiviCrmApiInterface;
 use Drupal\civicrm_entity\Entity\CivicrmEntity;
-use Drupal\Core\TypedData\Type\DateTimeInterface;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 
 /**
@@ -20,7 +19,7 @@ class CivicrmStorageGetTest extends CivicrmEntityTestBase {
   public function testGet() {
     $result = $this->container->get('civicrm_entity.api')->get('event', [
       'id' => [
-        'IN' => [1]
+        'IN' => [1],
       ],
       'return' => array_keys($this->sampleEventsGetFields()),
       'options' => ['limit' => 0],
@@ -29,7 +28,7 @@ class CivicrmStorageGetTest extends CivicrmEntityTestBase {
 
     $result = $this->container->get('civicrm_entity.api')->get('contact', [
       'id' => [
-        'IN' => [10]
+        'IN' => [10],
       ],
       'return' => array_keys($this->sampleContactGetFields()),
       'options' => ['limit' => 0],
@@ -99,13 +98,19 @@ class CivicrmStorageGetTest extends CivicrmEntityTestBase {
     }
   }
 
+  /**
+   * Provides sample dates data.
+   *
+   * @return array
+   *   The dates data.
+   */
   public function datetimeTimezoneDataProvider() {
     yield [
       [
         'start_date' => '2018-05-02 17:00:00',
         'end_date' => '2018-05-04 17:00:00',
       ],
-      //  America/Chicago is UTC-5
+      // America/Chicago is UTC-5.
       [
         'start_date' => '2018-05-02T22:00:00',
         'end_date' => '2018-05-04T22:00:00',
@@ -128,7 +133,7 @@ class CivicrmStorageGetTest extends CivicrmEntityTestBase {
         'start_date' => '2018-05-02 17:00:00',
         'end_date' => '2018-05-04 17:00:00',
       ],
-      // Europe/Berlin if UTC-2
+      // Europe/Berlin if UTC-2.
       [
         'start_date' => '2018-05-02T15:00:00',
         'end_date' => '2018-05-04T15:00:00',

@@ -40,7 +40,7 @@ class CivicrmEntityAddressLeafletMap extends LeafletMap {
   protected function getAvailableDataSources() {
     $fields_geo_data = [];
 
-    /* @var \Drupal\views\Plugin\views\ViewsHandlerInterface $handler) */
+    /** @var \Drupal\views\Plugin\views\ViewsHandlerInterface $handler) */
     foreach ($this->displayHandler->getHandlers('field') as $field_id => $handler) {
       $label = $handler->adminLabel() ?: $field_id;
       $this->viewFields[$field_id] = $label;
@@ -249,7 +249,7 @@ class CivicrmEntityAddressLeafletMap extends LeafletMap {
     if (($lat_field_name = $this->options['data_source_lat']) && ($lon_field_name = $this->options['data_source_lon'])) {
       $this->renderFields($this->view->result);
 
-      /* @var \Drupal\views\ResultRow $result */
+      /** @var \Drupal\views\ResultRow $result */
       foreach ($this->view->result as $id => $result) {
 
         $lat_value = (array) $this->getFieldValue($result->index, $lat_field_name);
@@ -261,7 +261,8 @@ class CivicrmEntityAddressLeafletMap extends LeafletMap {
             'type' => 'point',
             'lat' => $lat_value[0],
             'lon' => $long_value[0],
-          ]];
+          ],
+          ];
 
           if (!empty($result->_entity)) {
             // Entity API provides a plain entity object.
@@ -278,7 +279,7 @@ class CivicrmEntityAddressLeafletMap extends LeafletMap {
           // Render the entity with the selected view mode.
           if (isset($entity)) {
             // Get and set (if not set) the Geofield cardinality.
-            /* @var \Drupal\Core\Field\FieldItemList $geofield_entity */
+            /** @var \Drupal\Core\Field\FieldItemList $geofield_entity */
             if (!isset($map['geofield_cardinality'])) {
               try {
                 $geofield_entity = $entity->get($geofield_name);

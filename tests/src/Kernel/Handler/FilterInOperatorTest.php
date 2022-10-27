@@ -64,7 +64,6 @@ final class FilterInOperatorTest extends KernelHandlerTestBase {
 
     // $view->destroy();
     // $view->setDisplay();
-
     // $view->displayHandlers->get('default')->overrideOption('filters', [
     //   'contact_type' => [
     //     'id' => 'contact_type',
@@ -77,10 +76,8 @@ final class FilterInOperatorTest extends KernelHandlerTestBase {
     //     'plugin_id' => 'list_field',
     //   ],
     // ]);
-
     // $view->preExecute();
     // $view->execute();
-
     // $expected_result = [
     //   [
     //     'organization_name' => 'Default organization',
@@ -91,10 +88,8 @@ final class FilterInOperatorTest extends KernelHandlerTestBase {
     //     'contact_type' => 'Organization',
     //   ],
     // ];
-
     // $this->assertCount(2, $view->result);
     // $this->assertIdenticalResultset($view, $expected_result, $this->columnMap);
-
     $view->destroy();
     $view->setDisplay();
 

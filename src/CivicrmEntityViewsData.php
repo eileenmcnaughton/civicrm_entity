@@ -2,7 +2,6 @@
 
 namespace Drupal\civicrm_entity;
 
-use Drupal\Core\Database\Database;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\views\EntityViewsData;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -13,6 +12,9 @@ use Drupal\Core\StringTranslation\TranslationInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Provides the views data for civicrm entities.
+ */
 class CivicrmEntityViewsData extends EntityViewsData {
 
   /**
@@ -46,6 +48,9 @@ class CivicrmEntityViewsData extends EntityViewsData {
     );
   }
 
+  /**
+   *  {@inheritdoc}
+   */
   public function getViewsData() {
     $data = [];
     $base_table = $this->entityType->getBaseTable() ?: $this->entityType->id();
@@ -165,7 +170,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
             }
           }
         }
-        else if ($table_mapping->requiresDedicatedTableStorage($field_definition->getFieldStorageDefinition())) {
+        elseif ($table_mapping->requiresDedicatedTableStorage($field_definition->getFieldStorageDefinition())) {
           $table = $table_mapping->getDedicatedDataTableName($field_definition->getFieldStorageDefinition());
 
           $data[$table]['table']['group'] = $this->entityType->getLabel();
@@ -194,8 +199,11 @@ class CivicrmEntityViewsData extends EntityViewsData {
     return $data;
   }
 
+  /**
+   * Gets the table for the appropriate civicrm entity.
+   */
   public function getViewsTableForEntityType(EntityTypeInterface $entity_type) {
-    // CiviCRM Entity tables are `civicrm_*`
+    // CiviCRM Entity tables are `civicrm_*`.
     return $entity_type->id();
   }
 
@@ -626,10 +634,11 @@ class CivicrmEntityViewsData extends EntityViewsData {
             'id' => 'standard',
             'base field' => 'id',
             'base' => 'civicrm_membership',
-            'label' => $this->t('Membership')
+            'label' => $this->t('Membership'),
           ],
         ];
         break;
+
       case 'civicrm_price_set':
         $views_field['civicrm_price_set_entity']['table'] = [
           'group' => $this->t('CiviCRM price set entity'),

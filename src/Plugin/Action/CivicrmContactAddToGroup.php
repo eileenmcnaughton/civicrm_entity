@@ -9,14 +9,13 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\civicrm_entity\CiviCrmApi;
 
 if (!class_exists('Drupal\views_bulk_operations\Action\ViewsBulkOperationsActionBase')) {
   return;
 }
 
 /**
- * Action to add CiviCRM Contact to a CiviCRM group
+ * Action to add CiviCRM Contact to a CiviCRM group.
  *
  * @Action(
  *   id = "civicrm_contact_add_to_group",
@@ -67,7 +66,7 @@ class CivicrmContactAddToGroup extends ViewsBulkOperationsActionBase implements 
    */
   public function execute($entity = NULL) {
     if (!empty($this->configuration['selected_group']) && !empty($entity)) {
-      // so do we need to check if a contact is in the group already?
+      // So do we need to check if a contact is in the group already?
       try {
         $this->civicrmApi->save('GroupContact', [
           'group_id'   => $this->configuration['selected_group'],
@@ -133,7 +132,7 @@ class CivicrmContactAddToGroup extends ViewsBulkOperationsActionBase implements 
   }
 
   /**
-   * Fetch array of group titles, keyed by id
+   * Fetch array of group titles, keyed by id.
    *
    * @param array $ids
    *
@@ -164,7 +163,7 @@ class CivicrmContactAddToGroup extends ViewsBulkOperationsActionBase implements 
   }
 
   /**
-   * Return group title given group id
+   * Return group title given group id.
    *
    * @param $group_id
    *
@@ -187,4 +186,5 @@ class CivicrmContactAddToGroup extends ViewsBulkOperationsActionBase implements 
     }
     return '';
   }
+
 }

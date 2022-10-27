@@ -34,6 +34,19 @@ interface CiviCrmApiInterface {
   public function delete($entity, array $params);
 
   /**
+   * Validate an entity in CiviCRM.
+   *
+   * @param string $entity
+   *   The entity name.
+   * @param array $params
+   *   The array of field values.
+   *
+   * @return array
+   *   The CiviCRM API response.
+   */
+  public function validate($entity, array $params);
+
+  /**
    * Save and update an entity in CiviCRM.
    *
    * @param string $entity

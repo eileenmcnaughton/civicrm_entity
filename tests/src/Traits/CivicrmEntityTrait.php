@@ -2,12 +2,13 @@
 
 namespace Drupal\Tests\civicrm_entity\Traits;
 
+use Civi\Setup\Event\InstallFilesEvent;
+use Civi\Setup;
 use Drupal\Core\Database\Database;
 
 /**
  * Provides common methods for Civicrm Entity module tests.
  */
-
 trait CivicrmEntityTrait {
 
   /**
@@ -29,8 +30,8 @@ trait CivicrmEntityTrait {
       throw new \Exception("CiviCRM appears to have already been installed. Skipping full installation.");
     }
 
-    \Civi\Setup::dispatcher()
-      ->addListener('civi.setup.installFiles', function (\Civi\Setup\Event\InstallFilesEvent $e) use ($file_private_path) {
+    Setup::dispatcher()
+      ->addListener('civi.setup.installFiles', function (InstallFilesEvent $e) use ($file_private_path) {
         $model = $e->getModel();
         $model->settingsPath = implode(DIRECTORY_SEPARATOR, [$this->siteDirectory, 'civicrm.settings.php']);
         $model->templateCompilePath = implode(DIRECTORY_SEPARATOR, [$file_private_path, 'civicrm', 'templates_c']);
@@ -80,7 +81,7 @@ trait CivicrmEntityTrait {
     $civicrm_schema = $civicrm_test_conn->schema();
     $tables = $civicrm_schema->findTables('%');
     // Comment out if you want to view the tables/contents before deleting them
-    // throw new \Exception(var_export($tables, TRUE));
+    // throw new \Exception(var_export($tables, TRUE));.
     foreach ($tables as $table) {
       if ($civicrm_schema->dropTable($table)) {
         unset($tables[$table]);

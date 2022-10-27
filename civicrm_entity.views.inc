@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Provide views data for civicrm_entity.module.
+ */
+
 use Drupal\civicrm_entity\CiviEntityStorage;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -213,10 +218,10 @@ function civicrm_entity_field_default_views_data(FieldStorageConfigInterface $fi
   $entity_type_id = $field_storage->getTargetEntityTypeId();
   $entity_type = $entity_type_manager->getDefinition($entity_type_id);
   // EDIT: We ensure the base table is set to the entity type ID, which matches
-  // the CiviCRM table pattern of `civicrm_*`
+  // the CiviCRM table pattern of `civicrm_*`.
   if (!$base_table = $entity_type->getBaseTable()) {
     // We cannot do anything if for some reason there is no base table.
-     return $data;
+    return $data;
   }
   $entity_tables = [$base_table => $entity_type_id];
   // Some entities may not have a data table.
@@ -490,6 +495,7 @@ function civicrm_entity_field_default_views_data(FieldStorageConfigInterface $fi
           $filter = 'boolean';
         }
         break;
+
       case 'text':
       case 'blob':
         // It does not make sense to sort by blob or text.

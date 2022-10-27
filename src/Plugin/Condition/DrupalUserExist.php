@@ -24,7 +24,6 @@ use Drupal\civicrm_entity\Entity\CivicrmEntity;
  *      )
  *   }
  * )
- *
  */
 class DrupalUserExist extends RulesConditionBase implements ContainerFactoryPluginInterface {
 
@@ -77,7 +76,7 @@ class DrupalUserExist extends RulesConditionBase implements ContainerFactoryPlug
     try {
       $id = $civicrm_contact->get('id')->getString();
       if (!empty($id) && is_numeric($id)) {
-        $result = $this->civicrmApi->get('UFMatch', ['sequential' => 1,'return' => ["uf_id"],'contact_id' => (int)$id]);
+        $result = $this->civicrmApi->get('UFMatch', ['sequential' => 1, 'return' => ["uf_id"], 'contact_id' => (int) $id]);
         if (!empty($result[0]['uf_id'])) {
           $account = User::load($result[0]['uf_id']);
           if (is_object($account)) {

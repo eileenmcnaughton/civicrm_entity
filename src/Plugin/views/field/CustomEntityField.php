@@ -260,7 +260,7 @@ class CustomEntityField extends EntityField {
           }, $result);
         }
       }
-      else if ($this->getFieldDefinition()->getType() == 'boolean') {
+      elseif ($this->getFieldDefinition()->getType() == 'boolean') {
         // CiviCRM API3 will return no result when quering a custom
         // field row that has no values. In this case we want to set
         // the field to NULL otherwise it defaults to false.
@@ -288,7 +288,7 @@ class CustomEntityField extends EntityField {
    * @see \Drupal\civicrm_entity\CiviEntityStorage::initFieldValues()
    */
   protected function getItemValue($value, FieldDefinitionInterface $definition) {
-    if (is_null($value) ) {
+    if (is_null($value)) {
       return NULL;
     }
 
@@ -299,8 +299,9 @@ class CustomEntityField extends EntityField {
           return (new \DateTime($value, new \DateTimeZone(date_default_timezone_get())))->setTimezone(new \DateTimeZone('UTC'))->format($datetime_format);
         }
         break;
+
       case 'boolean':
-        // For booleans we want to convert the empty string to NULL to avoid it being displayed as false
+        // For booleans we want to convert the empty string to NULL to avoid it being displayed as false.
         if ($value == '') {
           return NULL;
         }

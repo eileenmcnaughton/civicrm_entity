@@ -125,4 +125,5 @@ class CiviCrmActivityContact extends RelationshipPluginBase {
 
     $this->alias = $this->query->addRelationship($alias, $second_join, $this->definition['base'], $this->relationship);
   }
+
 }

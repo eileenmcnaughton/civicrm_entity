@@ -8,6 +8,9 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\field_ui\FieldConfigListBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Controller for UI of civicrm entities.
+ */
 final class FieldUiController implements ContainerInjectionInterface {
 
   /**
@@ -24,6 +27,9 @@ final class FieldUiController implements ContainerInjectionInterface {
    */
   private $entityTypeBundleInfo;
 
+  /**
+   * Constructs a FieldUiController object.
+   */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityTypeBundleInfo = $entity_type_bundle_info;

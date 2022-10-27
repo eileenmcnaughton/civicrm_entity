@@ -37,7 +37,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
   protected $configFactory;
 
   /**
-   * Gets the CiviCRM API
+   * Gets the CiviCRM API.
    *
    * @return \Drupal\civicrm_entity\CiviCrmApiInterface
    *   The CiviCRM APi.
@@ -164,7 +164,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
       $entities[$entity->id()] = $entity;
     }
 
-    // get all the fields
+    // Get all the fields.
     $fields = $this->getCiviCrmApi()->getFields($this->entityType->get('civicrm_entity'));
     $field_names = [];
     foreach ($fields as $field) {
@@ -308,6 +308,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
     }
     return $this->getCiviCrmApi()->getCount($this->entityType->get('civicrm_entity')) > 0;
   }
+
   /**
    * {@inheritdoc}
    */

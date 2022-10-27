@@ -5,6 +5,9 @@ namespace Drupal\civicrm_entity;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityViewBuilder;
 
+/**
+ * View builder handler for civicrm entities.
+ */
 class CiviCrmEntityViewBuilder extends EntityViewBuilder {
 
   /**

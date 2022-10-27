@@ -7,6 +7,9 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
 
+/**
+ * Defines fields for civicrm entities.
+ */
 class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
 
   /**

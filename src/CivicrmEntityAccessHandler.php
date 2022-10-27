@@ -20,6 +20,9 @@ class CivicrmEntityAccessHandler extends EntityAccessControlHandler {
    */
   protected $civicrmEntityInfo;
 
+  /**
+   * {@inheritdoc}
+   */
   public function __construct(EntityTypeInterface $entity_type) {
     parent::__construct($entity_type);
     $this->civicrmEntityInfo = SupportedEntities::getInfo();

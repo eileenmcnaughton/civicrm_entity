@@ -2,17 +2,10 @@
 
 namespace Drupal\Tests\civicrm_entity\Kernel;
 
-use Drupal\civicrm_entity\CiviCrmApi;
 use Drupal\civicrm_entity\Entity\CivicrmEntity;
-use Drupal\civicrm_entity\Entity\Events;
-use Drupal\civicrm_entity\SupportedEntities;
-use Drupal\Component\Serialization\Json;
-use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Language\Language;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\KernelTests\KernelTestBase;
-use Prophecy\Argument;
 
 /**
  * Tests the storage.
@@ -30,7 +23,7 @@ class CivicrmFieldConfigTest extends CivicrmEntityTestBase {
     $field_storage = FieldStorageConfig::create([
       'field_name' => $field_name,
       'entity_type' => 'civicrm_event',
-      'type' => 'string'
+      'type' => 'string',
     ]);
     $field_storage->save();
     FieldConfig::create([
@@ -49,13 +42,16 @@ class CivicrmFieldConfigTest extends CivicrmEntityTestBase {
     );
   }
 
+  /**
+   * Tests saving and loading of field configurations.
+   */
   public function testSaveAndLoadFieldConfig() {
     // Create a field.
     $field_name = mb_strtolower($this->randomMachineName());
     $field_storage = FieldStorageConfig::create([
       'field_name' => $field_name,
       'entity_type' => 'civicrm_event',
-      'type' => 'string'
+      'type' => 'string',
     ]);
     $field_storage->save();
     FieldConfig::create([
@@ -75,7 +71,6 @@ class CivicrmFieldConfigTest extends CivicrmEntityTestBase {
 
     $entity->get($field_name)->setValue('Testing value');
     $entity->save();
-
 
     /** @var \Drupal\civicrm_entity\CiviEntityStorage $civi_entity_storage */
     $civi_entity_storage = $this->container->get('entity_type.manager')->getStorage('civicrm_event');
@@ -99,7 +94,7 @@ class CivicrmFieldConfigTest extends CivicrmEntityTestBase {
       'revision_id' => $entity->id(),
       'langcode' => Language::LANGCODE_NOT_SPECIFIED,
       'delta' => '0',
-      "{$field_name}_value" => 'Testing value'
+      "{$field_name}_value" => 'Testing value',
     ], $raw_values);
 
     /** @var \Drupal\civicrm_entity\Entity\CivicrmEntity $entity */
