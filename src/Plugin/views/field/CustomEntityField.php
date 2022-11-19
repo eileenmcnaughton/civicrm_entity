@@ -203,7 +203,7 @@ class CustomEntityField extends EntityField {
       ];
     }
 
-    return $items;
+    return $this->prepareItemsByDelta($items);
   }
 
   /**
@@ -248,7 +248,7 @@ class CustomEntityField extends EntityField {
         }, ARRAY_FILTER_USE_KEY);
 
         if (!empty($result)) {
-          if (is_array($result[0])) {
+          if (isset($result[0]) && is_array($result[0])) {
             $result = reset($result);
           }
 
