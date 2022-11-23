@@ -49,7 +49,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
   }
 
   /**
-   *  {@inheritdoc}
+   * {@inheritdoc}
    */
   public function getViewsData() {
     $data = [];
