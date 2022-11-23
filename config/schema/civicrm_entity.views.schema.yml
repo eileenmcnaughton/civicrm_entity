@@ -62,3 +62,14 @@ views.filter_value.civicrm_entity_civicrm_address_proximity:
     distance_unit:
       type: string
       label: 'Distance unit'
+
+views.argument_validator.entity:civicrm_contact:
+  type: views.argument_validator_entity
+  label: 'Civicrm contact'
+  mapping:
+    contact_type:
+      type: sequence
+      label: 'Restrict to selected contact types'
+      sequence:
+        type: string
+        label: 'Contact type'

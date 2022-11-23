@@ -647,3 +647,10 @@ function civicrm_entity_field_default_views_data(FieldStorageConfigInterface $fi
 
   return $data;
 }
+
+/**
+ * Implements hook_views_plugins_argument_validator_alter().
+ */
+function civicrm_entity_views_plugins_argument_validator_alter(array &$plugins) {
+  $plugins['entity:civicrm_contact']['class'] = 'Drupal\civicrm_entity\Plugin\views\argument_validator\CivicrmContact';
+}
