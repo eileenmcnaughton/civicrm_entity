@@ -10,6 +10,11 @@ use Drupal\Core\Entity\EntityListBuilder;
  */
 class CivicrmEntityListBuilder extends EntityListBuilder {
 
+  /**
+   * The limit.
+   *
+   * @var int
+   */
   protected $limit = 25;
 
   /**

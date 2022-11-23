@@ -50,8 +50,6 @@ final class FieldUiController implements ContainerInjectionInterface {
    *
    * @param string $entity_type_id
    *   The entity type.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
-   *   The current route match.
    *
    * @return array
    *   A render array as expected by

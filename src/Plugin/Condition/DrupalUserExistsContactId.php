@@ -6,6 +6,7 @@ use Drupal\rules\Core\RulesConditionBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\civicrm_entity\CiviCrmApiInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\user\Entity\User;
 
 /**
@@ -34,6 +35,13 @@ class DrupalUserExistsContactId extends RulesConditionBase implements ContainerF
   protected $civicrmApi;
 
   /**
+   * The user storage.
+   *
+   * @var \Drupal\user\UserStorageInterface
+   */
+  protected $userStorage;
+
+  /**
    * Constructs a DrupalUserExist object.
    *
    * @param array $configuration
@@ -44,10 +52,13 @@ class DrupalUserExistsContactId extends RulesConditionBase implements ContainerF
    *   The plugin implementation definition.
    * @param \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api
    *   The CiviCRM API service interface.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, CiviCrmApiInterface $civicrm_api) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, CiviCrmApiInterface $civicrm_api, EntityTypeManagerInterface $entity_type_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->civicrmApi = $civicrm_api;
+    $this->userStorage = $entity_type_manager->getStorage('user');
   }
 
   /**
@@ -58,14 +69,15 @@ class DrupalUserExistsContactId extends RulesConditionBase implements ContainerF
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('civicrm_entity.api')
+      $container->get('civicrm_entity.api'),
+      $container->get('entity_type.manager')
     );
   }
 
   /**
    * Check if linked Drupal user exists.
    *
-   * @param \Drupal\Core\TypedData\Type\IntegerInterface $civicrm_contact_id
+   * @param int $civicrm_contact_id
    *   The CiviCRM contact to check.
    *
    * @return bool
@@ -75,9 +87,14 @@ class DrupalUserExistsContactId extends RulesConditionBase implements ContainerF
     try {
       $id = $civicrm_contact_id;
       if (!empty($id) && is_numeric($id)) {
-        $result = $this->civicrmApi->get('UFMatch', ['sequential' => 1, 'return' => ["uf_id"], 'contact_id' => (int) $id]);
+        $result = $this->civicrmApi->get('UFMatch', [
+          'sequential' => 1,
+          'return' => ["uf_id"],
+          'contact_id' => (int) $id,
+        ]);
+
         if (!empty($result[0]['uf_id'])) {
-          $account = User::load($result[0]['uf_id']);
+          $account = $this->userStorage->load($result[0]['uf_id']);
           if (is_object($account)) {
             // In future we could return the User object to Rules.
             // To use in other Conditions or Actions.

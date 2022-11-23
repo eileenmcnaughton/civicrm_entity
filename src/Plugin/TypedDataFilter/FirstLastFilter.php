@@ -15,7 +15,7 @@ use Drupal\typed_data\DataFilterBase;
  *   label = @Translation("Drupal Username : FirstnameLastname."),
  * )
  */
-class FirstLAstFilter extends DataFilterBase {
+class FirstLastFilter extends DataFilterBase {
 
   /**
    * {@inheritdoc}

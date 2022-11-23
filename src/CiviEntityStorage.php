@@ -494,6 +494,8 @@ class CiviEntityStorage extends SqlContentEntityStorage {
    * @param array &$values
    *   An array of values keyed by entity ID.
    *   defaults to FALSE.
+   * @param bool $load_from_revision
+   *   Flag to indicate whether revisions should be loaded or not.
    *
    * @throws \Drupal\Core\Entity\Sql\SqlContentEntityStorageException
    */
@@ -581,7 +583,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
    *
    * @throws \Drupal\Core\Entity\Sql\SqlContentEntityStorageException
    */
-  protected function saveToDedicatedTables(ContentEntityInterface $entity, $update = TRUE, $names = []) {
+  protected function saveToDedicatedTables(ContentEntityInterface $entity, $update = TRUE, array $names = []) {
     $vid = $entity->getRevisionId();
     $id = $entity->id();
     $bundle = $entity->bundle();
@@ -717,7 +719,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The saved entity.
-   * @param $update
+   * @param bool $update
    *   Specifies whether the entity is being updated or created.
    *
    * @see \Drupal\Core\Entity\ContentEntityStorageBase::doPostSave
@@ -771,9 +773,9 @@ class CiviEntityStorage extends SqlContentEntityStorage {
    * applies. This provides the lookup to determing the ID of the EntityTag
    * object itself.
    *
-   * @param $entityId
+   * @param int $entityId
    *   The entity ID.
-   * @param $entityTable
+   * @param string $entityTable
    *   The entity table.
    *
    * @return int|null
@@ -787,7 +789,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
     ];
     $api_results = civicrm_api3('EntityTag', 'get', $api_params);
     if (!empty($api_results['values'])) {
-      foreach ($api_results['values'] as $delta => $result) {
+      foreach ($api_results['values'] as $result) {
         if ($result['entity_id'] == $entityId) {
           return $result['id'];
         }

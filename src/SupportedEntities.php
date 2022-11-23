@@ -705,8 +705,8 @@ final class SupportedEntities {
     ];
 
     static::alterEntityInfo($civicrm_entity_info);
-    // Check if API finds each entity type.
-    // Necessary for tests/civi upgrade after CiviGrant moved to extension in 5.47.
+    // Check if API finds each entity type. Necessary for tests/civi upgrade
+    // after CiviGrant moved to extension in 5.47.
     $civicrm_api = \Drupal::service('civicrm_entity.api');
     $api_entity_types = $civicrm_api->get('entity', ['sequential' => FALSE]);
     array_walk($api_entity_types, function (&$value) {
@@ -812,13 +812,6 @@ final class SupportedEntities {
   /**
    * Convert possibly camel name to underscore separated entity name.
    *
-   * @see _civicrm_api_get_entity_name_from_camel()
-   *
-   * @todo Why don't we just call the above function directly?
-   * Because the function is officially 'likely' to change as it is an internal
-   * api function and calling api functions directly is explicitly not
-   * supported.
-   *
    * @param string $entity
    *   Entity name in various formats e.g:
    *     Contribution => contribution,
@@ -827,6 +820,13 @@ final class SupportedEntities {
    *
    * @return string
    *   $entity entity name in underscore separated format
+   *
+   * @see _civicrm_api_get_entity_name_from_camel()
+   *
+   * @todo Why don't we just call the above function directly?
+   * Because the function is officially 'likely' to change as it is an internal
+   * api function and calling api functions directly is explicitly not
+   * supported.
    */
   public static function getEntityNameFromCamel($entity) {
     if ($entity == strtolower($entity)) {
@@ -868,7 +868,7 @@ final class SupportedEntities {
    * @return mixed
    *   Altered civicrm_entity entity info.
    */
-  public static function alterEntityInfo(&$civicrm_entity_info) {
+  public static function alterEntityInfo(array &$civicrm_entity_info) {
     \Drupal::service('civicrm_entity.api')->civicrmInitialize();
 
     $code_version = explode('.', \CRM_Utils_System::version());

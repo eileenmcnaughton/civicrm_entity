@@ -8,10 +8,15 @@ use Drupal\Core\Extension\ModuleUninstallValidatorInterface;
 use Drupal\Core\StringTranslation\TranslationInterface;
 
 /**
- * Class ContentUninstallValidator.
+ * Validates module uninstall readiness for CiviCRM entities.
  */
 class ContentUninstallValidator extends EntityContentUninstallValidator {
 
+  /**
+   * The content uninstall validator service.
+   *
+   * @var \Drupal\Core\Entity\ContentUninstallValidator
+   */
   protected $contentUninstallValidator;
 
   /**

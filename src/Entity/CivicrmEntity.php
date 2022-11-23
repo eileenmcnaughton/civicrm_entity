@@ -34,6 +34,7 @@ class CivicrmEntity extends ContentEntityBase {
    *
    * @var bool
    */
+  // phpcs:ignore
   public $drupal_crud = FALSE;
 
   /**

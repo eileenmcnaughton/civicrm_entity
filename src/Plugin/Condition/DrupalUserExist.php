@@ -6,8 +6,8 @@ use Drupal\rules\Core\RulesConditionBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\civicrm_entity\CiviCrmApiInterface;
-use Drupal\user\Entity\User;
 use Drupal\civicrm_entity\Entity\CivicrmEntity;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 
 /**
  * Provides a 'Drupal linked User exists' condition.
@@ -35,6 +35,13 @@ class DrupalUserExist extends RulesConditionBase implements ContainerFactoryPlug
   protected $civicrmApi;
 
   /**
+   * The user storage.
+   *
+   * @var \Drupal\user\UserStorageInterface
+   */
+  protected $userStorage;
+
+  /**
    * Constructs a DrupalUserExist object.
    *
    * @param array $configuration
@@ -45,10 +52,13 @@ class DrupalUserExist extends RulesConditionBase implements ContainerFactoryPlug
    *   The plugin implementation definition.
    * @param \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api
    *   The CiviCRM API service interface.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, CiviCrmApiInterface $civicrm_api) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, CiviCrmApiInterface $civicrm_api, EntityTypeManagerInterface $entity_type_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->civicrmApi = $civicrm_api;
+    $this->userStorage = $entity_type_manager->getStorage('user');
   }
 
   /**
@@ -59,7 +69,8 @@ class DrupalUserExist extends RulesConditionBase implements ContainerFactoryPlug
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('civicrm_entity.api')
+      $container->get('civicrm_entity.api'),
+      $container->get('entity_type.manager')
     );
   }
 
@@ -76,9 +87,14 @@ class DrupalUserExist extends RulesConditionBase implements ContainerFactoryPlug
     try {
       $id = $civicrm_contact->get('id')->getString();
       if (!empty($id) && is_numeric($id)) {
-        $result = $this->civicrmApi->get('UFMatch', ['sequential' => 1, 'return' => ["uf_id"], 'contact_id' => (int) $id]);
+        $result = $this->civicrmApi->get('UFMatch', [
+          'sequential' => 1,
+          'return' => ["uf_id"],
+          'contact_id' => (int) $id,
+        ]);
+
         if (!empty($result[0]['uf_id'])) {
-          $account = User::load($result[0]['uf_id']);
+          $account = $this->userStorage->load($result[0]['uf_id']);
           if (is_object($account)) {
             // In future we could return the User object to Rules.
             // To use in other Conditions or Actions.
