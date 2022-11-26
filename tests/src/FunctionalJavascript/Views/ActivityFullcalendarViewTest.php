@@ -9,7 +9,7 @@ use Drupal\FunctionalJavascriptTests\DrupalSelenium2Driver;
 use Drupal\Tests\civicrm_entity\FunctionalJavascript\CivicrmEntityTestBase;
 
 /**
- * @requires module fullcalendar_view
+ * Class for fullcalendar_view tests.
  */
 final class ActivityFullcalendarViewTest extends CivicrmEntityTestBase {
 
@@ -18,6 +18,7 @@ final class ActivityFullcalendarViewTest extends CivicrmEntityTestBase {
    *
    * @todo fix config schema from this module for Views.
    */
+  // phpcs:ignore
   protected $strictConfigSchema = FALSE;
 
   /**
@@ -90,7 +91,7 @@ final class ActivityFullcalendarViewTest extends CivicrmEntityTestBase {
   public function testFullcalendarDisplay(): void {
     $this->drupalGet('/activity-fullcalendar');
     $this->createScreenshot('../calendar.png');
-    $fullcalendar = $this->assertSession()->elementExists('css', '.js-drupal-fullcalendar');
+    $this->assertSession()->elementExists('css', '.js-drupal-fullcalendar');
     $this->assertSession()->waitForElement('css', '.fc-event-container');
     $this->assertSession()->elementTextContains('css', '.fc-event-container .fc-time', '12:00 pm');
     $this->assertSession()->elementTextContains('css', '.fc-event-container .fc-title', 'Meeting about new seeds');
@@ -119,7 +120,7 @@ final class ActivityFullcalendarViewTest extends CivicrmEntityTestBase {
   }
 
   /**
-   *
+   * Tests full calendar drag and update..
    */
   public function testActivityDragAndUpdate(): void {
     $previous_day = new DrupalDateTime('-1 day');

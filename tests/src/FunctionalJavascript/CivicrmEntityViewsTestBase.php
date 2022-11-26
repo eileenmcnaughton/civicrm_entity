@@ -41,41 +41,6 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function doInstall() {
-    parent::doInstall();
-
-    // The database information was added inside of our test environment,
-    // but it wasn't added to the Drupal settings to make it available for
-    // directly queries via Views.
-    // @todo This needs to be documented for all users wanting Views integration.
-    // @todo There is a workaround in CivicrmSql::init, that is why this is
-    //   commented out. This way we can test the workaround.
-    // @see \Drupal\Core\Installer\Form\SiteSettingsForm::submitForm
-    // @see \Drupal\Tests\civicrm\FunctionalJavascript\CiviCrmTestBase::changeDatabasePrefix
-    // @see \Drupal\civicrm_entity\Plugin\views\query\CivicrmSql::init
-    /*
-    $connection = Database::getConnection('default', 'civicrm_test')->getConnectionOptions();
-    $settings['databases']['civicrm_test']['default'] = (object) [
-    'value'    => [
-    'driver' => $connection['driver'],
-    'username' => $connection['username'],
-    'password' => $connection['password'],
-    'host' => $connection['host'],
-    'database' => $connection['database'],
-    'namespace' => $connection['namespace'],
-    'port' => $connection['port'],
-    // CiviCRM does not use prefixes.
-    'prefix' => '',
-    ],
-    'required' => TRUE,
-    ];
-    $this->writeSettings($settings);
-     */
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   protected function setUp() {
     parent::setUp();
     $admin_user = $this->createUser([
@@ -192,72 +157,52 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
   /**
    * Creates sample data for each test.
    *
-   * @return void
-   *
    * @todo Should this use data providers?
    */
   abstract protected function createSampleData();
 
   /**
    * Runs setup for the ::testCreateView test.
-   *
-   * @return void
    */
   abstract protected function doSetupCreateView();
 
   /**
    * Runs assertions for the ::testCreateView test.
-   *
-   * @return void
    */
   abstract protected function assertCreateViewResults();
 
   /**
    * Runs setup for the ::testViewWithRelationships test.
-   *
-   * @return void
    */
   abstract protected function doSetupViewWithRelationships();
 
   /**
    * Runs assertions for the ::testViewWithRelationships test.
-   *
-   * @return void
    */
   abstract protected function assertViewWithRelationshipsResults();
 
   /**
    * Runs setup for the ::testViewWithFilters test.
-   *
-   * @return void
    */
   abstract protected function doSetupViewWithFilters();
 
   /**
    * Runs assertions for the ::testViewWithFilters test.
-   *
-   * @return void
    */
   abstract protected function assertViewWithFiltersResults();
 
   /**
    * Runs setup for the ::testViewWithSorts test.
-   *
-   * @return void
    */
   abstract protected function doSetupViewWithSorts();
 
   /**
    * Runs assertions for the ::testViewWithSorts test.
-   *
-   * @return void
    */
   abstract protected function assertViewWithSortsResults();
 
   /**
    * Runs setup for the ::testViewWithArguments test.
-   *
-   * @return void
    */
   abstract protected function doSetupViewWithArguments();
 
@@ -266,8 +211,6 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
    *
    * @param array $arguments
    *   The views arguments.
-   *
-   * @return void
    */
   abstract protected function assertViewWithArgumentsResults(array $arguments);
 

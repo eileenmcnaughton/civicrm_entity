@@ -33,8 +33,16 @@ trait CivicrmEntityTrait {
     Setup::dispatcher()
       ->addListener('civi.setup.installFiles', function (InstallFilesEvent $e) use ($file_private_path) {
         $model = $e->getModel();
-        $model->settingsPath = implode(DIRECTORY_SEPARATOR, [$this->siteDirectory, 'civicrm.settings.php']);
-        $model->templateCompilePath = implode(DIRECTORY_SEPARATOR, [$file_private_path, 'civicrm', 'templates_c']);
+        $model->settingsPath = implode(DIRECTORY_SEPARATOR, [
+          $this->siteDirectory,
+          'civicrm.settings.php',
+        ]);
+
+        $model->templateCompilePath = implode(DIRECTORY_SEPARATOR, [
+          $file_private_path,
+          'civicrm',
+          'templates_c',
+        ]);
       }, 900);
 
     $setup->installFiles();

@@ -11,8 +11,14 @@ use Drupal\views\Views;
  */
 final class FilterActivityContactRecordTest extends KernelHandlerTestBase {
 
+  /**
+   * {@inheritdoc}
+   */
   public static $testViews = ['test_activity'];
 
+  /**
+   * {@inheritdoc}
+   */
   protected $columnMap = [
     'subject' => 'subject',
     'location' => 'location',

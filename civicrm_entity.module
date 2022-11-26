@@ -320,11 +320,12 @@ function _civicrm_entity_get_entity_type_from_elements($elements) {
  *   The entity.
  *
  * @return void|\Drupal\Core\Entity\EntityInterface
+ *   The CiviCRM entity.
  */
 function _civicrm_entity_stash($objectName, $id, $entity = NULL) {
   $cache =& drupal_static(__FUNCTION__, []);
   if (empty($entity)) {
-    return isset($cache[$objectName][$id]) ? $cache[$objectName][$id] : NULL;
+    return $cache[$objectName][$id] ?? NULL;
   }
   elseif ($entity === 'clear') {
     unset($cache[$objectName][$id]);
@@ -472,7 +473,7 @@ function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
  * @param \Drupal\Core\Entity\EntityInterface $entity
  *   The entity.
  */
-function _civicrm_entity_post_invoke($op, $storage, $entity) {
+function _civicrm_entity_post_invoke($op, CiviEntityStorage $storage, EntityInterface $entity) {
   switch ($op) {
     case 'create':
       $storage->civiPostSave($entity, FALSE);
@@ -503,7 +504,7 @@ function civicrm_entity_views_query_alter(ViewExecutable $view, QueryPluginBase 
   if (isset($civicrm_database_info['default'])) {
     $civicrm_connection = Database::getConnection('default', $civicrm_connection_name);
     $table_queue =& $query->getTableQueue();
-    foreach ($table_queue as $alias => &$table_info) {
+    foreach ($table_queue as &$table_info) {
       if (strpos($table_info['table'], 'civicrm_') === 0 && strpos($table_info['table'], '.') === FALSE) {
         $table_info['table'] = $civicrm_connection->getFullQualifiedTableName($table_info['table']);
       }
@@ -517,6 +518,7 @@ function civicrm_entity_views_query_alter(ViewExecutable $view, QueryPluginBase 
   $multilingual = \CRM_Core_I18n::isMultilingual();
 
   if ($multilingual) {
+    // phpcs:ignore
     global $dbLocale;
     $columns = CRM_Core_I18n_SchemaStructure::columns();
     $affectedColumns = [];

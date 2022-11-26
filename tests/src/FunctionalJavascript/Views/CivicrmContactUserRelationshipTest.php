@@ -17,6 +17,7 @@ final class CivicrmContactUserRelationshipTest extends CivicrmEntityTestBase {
    *
    * @todo fix config schema from this module for Views.
    */
+  // phpcs:ignore
   protected $strictConfigSchema = FALSE;
 
   /**
@@ -98,7 +99,7 @@ final class CivicrmContactUserRelationshipTest extends CivicrmEntityTestBase {
       Database::removeConnection('civicrm_test');
       Database::removeConnection('civicrm');
 
-      $database = Database::convertDbUrlToConnectionInfo($db_url, isset($this->root) ? $this->root : DRUPAL_ROOT);
+      $database = Database::convertDbUrlToConnectionInfo($db_url, $this->root ?? DRUPAL_ROOT);
       Database::addConnectionInfo('civicrm_test', 'default', $database);
       Database::addConnectionInfo('civicrm', 'default', $database);
     }

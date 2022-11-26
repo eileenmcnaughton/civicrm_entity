@@ -70,14 +70,17 @@ class CivicrmStorageGetTest extends CivicrmEntityTestBase {
    * times are in UTC. When loading a date time, CiviEntityStorage converts
    * the time into UTC so that Drupal handles the timezone correctly.
    *
-   * @dataProvider datetimeTimezoneDataProvider
-   *
    * @param array $original_datetimes
+   *   The original date and time.
    * @param array $expected_utc_datetime
-   * @param $timezone
+   *   The expected UTC conversion of date and time.
+   * @param string $timezone
+   *   The timezone.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   *
+   * @dataProvider datetimeTimezoneDataProvider
    */
   public function testDatetimeTimezone(array $original_datetimes, array $expected_utc_datetime, $timezone) {
     date_default_timezone_set($timezone);

@@ -11,8 +11,14 @@ use Drupal\views\Views;
  */
 final class FilterInOperatorTest extends KernelHandlerTestBase {
 
+  /**
+   * {@inheritdoc}
+   */
   public static $testViews = ['test_view'];
 
+  /**
+   * {@inheritdoc}
+   */
   protected $columnMap = [
     'contact_type' => 'contact_type',
     'display_name' => 'display_name',
@@ -62,34 +68,6 @@ final class FilterInOperatorTest extends KernelHandlerTestBase {
     $this->assertCount(4, $view->result);
     $this->assertIdenticalResultset($view, $expected_result, $this->columnMap);
 
-    // $view->destroy();
-    // $view->setDisplay();
-    // $view->displayHandlers->get('default')->overrideOption('filters', [
-    //   'contact_type' => [
-    //     'id' => 'contact_type',
-    //     'table' => 'civicrm_contact',
-    //     'field' => 'contact_type',
-    //     'value' => ['Individual' => 'Individual'],
-    //     'operator' => 'not',
-    //     'entity_type' => 'civicrm_contact',
-    //     'entity_field' => 'contact_type',
-    //     'plugin_id' => 'list_field',
-    //   ],
-    // ]);
-    // $view->preExecute();
-    // $view->execute();
-    // $expected_result = [
-    //   [
-    //     'organization_name' => 'Default organization',
-    //     'contact_type' => 'Organization',
-    //   ],
-    //   [
-    //     'organization_name' => 'The Trevor Project',
-    //     'contact_type' => 'Organization',
-    //   ],
-    // ];
-    // $this->assertCount(2, $view->result);
-    // $this->assertIdenticalResultset($view, $expected_result, $this->columnMap);
     $view->destroy();
     $view->setDisplay();
 
@@ -228,8 +206,8 @@ final class FilterInOperatorTest extends KernelHandlerTestBase {
         'last_name' => 'Doe',
         'contact_type' => 'Individual',
         // @todo There is bug with civicrm_entity_in_operator for custom fields
-        // not yet initialized. These are not included even if it has no value for
-        // "not in" operator. Remove this line once the bug is fixed.
+        // not yet initialized. These are not included even if it has no value
+        // for "not in" operator. Remove this line once the bug is fixed.
         'custom_1' => [],
       ],
       [
