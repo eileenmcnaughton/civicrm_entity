@@ -136,7 +136,7 @@ class CiviCrmApi implements CiviCrmApiInterface {
       return FALSE;
     }
 
-    list(, $id) = $field_name;
+    [, $id] = $field_name;
 
     try {
       $values = $this->get('CustomField', ['id' => $id, 'is_active' => 1]);
@@ -144,7 +144,10 @@ class CiviCrmApi implements CiviCrmApiInterface {
 
       if (!empty($values)) {
         // Include information from group.
-        if (isset($values['custom_group_id']) && ($custom_group_values = $this->get('CustomGroup', ['sequential' => 1, 'id' => $values['custom_group_id']]))) {
+        if (isset($values['custom_group_id']) && ($custom_group_values = $this->get('CustomGroup', [
+          'sequential' => 1,
+          'id' => $values['custom_group_id'],
+        ]))) {
           $custom_group_values = reset($custom_group_values);
 
           $values += [

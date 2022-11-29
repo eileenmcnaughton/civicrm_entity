@@ -3,10 +3,17 @@
 namespace Drupal\Tests\civicrm_entity\Kernel;
 
 /**
+ * Tests CiviCRM entity views data.
+ *
  * @group civicrim_entity
  */
 class CivicrmViewsDataTest extends CivicrmEntityTestBase {
 
+  /**
+   * Modules to install.
+   *
+   * @var array
+   */
   protected static $modules = [
     'views',
   ];

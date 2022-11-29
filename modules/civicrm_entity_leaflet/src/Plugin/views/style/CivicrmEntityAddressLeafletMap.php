@@ -312,8 +312,7 @@ class CivicrmEntityAddressLeafletMap extends LeafletMap {
             ];
             if (isset($dynamic_renderers[$rendering_language])) {
               /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
-              $langcode = isset($result->$entity_type_langcode_attribute) ? $result->$entity_type_langcode_attribute : $entity->language()
-                ->getId();
+              $langcode = $result->$entity_type_langcode_attribute ?? $entity->language()->getId();
             }
             else {
               if (strpos($rendering_language, '***LANGUAGE_') !== FALSE) {
@@ -387,7 +386,7 @@ class CivicrmEntityAddressLeafletMap extends LeafletMap {
               $tokens["{{ $field_name }}"] = $field_value;
             }
 
-            $icon_type = isset($this->options['icon']['iconType']) ? $this->options['icon']['iconType'] : 'marker';
+            $icon_type = $this->options['icon']['iconType'] ?? 'marker';
 
             // Relates the feature with additional properties.
             foreach ($features as &$feature) {
@@ -398,7 +397,8 @@ class CivicrmEntityAddressLeafletMap extends LeafletMap {
 
               // Generate the weight feature property
               // (falls back to natural result ordering).
-              $feature['weight'] = !empty($this->options['weight']) ? intval(str_replace(["\n", "\r"], "", $this->viewsTokenReplace($this->options['weight'], $tokens))) : $id;
+              $feature['weight'] = !empty($this->options['weight']) ?
+                intval(str_replace(["\n", "\r"], "", $this->viewsTokenReplace($this->options['weight'], $tokens))) : $id;
 
               // Attach pop-ups if we have a description field.
               if (isset($description)) {
@@ -473,7 +473,8 @@ class CivicrmEntityAddressLeafletMap extends LeafletMap {
               }
 
               // Associate dynamic className property (token based) to icon.
-              $feature['icon']['className'] = !empty($this->options['icon']['className']) ? str_replace(["\n", "\r"], "", $this->viewsTokenReplace($this->options['icon']['className'], $tokens)) : '';
+              $feature['icon']['className'] = !empty($this->options['icon']['className']) ?
+                str_replace(["\n", "\r"], "", $this->viewsTokenReplace($this->options['icon']['className'], $tokens)) : '';
 
               // Allow modules to adjust the marker.
               $this->moduleHandler->alter('leaflet_views_feature', $feature, $result, $this->view->rowPlugin);

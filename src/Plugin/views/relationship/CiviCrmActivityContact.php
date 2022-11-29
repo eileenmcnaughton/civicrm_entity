@@ -85,7 +85,8 @@ class CiviCrmActivityContact extends RelationshipPluginBase {
     $views_data = Views::viewsData()->get($this->table);
     $left_field = $views_data['table']['base']['field'];
 
-    // Add a join to the civicrm_activity_contact table with the matching contact_id.
+    // Add a join to the civicrm_activity_contact table with the matching
+    // contact_id.
     $first = [
       'left_table' => $this->tableAlias,
       'left_field' => $left_field,

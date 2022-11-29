@@ -26,6 +26,13 @@ class CivicrmEntityForm extends ContentEntityForm {
   protected $currentUser;
 
   /**
+   * The entity display repository.
+   *
+   * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
+   */
+  protected $entityDisplayRepository;
+
+  /**
    * Constructs a CivicrmEntityForm object.
    *
    * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
@@ -36,10 +43,13 @@ class CivicrmEntityForm extends ContentEntityForm {
    *   The time service.
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The current user.
+   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
+   *   The entity display repository.
    */
-  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, AccountInterface $current_user) {
+  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, AccountInterface $current_user, EntityDisplayRepositoryInterface $entity_display_repository) {
     parent::__construct($entity_repository, $entity_type_bundle_info, $time);
     $this->currentUser = $current_user;
+    $this->entityDisplayRepository = $entity_display_repository;
   }
 
   /**
@@ -50,7 +60,8 @@ class CivicrmEntityForm extends ContentEntityForm {
       $container->get('entity.repository'),
       $container->get('entity_type.bundle.info'),
       $container->get('datetime.time'),
-      $container->get('current_user')
+      $container->get('current_user'),
+      $container->get('entity_display.repository')
     );
   }
 
@@ -63,9 +74,7 @@ class CivicrmEntityForm extends ContentEntityForm {
   public function setFormDisplay(EntityFormDisplayInterface $form_display, FormStateInterface $form_state) {
     $entity_type = $this->entity->getEntityType();
     if ($entity_type->hasKey('bundle')) {
-      $entity_display_repository = \Drupal::service('entity_display.repository');
-      assert($entity_display_repository instanceof EntityDisplayRepositoryInterface);
-      $form_display = $entity_display_repository->getFormDisplay(
+      $form_display = $this->entityDisplayRepository->getFormDisplay(
         $entity_type->id(),
         $entity_type->id()
       );

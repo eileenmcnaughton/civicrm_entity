@@ -153,7 +153,11 @@ class Proximity extends FilterPluginBase {
       $config = \CRM_Core_Config::singleton();
       $countries = $this
         ->civicrmApi
-        ->get('Country', ['sequential' => 1, 'id' => $config->defaultContactCountry, 'return' => ['name']]);
+        ->get('Country', [
+          'sequential' => 1,
+          'id' => $config->defaultContactCountry,
+          'return' => ['name'],
+        ]);
 
       $proximity_address = [
         'postal_code' => $this->value['value'],
@@ -166,8 +170,8 @@ class Proximity extends FilterPluginBase {
 
       $geocoded_address = $this->getGeocodedAddress($proximity_address);
 
-      list($min_longitude, $max_longitude) = \CRM_Contact_BAO_ProximityQuery::earthLongitudeRange($geocoded_address['longitude'], $geocoded_address['latitude'], $distance);
-      list($min_latitude, $max_latitude) = \CRM_Contact_BAO_ProximityQuery::earthLatitudeRange($geocoded_address['longitude'], $geocoded_address['latitude'], $distance);
+      [$min_longitude, $max_longitude] = \CRM_Contact_BAO_ProximityQuery::earthLongitudeRange($geocoded_address['longitude'], $geocoded_address['latitude'], $distance);
+      [$min_latitude, $max_latitude] = \CRM_Contact_BAO_ProximityQuery::earthLatitudeRange($geocoded_address['longitude'], $geocoded_address['latitude'], $distance);
 
       $this->ensureMyTable();
 

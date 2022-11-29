@@ -544,6 +544,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
           foreach ($storage_definition->getColumns() as $column => $attributes) {
             $column_name = $table_mapping->getFieldColumnName($storage_definition, $column);
             // Unserialize the value if specified in the column schema.
+            // phpcs:ignore
             $item[$column] = (!empty($attributes['serialize'])) ? unserialize($row->$column_name) : $row->$column_name;
           }
 

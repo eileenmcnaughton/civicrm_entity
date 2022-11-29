@@ -396,7 +396,7 @@ function civicrm_entity_field_default_views_data(FieldStorageConfigInterface $fi
   // Determine the label to use for the field. We don't have a label available
   // at the field level, so we just go through all fields and take the one
   // which is used the most frequently.
-  list($label, $all_labels) = views_entity_field_label($entity_type_id, $field_name);
+  [$label, $all_labels] = views_entity_field_label($entity_type_id, $field_name);
 
   // Expose data for the field as a whole.
   foreach ($field_tables as $type => $table_info) {
@@ -430,9 +430,15 @@ function civicrm_entity_field_default_views_data(FieldStorageConfigInterface $fi
             'base' => $base_table,
             'group' => $group_name,
             'title' => $label_name,
-            'help' => t('This is an alias of @group: @field.', ['@group' => $group_name, '@field' => $label]),
+            'help' => t('This is an alias of @group: @field.', [
+              '@group' => $group_name,
+              '@field' => $label,
+            ]),
           ];
-          $also_known[] = t('@group: @field', ['@group' => $group_name, '@field' => $label_name]);
+          $also_known[] = t('@group: @field', [
+            '@group' => $group_name,
+            '@field' => $label_name,
+          ]);
         }
       }
       elseif ($supports_revisions && $label != $label_name) {
@@ -440,9 +446,15 @@ function civicrm_entity_field_default_views_data(FieldStorageConfigInterface $fi
           'base' => $table,
           'group' => t('@group (historical data)', ['@group' => $group_name]),
           'title' => $label_name,
-          'help' => t('This is an alias of @group: @field.', ['@group' => $group_name, '@field' => $label]),
+          'help' => t('This is an alias of @group: @field.', [
+            '@group' => $group_name,
+            '@field' => $label,
+          ]),
         ];
-        $also_known[] = t('@group (historical data): @field', ['@group' => $group_name, '@field' => $label_name]);
+        $also_known[] = t('@group (historical data): @field', [
+          '@group' => $group_name,
+          '@field' => $label_name,
+        ]);
       }
     }
     if ($aliases) {
@@ -479,7 +491,8 @@ function civicrm_entity_field_default_views_data(FieldStorageConfigInterface $fi
   foreach ($field_columns as $column => $attributes) {
     $allow_sort = TRUE;
 
-    // Identify likely filters and arguments for each column based on field type.
+    // Identify likely filters and arguments for each column based on field
+    // type.
     switch ($attributes['type']) {
       case 'int':
       case 'mediumint':
@@ -512,8 +525,15 @@ function civicrm_entity_field_default_views_data(FieldStorageConfigInterface $fi
       $title_short = $label;
     }
     else {
-      $title = t('@label (@name:@column)', ['@label' => $label, '@name' => $field_name, '@column' => $column]);
-      $title_short = t('@label:@column', ['@label' => $label, '@column' => $column]);
+      $title = t('@label (@name:@column)', [
+        '@label' => $label,
+        '@name' => $field_name,
+        '@column' => $column,
+      ]);
+      $title_short = t('@label:@column', [
+        '@label' => $label,
+        '@column' => $column,
+      ]);
     }
 
     // Expose data for the property.
@@ -539,24 +559,37 @@ function civicrm_entity_field_default_views_data(FieldStorageConfigInterface $fi
         'help' => t('Appears in: @bundles.', ['@bundles' => implode(', ', $bundles_names)]),
       ];
 
-      // Go through and create a list of aliases for all possible combinations of
-      // entity type + name.
+      // Go through and create a list of aliases for all possible combinations
+      // of entity type + name.
       $aliases = [];
       $also_known = [];
       foreach ($all_labels as $label_name => $true) {
         if ($label != $label_name) {
           if (count($field_columns) == 1 || $column == 'value') {
-            $alias_title = t('@label (@name)', ['@label' => $label_name, '@name' => $field_name]);
+            $alias_title = t('@label (@name)', [
+              '@label' => $label_name,
+              '@name' => $field_name,
+            ]);
           }
           else {
-            $alias_title = t('@label (@name:@column)', ['@label' => $label_name, '@name' => $field_name, '@column' => $column]);
+            $alias_title = t('@label (@name:@column)', [
+              '@label' => $label_name,
+              '@name' => $field_name,
+              '@column' => $column,
+            ]);
           }
           $aliases[] = [
             'group' => $group_name,
             'title' => $alias_title,
-            'help' => t('This is an alias of @group: @field.', ['@group' => $group_name, '@field' => $title]),
+            'help' => t('This is an alias of @group: @field.', [
+              '@group' => $group_name,
+              '@field' => $title,
+            ]),
           ];
-          $also_known[] = t('@group: @field', ['@group' => $group_name, '@field' => $title]);
+          $also_known[] = t('@group: @field', [
+            '@group' => $group_name,
+            '@field' => $title,
+          ]);
         }
       }
       if ($aliases) {
@@ -609,7 +642,10 @@ function civicrm_entity_field_default_views_data(FieldStorageConfigInterface $fi
 
       // Expose additional delta column for multiple value fields.
       if ($field_storage->isMultiple()) {
-        $title_delta = t('@label (@name:delta)', ['@label' => $label, '@name' => $field_name]);
+        $title_delta = t('@label (@name:delta)', [
+          '@label' => $label,
+          '@name' => $field_name,
+        ]);
         $title_short_delta = t('@label:delta', ['@label' => $label]);
 
         $data[$table_alias]['delta'] = [

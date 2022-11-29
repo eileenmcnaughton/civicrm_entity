@@ -777,7 +777,7 @@ final class SupportedEntities {
     if (!$entity_type_id) {
       return $info;
     }
-    return isset($info[$entity_type_id]) ? $info[$entity_type_id] : [];
+    return $info[$entity_type_id] ?? [];
   }
 
   /**
@@ -898,6 +898,7 @@ final class SupportedEntities {
    *   The transliteration service.
    *
    * @return string
+   *   The converted machine name.
    */
   public static function optionToMachineName($value, TransliterationInterface $transliteration) {
     $value = $transliteration->transliterate($value, LanguageInterface::LANGCODE_DEFAULT, '_');

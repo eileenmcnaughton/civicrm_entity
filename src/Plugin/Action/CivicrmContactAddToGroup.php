@@ -27,17 +27,14 @@ if (!class_exists('Drupal\views_bulk_operations\Action\ViewsBulkOperationsAction
 class CivicrmContactAddToGroup extends ViewsBulkOperationsActionBase implements ViewsBulkOperationsPreconfigurationInterface, PluginFormInterface, ContainerFactoryPluginInterface {
 
   /**
+   * The CiviCRM service.
+   *
    * @var \Drupal\civicrm_entity\CiviCrmApi
    */
   protected $civicrmApi;
 
   /**
-   * CivicrmContactAddToGroup constructor.
-   *
-   * @param array $configuration
-   * @param $plugin_id
-   * @param $plugin_definition
-   * @param $civicrm_entity_api
+   * {@inheritdoc}
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, $civicrm_entity_api) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
@@ -45,12 +42,7 @@ class CivicrmContactAddToGroup extends ViewsBulkOperationsActionBase implements 
   }
 
   /**
-   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
-   * @param array $configuration
-   * @param $plugin_id
-   * @param $plugin_definition
-   *
-   * @return static
+   * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static(
@@ -91,7 +83,7 @@ class CivicrmContactAddToGroup extends ViewsBulkOperationsActionBase implements 
       '#type' => 'select',
       '#multiple' => TRUE,
       '#options' => $groups,
-      '#default_value' => isset($values['allowed_groups']) ? $values['allowed_groups'] : [],
+      '#default_value' => $values['allowed_groups'] ?? [],
     ];
     return $form;
   }
@@ -116,7 +108,7 @@ class CivicrmContactAddToGroup extends ViewsBulkOperationsActionBase implements 
       $groups = $this->fetchGroups($this->context['preconfiguration']['allowed_groups']);
     }
     $form['selected_group'] = [
-      '#title' => t('Group'),
+      '#title' => $this->t('Group'),
       '#type' => 'select',
       '#options' => $groups,
       '#default_value' => $form_state->getValue('selected_group'),
@@ -135,10 +127,12 @@ class CivicrmContactAddToGroup extends ViewsBulkOperationsActionBase implements 
    * Fetch array of group titles, keyed by id.
    *
    * @param array $ids
+   *   The group ids.
    *
    * @return array
+   *   The list of group keyed by id.
    */
-  private function fetchGroups($ids = []) {
+  private function fetchGroups(array $ids = []) {
     $groups = [];
     try {
       $params = [
@@ -165,9 +159,11 @@ class CivicrmContactAddToGroup extends ViewsBulkOperationsActionBase implements 
   /**
    * Return group title given group id.
    *
-   * @param $group_id
+   * @param int $group_id
+   *   The group ID.
    *
    * @return string
+   *   The group title.
    */
   private function fetchGroupTitle($group_id) {
     try {

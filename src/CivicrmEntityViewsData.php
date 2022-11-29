@@ -114,8 +114,8 @@ class CivicrmEntityViewsData extends EntityViewsData {
         if ($table_mapping->allowsSharedTableStorage($field_definition->getFieldStorageDefinition())) {
           $this->mapFieldDefinition($views_base_table, $field_definition->getName(), $field_definition, $table_mapping, $data[$views_base_table]);
 
-          // Provide a reverse relationship for the entity type that is referenced by
-          // the field.
+          // Provide a reverse relationship for the entity type that is
+          // referenced by the field.
           if ($field_definition->getType() === 'entity_reference') {
             $target_entity_type_id = $field_definition->getFieldStorageDefinition()->getSetting('target_type');
             $target_entity_type = $this->entityTypeManager->getDefinition($target_entity_type_id);
@@ -155,7 +155,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
 
             foreach ($arguments as $argument_type => $help_text) {
               $data[$base_table][$field_definition->getName() . '_' . $argument_type] = [
-                'title' => t('@label (@argument)', [
+                'title' => $this->t('@label (@argument)', [
                   '@label' => $field_definition->getLabel(),
                   '@argument' => $argument_type,
                 ]),
@@ -793,7 +793,10 @@ class CivicrmEntityViewsData extends EntityViewsData {
             'options arguments' => $field_metadata['name'],
           ];
 
-          if (in_array($field_metadata['html_type'], ['Multi-Select', 'CheckBox'])) {
+          if (in_array($field_metadata['html_type'], [
+            'Multi-Select',
+            'CheckBox',
+          ])) {
             $filter['multi'] = TRUE;
           }
 

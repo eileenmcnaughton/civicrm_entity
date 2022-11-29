@@ -11,7 +11,7 @@ use Drupal\Core\Session\AccountProxy;
 use Drupal\civicrm_entity\CiviCrmApiInterface;
 
 /**
- * Default argument plugin to extract the current user's civicrm contact subtype.
+ * Default argument plugin to extract the current user's contact subtype.
  *
  * This plugin actually has no options so it does not need to do a great deal.
  *
@@ -45,7 +45,7 @@ class ContactSubtype extends ArgumentDefaultPluginBase implements CacheableDepen
    *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param Drupal\Core\Session\AccountProxy
+   * @param Drupal\Core\Session\AccountProxy $currentUser
    *   The current user.
    * @param Drupal\civicrm_entity\CiviCrmApiInterface $civicrmApi
    *   The CiviCRM Api.

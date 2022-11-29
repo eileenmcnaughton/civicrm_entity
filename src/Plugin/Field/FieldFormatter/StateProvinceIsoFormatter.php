@@ -9,8 +9,7 @@ use Drupal\Core\Field\FormatterBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Plugin implementation of the 'civicrm_entity_state_province_iso_formatter'
- * formatter.
+ * Formatter that shows ISO code for state/province.
  *
  * @FieldFormatter(
  *   id = "civicrm_entity_state_province_iso",
