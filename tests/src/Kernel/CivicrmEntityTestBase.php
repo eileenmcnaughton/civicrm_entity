@@ -1628,29 +1628,6 @@ abstract class CivicrmEntityTestBase extends KernelTestBase implements ServiceMo
   }
 
   /**
-   *
-   */
-  protected function minimalGenericGetFields() {
-    return [
-      'id' => [
-        'name' => 'id',
-        'type' => 1,
-        'title' => 'Event ID',
-        'description' => 'Event',
-        'required' => TRUE,
-        'table_name' => 'civicrm_event',
-        'entity' => 'Event',
-        'bao' => 'CRM_Event_BAO_Event',
-        'localizable' => 0,
-        'is_core_field' => TRUE,
-        'api.aliases' => [
-          0 => 'event_id',
-        ],
-      ],
-    ];
-  }
-
-  /**
    * Provides sample contacts data.
    *
    * @return array
