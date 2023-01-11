@@ -3043,6 +3043,20 @@ function civicrm_entity_action_create_user($contact, $is_active, $notify = FALSE
         $params['name'] = _civicrm_entity_clean_login_name(trim($contact['first_name']) . "." . trim($contact['last_name']));
       }
       break;
+      case 'nick.middle.last':
+   if (!empty($contact['middle_name'])) {
+     $params['name'] = _civicrm_entity_clean_login_name(trim($contact['nick_name']) . "." . trim($contact['middle_name']) . "." . trim($contact['last_name']));
+   } else {
+     $params['name'] = _civicrm_entity_clean_login_name(trim($contact['nick_name']) . "." . trim($contact['last_name']));
+   }
+   break;
+case 'nick.middlelast':
+   if (!empty($contact['middle_name'])) {
+     $params['name'] = _civicrm_entity_clean_login_name(trim($contact['nick_name']) . "." . trim($contact['middle_name']) . trim($contact['last_name']));
+   } else {
+     $params['name'] = _civicrm_entity_clean_login_name(trim($contact['nick_name']) . "." . trim($contact['last_name']));
+   }
+   break;
     case 'email':
       $params['name'] = $params['email'];
       break;
@@ -3144,6 +3158,8 @@ function _civicrm_entity_options_username_format($field, $instance) {
     'first.last' => t('First.Last'),
     'f.last' => t('F.Last'),
     'first.middle.last' => t('First.Middle.Last'),
+     'nick.middle.last' => t('Nick.Middle.Last'),
+     'nick.middlelast' => t('Nick.MiddleLast'),
     'email' => 'Use E-mail Address',
   );
   return $options;
