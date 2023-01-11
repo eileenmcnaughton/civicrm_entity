@@ -99,13 +99,10 @@ final class SupportedEntities {
       'label property' => 'subject',
       'permissions' => [
         'view' => ['access all cases and activities'],
-        'edit' => ['access all cases and activities'],
-        'update' => ['access all cases and activities'],
-        'create' => ['add cases', 'access all cases and activities'],
-        'delete' => [
-          'delete in CiviCase',
-          'access all cases and activities',
-        ],
+        'edit' => ['add cases'],
+        'update' => ['add cases'],
+        'create' => ['add cases'],
+        'delete' => ['delete in CiviCase'],
       ],
       'required' => [
         'contact_id' => TRUE,
@@ -116,10 +113,11 @@ final class SupportedEntities {
       'civicrm entity name' => 'case_type',
       'label property' => 'title',
       'permissions' => [
-        'view' => [],
-        'update' => [],
-        'create' => [],
-        'delete' => [],
+        'view' => ['access all cases and activities'],
+        'edit' => ['add cases'],
+        'update' => ['add cases'],
+        'create' => ['add cases'],
+        'delete' => ['delete in CiviCase'],
       ],
     ];
     $civicrm_entity_info['civicrm_contact'] = [
