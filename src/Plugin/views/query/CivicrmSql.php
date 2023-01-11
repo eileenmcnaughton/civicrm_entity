@@ -79,7 +79,8 @@ class CivicrmSql extends Sql {
       // If the table is not prefixed with civicrm_, assume it is a Drupal table
       // and convert it to a fully qualified table name. But, make sure it has
       // not already been converted.
-      if (strpos($table['table'], 'civicrm_') !== 0 && strpos($table['table'], '.') === FALSE) {
+      // Also do not convert any drupal custom fields.
+      if ((strpos($table['table'], 'civicrm_') !== 0 && strpos($table['table'], '.') === FALSE) || (strpos($table['table'], 'civicrm_') === 0 && strpos($table['table'], '__') !== FALSE)) {
          $table['table'] = $connection->getFullQualifiedTableName($table['table']);
       }
     }
