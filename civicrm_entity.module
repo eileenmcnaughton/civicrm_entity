@@ -230,6 +230,12 @@ function civicrm_entity_entity_view_display_alter(EntityViewDisplayInterface $di
         $display->setThirdPartySetting('layout_builder', $setting_key, $setting);
       }
     }
+    $ds_settings = $root_display->getThirdPartySettings('ds');
+    if (!empty($ds_settings) && is_array($ds_settings)) {
+      foreach ($ds_settings as $setting_key => $setting) {
+        $display->setThirdPartySetting('ds', $setting_key, $setting);
+      }
+    }
   }
 }
 
