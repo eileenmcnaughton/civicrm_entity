@@ -2,11 +2,11 @@ name: Integration Tests
 on:
   workflow_dispatch:
   push:
-    branches: [ 8.x-3.x ]
+    branches: [ 4.0.x ]
   pull_request:
     types: [assigned, opened, synchronize, reopened]
     branches:
-      - 8.x-3.x
+      - 4.0.x
 
 jobs:
   phpunit:
@@ -15,20 +15,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - drupal: '9.3.*'
-            civicrm: '5.45.*'
-          - drupal: '9.4.*'
-            civicrm: '5.51.*'
-          - drupal: '9.4.*'
-            civicrm: '5.52.*'
-          - drupal: '9.4.*'
-            civicrm: '5.53.x-dev'
-          - drupal: '9.4.*'
+          - drupal: '10.0.*'
             civicrm: 'dev-master'
     name: Drupal ${{ matrix.drupal }} | CiviCRM ${{ matrix.civicrm }}
     services:
       mysql:
-        image: mysql:5.7
+        image: mysql:8.0
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: yes
           MYSQL_DATABASE: db
@@ -42,7 +34,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: shivammathur/setup-php@v2
         with:
-            php-version: 7.4
+            php-version: 8.1
             extensions: dom, curl, libxml, mbstring, zip, pdo, mysql, pdo_mysql, bcmath, soap, intl, gd, exif, iconv
             coverage: none
             tools: composer:v2
@@ -86,7 +78,7 @@ jobs:
       - name: Install integration test modules
         run: |
           cd ~/drupal
-          COMPOSER_MEMORY_LIMIT=-1 composer require drupal/leaflet drupal/fullcalendar_view
+          COMPOSER_MEMORY_LIMIT=-1 composer require drupal/fullcalendar_view
       - uses: nanasess/setup-chromedriver@master
       - name: Run chromedriver
         run: chromedriver &
