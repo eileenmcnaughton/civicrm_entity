@@ -122,7 +122,7 @@ final class RouteSubscriber extends RouteSubscriberBase {
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents() : array {
     $events = parent::getSubscribedEvents();
     // Field UI's route subscriber runs at -100.
     $events[RoutingEvents::ALTER] = ['onAlterRoutes', -200];
