@@ -4,10 +4,15 @@ namespace Drupal\civicrm_entity;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
-use Drupal\Core\Url;
 
+/**
+ * CiviCRM Entity List builder class.
+ */
 class CivicrmEntityListBuilder extends EntityListBuilder {
 
+  /**
+   * {@inheritdoc}
+   */
   protected $limit = 25;
 
   /**
@@ -16,10 +21,10 @@ class CivicrmEntityListBuilder extends EntityListBuilder {
   public function buildHeader() {
     if ($this->entityType->hasKey('bundle')) {
       return [
-          'id' => $this->t('ID'),
-          'bundle' => $this->entityType->getBundleLabel(),
-          'label' => $this->t('Label'),
-        ] + parent::buildHeader();
+        'id' => $this->t('ID'),
+        'bundle' => $this->entityType->getBundleLabel(),
+        'label' => $this->t('Label'),
+      ] + parent::buildHeader();
     }
     return [
       'id' => $this->t('ID'),
@@ -33,10 +38,10 @@ class CivicrmEntityListBuilder extends EntityListBuilder {
   public function buildRow(EntityInterface $entity) {
     if ($this->entityType->hasKey('bundle')) {
       return [
-          'id' => $entity->id(),
-          'bundle' => $entity->bundle(),
-          'label' => $entity->toLink(),
-        ] + parent::buildRow($entity);
+        'id' => $entity->id(),
+        'bundle' => $entity->bundle(),
+        'label' => $entity->toLink(),
+      ] + parent::buildRow($entity);
     }
     return [
       'id' => $entity->id(),

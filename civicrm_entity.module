@@ -30,6 +30,7 @@ use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\views\ViewExecutable;
 use Drupal\views\Plugin\views\query\QueryPluginBase;
 use Drupal\Core\Database\Database;
+use Drupal\Core\Entity\EntityInterface;
 
 /**
  * Implements hook_theme().
@@ -148,7 +149,7 @@ function civicrm_entity_entity_bundle_info() {
   $civicrm_api = \Drupal::service('civicrm_entity.api');
 
   $bundles = [];
-  $entity_types_with_bundles = array_filter(SupportedEntities::getInfo(), static function(array $civicrm_entity_info) {
+  $entity_types_with_bundles = array_filter(SupportedEntities::getInfo(), static function (array $civicrm_entity_info) {
     return !empty($civicrm_entity_info['bundle property']);
   });
   foreach ($entity_types_with_bundles as $entity_type_id => $civicrm_entity_info) {
@@ -175,7 +176,7 @@ function civicrm_entity_entity_bundle_info() {
  * across all bundles. It's a copy of the Field module's logic, but clones
  * field config definitions.
  *
- * @see field_entity_bundle_field_info().
+ * @see field_entity_bundle_field_info()
  */
 function civicrm_entity_entity_bundle_field_info(EntityTypeInterface $entity_type, $bundle, array $base_field_definitions) {
   $result = [];
@@ -190,7 +191,7 @@ function civicrm_entity_entity_bundle_field_info(EntityTypeInterface $entity_typ
 
     // Clone the field configs, so that we can modify them and change the
     // target bundle type without manipulating the statically cached entries
-    // in the entity storage;
+    // in the entity storage;.
     $cloned_field_configs = array_map(static function (FieldConfigInterface $field) use ($bundle) {
       $cloned = clone $field;
       $cloned->set('bundle', $bundle);
@@ -246,7 +247,7 @@ function civicrm_entity_entity_view_display_alter(EntityViewDisplayInterface $di
  *
  * @param \Drupal\Core\Field\FieldStorageDefinitionInterface $definition
  *   The field storage definition.
- * @param \Drupal\Core\Entity\FieldableEntityInterface|NULL $entity
+ * @param \Drupal\Core\Entity\FieldableEntityInterface|null $entity
  *   The entity.
  * @param bool $cacheable
  *   If the options are cacheable.
@@ -306,7 +307,7 @@ function _civicrm_entity_get_entity_type_from_elements($elements) {
   // Find the CivicrmEntity from elements if #entity_type is not set.
   foreach ($elements as $element) {
     if ($element instanceof CivicrmEntity) {
-      /** @var CivicrmEntity $element */
+      /** @var \Drupal\civicrm_entity\Entity\CivicrmEntity $element */
       return $element->getEntityTypeId();
     }
   }
@@ -327,11 +328,12 @@ function _civicrm_entity_get_entity_type_from_elements($elements) {
  *   The entity.
  *
  * @return void|\Drupal\Core\Entity\EntityInterface
+ *   The cached entity object.
  */
 function _civicrm_entity_stash($objectName, $id, $entity = NULL) {
   $cache =& drupal_static(__FUNCTION__, []);
   if (empty($entity)) {
-    return isset($cache[$objectName][$id]) ? $cache[$objectName][$id] : NULL;
+    return $cache[$objectName][$id] ?? NULL;
   }
   elseif ($entity === 'clear') {
     unset($cache[$objectName][$id]);
@@ -479,7 +481,7 @@ function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
  * @param \Drupal\Core\Entity\EntityInterface $entity
  *   The entity.
  */
-function _civicrm_entity_post_invoke($op, $storage, $entity) {
+function _civicrm_entity_post_invoke($op, CiviEntityStorage $storage, EntityInterface $entity) {
   switch ($op) {
     case 'create':
       $storage->civiPostSave($entity, FALSE);
@@ -499,6 +501,9 @@ function _civicrm_entity_post_invoke($op, $storage, $entity) {
   }
 }
 
+/**
+ * Implements hook_views_query_alter().
+ */
 function civicrm_entity_views_query_alter(ViewExecutable $view, QueryPluginBase $query) {
   // Provide fully qualified table name in all Views queries.
   // If CiviCRM tables in a separate database.
@@ -521,7 +526,9 @@ function civicrm_entity_views_query_alter(ViewExecutable $view, QueryPluginBase 
   $multilingual = \CRM_Core_I18n::isMultilingual();
 
   if ($multilingual) {
+    // @codingStandardsIgnoreStart
     global $dbLocale;
+    // @codingStandardsIgnoreEnd
     $columns = CRM_Core_I18n_SchemaStructure::columns();
     $affectedColumns = [];
     foreach ($columns as $table => $hash) {
@@ -532,7 +539,8 @@ function civicrm_entity_views_query_alter(ViewExecutable $view, QueryPluginBase 
     $class = get_class($query);
     if ($class == 'Drupal\search_api\Plugin\views\query\SearchApiQuery') {
       $where = $query->getWhere();
-    } else {
+    }
+    else {
       $where = $query->where;
     }
     foreach ($where as &$condition_group) {
@@ -604,14 +612,18 @@ function civicrm_entity_rules_action_info_alter(&$rules_actions) {
     }
   }
   if (array_key_exists('format', $rules_actions['civicrm_entity_user_create']['context_definitions'])) {
-    // Drupal 9 use 'context_definitions' instead of 'context'
+    // Drupal 9 use 'context_definitions' instead of 'context'.
     $rules_actions['civicrm_entity_user_create']['context_definitions']['format']->setDescription(t('Format of the username. Use <a href="@url">Twig style</a> tokens for using the available data.<br>Civicrm Entity filter available : @filters.',
-      ['@url' => 'https://www.drupal.org/docs/8/modules/typed-data-api-enhancements/typeddata-tokens',
-      '@filters' => $filters]));
+      [
+        '@url' => 'https://www.drupal.org/docs/8/modules/typed-data-api-enhancements/typeddata-tokens',
+        '@filters' => $filters,
+      ]));
   }
   else {
     $rules_actions['civicrm_entity_user_create']['context']['format']->setDescription(t('Format of the username. Use <a href="@url">Twig style</a> tokens for using the available data.<br>Civicrm Entity filter available : @filters.',
-      ['@url' => 'https://www.drupal.org/docs/8/modules/typed-data-api-enhancements/typeddata-tokens',
-      '@filters' => $filters]));
+      [
+        '@url' => 'https://www.drupal.org/docs/8/modules/typed-data-api-enhancements/typeddata-tokens',
+        '@filters' => $filters,
+      ]));
   }
 }

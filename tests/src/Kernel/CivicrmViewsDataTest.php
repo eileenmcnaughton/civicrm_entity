@@ -3,18 +3,26 @@
 namespace Drupal\Tests\civicrm_entity\Kernel;
 
 /**
+ * Tests for CiviCRM Views data.
+ *
  * @group civicrim_entity
  */
 class CivicrmViewsDataTest extends CivicrmEntityTestBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected static $modules = [
     'views',
   ];
 
+  /**
+   * Test CiviCRM Address Views data.
+   */
   public function testCivicrmAddressViewsData() {
     $views_data = $this->container->get('views.views_data');
     $civicrm_address = $views_data->get('civicrm_address');
-    // Verify addresses have a relationship to contacts
+    // Verify addresses have a relationship to contacts.
     $contact_relationship = $civicrm_address['contact_id']['relationship'];
     $this->assertEquals('civicrm_contact', $contact_relationship['base']);
     $this->assertEquals('id', $contact_relationship['base field']);

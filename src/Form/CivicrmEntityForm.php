@@ -13,6 +13,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Form object for CiviCRM Entities.
+ */
 class CivicrmEntityForm extends ContentEntityForm {
 
   /**
@@ -84,7 +87,7 @@ class CivicrmEntityForm extends ContentEntityForm {
       '#type' => 'container',
       '#attributes' => ['class' => ['entity-meta']],
       '#weight' => 99,
-      '#access' => !empty($form_display_info['groups']) && !empty($form_display_info['fields'])
+      '#access' => !empty($form_display_info['groups']) && !empty($form_display_info['fields']),
     ];
     $form['meta'] = [
       '#attributes' => ['class' => ['entity-meta__header']],

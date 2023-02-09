@@ -20,6 +20,9 @@ class ActivityEndDatetime extends EntityField {
     return FALSE;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function query($use_groupby = FALSE) {
     // There is no query operation.
   }

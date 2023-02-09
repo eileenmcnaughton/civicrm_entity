@@ -1,9 +1,14 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Drupal\Tests\civicrm_entity\FunctionalJavascript\Views;
 
 use Drupal\Tests\civicrm_entity\FunctionalJavascript\CivicrmEntityViewsTestBase;
 
+/**
+ * Tests for CiviCRM Activity Views.
+ */
 final class CivicrmActivityViewsTest extends CivicrmEntityViewsTestBase {
 
   /**
@@ -80,7 +85,7 @@ final class CivicrmActivityViewsTest extends CivicrmEntityViewsTestBase {
    */
   protected function doSetupViewWithRelationships() {
     $this->addRelationshipToDisplay('name[civicrm_activity.contact]', [
-      // Set relationship to source
+      // Set relationship to source.
       'options[record_type_id][]' => ['2'],
     ]);
     $this->addRelationshipToDisplay('name[civicrm_contact.user]');

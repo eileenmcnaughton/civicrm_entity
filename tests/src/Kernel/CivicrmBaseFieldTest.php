@@ -2,8 +2,6 @@
 
 namespace Drupal\Tests\civicrm_entity\Kernel;
 
-use Drupal\civicrm_entity\Entity\CivicrmEntity;
-
 /**
  * Tests base field generation.
  *

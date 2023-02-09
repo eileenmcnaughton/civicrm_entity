@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Drupal\Tests\civicrm_entity\FunctionalJavascript\Views;
 
@@ -7,6 +9,8 @@ use Drupal\FunctionalJavascriptTests\DrupalSelenium2Driver;
 use Drupal\Tests\civicrm_entity\FunctionalJavascript\CivicrmEntityTestBase;
 
 /**
+ * Test of Full Calendar Activity Views.
+ *
  * @requires module fullcalendar_view
  */
 final class ActivityFullcalendarViewTest extends CivicrmEntityTestBase {
@@ -82,6 +86,9 @@ final class ActivityFullcalendarViewTest extends CivicrmEntityTestBase {
       ->save();
   }
 
+  /**
+   * Test Full Calendar Display.
+   */
   public function testFullcalendarDisplay(): void {
     $this->drupalGet('/activity-fullcalendar');
     $this->createScreenshot('../calendar.png');
@@ -98,7 +105,7 @@ final class ActivityFullcalendarViewTest extends CivicrmEntityTestBase {
     $modal = $this->assertSession()->elementExists('css', 'div[id^="window_"][id$="_canvas"]');
     self::assertNotNull($modal);
     $this->assertSession()->elementTextContains('css', 'div[id^="window_"][id$="_canvas"]', 'Meeting about new seeds');
-    $this->assertSession()->elementTextContains('css', 'div[id^="window_"][id$="_canvas"]','johnny');
+    $this->assertSession()->elementTextContains('css', 'div[id^="window_"][id$="_canvas"]', 'johnny');
 
     $civicrm_api = $this->container->get('civicrm_entity.api');
     $activity = $civicrm_api->get('activity', [
@@ -113,6 +120,9 @@ final class ActivityFullcalendarViewTest extends CivicrmEntityTestBase {
     $this->assertSession()->pageTextContains($start_formatted . ' - ' . $end_formatted);
   }
 
+  /**
+   * Test Activity Drag and Update.
+   */
   public function testActivityDragAndUpdate(): void {
     $previous_day = new DrupalDateTime('-1 day');
     $previous_day_formatted = $previous_day->format('Y-m-d');

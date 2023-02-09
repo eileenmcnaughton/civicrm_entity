@@ -8,10 +8,15 @@ use Drupal\Core\Extension\ModuleUninstallValidatorInterface;
 use Drupal\Core\StringTranslation\TranslationInterface;
 
 /**
- * Class ContentUninstallValidator.
+ * Content uninstall validator class.
  */
 class ContentUninstallValidator extends EntityContentUninstallValidator {
 
+  /**
+   * THe content uninstall validator service.
+   *
+   * @var \Drupal\Core\Extension\ModuleUninstallValidatorInterface
+   */
   protected $contentUninstallValidator;
 
   /**

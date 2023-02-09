@@ -4,13 +4,12 @@ namespace Drupal\Tests\civicrm_entity\Kernel;
 
 use Drupal\civicrm_entity\CiviCrmApiInterface;
 use Drupal\civicrm_entity\Entity\CivicrmEntity;
-use Drupal\Core\TypedData\Type\DateTimeInterface;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 
 /**
  * Tests the storage.
  *
- * @group civicrim_entity
+ * @group civicrm_entity
  */
 class CivicrmStorageGetTest extends CivicrmEntityTestBase {
 
@@ -20,7 +19,7 @@ class CivicrmStorageGetTest extends CivicrmEntityTestBase {
   public function testGet() {
     $result = $this->container->get('civicrm_entity.api')->get('event', [
       'id' => [
-        'IN' => [1]
+        'IN' => [1],
       ],
       'return' => array_keys($this->sampleEventsGetFields()),
       'options' => ['limit' => 0],
@@ -29,7 +28,7 @@ class CivicrmStorageGetTest extends CivicrmEntityTestBase {
 
     $result = $this->container->get('civicrm_entity.api')->get('contact', [
       'id' => [
-        'IN' => [10]
+        'IN' => [10],
       ],
       'return' => array_keys($this->sampleContactGetFields()),
       'options' => ['limit' => 0],
@@ -71,11 +70,14 @@ class CivicrmStorageGetTest extends CivicrmEntityTestBase {
    * times are in UTC. When loading a date time, CiviEntityStorage converts
    * the time into UTC so that Drupal handles the timezone correctly.
    *
-   * @dataProvider datetimeTimezoneDataProvider
-   *
    * @param array $original_datetimes
+   *   Original datetimes.
    * @param array $expected_utc_datetime
-   * @param $timezone
+   *   Expected datetimes.
+   * @param string $timezone
+   *   The timezone.
+   *
+   * @dataProvider datetimeTimezoneDataProvider
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
@@ -99,13 +101,16 @@ class CivicrmStorageGetTest extends CivicrmEntityTestBase {
     }
   }
 
+  /**
+   * Provides datetime and timezone test data.
+   */
   public function datetimeTimezoneDataProvider() {
     yield [
       [
         'start_date' => '2018-05-02 17:00:00',
         'end_date' => '2018-05-04 17:00:00',
       ],
-      //  America/Chicago is UTC-5
+      // America/Chicago is UTC-5.
       [
         'start_date' => '2018-05-02T22:00:00',
         'end_date' => '2018-05-04T22:00:00',
@@ -128,7 +133,7 @@ class CivicrmStorageGetTest extends CivicrmEntityTestBase {
         'start_date' => '2018-05-02 17:00:00',
         'end_date' => '2018-05-04 17:00:00',
       ],
-      // Europe/Berlin if UTC-2
+      // Europe/Berlin if UTC-2.
       [
         'start_date' => '2018-05-02T15:00:00',
         'end_date' => '2018-05-04T15:00:00',

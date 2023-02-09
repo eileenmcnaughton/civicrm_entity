@@ -3,7 +3,6 @@
 namespace Drupal\civicrm_entity\Plugin\views\relationship;
 
 use Drupal\views\Plugin\views\relationship\EntityReverse as CoreEntityReverse;
-use Drupal\views\Views;
 
 /**
  * A relationship handlers which reverse CiviCRM entity references.

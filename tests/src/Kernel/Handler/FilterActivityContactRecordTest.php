@@ -7,12 +7,18 @@ use Drupal\views\Views;
 /**
  * Test ActivityContactRecord.
  *
- * @group civicrim_entity
+ * @group civicrm_entity
  */
 final class FilterActivityContactRecordTest extends KernelHandlerTestBase {
 
+  /**
+   * {@inheritdoc}
+   */
   public static $testViews = ['test_activity'];
 
+  /**
+   * {@inheritdoc}
+   */
   protected $columnMap = [
     'subject' => 'subject',
     'location' => 'location',

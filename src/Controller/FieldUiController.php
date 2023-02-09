@@ -8,6 +8,9 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\field_ui\FieldConfigListBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * A Field UI controller.
+ */
 final class FieldUiController implements ContainerInjectionInterface {
 
   /**
@@ -24,6 +27,14 @@ final class FieldUiController implements ContainerInjectionInterface {
    */
   private $entityTypeBundleInfo;
 
+  /**
+   * The Constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+   *   The entity type bundler info object.
+   */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityTypeBundleInfo = $entity_type_bundle_info;
@@ -44,8 +55,6 @@ final class FieldUiController implements ContainerInjectionInterface {
    *
    * @param string $entity_type_id
    *   The entity type.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
-   *   The current route match.
    *
    * @return array
    *   A render array as expected by
