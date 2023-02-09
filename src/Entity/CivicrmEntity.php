@@ -9,7 +9,6 @@ use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\TypedData\Plugin\DataType\DateTimeIso8601;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
 use Symfony\Component\Validator\ConstraintViolation;
@@ -35,7 +34,9 @@ class CivicrmEntity extends ContentEntityBase {
    *
    * @var bool
    */
+  // @codingStandardsIgnoreStart
   public $drupal_crud = FALSE;
+  // @codingStandardsIgnoreEnd
 
   /**
    * {@inheritdoc}
@@ -181,6 +182,9 @@ class CivicrmEntity extends ContentEntityBase {
     return $violations;
   }
 
+  /**
+   * Normalize CiviCRM API data.
+   */
   public function civicrmApiNormalize() {
     $params = [];
     /** @var \Drupal\Core\Field\FieldItemListInterface $items */

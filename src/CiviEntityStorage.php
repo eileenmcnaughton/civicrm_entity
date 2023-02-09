@@ -37,7 +37,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
   protected $configFactory;
 
   /**
-   * Gets the CiviCRM API
+   * Gets the CiviCRM API.
    *
    * @return \Drupal\civicrm_entity\CiviCrmApiInterface
    *   The CiviCRM APi.
@@ -164,7 +164,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
       $entities[$entity->id()] = $entity;
     }
 
-    // get all the fields
+    // Get all the fields.
     $fields = $this->getCiviCrmApi()->getFields($this->entityType->get('civicrm_entity'));
     $field_names = [];
     foreach ($fields as $field) {
@@ -314,6 +314,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
     }
     return $this->getCiviCrmApi()->getCount($this->entityType->get('civicrm_entity')) > 0;
   }
+
   /**
    * {@inheritdoc}
    */
@@ -499,6 +500,8 @@ class CiviEntityStorage extends SqlContentEntityStorage {
    * @param array &$values
    *   An array of values keyed by entity ID.
    *   defaults to FALSE.
+   * @param bool $load_from_revision
+   *   Boolean to load from revision.
    *
    * @throws \Drupal\Core\Entity\Sql\SqlContentEntityStorageException
    */
@@ -586,7 +589,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
    *
    * @throws \Drupal\Core\Entity\Sql\SqlContentEntityStorageException
    */
-  protected function saveToDedicatedTables(ContentEntityInterface $entity, $update = TRUE, $names = []) {
+  protected function saveToDedicatedTables(ContentEntityInterface $entity, $update = TRUE, array $names = []) {
     $vid = $entity->getRevisionId();
     $id = $entity->id();
     $bundle = $entity->bundle();
@@ -722,7 +725,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The saved entity.
-   * @param $update
+   * @param bool $update
    *   Specifies whether the entity is being updated or created.
    *
    * @see \Drupal\Core\Entity\ContentEntityStorageBase::doPostSave
@@ -776,9 +779,9 @@ class CiviEntityStorage extends SqlContentEntityStorage {
    * applies. This provides the lookup to determing the ID of the EntityTag
    * object itself.
    *
-   * @param $entityId
+   * @param int $entityId
    *   The entity ID.
-   * @param $entityTable
+   * @param string $entityTable
    *   The entity table.
    *
    * @return int|null

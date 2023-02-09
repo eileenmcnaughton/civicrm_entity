@@ -1,10 +1,15 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Drupal\Tests\civicrm_entity\FunctionalJavascript;
 
 use Drupal\Core\Url;
 use Drupal\Tests\civicrm\FunctionalJavascript\CiviCrmTestBase;
 
+/**
+ * Base class for CiviCRM Entity tests.
+ */
 abstract class CivicrmEntityTestBase extends CiviCrmTestBase {
 
   /**
@@ -23,7 +28,7 @@ abstract class CivicrmEntityTestBase extends CiviCrmTestBase {
    * Enable CiviCRM Entity types.
    *
    * @param array $entity_types
-   *   The entity type Ids
+   *   The entity type Ids.
    */
   protected function enableCivicrmEntityTypes(array $entity_types): void {
     $this->drupalGet(Url::fromRoute('civicrm_entity.settings'));

@@ -1,9 +1,14 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Drupal\Tests\civicrm_entity\FunctionalJavascript\Views;
 
 use Drupal\Tests\civicrm_entity\FunctionalJavascript\CivicrmEntityViewsTestBase;
 
+/**
+ * Tests for CiviCRM Event Views.
+ */
 final class CivicrmEventViewsTest extends CivicrmEntityViewsTestBase {
 
   /**
@@ -15,7 +20,7 @@ final class CivicrmEventViewsTest extends CivicrmEntityViewsTestBase {
    * {@inheritdoc}
    */
   protected static $civicrmEntityPermissions = [
-    'view event info'
+    'view event info',
   ];
 
   /**

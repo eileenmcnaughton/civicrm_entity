@@ -9,7 +9,7 @@ use Drupal\Core\Field\FormatterBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Plugin implementation of the 'civicrm_entity_state_province_iso_formatter' formatter.
+ * The 'civicrm_entity_state_province_iso_formatter' formatter.
  *
  * @FieldFormatter(
  *   id = "civicrm_entity_state_province_iso",

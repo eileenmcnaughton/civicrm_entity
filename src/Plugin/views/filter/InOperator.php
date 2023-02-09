@@ -3,7 +3,6 @@
 namespace Drupal\civicrm_entity\Plugin\views\filter;
 
 use Drupal\Core\Database\Connection;
-use Drupal\Core\Database\Query\Condition;
 use Drupal\civicrm_entity\CiviCrmApiInterface;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\Plugin\views\filter\InOperator as BaseInOperator;
@@ -110,7 +109,7 @@ class InOperator extends BaseInOperator {
     // instead.
     else {
 
-      $values = array_map(function($value) {
+      $values = array_map(function ($value) {
         return \CRM_Core_DAO::VALUE_SEPARATOR . $value . \CRM_Core_DAO::VALUE_SEPARATOR;
       }, $values);
 

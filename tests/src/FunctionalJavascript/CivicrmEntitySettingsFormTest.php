@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Drupal\Tests\civicrm_entity\FunctionalJavascript;
 
@@ -17,7 +19,7 @@ final class CivicrmEntitySettingsFormTest extends CivicrmEntityTestBase {
    */
   public function testEnableNewEntityTypes() {
     $admin_user = $this->createUser([
-      'administer civicrm entity'
+      'administer civicrm entity',
     ]);
     $this->drupalLogin($admin_user);
     $this->enableCivicrmEntityTypes(['civicrm_event', 'civicrm_activity']);
@@ -46,7 +48,7 @@ final class CivicrmEntitySettingsFormTest extends CivicrmEntityTestBase {
 
     $admin_user = $this->createUser([
       'administer filters',
-      'administer civicrm entity'
+      'administer civicrm entity',
     ]);
     $this->drupalLogin($admin_user);
 

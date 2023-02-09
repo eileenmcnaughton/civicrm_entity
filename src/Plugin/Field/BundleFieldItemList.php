@@ -52,7 +52,7 @@ class BundleFieldItemList extends FieldItemList {
     $options = $civicrm_api->getOptions($civicrm_entity_name, $civicrm_bundle_property);
 
     $transliteration = \Drupal::transliteration();
-    $options = array_map(static function($value) use ($transliteration) {
+    $options = array_map(static function ($value) use ($transliteration) {
       return SupportedEntities::optionToMachineName($value, $transliteration);
     }, $options);
     $options = array_flip($options);

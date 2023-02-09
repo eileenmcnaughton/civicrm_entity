@@ -32,6 +32,9 @@ abstract class CivicrmEntityTestBase extends KernelTestBase implements ServiceMo
     'datetime',
   ];
 
+  /**
+   * {@inheritdoc}
+   */
   public function alter(ContainerBuilder $container) {
     $this->mockCiviCrmApi($container);
   }
@@ -44,11 +47,17 @@ abstract class CivicrmEntityTestBase extends KernelTestBase implements ServiceMo
     $this->setUpCivicrm();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function bootEnvironment() {
     parent::bootEnvironment();
     $this->bootEnvironmentCivicrm();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function tearDown() {
     $this->tearDownCivicrm();
   }
@@ -63,14 +72,14 @@ abstract class CivicrmEntityTestBase extends KernelTestBase implements ServiceMo
 
     $civicrm_api_mock->get('event', [
       'id' => [
-        'IN' => [1]
+        'IN' => [1],
       ],
       'return' => array_keys($this->sampleEventsGetFields()),
       'options' => ['limit' => 0],
     ])->willReturn($this->sampleEventsData());
     $civicrm_api_mock->get('contact', [
       'id' => [
-        'IN' => [10]
+        'IN' => [10],
       ],
       'return' => array_keys($this->sampleContactGetFields()),
       'options' => ['limit' => 0],
@@ -1618,6 +1627,12 @@ abstract class CivicrmEntityTestBase extends KernelTestBase implements ServiceMo
     ];
   }
 
+  /**
+   * Provides sample data for generic get fields.
+   *
+   * @return array
+   *   The array of test field data.
+   */
   protected function minimalGenericGetFields() {
     return [
       'id' => [
@@ -1785,6 +1800,12 @@ abstract class CivicrmEntityTestBase extends KernelTestBase implements ServiceMo
     ];
   }
 
+  /**
+   * Sample address field data.
+   *
+   * @return array
+   *   The sample address data array.
+   */
   protected function sampleAddressGetFields() {
     return [
       'id' => [

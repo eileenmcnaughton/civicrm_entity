@@ -5,7 +5,6 @@ namespace Drupal\civicrm_entity\Plugin\TypedDataFilter;
 use Drupal\Core\Render\BubbleableMetadata;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\Core\TypedData\DataDefinitionInterface;
-use Drupal\Core\TypedData\Type\StringInterface;
 use Drupal\typed_data\DataFilterBase;
 
 /**
@@ -16,18 +15,18 @@ use Drupal\typed_data\DataFilterBase;
  *   label = @Translation("Drupal Username : FirstnameLastname."),
  * )
  */
-class FirstLAstFilter extends DataFilterBase {
+class FirstLastFilter extends DataFilterBase {
 
   /**
    * {@inheritdoc}
    */
-    public function canFilter(DataDefinitionInterface $definition) {
-      if ($definition->getConstraints()['EntityType'] == "civicrm_contact") {
-          return true;
-      }
-      else {
-          return false;
-      }
+  public function canFilter(DataDefinitionInterface $definition) {
+    if ($definition->getConstraints()['EntityType'] == "civicrm_contact") {
+      return TRUE;
+    }
+    else {
+      return FALSE;
+    }
   }
 
   /**
@@ -37,7 +36,7 @@ class FirstLAstFilter extends DataFilterBase {
     return DataDefinition::create('string');
   }
 
-    /**
+  /**
    * {@inheritdoc}
    */
   public function filter(DataDefinitionInterface $definition, $value, array $arguments, BubbleableMetadata $bubbleable_metadata = NULL) {

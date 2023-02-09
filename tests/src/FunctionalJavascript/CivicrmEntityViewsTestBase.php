@@ -1,11 +1,15 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Drupal\Tests\civicrm_entity\FunctionalJavascript;
 
-use Behat\Mink\Exception\ElementNotFoundException;
 use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Core\Url;
 
+/**
+ * Base class for CiviCRM Entity Views tests.
+ */
 abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
 
   /**
@@ -37,6 +41,7 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
   /**
    * {@inheritdoc}
    */
+  // @codingStandardsIgnoreStart
   protected function doInstall() {
     parent::doInstall();
 
@@ -52,22 +57,23 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
     /*
     $connection = Database::getConnection('default', 'civicrm_test')->getConnectionOptions();
     $settings['databases']['civicrm_test']['default'] = (object) [
-      'value'    => [
-        'driver' => $connection['driver'],
-        'username' => $connection['username'],
-        'password' => $connection['password'],
-        'host' => $connection['host'],
-        'database' => $connection['database'],
-        'namespace' => $connection['namespace'],
-        'port' => $connection['port'],
-        // CiviCRM does not use prefixes.
-        'prefix' => '',
-      ],
-      'required' => TRUE,
+    'value'    => [
+    'driver' => $connection['driver'],
+    'username' => $connection['username'],
+    'password' => $connection['password'],
+    'host' => $connection['host'],
+    'database' => $connection['database'],
+    'namespace' => $connection['namespace'],
+    'port' => $connection['port'],
+    // CiviCRM does not use prefixes.
+    'prefix' => '',
+    ],
+    'required' => TRUE,
     ];
     $this->writeSettings($settings);
-    */
+     */
   }
+  // @codingStandardsIgnoreEnd
 
   /**
    * {@inheritdoc}
@@ -188,72 +194,52 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
   /**
    * Creates sample data for each test.
    *
-   * @return void
-   *
    * @todo Should this use data providers?
    */
   abstract protected function createSampleData();
 
   /**
    * Runs setup for the ::testCreateView test.
-   *
-   * @return void
    */
   abstract protected function doSetupCreateView();
 
   /**
    * Runs assertions for the ::testCreateView test.
-   *
-   * @return void
    */
   abstract protected function assertCreateViewResults();
 
   /**
    * Runs setup for the ::testViewWithRelationships test.
-   *
-   * @return void
    */
   abstract protected function doSetupViewWithRelationships();
 
   /**
    * Runs assertions for the ::testViewWithRelationships test.
-   *
-   * @return void
    */
   abstract protected function assertViewWithRelationshipsResults();
 
   /**
    * Runs setup for the ::testViewWithFilters test.
-   *
-   * @return void
    */
   abstract protected function doSetupViewWithFilters();
 
   /**
    * Runs assertions for the ::testViewWithFilters test.
-   *
-   * @return void
    */
   abstract protected function assertViewWithFiltersResults();
 
   /**
    * Runs setup for the ::testViewWithSorts test.
-   *
-   * @return void
    */
   abstract protected function doSetupViewWithSorts();
 
   /**
    * Runs assertions for the ::testViewWithSorts test.
-   *
-   * @return void
    */
   abstract protected function assertViewWithSortsResults();
 
   /**
    * Runs setup for the ::testViewWithArguments test.
-   *
-   * @return void
    */
   abstract protected function doSetupViewWithArguments();
 
@@ -262,8 +248,6 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
    *
    * @param array $arguments
    *   The views arguments.
-   *
-   * @return void
    */
   abstract protected function assertViewWithArgumentsResults(array $arguments);
 
@@ -297,7 +281,7 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
    * Adds a field to a Views display.
    *
    * @param string $name_locator
-   *   The field's checkbox locator
+   *   The field's checkbox locator.
    * @param array $configuration
    *   The field's display configuration.
    *
@@ -413,9 +397,9 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
    * Clicks an AJAX link with specified locator.
    *
    * @param string $locator
-   *    The link id, title, text or image alt.
+   *   The link id, title, text or image alt.
    *
-   * @throws ElementNotFoundException
+   * @throws \Behat\Mink\Exception\ElementNotFoundException
    */
   protected function clickAjaxLink(string $locator): void {
     $this->getSession()->getPage()->clickLink($locator);

@@ -11,8 +11,14 @@ use Drupal\views\Views;
  */
 final class FilterDateTest extends KernelHandlerTestBase {
 
+  /**
+   * {@inheritdoc}
+   */
   public static $testViews = ['test_view'];
 
+  /**
+   * {@inheritdoc}
+   */
   protected $columnMap = [
     'contact_type' => 'contact_type',
     'display_name' => 'display_name',

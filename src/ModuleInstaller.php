@@ -6,7 +6,6 @@ use Drupal\Core\DrupalKernelInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Extension\ModuleInstaller as ExtensionModuleInstaller;
 use Drupal\Core\Extension\ModuleInstallerInterface;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Update\UpdateHookRegistry;
 

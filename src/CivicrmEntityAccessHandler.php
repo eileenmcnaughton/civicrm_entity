@@ -20,6 +20,12 @@ class CivicrmEntityAccessHandler extends EntityAccessControlHandler {
    */
   protected $civicrmEntityInfo;
 
+  /**
+   * Class constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type object.
+   */
   public function __construct(EntityTypeInterface $entity_type) {
     parent::__construct($entity_type);
     $this->civicrmEntityInfo = SupportedEntities::getInfo();

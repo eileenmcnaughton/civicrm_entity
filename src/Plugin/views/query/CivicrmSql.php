@@ -6,7 +6,6 @@ use Drupal\civicrm\Civicrm;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Database\Query\Select;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
-use Drupal\views\Plugin\views\join\JoinPluginBase;
 use Drupal\views\Plugin\views\query\Sql;
 use Drupal\views\ViewExecutable;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -70,6 +69,9 @@ class CivicrmSql extends Sql {
     parent::init($view, $display, $options);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function query($get_count = FALSE) {
     $query = parent::query($get_count);
     assert($query instanceof Select);
@@ -81,7 +83,7 @@ class CivicrmSql extends Sql {
       // not already been converted.
       // Also do not convert any drupal custom fields.
       if ((strpos($table['table'], 'civicrm_') !== 0 && strpos($table['table'], '.') === FALSE) || (strpos($table['table'], 'civicrm_') === 0 && strpos($table['table'], '__') !== FALSE)) {
-         $table['table'] = $connection->getFullQualifiedTableName($table['table']);
+        $table['table'] = $connection->getFullQualifiedTableName($table['table']);
       }
     }
     return $query;
