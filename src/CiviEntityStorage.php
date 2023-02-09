@@ -589,7 +589,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
    *
    * @throws \Drupal\Core\Entity\Sql\SqlContentEntityStorageException
    */
-  protected function saveToDedicatedTables(ContentEntityInterface $entity, $update = TRUE, array $names = []) {
+  protected function saveToDedicatedTables(ContentEntityInterface $entity, $update = TRUE, $names = []) {
     $vid = $entity->getRevisionId();
     $id = $entity->id();
     $bundle = $entity->bundle();
