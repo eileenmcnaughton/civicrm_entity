@@ -9,7 +9,6 @@
     },
     "require-dev": {
         "drupal/fullcalendar_view": "^5.0",
-        "drupal/leaflet": "^2"
     },
     "minimum-stability": "dev"
 }
