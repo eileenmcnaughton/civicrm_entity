@@ -8,7 +8,7 @@
         "civicrm/civicrm-drupal-8": "*"
     },
     "require-dev": {
-        "drupal/fullcalendar_view": "^5.0",
+        "drupal/fullcalendar_view": "^5.0"
     },
     "minimum-stability": "dev"
 }
