@@ -57,7 +57,7 @@ abstract class KernelHandlerTestBase extends ViewsKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown() : void{
     $this->tearDownCivicrm();
   }
 

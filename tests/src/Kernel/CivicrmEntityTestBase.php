@@ -58,7 +58,7 @@ abstract class CivicrmEntityTestBase extends KernelTestBase implements ServiceMo
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown() : void {
     $this->tearDownCivicrm();
   }
 
