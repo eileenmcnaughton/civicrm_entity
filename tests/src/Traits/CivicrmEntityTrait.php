@@ -23,7 +23,7 @@ trait CivicrmEntityTrait {
     $this->setSetting('file_private_path', $file_private_path);
     mkdir($file_private_path, 0775);
 
-    module_load_install('civicrm');
+    \Drupal::moduleHandler()->loadInclude('civicrm', 'install');
     $setup = _civicrm_setup();
     $installed = $setup->checkInstalled();
     if ($installed->isSettingInstalled() || $installed->isDatabaseInstalled()) {

@@ -78,7 +78,7 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp() : void {
     parent::setUp();
     $admin_user = $this->createUser([
       'access content',

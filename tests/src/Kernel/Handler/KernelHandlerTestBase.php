@@ -34,7 +34,7 @@ abstract class KernelHandlerTestBase extends ViewsKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp($import_test_views = TRUE) {
+  protected function setUp($import_test_views = TRUE) : void {
     KernelTestBase::setUp();
     $this->setUpCivicrm();
 
@@ -57,7 +57,7 @@ abstract class KernelHandlerTestBase extends ViewsKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown() : void{
     $this->tearDownCivicrm();
   }
 
