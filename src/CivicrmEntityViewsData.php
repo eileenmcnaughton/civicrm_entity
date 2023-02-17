@@ -799,6 +799,9 @@ class CivicrmEntityViewsData extends EntityViewsData {
 
           return $filter;
         }
+        else {
+          return ['id' => 'standard'];
+        }
         break;
 
       default:

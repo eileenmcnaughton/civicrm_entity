@@ -112,7 +112,7 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
           'canonical' => sprintf('/%s/{%s}', $clean_entity_type_id, $entity_type_id),
           'delete-form' => sprintf('/%s/{%s}/delete', $clean_entity_type_id, $entity_type_id),
           'edit-form' => sprintf('/%s/{%s}/edit', $clean_entity_type_id, $entity_type_id),
-          'add-form' => sprintf('/%s/add', $clean_entity_type_id, $entity_type_id),
+          'add-form' => sprintf('/%s/add', $clean_entity_type_id),
           'collection' => sprintf('/admin/structure/civicrm-entity/%s', $clean_entity_type_id),
         ],
         'field_ui_base_route' => "entity.$entity_type_id.collection",
@@ -185,6 +185,7 @@ function civicrm_entity_entity_bundle_field_info(EntityTypeInterface $entity_typ
     // on the entity_type property directly.
     $ids = \Drupal::entityQuery('field_config')
       ->condition('id', $entity_type->id() . '.', 'STARTS_WITH')
+      ->accessCheck(FALSE)
       ->execute();
     // Fetch all fields and key them by field name.
     $field_configs = FieldConfig::loadMultiple($ids);
@@ -367,6 +368,7 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
   $storage = \Drupal::entityTypeManager()->getStorage($entityType);
 
   if ($op == 'create') {
+    /** @var \Drupal\civicrm_entity\Entity\CivicrmEntity $entity */
     $entity = $storage->create($params);
   }
   elseif (empty($id)) {
@@ -379,6 +381,7 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
     if ($objectName == 'EntityTag') {
       $id = $storage->getEntityTagEntityId($params[0][0], $params[1]);
     }
+    /** @var \Drupal\civicrm_entity\Entity\CivicrmEntity $entity */
     $entity = $storage->load($id);
   }
   if (!$entity) {
@@ -442,6 +445,7 @@ function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
   }
 
   if ($op == 'delete') {
+    /** @var \Drupal\civicrm_entity\Entity\CivicrmEntity $entity */
     $entity = _civicrm_entity_stash($objectName, $objectId);
   }
   else {
@@ -453,6 +457,7 @@ function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
         $object->entity_table = 'civicrm_contact';
         $object->tag_id = $objectId;
         if ($object->find(TRUE)) {
+          /** @var \Drupal\civicrm_entity\Entity\CivicrmEntity $entity */
           $entity = $storage->load($object->id);
           $entity->original = $storage->loadUnchanged($entity->id());
           _civicrm_entity_post_invoke($op, $storage, $entity);
@@ -460,8 +465,9 @@ function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
       }
       return;
     }
-
-    if ($entity = $storage->load($objectId)) {
+    /** @var \Drupal\civicrm_entity\Entity\CivicrmEntity $entity */
+    $entity = $storage->load($objectId);
+    if ($entity) {
       $entity->original = $storage->loadUnchanged($entity->id());
     }
   }
@@ -509,7 +515,7 @@ function civicrm_entity_views_query_alter(ViewExecutable $view, QueryPluginBase 
   // If CiviCRM tables in a separate database.
   $civicrm_connection_name = drupal_valid_test_ua() ? 'civicrm_test' : 'civicrm';
   $civicrm_database_info = Database::getConnectionInfo($civicrm_connection_name);
-  if (isset($civicrm_database_info['default'])) {
+  if (isset($civicrm_database_info['default']) && method_exists($query, "getTableQueue")) {
     $civicrm_connection = Database::getConnection('default', $civicrm_connection_name);
     $table_queue =& $query->getTableQueue();
     foreach ($table_queue as $alias => &$table_info) {
@@ -537,25 +543,27 @@ function civicrm_entity_views_query_alter(ViewExecutable $view, QueryPluginBase 
       }
     }
     $class = get_class($query);
-    if ($class == 'Drupal\search_api\Plugin\views\query\SearchApiQuery') {
+    if ($class == 'Drupal\search_api\Plugin\views\query\SearchApiQuery' && method_exists($query, "getWhere")) {
       $where = $query->getWhere();
     }
-    else {
+    elseif (isset($query->where)) {
       $where = $query->where;
     }
-    foreach ($where as &$condition_group) {
-      foreach ($condition_group['conditions'] as &$condition) {
-        if (!is_object($condition['field'])) {
-          foreach ($affectedColumns as $aff_column) {
-            if (strpos($aff_column, $condition['field']) !== FALSE) {
-              $condition['field'] = str_replace($aff_column, $aff_column . $dbLocale, $condition['field']);
+    if (!empty($where)) {
+      foreach ($where as &$condition_group) {
+        foreach ($condition_group['conditions'] as &$condition) {
+          if (!is_object($condition['field'])) {
+            foreach ($affectedColumns as $aff_column) {
+              if (strpos($aff_column, $condition['field']) !== FALSE) {
+                $condition['field'] = str_replace($aff_column, $aff_column . $dbLocale, $condition['field']);
+              }
             }
           }
         }
       }
     }
 
-    if ($query->fields) {
+    if (!empty($query->fields)) {
       foreach ($query->fields as &$field) {
         if (array_key_exists($field['table'], $columns) && array_key_exists($field['field'], $columns[$field['table']])) {
           $field['field'] .= $dbLocale;

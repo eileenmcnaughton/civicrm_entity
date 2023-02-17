@@ -4,7 +4,7 @@ namespace Drupal\civicrm_entity\Plugin\views\relationship;
 
 use Drupal\views\ViewExecutable;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
-use Drupal\core\form\FormStateInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\views\Plugin\views\relationship\RelationshipPluginBase;
 use Drupal\views\Views;
 

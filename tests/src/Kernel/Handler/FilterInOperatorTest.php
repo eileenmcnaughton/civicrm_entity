@@ -28,6 +28,7 @@ final class FilterInOperatorTest extends KernelHandlerTestBase {
    * Test civicrm_entity_in_operator plugin.
    */
   public function testFilterInOperatorSimple() {
+    /** @var \Drupal\views\ViewExecutable $view */
     $view = Views::getView('test_view');
     $view->setDisplay();
 
