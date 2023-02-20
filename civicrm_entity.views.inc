@@ -242,6 +242,7 @@ function civicrm_entity_field_default_views_data(FieldStorageConfigInterface $fi
   // Description of the field tables.
   // @todo Generalize this code to make it work with any table layout. See
   //   https://www.drupal.org/node/2079019.
+  /** @var \Drupal\Core\Entity\Sql\DefaultTableMapping $table_mapping */
   $table_mapping = $storage->getTableMapping();
   $field_tables = [
     EntityStorageInterface::FIELD_LOAD_CURRENT => [
@@ -267,6 +268,7 @@ function civicrm_entity_field_default_views_data(FieldStorageConfigInterface $fi
   foreach ($bundles_names as $bundle) {
     $fields[$bundle] = FieldConfig::loadByName($entity_type->id(), $bundle, $field_name);
   }
+  /** @var \Drupal\field\FieldConfigInterface $config_entity */
   foreach ($fields as $bundle => $config_entity) {
     if (!empty($config_entity)) {
       if ($config_entity->isTranslatable()) {
@@ -293,6 +295,7 @@ function civicrm_entity_field_default_views_data(FieldStorageConfigInterface $fi
   // If the field is translatable only on certain bundles, there will be a join
   // on langcode OR bundle name.
   elseif (!empty($translatable_configs) && !empty($untranslatable_configs)) {
+    /** @var \Drupal\field\FieldConfigInterface $config */
     foreach ($untranslatable_configs as $config) {
       $untranslatable_config_bundles[] = $config->getTargetBundle();
     }
