@@ -42,6 +42,7 @@ class CivicrmStorageGetTest extends CivicrmEntityTestBase {
   public function testLoadEvent() {
     $storage = $this->container->get('entity_type.manager')
       ->getStorage('civicrm_event');
+    /** @var \Drupal\civicrm_entity\Entity\CivicrmEntity $entity */
     $entity = $storage->load(1);
     $this->assertInstanceOf(CivicrmEntity::class, $entity);
     $this->assertEquals($entity->id(), 1);
@@ -56,6 +57,7 @@ class CivicrmStorageGetTest extends CivicrmEntityTestBase {
    */
   public function testLoadContact() {
     $storage = $this->container->get('entity_type.manager')->getStorage('civicrm_contact');
+    /** @var \Drupal\civicrm_entity\Entity\CivicrmEntity $entity */
     $entity = $storage->load(10);
     $this->assertInstanceOf(CivicrmEntity::class, $entity);
     $this->assertEquals($entity->id(), 10);
@@ -92,6 +94,7 @@ class CivicrmStorageGetTest extends CivicrmEntityTestBase {
 
     $storage = $this->container->get('entity_type.manager')
       ->getStorage('civicrm_event');
+    /** @var \Drupal\civicrm_entity\Entity\CivicrmEntity $entity */
     $entity = $storage->load(1);
     foreach ($expected_utc_datetime as $field_name => $field_data) {
       $this->assertEquals(
