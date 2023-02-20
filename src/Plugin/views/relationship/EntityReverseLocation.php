@@ -7,7 +7,7 @@ use Drupal\civicrm_entity\CiviCrmApiInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\views\ViewExecutable;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
-use Drupal\core\form\FormStateInterface;
+use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Reverse CiviCRM entity reference locations.

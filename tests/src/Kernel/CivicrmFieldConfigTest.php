@@ -34,6 +34,7 @@ class CivicrmFieldConfigTest extends CivicrmEntityTestBase {
 
     /** @var \Drupal\civicrm_entity\CiviEntityStorage $civi_entity_storage */
     $civi_entity_storage = $this->container->get('entity_type.manager')->getStorage('civicrm_event');
+    /** @var \Drupal\Core\Entity\Sql\DefaultTableMapping $table_mapping */
     $table_mapping = $civi_entity_storage->getTableMapping();
     $db_schema = $this->container->get('database')->schema();
 
@@ -75,6 +76,7 @@ class CivicrmFieldConfigTest extends CivicrmEntityTestBase {
     /** @var \Drupal\civicrm_entity\CiviEntityStorage $civi_entity_storage */
     $civi_entity_storage = $this->container->get('entity_type.manager')->getStorage('civicrm_event');
     $database = $this->container->get('database');
+    /** @var \Drupal\Core\Entity\Sql\DefaultTableMapping $table_mapping */
     $table_mapping = $civi_entity_storage->getTableMapping();
     $db_schema = $database->schema();
 

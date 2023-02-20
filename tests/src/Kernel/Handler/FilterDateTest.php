@@ -28,6 +28,7 @@ final class FilterDateTest extends KernelHandlerTestBase {
    * Tests general offset.
    */
   public function testOffset() {
+    /** @var \Drupal\views\ViewExecutable $view */
     $view = Views::getView('test_view');
 
     // Test offset for simple operator.

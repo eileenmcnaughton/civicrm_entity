@@ -9,6 +9,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\civicrm_entity\CiviCrmApi;
 
 if (!class_exists('Drupal\views_bulk_operations\Action\ViewsBulkOperationsActionBase')) {
   return;
@@ -116,7 +117,7 @@ class CivicrmContactAddToGroup extends ViewsBulkOperationsActionBase implements 
    *
    * @param array $form
    *   Form array.
-   * @param Drupal\Core\Form\FormStateInterface $form_state
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state object.
    *
    * @return array

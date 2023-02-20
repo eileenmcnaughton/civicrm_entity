@@ -45,9 +45,9 @@ class ContactSubtype extends ArgumentDefaultPluginBase implements CacheableDepen
    *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param Drupal\Core\Session\AccountProxy $currentUser
+   * @param \Drupal\Core\Session\AccountProxy $currentUser
    *   The current user.
-   * @param Drupal\civicrm_entity\CiviCrmApiInterface $civicrmApi
+   * @param \Drupal\civicrm_entity\CiviCrmApiInterface $civicrmApi
    *   The CiviCRM Api.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, AccountProxy $currentUser, CiviCrmApiInterface $civicrmApi) {

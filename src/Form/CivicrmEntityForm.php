@@ -128,7 +128,7 @@ class CivicrmEntityForm extends ContentEntityForm {
    */
   public function save(array $form, FormStateInterface $form_state) {
     $insert = $this->entity->isNew();
-    $this->entity->save();
+    $result = $this->entity->save();
 
     $t_args = ['%title' => $this->entity->toLink()->toString()];
     if ($insert) {
@@ -141,6 +141,7 @@ class CivicrmEntityForm extends ContentEntityForm {
       "entity.{$this->entity->getEntityTypeId()}.canonical",
       [$this->entity->getEntityTypeId() => $this->entity->id()]
     );
+    return $result;
   }
 
 }

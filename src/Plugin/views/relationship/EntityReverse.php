@@ -35,8 +35,8 @@ class EntityReverse extends CoreEntityReverse {
       $join['extra'] = $this->definition['extra'];
     }
 
-    if (!empty($def['join_id'])) {
-      $id = $def['join_id'];
+    if (!empty($this->definition['join_id'])) {
+      $id = $this->definition['join_id'];
     }
     else {
       $id = 'standard';

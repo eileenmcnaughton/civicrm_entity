@@ -7,8 +7,8 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Menu\LocalActionManagerInterface;
-use Drupal\Core\Menu\LocalTaskManagerInterface;
+use Drupal\Core\Menu\LocalActionManager;
+use Drupal\Core\Menu\LocalTaskManager;
 use Drupal\Core\Menu\MenuLinkManagerInterface;
 use Drupal\Core\Routing\RouteBuilderInterface;
 use Drupal\filter\FilterFormatInterface;
@@ -36,14 +36,14 @@ class CivicrmEntitySettings extends ConfigFormBase {
   /**
    * The local action manager.
    *
-   * @var \Drupal\Core\Menu\LocalActionManagerInterface
+   * @var \Drupal\Core\Menu\LocalActionManager
    */
   protected $localActionManager;
 
   /**
    * The local task manager.
    *
-   * @var \Drupal\Core\Menu\LocalTaskManagerInterface
+   * @var \Drupal\Core\Menu\LocalTaskManager
    */
   protected $localTaskManager;
 
@@ -63,14 +63,14 @@ class CivicrmEntitySettings extends ConfigFormBase {
    *   The entity type manager.
    * @param \Drupal\Core\Routing\RouteBuilderInterface $route_builder
    *   The route builder.
-   * @param \Drupal\Core\Menu\LocalActionManagerInterface $local_action_manager
+   * @param \Drupal\Core\Menu\LocalActionManager $local_action_manager
    *   The local action manager.
-   * @param \Drupal\Core\Menu\LocalTaskManagerInterface $local_task_manager
+   * @param \Drupal\Core\Menu\LocalTaskManager $local_task_manager
    *   The local task manager.
    * @param \Drupal\Core\Menu\MenuLinkManagerInterface $menu_link_manager
    *   The menu link manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, RouteBuilderInterface $route_builder, LocalActionManagerInterface $local_action_manager, LocalTaskManagerInterface $local_task_manager, MenuLinkManagerInterface $menu_link_manager) {
+  public function __construct(ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, RouteBuilderInterface $route_builder, LocalActionManager $local_action_manager, LocalTaskManager $local_task_manager, MenuLinkManagerInterface $menu_link_manager) {
     parent::__construct($config_factory);
     $this->entityTypeManager = $entity_type_manager;
     $this->routeBuilder = $route_builder;

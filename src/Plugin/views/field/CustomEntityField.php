@@ -31,6 +31,12 @@ use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
  * @ViewsField("civicrm_entity_custom_field")
  */
 class CustomEntityField extends EntityField {
+  /**
+   * The field definition.
+   *
+   * @var \Drupal\Core\Field\BaseFieldDefinition
+   */
+  protected $fieldDefinition;
 
   /**
    * The custom values.
@@ -279,7 +285,7 @@ class CustomEntityField extends EntityField {
    *
    * @param mixed $value
    *   The value returned by CiviCRM API.
-   * @param \Drupal\Core\FieldDefinitionInterface $definition
+   * @param \Drupal\Core\Field\FieldDefinitionInterface $definition
    *   The field definition.
    *
    * @return mixed
