@@ -6,4 +6,4 @@ package: 'CiviCRM'
 
 dependencies:
   - civicrm_entity:civicrm_entity
-  - leaflet:leaflet_views (>=2.0.0)
+  - leaflet:leaflet_views (>=2.2.6)
