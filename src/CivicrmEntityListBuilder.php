@@ -40,7 +40,7 @@ class CivicrmEntityListBuilder extends EntityListBuilder {
     }
     return [
       'id' => $entity->id(),
-      'label' => $entity->toLink(),
+      'label' => $entity->hasLinkTemplate('canonical') ? $entity->toLink() : $entity->label(),
     ] + parent::buildRow($entity);
   }
 
@@ -50,11 +50,13 @@ class CivicrmEntityListBuilder extends EntityListBuilder {
   protected function getDefaultOperations(EntityInterface $entity) {
     $operations = parent::getDefaultOperations($entity);
 
-    $operations['view'] = [
-      'title' => $this->t('View'),
-      'weight' => 50,
-      'url' => $entity->toUrl(),
-    ];
+    if ($entity->hasLinkTemplate('canonical')) {
+      $operations['view'] = [
+        'title' => $this->t('View'),
+        'weight' => 0,
+        'url' => $entity->toUrl(),
+      ];
+    }
 
     return $operations;
   }

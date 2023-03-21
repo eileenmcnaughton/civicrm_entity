@@ -108,14 +108,21 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
         ],
         // Generate route paths.
         'links' => [
-          'canonical' => sprintf('/%s/{%s}', $clean_entity_type_id, $entity_type_id),
-          'delete-form' => sprintf('/%s/{%s}/delete', $clean_entity_type_id, $entity_type_id),
-          'edit-form' => sprintf('/%s/{%s}/edit', $clean_entity_type_id, $entity_type_id),
-          'add-form' => sprintf('/%s/add', $clean_entity_type_id, $entity_type_id),
           'collection' => sprintf('/admin/structure/civicrm-entity/%s', $clean_entity_type_id),
         ],
         'field_ui_base_route' => "entity.$entity_type_id.collection",
       ]);
+
+      if (!$config->get('disable_links')) {
+        $entity_type_info = array_merge_recursive($entity_type_info, [
+          'links' => [
+            'canonical' => sprintf('/%s/{%s}', $clean_entity_type_id, $entity_type_id),
+            'delete-form' => sprintf('/%s/{%s}/delete', $clean_entity_type_id, $entity_type_id),
+            'edit-form' => sprintf('/%s/{%s}/edit', $clean_entity_type_id, $entity_type_id),
+            'add-form' => sprintf('/%s/add', $clean_entity_type_id, $entity_type_id),
+          ],
+        ]);
+      }
     }
 
     // If this entity has bundle support, we define the bundle field as "bundle"
