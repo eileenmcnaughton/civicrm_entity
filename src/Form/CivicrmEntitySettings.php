@@ -155,9 +155,9 @@ class CivicrmEntitySettings extends ConfigFormBase {
 
     $form['advanced_settings']['disable_links'] = [
       '#type' => 'checkbox',
-      '#title' => $this->t('Disable links'),
+      '#title' => $this->t('Disable Drupal pages'),
       '#default_value' => $config->get('disable_links'),
-      '#description' => $this->t('Disables links for canonical and add, edit, and delete forms.'),
+      '#description' => $this->t('Disables Drupal versions of view page and, add, edit, and delete forms for all enabled entity types.'),
     ];
 
     return $form;
