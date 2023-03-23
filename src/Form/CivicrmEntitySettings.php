@@ -139,18 +139,43 @@ class CivicrmEntitySettings extends ConfigFormBase {
     ];
 
     $civicrm_entity_types = SupportedEntities::getInfo();
-    // @todo Use tableselect so we can display entity descriptions.
-    $options = array_map(function (array $entity_info) {
-      return $entity_info['civicrm entity label'];
-    }, $civicrm_entity_types);
-    asort($options);
 
     $form['enabled_entity_types'] = [
-      '#type' => 'checkboxes',
+      '#tree' => TRUE,
+      '#type' => 'fieldset',
       '#title' => $this->t('Enabled entity types'),
-      '#options' => $options,
-      '#default_value' => $config->get('enabled_entity_types'),
+      '#collapsible' => FALSE,
     ];
+
+    $enabled_entity_types = $config->get('enabled_entity_types') ?? [];
+    $disable_links_per_type = $config->get('disable_links_per_type') ?? [];
+    foreach ($civicrm_entity_types as $key => $entity_info) {
+      $form['enabled_entity_types'][$key]['#type'] = 'fieldset';
+
+      $form['enabled_entity_types'][$key]['enabled'] = [
+        '#type' => 'checkbox',
+        '#title' => $entity_info['civicrm entity label'],
+        '#default_value' => in_array($key, $enabled_entity_types),
+      ];
+
+      $form['enabled_entity_types'][$key]['disable_links'] = [
+        '#states' => [
+          'visible' => [
+            ':input[name="enabled_entity_types[' . $key . '][enabled]"]' => ['checked' => TRUE],
+          ],
+        ],
+        '#type' => 'checkboxes',
+        '#title' => $this->t('Disable Drupal pages'),
+        // @todo Should this be a list of dynamic operations?
+        '#options' => [
+          'view' => $this->t('View'),
+          'add' => $this->t('Add'),
+          'edit' => $this->t('Edit'),
+          'delete' => $this->t('Delete'),
+        ],
+        '#default_value' => $disable_links_per_type[$key]['values'] ?? [],
+      ];
+    }
 
     $form['advanced_settings'] = [
       '#type' => 'details',
@@ -169,7 +194,7 @@ class CivicrmEntitySettings extends ConfigFormBase {
       '#type' => 'checkbox',
       '#title' => $this->t('Disable Drupal pages'),
       '#default_value' => $config->get('disable_links'),
-      '#description' => $this->t('Disables Drupal versions of view page and, add, edit, and delete forms for all enabled entity types.'),
+      '#description' => $this->t('Globally disables Drupal versions of view page and, add, edit, and delete forms for all enabled entity types. This option overrides the "per type" Drupal pages.'),
     ];
 
     return $form;
@@ -180,12 +205,21 @@ class CivicrmEntitySettings extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     parent::submitForm($form, $form_state);
-    $enabled_entity_type = array_filter($form_state->getValue('enabled_entity_types'));
+    $enabled_entity_types = [];
+    $disable_links_per_type = [];
+    foreach ($form_state->getValue('enabled_entity_types') as $entity_type => $value) {
+      if ($value['enabled']) {
+        $enabled_entity_types[] = $entity_type;
+        $disable_links_per_type[$entity_type]['values'] = $value['disable_links'];
+      }
+    }
+
     $this->config('civicrm_entity.settings')
       ->set('filter_format', $form_state->getValue('filter_format'))
-      ->set('enabled_entity_types', $enabled_entity_type)
+      ->set('enabled_entity_types', $enabled_entity_types)
       ->set('disable_hooks', $form_state->getValue('disable_hooks'))
       ->set('disable_links', $form_state->getValue('disable_links'))
+      ->set('disable_links_per_type', $disable_links_per_type)
       ->save();
 
     // Need to rebuild derivative routes.
