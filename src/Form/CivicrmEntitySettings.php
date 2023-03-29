@@ -173,7 +173,12 @@ class CivicrmEntitySettings extends ConfigFormBase {
           'edit' => $this->t('Edit'),
           'delete' => $this->t('Delete'),
         ],
-        '#default_value' => $disable_links_per_type[$key]['values'] ?? [],
+        '#default_value' => $disable_links_per_type[$key]['values'] ?? [
+          'view',
+          'add',
+          'edit',
+          'delete',
+        ],
       ];
     }
 
