@@ -10,6 +10,7 @@ use Drupal\Core\Routing\RouteProvider;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
 /**
  * Generates moderation-related local tasks.
@@ -81,29 +82,30 @@ class DynamicLocalTasks extends DeriverBase implements ContainerDeriverInterface
     });
 
     foreach ($civicrm_entities as $entity_type_id => $entity_type) {
-      if ($this->routeProvider->getRouteByName("$entity_type_id.canonical")) {
-        $this->derivatives["$entity_type_id.canonical"] = [
-          'route_name' => "entity.$entity_type_id.canonical",
-          'title' => $this->t('View'),
-          'base_route' => "entity.$entity_type_id.canonical",
-        ] + $base_plugin_definition;
-      }
-
-      if ($this->routeProvider->getRouteByName("$entity_type_id.canonical")) {
-        $this->derivatives["entity.$entity_type_id.edit_form"] = [
+      $this->derivatives["entity.$entity_type_id.edit_form"] = [
         'route_name' => "entity.$entity_type_id.edit_form",
         'title' => $this->t('Edit'),
         'base_route' => "entity.$entity_type_id.canonical",
-        ] + $base_plugin_definition;
-      }
+      ] + $base_plugin_definition;
 
-      if ($this->routeProvider->getRouteByName("entity.$entity_type_id.collection")) {
-        $this->derivatives["entity.$entity_type_id.collection"] = [
-          'route_name' => "entity.$entity_type_id.collection",
-          'title' => $this->t('List'),
-          'base_route' => "entity.$entity_type_id.collection",
-          'weight' => -10,
-        ] + $base_plugin_definition;
+      $this->derivatives["entity.$entity_type_id.collection"] = [
+        'route_name' => "entity.$entity_type_id.collection",
+        'title' => $this->t('List'),
+        'base_route' => "entity.$entity_type_id.collection",
+        'weight' => -10,
+      ] + $base_plugin_definition;
+
+      try {
+        if ($this->routeProvider->getRouteByName("entity.$entity_type_id.canonical")) {
+          $this->derivatives["$entity_type_id.canonical"] = [
+            'route_name' => "entity.$entity_type_id.canonical",
+            'title' => $this->t('View'),
+            'base_route' => "entity.$entity_type_id.canonical",
+          ] + $base_plugin_definition;
+        }
+      }
+      catch (RouteNotFoundException $e) {
+        $this->derivatives["entity.$entity_type_id.edit_form"]['base_route'] = "entity.$entity_type_id.edit_form";
       }
     }
 
