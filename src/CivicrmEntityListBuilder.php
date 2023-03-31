@@ -35,7 +35,7 @@ class CivicrmEntityListBuilder extends EntityListBuilder {
       return [
           'id' => $entity->id(),
           'bundle' => $entity->bundle(),
-          'label' => $entity->toLink(),
+          'label' => $entity->hasLinkTemplate('canonical') ? $entity->toLink() : $entity->label(),
         ] + parent::buildRow($entity);
     }
     return [
