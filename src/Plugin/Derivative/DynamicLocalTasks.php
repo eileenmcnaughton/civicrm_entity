@@ -82,11 +82,18 @@ class DynamicLocalTasks extends DeriverBase implements ContainerDeriverInterface
     });
 
     foreach ($civicrm_entities as $entity_type_id => $entity_type) {
-      $this->derivatives["entity.$entity_type_id.edit_form"] = [
-        'route_name' => "entity.$entity_type_id.edit_form",
-        'title' => $this->t('Edit'),
-        'base_route' => "entity.$entity_type_id.canonical",
-      ] + $base_plugin_definition;
+      try {
+        if ($this->routeProvider->getRouteByName("entity.$entity_type_id.edit_form")) {
+          $this->derivatives["entity.$entity_type_id.edit_form"] = [
+            'route_name' => "entity.$entity_type_id.edit_form",
+            'title' => $this->t('Edit'),
+            'base_route' => "entity.$entity_type_id.canonical",
+          ] + $base_plugin_definition;
+        }
+      }
+      catch (RouteNotFoundException $e) {
+        // No-op.
+      }
 
       $this->derivatives["entity.$entity_type_id.collection"] = [
         'route_name' => "entity.$entity_type_id.collection",
