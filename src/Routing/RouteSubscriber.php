@@ -111,9 +111,11 @@ final class RouteSubscriber extends RouteSubscriberBase {
 
       foreach ($field_ui_routes as $route_name => $defaults) {
         $route = $collection->get($route_name);
-        assert($route !== NULL);
-        foreach ($defaults as $name => $default) {
-          $route->setDefault($name, $default);
+
+        if ($route) {
+          foreach ($defaults as $name => $default) {
+            $route->setDefault($name, $default);
+          }
         }
       }
     }
