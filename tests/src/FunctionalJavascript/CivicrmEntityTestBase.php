@@ -34,7 +34,11 @@ abstract class CivicrmEntityTestBase extends CiviCrmTestBase {
     $this->drupalGet(Url::fromRoute('civicrm_entity.settings'));
     $page = $this->getSession()->getPage();
     foreach ($entity_types as $entity_type) {
-      $page->checkField("enabled_entity_types[$entity_type]");
+      $page->checkField("enabled_entity_types[$entity_type][enabled]");
+      $page->uncheckField("enabled_entity_types[$entity_type][disable_links][view]");
+      $page->uncheckField("enabled_entity_types[$entity_type][disable_links][add]");
+      $page->uncheckField("enabled_entity_types[$entity_type][disable_links][edit]");
+      $page->uncheckField("enabled_entity_types[$entity_type][disable_links][delete]");
     }
     $page->pressButton('Save configuration');
     $this->assertSession()->pageTextContains('The configuration options have been saved.');
