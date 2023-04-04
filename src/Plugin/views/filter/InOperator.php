@@ -137,4 +137,44 @@ class InOperator extends BaseInOperator {
     }
   }
 
+  public function operators() {
+    $operators = parent::operators();
+    $operators += [
+      'empty string' => [
+        'title' => $this->t('Is EMPTY/NULL'),
+        'method' => 'opEmptyString',
+        'short' => $this->t('empty string'),
+        'values' => 0,
+      ],
+      'not empty string' => [
+        'title' => $this->t('Is not EMPTY/NULL'),
+        'method' => 'opEmptyString',
+        'short' => $this->t('not empty string'),
+        'values' => 0,
+      ],
+    ];
+
+    return $operators;
+  }
+
+  protected function opEmptyString() {
+    $this->ensureMyTable();
+    $field = "$this->tableAlias.$this->realField";
+
+    if ($this->operator == 'empty string') {
+      $operator = "=";
+      $nullOP = 'IS NULL';
+    }
+    else {
+      $operator = "!=";
+      $nullOP = 'IS NOT NULL';
+    }
+
+    $condition = new Condition('OR');
+    $condition->condition($field, '', $operator);
+    $condition->condition($field, NULL, $nullOP);
+
+    $this->query->addWhere($this->options['group'], $condition);
+  }
+
 }
