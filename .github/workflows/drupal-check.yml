@@ -1,0 +1,57 @@
+name: Drupal check
+
+on: pull_request
+
+jobs:
+  phpcs:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - drupal: '10.0.*'
+            civicrm: 'dev-master'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: shivammathur/setup-php@verbose
+        with:
+          php-version: 8.1
+          coverage: none
+          tools: composer:v2, cs2pr, mglaman/drupal-check
+      - name: Get composer cache directory
+        id: composercache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+      - uses: actions/cache@v2
+        with:
+          path: ${{ steps.composercache.outputs.dir }}
+          key: ${{ runner.os }}-${{ matrix.drupal }}-composer-${{ hashFiles('**/composer.json') }}
+          restore-keys: ${{ runner.os }}-composer-
+      - name: Setup Drupal
+        run: |
+          COMPOSER_MEMORY_LIMIT=-1 composer create-project drupal/recommended-project:${{ matrix.drupal }} ~/drupal --no-interaction --no-install
+          cd ~/drupal
+          composer config extra.enable-patching true
+          composer config extra.compile-mode all
+          composer config minimum-stability dev
+          composer config prefer-stable true
+          composer config preferred-install dist
+          composer config allow-plugins.civicrm/composer-compile-plugin true
+          composer config allow-plugins.civicrm/composer-downloads-plugin true
+          composer config allow-plugins.civicrm/civicrm-asset-plugin true
+          composer config allow-plugins.cweagans/composer-patches true
+          composer config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+          composer config repositories.0 composer https://packages.drupal.org/8
+          composer config repositories.1 path $GITHUB_WORKSPACE
+          composer install --no-interaction
+      - name: Install CiviCRM ${{ matrix.civicrm }}
+        run: |
+          cd ~/drupal
+          COMPOSER_MEMORY_LIMIT=-1 composer require composer/installers:'^1.0' civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-{core,packages,drupal-8}:${{ matrix.civicrm }} -W
+      - name: Install civicrm_entity
+        run: |
+          cd ~/drupal
+          COMPOSER_MEMORY_LIMIT=-1 composer require drupal/civicrm_entity *@dev
+      - name: Detect drupal check
+        run: |
+          cd ~/drupal
+          drupal-check --drupal-root=/home/runner/drupal --memory-limit=1G --format=checkstyle -d web/modules/contrib/civicrm_entity | cs2pr --graceful-warnings
