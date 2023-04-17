@@ -1,4 +1,6 @@
 parameters:
+	drupal:
+		drupal_root: /home/runner/drupal
 	customRulesetUsed: true
 	ignoreErrors:
 		- '#\Drupal calls should be avoided in classes, use dependency injection instead#'
