@@ -50,4 +50,11 @@ class CivicrmEntityStorageSchema extends SqlContentEntityStorageSchema {
     return FALSE;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function onFieldableEntityTypeCreate(EntityTypeInterface $entity_type, array $field_storage_definitions) {
+    return;
+  }
+
 }
