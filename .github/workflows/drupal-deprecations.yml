@@ -54,4 +54,4 @@ jobs:
       - name: Detect drupal deprecations
         run: |
           cd ~/drupal
-          phpstan analyse --memory-limit 1G --error-format=checkstyle web/modules/contrib/civicrm_entity | cs2pr --graceful-warnings
+          phpstan analyse --debug --memory-limit 1G --error-format=checkstyle web/modules/contrib/civicrm_entity
