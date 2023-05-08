@@ -26,6 +26,21 @@ final class CivicrmEntitySettingsFormTest extends CivicrmEntityTestBase {
     $this->drupalGet(Url::fromRoute('civicrm_entity.admin'));
     $this->assertSession()->linkExists('CiviCRM Activity');
     $this->assertSession()->linkExists('CiviCRM Event');
+
+    $this->drupalGet(Url::fromRoute('civicrm_entity.settings'));
+    $page = $this->getSession()->getPage();
+    foreach (['civicrm_contact'] as $entity_type) {
+      $page->checkField("enabled_entity_types[$entity_type][enabled]");
+    }
+    $page->pressButton('Save configuration');
+    $this->drupalGet('/civicrm-contact/add');
+    $this->assertSession()->responseContains('Page not found');
+    $this->drupalGet('/civicrm-contact/1');
+    $this->assertSession()->responseContains('Page not found');
+    $this->drupalGet('/civicrm-contact/1/edit');
+    $this->assertSession()->responseContains('Page not found');
+    $this->drupalGet('/civicrm-contact/1/delete');
+    $this->assertSession()->responseContains('Page not found');
   }
 
   /**

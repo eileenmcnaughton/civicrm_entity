@@ -81,7 +81,7 @@ class DynamicLocalTasks extends DeriverBase implements ContainerDeriverInterface
       return $type->getProvider() == 'civicrm_entity' && $type->get('civicrm_entity_ui_exposed');
     });
 
-    foreach ($civicrm_entities as $entity_type_id => $entity_type) {
+    foreach (array_keys($civicrm_entities) as $entity_type_id) {
       try {
         if ($this->routeProvider->getRouteByName("entity.$entity_type_id.edit_form")) {
           $this->derivatives["entity.$entity_type_id.edit_form"] = [
@@ -110,9 +110,14 @@ class DynamicLocalTasks extends DeriverBase implements ContainerDeriverInterface
             'base_route' => "entity.$entity_type_id.canonical",
           ] + $base_plugin_definition;
         }
+        else {
+          if ($this->routeProvider->getRouteByName("entity.$entity_type_id.edit_form")) {
+            $this->derivatives["entity.$entity_type_id.edit_form"]['base_route'] = "entity.$entity_type_id.edit_form";
+          }
+        }
       }
       catch (RouteNotFoundException $e) {
-        $this->derivatives["entity.$entity_type_id.edit_form"]['base_route'] = "entity.$entity_type_id.edit_form";
+        // No-op.
       }
     }
 
