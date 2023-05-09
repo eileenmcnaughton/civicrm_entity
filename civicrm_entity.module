@@ -278,7 +278,7 @@ function civicrm_entity_form_alter(array &$form, FormStateInterface $form_state,
       $form_display = $storage['form_display'];
       $entity = $form_object->getEntity();
 
-      if ($entity->getEntityType()->hasKey('bundle')) {
+      if ($entity->getEntityType()->hasKey('bundle') && \Drupal::moduleHandler()->moduleExists('field_group')) {
         $context = [
           'entity_type' => $entity->getEntityTypeId(),
           'bundle' => $entity->getEntityTypeId(),
