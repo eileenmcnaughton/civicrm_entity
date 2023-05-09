@@ -1,0 +1,20 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the civicrm_entity module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function civicrm_entity_install() {
+  module_set_weight('civicrm_entity', 1);
+}
+
+/**
+ * Set the module weight.
+ */
+function civicrm_entity_update_8001() {
+  module_set_weight('civicrm_entity', 1);
+}
