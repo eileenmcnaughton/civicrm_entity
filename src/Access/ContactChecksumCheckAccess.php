@@ -2,6 +2,7 @@
 
 namespace Drupal\civicrm_entity\Access;
 
+use \Civi\Api4\Contact;
 use Drupal\Core\Routing\Access\AccessInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Access\AccessResult;
@@ -15,6 +16,24 @@ use Symfony\Component\Routing\Route;
  * Checks access for displaying views using the ContactChecksum plugin
  */
 class ContactChecksumCheckAccess implements AccessInterface {   
+
+  /**
+   * The CiviCRM API service.
+   *
+   * @var \Drupal\civicrm_entity\CiviCrmApiInterface
+   */
+  protected $civicrmApi;
+
+  /**
+   * Constructs a ContactChecksumCheckAccess object.
+   *
+   * @param \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api
+   *   The CiviCRM API bridge.
+   */
+  public function __construct(CiviCrmApiInterface $civicrm_api) {
+    $this->namespaces = QueryBase::getNamespaces($this);
+    $this->civicrmApi = $civicrm_api;
+  }
 
   /**
    * A custom access check
@@ -45,10 +64,10 @@ class ContactChecksumCheckAccess implements AccessInterface {
       return AccessResult::forbidden();
     }
 
-    $civicrmAPI = \Drupal::service('civicrm_entity.api');
-    $civicrmAPI->getFields('Contact');  // This forces a call to Civicrm initialize.
+    $this->civicrmAPI = \Drupal::service('civicrm_entity.api');
+    $this->civicrmAPI->getFields('Contact');  // This forces a call to Civicrm initialize.
 
-    $results = \Civi\Api4\Contact::validateChecksum(FALSE)
+    $results = \Contact::validateChecksum(FALSE)
              ->setContactId($cid1)
              ->setChecksum($checksum)
              ->execute();

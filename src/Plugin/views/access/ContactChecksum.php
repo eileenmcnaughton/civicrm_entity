@@ -10,7 +10,9 @@ use Drupal\user\RoleStorageInterface;
 use Symfony\Component\Routing\Route;
 
 use Drupal\user\Plugin\views\access\Role;
+use Symfony\Component\HttpFoundation\RequestStack;
 
+use \Civi\Api4\Contact;
 
 /**
  * Access plugin that provides role-based access control.
@@ -25,6 +27,32 @@ use Drupal\user\Plugin\views\access\Role;
  */
 class ContactChecksum extends Role implements CacheableDependencyInterface {
 
+  /**
+   * The CiviCRM API service.
+   *
+   * @var \Drupal\civicrm_entity\CiviCrmApiInterface
+   */
+  protected $civicrmApi;
+
+  /**
+   * The request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected $requestStack;
+
+  /**
+   * Constructs a ContactChecksum object.
+   * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
+   *   The request stack.
+   * @param \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api
+   *   The CiviCRM API bridge.
+   */
+  public function __construct(RequestStack $requestStack, CiviCrmApiInterface $civicrm_api) {
+    $this->requestStack = $requestStack;
+    $this->civicrmApi = $civicrm_api;
+  }
+
   public function access(AccountInterface $account) {
     // Check if logged in and has access
     $logged_in_access = parent::access($account);
@@ -32,22 +60,20 @@ class ContactChecksum extends Role implements CacheableDependencyInterface {
     if ($logged_in_access) {
       return TRUE;
     }
-
-    $cid1 = filter_var(\Drupal::request()->query->get('cid1'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-    $checksum =  \Drupal::request()->query->get('cs');
+    $request = $this->requestStack->getCurrentRequest();
+    $cid1 = filter_var($requests()->query->get('cid1'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    $checksum =  $request()->query->get('cs');
 
     // Force CiviCRM to be intialized - ideally we'd use the api
     // wrapper however it's api3 and we need api4.
-    $civicrmAPI = \Drupal::service('civicrm_entity.api');
-    $civicrmAPI->getFields('Contact');  // This forces a call to Civicrm initialize.
+    $this->$civicrmAPI->getFields('Contact');  // This forces a call to Civicrm initialize.
 
-    $results = \Civi\Api4\Contact::validateChecksum(FALSE)
+    $results = \Contact::validateChecksum(FALSE)
              ->setContactId($cid1)
              ->setChecksum($checksum)
              ->execute();
     return !empty($results[0]['valid']) ?? FALSE;
   }
-
 
   /**
    * {@inheritdoc}
