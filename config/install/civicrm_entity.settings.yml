@@ -2,4 +2,4 @@ filter_format: ''
 enabled_entity_types: {  }
 disable_hooks: FALSE
 disable_links: FALSE
-disable_links_per_type: {  }
+enable_links_per_type: {  }

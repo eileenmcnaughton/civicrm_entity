@@ -58,7 +58,7 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
   $supported_entities = SupportedEntities::getInfo();
   $config = \Drupal::config('civicrm_entity.settings');
   $enabled_entity_types = $config->get('enabled_entity_types') ?: [];
-  $disable_links_per_type = $config->get('disable_links_per_type') ?: [];
+  $enable_links_per_type = $config->get('enable_links_per_type') ?: [];
   foreach ($supported_entities as $entity_type_id => $civicrm_entity_info) {
     $clean_entity_type_id = str_replace('_', '-', $entity_type_id);
     $civicrm_entity_name = $civicrm_entity_info['civicrm entity name'];
@@ -121,22 +121,22 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
         'field_ui_base_route' => "entity.$entity_type_id.collection",
       ]);
 
-      if (!empty($disable_links_per_type) && in_array($entity_type_id, array_keys($disable_links_per_type))) {
-        $disable_links = array_filter($disable_links_per_type[$entity_type_id]['values']);
+      if (!empty($enable_links_per_type) && in_array($entity_type_id, array_keys($enable_links_per_type))) {
+        $enable_links = array_filter($enable_links_per_type[$entity_type_id]['values']);
 
-        if (in_array('view', $disable_links)) {
+        if (!in_array('view', $enable_links)) {
           unset($entity_type_info['links']['canonical']);
         }
 
-        if (in_array('delete', $disable_links)) {
+        if (!in_array('delete', $enable_links)) {
           unset($entity_type_info['links']['delete-form']);
         }
 
-        if (in_array('edit', $disable_links)) {
+        if (!in_array('edit', $enable_links)) {
           unset($entity_type_info['links']['edit-form']);
         }
 
-        if (in_array('add', $disable_links)) {
+        if (!in_array('add', $enable_links)) {
           unset($entity_type_info['links']['add-form']);
         }
       }

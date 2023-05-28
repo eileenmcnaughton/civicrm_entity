@@ -148,7 +148,7 @@ class CivicrmEntitySettings extends ConfigFormBase {
     ];
 
     $enabled_entity_types = $config->get('enabled_entity_types') ?? [];
-    $disable_links_per_type = $config->get('disable_links_per_type') ?? [];
+    $enable_links_per_type = $config->get('enable_links_per_type') ?? [];
     foreach ($civicrm_entity_types as $key => $entity_info) {
       $form['enabled_entity_types'][$key]['#type'] = 'fieldset';
 
@@ -158,14 +158,14 @@ class CivicrmEntitySettings extends ConfigFormBase {
         '#default_value' => in_array($key, $enabled_entity_types),
       ];
 
-      $form['enabled_entity_types'][$key]['disable_links'] = [
+      $form['enabled_entity_types'][$key]['enable_links'] = [
         '#states' => [
           'visible' => [
             ':input[name="enabled_entity_types[' . $key . '][enabled]"]' => ['checked' => TRUE],
           ],
         ],
         '#type' => 'checkboxes',
-        '#title' => $this->t('Disable Drupal pages'),
+        '#title' => $this->t('Enable Drupal pages'),
         // @todo Should this be a list of dynamic operations?
         '#options' => [
           'view' => $this->t('View'),
@@ -173,7 +173,7 @@ class CivicrmEntitySettings extends ConfigFormBase {
           'edit' => $this->t('Edit'),
           'delete' => $this->t('Delete'),
         ],
-        '#default_value' => $disable_links_per_type[$key]['values'] ?? [
+        '#default_value' => $enable_links_per_type[$key]['values'] ?? [
           'view',
           'add',
           'edit',
@@ -211,11 +211,11 @@ class CivicrmEntitySettings extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     parent::submitForm($form, $form_state);
     $enabled_entity_types = [];
-    $disable_links_per_type = [];
+    $enable_links_per_type = [];
     foreach ($form_state->getValue('enabled_entity_types') as $entity_type => $value) {
       if ($value['enabled']) {
         $enabled_entity_types[] = $entity_type;
-        $disable_links_per_type[$entity_type]['values'] = $value['disable_links'];
+        $enable_links_per_type[$entity_type]['values'] = $value['enable_links'];
       }
     }
 
@@ -224,7 +224,7 @@ class CivicrmEntitySettings extends ConfigFormBase {
       ->set('enabled_entity_types', $enabled_entity_types)
       ->set('disable_hooks', $form_state->getValue('disable_hooks'))
       ->set('disable_links', $form_state->getValue('disable_links'))
-      ->set('disable_links_per_type', $disable_links_per_type)
+      ->set('enable_links_per_type', $enable_links_per_type)
       ->save();
 
     // Need to rebuild derivative routes.
