@@ -143,6 +143,7 @@ function civicrm_entity_views_data_alter(&$data) {
 
   $data['civicrm_contact']['current_employer']['real field'] = 'organization_name';
   $data['civicrm_contact']['employer_id']['field']['id'] = 'standard';
+  $data['civicrm_contribution']['contribution_source']['real field'] = 'source';
 }
 
 /**

@@ -50,6 +50,7 @@ final class RouteSubscriber extends RouteSubscriberBase {
     }
 
     $has_layout_builder = $this->moduleHandler->moduleExists('layout_builder');
+    $has_field_group = $this->moduleHandler->moduleExists('field_group');
     foreach ($this->entityTypeManager->getDefinitions() as $entity_type_id => $entity_type) {
       if (!$entity_type->get('civicrm_entity_ui_exposed')) {
         continue;
@@ -109,6 +110,40 @@ final class RouteSubscriber extends RouteSubscriberBase {
         ];
       }
 
+      if ($has_field_group) {
+        $field_ui_routes["field_ui.field_group_add_$entity_type_id.form_display"] = [
+          'bundle' => $entity_type_id,
+        ];
+
+        $field_ui_routes["field_ui.field_group_add_$entity_type_id.form_display.form_mode"] = [
+          'bundle' => $entity_type_id,
+        ];
+
+        $field_ui_routes["field_ui.field_group_add_$entity_type_id.display"] = [
+          'bundle' => $entity_type_id,
+        ];
+
+        $field_ui_routes["field_ui.field_group_add_$entity_type_id.display.view_mode"] = [
+          'bundle' => $entity_type_id,
+        ];
+
+        $field_ui_routes["field_ui.field_group_delete_$entity_type_id.form_display"] = [
+          'bundle' => $entity_type_id,
+        ];
+
+        $field_ui_routes["field_ui.field_group_delete_$entity_type_id.form_display.form_mode"] = [
+          'bundle' => $entity_type_id,
+        ];
+
+        $field_ui_routes["field_ui.field_group_delete_$entity_type_id.display"] = [
+          'bundle' => $entity_type_id,
+        ];
+
+        $field_ui_routes["field_ui.field_group_delete_$entity_type_id.display.view_mode"] = [
+          'bundle' => $entity_type_id,
+        ];
+      }
+
       foreach ($field_ui_routes as $route_name => $defaults) {
         $route = $collection->get($route_name);
 
@@ -127,7 +162,7 @@ final class RouteSubscriber extends RouteSubscriberBase {
   public static function getSubscribedEvents() : array {
     $events = parent::getSubscribedEvents();
     // Field UI's route subscriber runs at -100.
-    $events[RoutingEvents::ALTER] = ['onAlterRoutes', -200];
+    $events[RoutingEvents::ALTER] = ['onAlterRoutes', -250];
     return $events;
   }
 
