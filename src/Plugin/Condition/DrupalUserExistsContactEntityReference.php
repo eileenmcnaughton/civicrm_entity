@@ -26,7 +26,7 @@ use Drupal\civicrm_entity\Entity\CivicrmEntity;
  * )
  *
  */
-class DrupalUserExist extends RulesConditionBase implements ContainerFactoryPluginInterface {
+class DrupalUserExistsContactEntityReference extends RulesConditionBase implements ContainerFactoryPluginInterface {
 
   /**
    * The CiviCRM API service interface.
