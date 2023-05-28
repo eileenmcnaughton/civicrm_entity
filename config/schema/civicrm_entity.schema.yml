@@ -27,6 +27,6 @@ civicrm_entity.settings:
             sequence:
               type: string
               label: 'Value'
-    enable_links:
+    disable_links:
       type: boolean
-      label: 'Enable Drupal pages'
+      label: 'Disable Drupal pages'
