@@ -31,6 +31,10 @@ final class CivicrmEntitySettingsFormTest extends CivicrmEntityTestBase {
     $page = $this->getSession()->getPage();
     foreach (['civicrm_contact'] as $entity_type) {
       $page->checkField("enabled_entity_types[$entity_type][enabled]");
+      $page->uncheckField("enabled_entity_types[$entity_type][disable_links][view]");
+      $page->uncheckField("enabled_entity_types[$entity_type][disable_links][add]");
+      $page->uncheckField("enabled_entity_types[$entity_type][disable_links][edit]");
+      $page->uncheckField("enabled_entity_types[$entity_type][disable_links][delete]");
     }
     $page->pressButton('Save configuration');
     $this->drupalGet('/civicrm-contact/add');
