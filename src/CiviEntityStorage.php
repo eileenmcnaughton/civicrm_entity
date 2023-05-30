@@ -158,17 +158,13 @@ class CiviEntityStorage extends SqlContentEntityStorage {
 
     // Get all the fields.
     $fields = $this->getCiviCrmApi()->getFields($this->entityType->get('civicrm_entity'));
-    $field_names = [];
-    foreach ($fields as $field) {
-      $field_names[] = $field['name'];
-    }
 
     $ids = $this->cleanIds($ids);
 
     if (!empty($ids)) {
       $options = [
         'id' => ['IN' => $ids],
-        'return' => $field_names,
+        'return' => array_keys($fields),
         'options' => ['limit' => 0],
       ];
 
@@ -195,7 +191,14 @@ class CiviEntityStorage extends SqlContentEntityStorage {
             $civicrm_entity = $temporary;
           }
 
-          $entity = $this->prepareLoadedEntity($civicrm_entity);
+          $massaged_civicrm_entity = [];
+          foreach ($fields as $name => $field) {
+            if (isset($civicrm_entity[$name])) {
+              $massaged_civicrm_entity[$field['name']] = $civicrm_entity[$name];
+            }
+          }
+
+          $entity = $this->prepareLoadedEntity($massaged_civicrm_entity);
           $entities[$entity->id()] = $entity;
         }
       }
