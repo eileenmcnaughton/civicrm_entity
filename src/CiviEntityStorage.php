@@ -198,7 +198,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
             }
           }
 
-          $entity = $this->prepareLoadedEntity($massaged_civicrm_entity);
+          $entity = $this->prepareLoadedEntity($civicrm_entity + $massaged_civicrm_entity);
           $entities[$entity->id()] = $entity;
         }
       }
