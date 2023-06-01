@@ -589,7 +589,7 @@ function civicrm_entity_views_query_alter(ViewExecutable $view, QueryPluginBase 
       if (strpos($table_info['table'], 'civicrm_') === 0 && strpos($table_info['table'], '.') === FALSE && strpos($table_info['table'], '__') === FALSE) {
         $table_info['table'] = $civicrm_connection->getFullQualifiedTableName($table_info['table']);
       }
-      if (!empty($table_info['join']->table) && strpos($table_info['join']->table, 'civicrm_') === 0 && strpos($table_info['join']->table, '.') === FALSE && strpos($table_info['join']->table, '__') === FALSE) {
+      if (!empty($table_info['join']->table) && (strpos($table_info['join']->table, 'civicrm_') === 0 && strpos($table_info['join']->table, '.') === FALSE && strpos($table_info['join']->table, '__') === FALSE) || strpos($table_info['join']->table, 'civicrm_value_') === 0) {
         $table_info['join']->table = $civicrm_connection->getFullQualifiedTableName($table_info['join']->table);
       }
     }
