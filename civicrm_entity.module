@@ -58,6 +58,7 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
   $supported_entities = SupportedEntities::getInfo();
   $config = \Drupal::config('civicrm_entity.settings');
   $enabled_entity_types = $config->get('enabled_entity_types') ?: [];
+  $enable_links_per_type = $config->get('enable_links_per_type') ?: [];
   foreach ($supported_entities as $entity_type_id => $civicrm_entity_info) {
     $clean_entity_type_id = str_replace('_', '-', $entity_type_id);
     $civicrm_entity_name = $civicrm_entity_info['civicrm entity name'];
@@ -114,11 +115,40 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
           'canonical' => sprintf('/%s/{%s}', $clean_entity_type_id, $entity_type_id),
           'delete-form' => sprintf('/%s/{%s}/delete', $clean_entity_type_id, $entity_type_id),
           'edit-form' => sprintf('/%s/{%s}/edit', $clean_entity_type_id, $entity_type_id),
-          'add-form' => sprintf('/%s/add', $clean_entity_type_id),
+          'add-form' => sprintf('/%s/add', $clean_entity_type_id, $entity_type_id),
           'collection' => sprintf('/admin/structure/civicrm-entity/%s', $clean_entity_type_id),
         ],
         'field_ui_base_route' => "entity.$entity_type_id.collection",
       ]);
+
+      if (!empty($enable_links_per_type) && in_array($entity_type_id, array_keys($enable_links_per_type))) {
+        $enable_links = array_filter($enable_links_per_type[$entity_type_id]['values']);
+
+        if (!in_array('view', $enable_links)) {
+          unset($entity_type_info['links']['canonical']);
+        }
+
+        if (!in_array('delete', $enable_links)) {
+          unset($entity_type_info['links']['delete-form']);
+        }
+
+        if (!in_array('edit', $enable_links)) {
+          unset($entity_type_info['links']['edit-form']);
+        }
+
+        if (!in_array('add', $enable_links)) {
+          unset($entity_type_info['links']['add-form']);
+        }
+      }
+
+      if ($config->get('disable_links')) {
+        unset(
+          $entity_type_info['links']['canonical'],
+          $entity_type_info['links']['delete-form'],
+          $entity_type_info['links']['edit-form'],
+          $entity_type_info['links']['add-form'],
+        );
+      }
     }
 
     // If this entity has bundle support, we define the bundle field as "bundle"
@@ -130,7 +160,7 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
     if (!empty($civicrm_entity_info['bundle property'])) {
       $entity_type_info['entity_keys']['bundle'] = 'bundle';
       $entity_type_info['civicrm_bundle_property'] = $civicrm_entity_info['bundle property'];
-      if (isset($entity_type_info['links'])) {
+      if (isset($entity_type_info['links']['add-form'])) {
         // For entities with bundles that are exposed, add the `bundle` key to
         // the add-form route. In CiviCrmEntityRouteProvider::getAddFormRoute
         // we default the value, so that it isn't actually required in the URL.

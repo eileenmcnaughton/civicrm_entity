@@ -10,8 +10,10 @@ use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\RouteProvider;
 use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
 /**
  * Form object for CiviCRM Entities.
@@ -26,6 +28,13 @@ class CivicrmEntityForm extends ContentEntityForm {
   protected $currentUser;
 
   /**
+   * The route provider.
+   *
+   * @var \Drupal\Core\Routing\RouteProvider
+   */
+  protected $routeProvider;
+
+  /**
    * Constructs a CivicrmEntityForm object.
    *
    * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
@@ -36,10 +45,13 @@ class CivicrmEntityForm extends ContentEntityForm {
    *   The time service.
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The current user.
+   * @param \Drupal\Core\Routing\RouteProvider $route_provider
+   *   The route provider.
    */
-  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, AccountInterface $current_user) {
+  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, AccountInterface $current_user, RouteProvider $route_provider) {
     parent::__construct($entity_repository, $entity_type_bundle_info, $time);
     $this->currentUser = $current_user;
+    $this->routeProvider = $route_provider;
   }
 
   /**
@@ -50,7 +62,8 @@ class CivicrmEntityForm extends ContentEntityForm {
       $container->get('entity.repository'),
       $container->get('entity_type.bundle.info'),
       $container->get('datetime.time'),
-      $container->get('current_user')
+      $container->get('current_user'),
+      $container->get('router.route_provider')
     );
   }
 
@@ -130,17 +143,27 @@ class CivicrmEntityForm extends ContentEntityForm {
     $insert = $this->entity->isNew();
     $result = $this->entity->save();
 
-    $t_args = ['%title' => $this->entity->toLink()->toString()];
+    try {
+      if ($this->routeProvider->getRouteByName("entity.{$this->entity->getEntityTypeId()}.canonical")) {
+        $form_state->setRedirect(
+          "entity.{$this->entity->getEntityTypeId()}.canonical",
+          [$this->entity->getEntityTypeId() => $this->entity->id()]
+        );
+
+        $t_args = ['%title' => $this->entity->toLink()->toString()];
+      }
+    }
+    catch (RouteNotFoundException $e) {
+      $t_args = ['%title' => $this->entity->label()];
+    }
+
     if ($insert) {
       $this->messenger()->addMessage($this->t('%title has been created.', $t_args));
     }
     else {
       $this->messenger()->addMessage($this->t('%title has been updated.', $t_args));
     }
-    $form_state->setRedirect(
-      "entity.{$this->entity->getEntityTypeId()}.canonical",
-      [$this->entity->getEntityTypeId() => $this->entity->id()]
-    );
+
     return $result;
   }
 

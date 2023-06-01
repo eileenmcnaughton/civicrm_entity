@@ -14,3 +14,19 @@ civicrm_entity.settings:
     disable_hooks:
       type: boolean
       label: 'Disable pre/post hooks'
+    enable_links_per_type:
+      type: sequence
+      label: 'Enable Drupal pages per type'
+      sequence:
+        type: mapping
+        label: 'Entity type'
+        mapping:
+          values:
+            type: sequence
+            label: 'Values'
+            sequence:
+              type: string
+              label: 'Value'
+    disable_links:
+      type: boolean
+      label: 'Disable Drupal pages'
