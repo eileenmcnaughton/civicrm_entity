@@ -6,6 +6,7 @@ use \Civi\Api4\Contact;
 use Drupal\Core\Routing\Access\AccessInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Logger\LoggerChannelTrait;
 
 use Symfony\Component\Routing\Route;
 
@@ -16,6 +17,7 @@ use Symfony\Component\Routing\Route;
  * Checks access for displaying views using the ContactChecksum plugin
  */
 class ContactChecksumCheckAccess implements AccessInterface {   
+  use LoggerChannelTrait;
 
   /**
    * The CiviCRM API service.
@@ -52,7 +54,7 @@ class ContactChecksumCheckAccess implements AccessInterface {
 
     $access_by_role = !empty(array_intersect(array_filter($options['role']), $account->getRoles()));
     if ($access_by_role) {
-      \Drupal::logger('ContactChecksumCheckAccess')->info('Access by role');
+      $this->getlogger('ContactChecksumCheckAccess')->info('Access by role');
       return AccessResult::allowed();
     }
 
@@ -60,7 +62,7 @@ class ContactChecksumCheckAccess implements AccessInterface {
     $checksum =  \Drupal::request()->query->get('cs');
 
     if (empty($cid1) || empty($checksum)) {
-      \Drupal::logger('ContactChecksumCheckAccess')->info('No cid1 or cs param');
+      $this->getlogger('ContactChecksumCheckAccess')->info('No cid1 or cs param');
       return AccessResult::forbidden();
     }
 
