@@ -8,6 +8,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Logger\LoggerChannelTrait;
 
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Route;
 
 
@@ -29,11 +30,14 @@ class ContactChecksumCheckAccess implements AccessInterface {
   /**
    * Constructs a ContactChecksumCheckAccess object.
    *
+   * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
+   *   The request stack.
    * @param \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api
    *   The CiviCRM API bridge.
    */
-  public function __construct(CiviCrmApiInterface $civicrm_api) {
+  public function __construct(RequestStack $requestStack, CiviCrmApiInterface $civicrm_api) {
     $this->namespaces = QueryBase::getNamespaces($this);
+    $this->requestStack = $requestStack;
     $this->civicrmApi = $civicrm_api;
   }
 
@@ -57,9 +61,10 @@ class ContactChecksumCheckAccess implements AccessInterface {
       $this->getlogger('ContactChecksumCheckAccess')->info('Access by role');
       return AccessResult::allowed();
     }
-
-    $cid1 = filter_var(\Drupal::request()->query->get('cid1'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-    $checksum =  \Drupal::request()->query->get('cs');
+    $request = $this->requestStack->getCurrentRequest();
+    
+    $cid1 = filter_var($request->query->get('cid1'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    $checksum =  $request->query->get('cs');
 
     if (empty($cid1) || empty($checksum)) {
       $this->getlogger('ContactChecksumCheckAccess')->info('No cid1 or cs param');

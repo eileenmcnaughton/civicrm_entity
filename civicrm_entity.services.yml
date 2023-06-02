@@ -28,7 +28,7 @@ services:
 
   civicrm_entity.contact_checksum_access_checker:
     class: Drupal\civicrm_entity\Access\ContactChecksumCheckAccess
-    arguments: ['@civicrm_entity.api']
+    arguments: ['@request_stack', '@civicrm_entity.api']
     tags:
       - {name: access_check, applies_to: _civicrm_entity_checksum_access_check }
 
