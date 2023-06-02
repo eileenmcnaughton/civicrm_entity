@@ -140,21 +140,22 @@ class InOperator extends BaseInOperator {
 
   public function operators() {
     $operators = parent::operators();
-    $operators += [
-      'empty string' => [
-        'title' => $this->t('Is EMPTY/NULL'),
-        'method' => 'opEmptyString',
-        'short' => $this->t('empty string'),
-        'values' => 0,
-      ],
-      'not empty string' => [
-        'title' => $this->t('Is not EMPTY/NULL'),
-        'method' => 'opEmptyString',
-        'short' => $this->t('not empty string'),
-        'values' => 0,
-      ],
-    ];
-
+    if (!empty($this->definition['allow empty'])) {
+      $operators += [
+        'empty string' => [
+          'title' => $this->t('Is EMPTY/NULL'),
+          'method' => 'opEmptyString',
+          'short' => $this->t('empty string'),
+          'values' => 0,
+        ],
+        'not empty string' => [
+          'title' => $this->t('Is not EMPTY/NULL'),
+          'method' => 'opEmptyString',
+          'short' => $this->t('not empty string'),
+          'values' => 0,
+        ],
+      ];
+    }
     return $operators;
   }
 
