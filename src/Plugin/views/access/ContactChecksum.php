@@ -7,10 +7,14 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\user\RoleStorageInterface;
 
+use Drupal\civicrm_entity\CiviCrmApiInterface;
+
 use Symfony\Component\Routing\Route;
 
 use Drupal\user\Plugin\views\access\Role;
 use Symfony\Component\HttpFoundation\RequestStack;
+
+
 
 use \Civi\Api4\Contact;
 
@@ -43,13 +47,14 @@ class ContactChecksum extends Role implements CacheableDependencyInterface {
 
   /**
    * Constructs a ContactChecksum object.
-   * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
+   *
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
    * @param \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api
    *   The CiviCRM API bridge.
    */
-  public function __construct(RequestStack $requestStack, CiviCrmApiInterface $civicrm_api) {
-    $this->requestStack = $requestStack;
+  public function __construct(RequestStack $request_stack, CiviCrmApiInterface $civicrm_api) {
+    $this->requestStack = $request_stack;
     $this->civicrmApi = $civicrm_api;
   }
 

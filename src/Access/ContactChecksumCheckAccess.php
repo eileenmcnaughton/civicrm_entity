@@ -7,8 +7,10 @@ use Drupal\Core\Routing\Access\AccessInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Logger\LoggerChannelTrait;
+use Drupal\civicrm_entity\CiviCrmApiInterface;
 
 use Symfony\Component\HttpFoundation\RequestStack;
+
 use Symfony\Component\Routing\Route;
 
 
@@ -30,14 +32,13 @@ class ContactChecksumCheckAccess implements AccessInterface {
   /**
    * Constructs a ContactChecksumCheckAccess object.
    *
-   * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
    * @param \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api
    *   The CiviCRM API bridge.
    */
-  public function __construct(RequestStack $requestStack, CiviCrmApiInterface $civicrm_api) {
-    $this->namespaces = QueryBase::getNamespaces($this);
-    $this->requestStack = $requestStack;
+  public function __construct(RequestStack $request_stack, CiviCrmApiInterface $civicrm_api) {
+    $this->requestStack = $request_stack;
     $this->civicrmApi = $civicrm_api;
   }
 
