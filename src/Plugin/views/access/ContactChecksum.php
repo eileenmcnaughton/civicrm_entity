@@ -61,7 +61,7 @@ class ContactChecksum extends Role implements CacheableDependencyInterface {
       return TRUE;
     }
     $request = $this->requestStack->getCurrentRequest();
-    $cid1 = filter_var($requests()->query->get('cid1'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    $cid1 = filter_var($request->query->get('cid1'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
     $checksum =  $request()->query->get('cs');
 
     // Force CiviCRM to be intialized - ideally we'd use the api
