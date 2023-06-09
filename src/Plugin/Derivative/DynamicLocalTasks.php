@@ -6,7 +6,7 @@ use Drupal\Component\Plugin\Derivative\DeriverBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
-use Drupal\Core\Routing\RouteProvider;
+use Drupal\Core\Routing\RouteProviderInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -36,7 +36,7 @@ class DynamicLocalTasks extends DeriverBase implements ContainerDeriverInterface
   /**
    * The route provider.
    *
-   * @var \Drupal\Core\Routing\RouteProvider
+   * @var \Drupal\Core\Routing\RouteProviderInterface
    */
   protected $routeProvider;
 
@@ -49,10 +49,10 @@ class DynamicLocalTasks extends DeriverBase implements ContainerDeriverInterface
    *   The entity type manager.
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The translation manager.
-   * @param \Drupal\Core\Routing\RouteProvider $route_provider
+   * @param \Drupal\Core\Routing\RouteProviderInterface $route_provider
    *   The route provider.
    */
-  public function __construct($base_plugin_id, EntityTypeManagerInterface $entity_type_manager, TranslationInterface $string_translation, RouteProvider $route_provider) {
+  public function __construct($base_plugin_id, EntityTypeManagerInterface $entity_type_manager, TranslationInterface $string_translation, RouteProviderInterface $route_provider) {
     $this->entityTypeManager = $entity_type_manager;
     $this->stringTranslation = $string_translation;
     $this->basePluginId = $base_plugin_id;
