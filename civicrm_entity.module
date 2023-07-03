@@ -31,6 +31,7 @@ use Drupal\views\ViewExecutable;
 use Drupal\views\Plugin\views\query\QueryPluginBase;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\inline_entity_form\Form\EntityInlineForm;
 
 /**
  * Implements hook_theme().
@@ -89,6 +90,7 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
         'access' => CivicrmEntityAccessHandler::class,
         'views_data' => CivicrmEntityViewsData::class,
         'storage_schema' => CivicrmEntityStorageSchema::class,
+        'inline_form' => EntityInlineForm::class,
       ],
     ];
 
