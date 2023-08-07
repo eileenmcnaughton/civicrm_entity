@@ -715,6 +715,22 @@ final class SupportedEntities {
       if (!in_array($entity_info['civicrm entity name'], $api_entity_types)) {
         unset($civicrm_entity_info[$entity_type]);
       }
+      // Insert dblocale table names
+      $multilingual = \CRM_Core_I18n::isMultilingual();
+      if ($multilingual) {
+        // @codingStandardsIgnoreStart
+        global $dbLocale;
+        // @codingStandardsIgnoreEnd
+        if ($dbLocale) {
+          $tables = \CRM_Core_I18n_Schema::schemaStructureTables();
+          if (in_array($entity_type, $tables)) {
+            $locale_table_name = $entity_type . $dbLocale;
+            if (strlen($locale_table_name) <= 32) {
+              $civicrm_entity_info[$locale_table_name] = $entity_info;
+            }
+          }
+        }
+      }
     }
     return $civicrm_entity_info;
   }
