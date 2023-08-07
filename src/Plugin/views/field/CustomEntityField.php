@@ -301,8 +301,7 @@ class CustomEntityField extends EntityField {
     switch ($definition->getType()) {
       case 'datetime':
         if (!empty($value)) {
-          $datetime_format = $definition->getSetting('datetime_type') === DateTimeItem::DATETIME_TYPE_DATE ? DateTimeItemInterface::DATE_STORAGE_FORMAT : DateTimeItemInterface::DATETIME_STORAGE_FORMAT;
-          return (new \DateTime($value, new \DateTimeZone(date_default_timezone_get())))->setTimezone(new \DateTimeZone('UTC'))->format($datetime_format);
+          return $this->convertToUtc($definition, $value);
         }
         break;
 
@@ -333,6 +332,42 @@ class CustomEntityField extends EntityField {
     }
 
     return 0;
+  }
+
+  /**
+   * Check if date field should be converted to UTC or not.
+   *
+   * @param \Drupal\Core\Field\FieldDefinitionInterface $definition
+   *   The field definition.
+   * @param string $date_value
+   *   The date value.
+   *
+   * @return string
+   *   The converted value.
+   */
+  public function convertToUtc(FieldDefinitionInterface $definition, $date_value) {
+    $datetime_format = $definition->getSetting('datetime_type') === DateTimeItem::DATETIME_TYPE_DATE ? DateTimeItemInterface::DATE_STORAGE_FORMAT : DateTimeItemInterface::DATETIME_STORAGE_FORMAT;
+    $default_timezone = date_default_timezone_get();
+
+    $utc = TRUE;
+    // If the field is custom and meant to store only year value,
+    // Avoid converting to any timezone and display it as stored in database.
+    if (strpos($definition->getName(), "custom_") === 0) {
+      [, $custom_field_id] = explode('_', $definition->getName());
+      $params = [
+        'sequential' => 1,
+        'id' => $custom_field_id,
+      ];
+      $date_field = $this->civicrmApi->get('CustomField', $params);
+      if (!empty($date_field[0]['date_format']) && $date_field[0]['date_format'] === 'yy') {
+        $utc = FALSE;
+      }
+    }
+
+    if ($utc) {
+      return (new \DateTime($date_value, new \DateTimeZone($default_timezone)))->setTimezone(new \DateTimeZone('UTC'))->format($datetime_format);
+    }
+    return (new \DateTime($date_value, new \DateTimeZone($default_timezone)))->format($datetime_format);
   }
 
 }
