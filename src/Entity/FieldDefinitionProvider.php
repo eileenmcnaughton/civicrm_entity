@@ -36,7 +36,7 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
             $table_name = $foreign_key_dao::getTableName();
             // Verify the foreign key table is a valid entity type.
             if (array_key_exists($table_name, SupportedEntities::getInfo())) {
-              $field = BaseFieldDefinition::create('entity_reference')
+              $field = CivicrmCivicrmBaseFieldDefinition::create('entity_reference')
                 ->setSetting('target_type', $foreign_key_dao::getTableName())
                 ->setSetting('handler', 'default');
               if (!empty($civicrm_field['pseudoconstant'])) {
@@ -48,7 +48,7 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
             }
           }
           elseif (isset($civicrm_field['data_type']) && $civicrm_field['data_type'] === 'ContactReference') {
-            $field = BaseFieldDefinition::create('entity_reference')
+            $field = CivicrmCivicrmBaseFieldDefinition::create('entity_reference')
               ->setSetting('target_type', 'civicrm_contact')
               ->setSetting('handler', 'default');
 
@@ -70,7 +70,7 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
         case \CRM_Utils_Type::T_MONEY:
         case \CRM_Utils_Type::T_FLOAT:
           // @todo this needs to be handled.
-          $field = BaseFieldDefinition::create('float');
+          $field = CivicrmBaseFieldDefinition::create('float');
           break;
 
         case \CRM_Utils_Type::T_STRING:
@@ -105,14 +105,14 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
           break;
 
         case \CRM_Utils_Type::T_ENUM:
-          $field = BaseFieldDefinition::create('map');
+          $field = CivicrmBaseFieldDefinition::create('map');
           break;
 
         case \CRM_Utils_Type::T_TIME:
           // @see https://github.com/civicrm/civicrm-core/blob/master/CRM/Core/DAO.php#L279
           // When T_TIME DAO throws error?
         default:
-          $field = BaseFieldDefinition::create('any');
+          $field = CivicrmBaseFieldDefinition::create('any');
           break;
       }
     }
@@ -139,11 +139,11 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
   /**
    * Gets the identifier field definition.
    *
-   * @return \Drupal\Core\Field\BaseFieldDefinition
+   * @return \Drupal\civicrm_entity\Entity\CivicrmBaseFieldDefinition
    *   The base field definition.
    */
   protected function getIdentifierDefinition() {
-    return BaseFieldDefinition::create('integer')
+    return CivicrmBaseFieldDefinition::create('integer')
       ->setReadOnly(TRUE)
       ->setSetting('unsigned', TRUE);
   }
@@ -158,12 +158,12 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
    * @param array $civicrm_field
    *   The CiviCRM field definition.
    *
-   * @return \Drupal\Core\Field\BaseFieldDefinition
+   * @return \Drupal\civicrm_entity\Entity\CivicrmBaseFieldDefinition
    *   The base field definition.
    */
   protected function getIntegerDefinition(array $civicrm_field) {
     if (!empty($civicrm_field['pseudoconstant']) && $civicrm_field['name'] != 'card_type_id') {
-      $field = BaseFieldDefinition::create('list_integer')
+      $field = CivicrmBaseFieldDefinition::create('list_integer')
         ->setSetting('allowed_values_function', 'civicrm_entity_pseudoconstant_options')
         ->setDisplayOptions('view', [
           'label' => 'hidden',
@@ -177,7 +177,7 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
     }
     // Otherwise it is just a regular integer field.
     else {
-      $field = BaseFieldDefinition::create('integer')
+      $field = CivicrmBaseFieldDefinition::create('integer')
         ->setDisplayOptions('view', [
           'label' => 'hidden',
           'type' => 'number_integer',
@@ -194,11 +194,11 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
   /**
    * Gets a boolean field definition.
    *
-   * @return \Drupal\Core\Field\BaseFieldDefinition
+   * @return \Drupal\civicrm_entity\Entity\CivicrmBaseFieldDefinition
    *   The base field definition.
    */
   protected function getBooleanDefinition() {
-    return BaseFieldDefinition::create('boolean')
+    return CivicrmBaseFieldDefinition::create('boolean')
       ->setDisplayOptions('form', [
         'type' => 'boolean_checkbox',
         'settings' => [
@@ -218,12 +218,12 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
    * @param array $civicrm_field
    *   The CiviCRM field definition.
    *
-   * @return \Drupal\Core\Field\BaseFieldDefinition
+   * @return \Drupal\civicrm_entity\Entity\CivicrmBaseFieldDefinition
    *   The base field definition.
    */
   protected function getStringDefinition(array $civicrm_field) {
     if (!empty($civicrm_field['pseudoconstant'])) {
-      $field = BaseFieldDefinition::create('list_string')
+      $field = CivicrmBaseFieldDefinition::create('list_string')
         ->setSetting('allowed_values_function', 'civicrm_entity_pseudoconstant_options')
         ->setDisplayOptions('view', [
           'type' => 'list_default',
@@ -236,7 +236,7 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
     }
     // Otherwise it is just a regular integer field.
     else {
-      $field = BaseFieldDefinition::create('string')
+      $field = CivicrmBaseFieldDefinition::create('string')
         ->setDisplayOptions('view', [
           'label' => 'hidden',
           'type' => 'text_default',
@@ -269,7 +269,7 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
    * @param array $civicrm_field
    *   The CiviCRM field definition.
    *
-   * @return \Drupal\Core\Field\BaseFieldDefinition
+   * @return \Drupal\civicrm_entity\Entity\CivicrmBaseFieldDefinition
    *   The base field definition.
    */
   protected function getTextDefinition(array $civicrm_field) {
@@ -288,7 +288,7 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
       $field_type = 'text_long';
     }
 
-    $field = BaseFieldDefinition::create($field_type)
+    $field = CivicrmBaseFieldDefinition::create($field_type)
       ->setDisplayOptions('view', [
         'type' => $field_type == 'string_long' ? 'basic_string' : 'text_default',
         'weight' => 0,
@@ -305,11 +305,11 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
   /**
    * Gets an email field definition.
    *
-   * @return \Drupal\Core\Field\BaseFieldDefinition
+   * @return \Drupal\civicrm_entity\Entity\CivicrmBaseFieldDefinition
    *   The base field definition.
    */
   protected function getEmailDefinition() {
-    return BaseFieldDefinition::create('email')
+    return CivicrmBaseFieldDefinition::create('email')
       ->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'string',
@@ -324,11 +324,11 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
   /**
    * Gets a URL field definition.
    *
-   * @return \Drupal\Core\Field\BaseFieldDefinition
+   * @return \Drupal\civicrm_entity\Entity\CivicrmBaseFieldDefinition
    *   The base field definition.
    */
   protected function getUrlDefinition() {
-    return BaseFieldDefinition::create('uri')
+    return CivicrmBaseFieldDefinition::create('uri')
       ->setDisplayOptions('form', [
         'type' => 'uri',
         'weight' => 0,
@@ -342,11 +342,11 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
   /**
    * Gets a date field definition.
    *
-   * @return \Drupal\Core\Field\BaseFieldDefinition
+   * @return \Drupal\civicrm_entity\Entity\CivicrmBaseFieldDefinition
    *   The base field definition.
    */
   protected function getDateDefinition() {
-    return BaseFieldDefinition::create('datetime')
+    return CivicrmBaseFieldDefinition::create('datetime')
       ->setSetting('datetime_type', DateTimeItem::DATETIME_TYPE_DATE)
       ->setDisplayOptions('form', [
         'type' => 'datetime_default',
@@ -361,11 +361,11 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
   /**
    * Gets a datetime field definition.
    *
-   * @return \Drupal\Core\Field\BaseFieldDefinition
+   * @return \Drupal\civicrm_entity\Entity\CivicrmBaseFieldDefinition
    *   The base field definition.
    */
   protected function getDatetimeDefinition() {
-    $field = BaseFieldDefinition::create('datetime')
+    $field = CivicrmBaseFieldDefinition::create('datetime')
       ->setSetting('datetime_type', DateTimeItem::DATETIME_TYPE_DATETIME)
       ->setDisplayOptions('form', [
         'type' => 'datetime_default',
@@ -383,11 +383,11 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
    *
    * This is used for CiviCRM field types which are not mappable.
    *
-   * @return \Drupal\Core\Field\BaseFieldDefinition
+   * @return \Drupal\civicrm_entity\Entity\CivicrmBaseFieldDefinition
    *   The base field definition.
    */
   protected function getDefaultDefinition() {
-    return BaseFieldDefinition::create('string')
+    return CivicrmBaseFieldDefinition::create('string')
       ->setDisplayOptions('view', [
         'label' => 'hidden',
         'type' => 'text_default',
