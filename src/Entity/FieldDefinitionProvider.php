@@ -3,7 +3,6 @@
 namespace Drupal\civicrm_entity\Entity;
 
 use Drupal\civicrm_entity\SupportedEntities;
-use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
 
@@ -36,7 +35,7 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
             $table_name = $foreign_key_dao::getTableName();
             // Verify the foreign key table is a valid entity type.
             if (array_key_exists($table_name, SupportedEntities::getInfo())) {
-              $field = CivicrmCivicrmBaseFieldDefinition::create('entity_reference')
+              $field = CivicrmBaseFieldDefinition::create('entity_reference')
                 ->setSetting('target_type', $foreign_key_dao::getTableName())
                 ->setSetting('handler', 'default');
               if (!empty($civicrm_field['pseudoconstant'])) {
@@ -48,7 +47,7 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
             }
           }
           elseif (isset($civicrm_field['data_type']) && $civicrm_field['data_type'] === 'ContactReference') {
-            $field = CivicrmCivicrmBaseFieldDefinition::create('entity_reference')
+            $field = CivicrmBaseFieldDefinition::create('entity_reference')
               ->setSetting('target_type', 'civicrm_contact')
               ->setSetting('handler', 'default');
 
