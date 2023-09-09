@@ -219,7 +219,7 @@ class CustomEntityField extends EntityField {
     if ($this->limit_values) {
       $row = $this->view->result[$this->view->row_index];
 
-      if (!$this->options['group_rows'] && is_numeric($row->delta)) {
+      if (!$this->options['group_rows'] && isset($all_values[$row->delta]) && is_numeric($row->delta)) {
         return [$all_values[$row->delta]];
       }
     }
