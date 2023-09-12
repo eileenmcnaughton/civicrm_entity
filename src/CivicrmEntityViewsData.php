@@ -490,7 +490,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
 
       case 'civicrm_phone':
         if (isset($views_field['civicrm_contact']['reverse__civicrm_phone__contact_id']['relationship'])) {
-          $views_field['civicrm_contact']['reverse__civicrm_phone__contact_id']['relationship']['id'] = 'civicrm_entity_reverse_location';
+          $views_field['civicrm_contact']['reverse__civicrm_phone__contact_id']['relationship']['id'] = 'civicrm_entity_reverse_location_phone';
           $views_field['civicrm_contact']['reverse__civicrm_phone__contact_id']['relationship']['label'] = $this->t('Phone');
         }
 
