@@ -495,7 +495,13 @@ class CivicrmEntityViewsData extends EntityViewsData {
         }
 
         break;
-
+      case 'civicrm_website':
+        if (isset($views_field['civicrm_contact']['reverse__civicrm_website__contact_id']['relationship'])) {
+          $views_field['civicrm_contact']['reverse__civicrm_website__contact_id']['relationship']['id'] = 'civicrm_entity_reverse_website_type';
+          $views_field['civicrm_contact']['reverse__civicrm_website__contact_id']['relationship']['label'] = $this->t('Website');
+        }
+  
+        break;
       case 'civicrm_address':
         if (isset($views_field['civicrm_contact']['reverse__civicrm_address__contact_id']['relationship'])) {
           $views_field['civicrm_contact']['reverse__civicrm_address__contact_id']['relationship']['id'] = 'civicrm_entity_reverse_location';
