@@ -75,6 +75,9 @@ final class RouteSubscriber extends RouteSubscriberBase {
         "field_ui.field_storage_config_add_$entity_type_id" => [
           'bundle' => $entity_type_id,
         ],
+        "field_ui.field_storage_config_reuse_{$entity_type_id}" => [
+          'bundle' => $entity_type_id,
+        ],
         "entity.entity_form_display.{$entity_type_id}.default" => [
           'bundle' => $entity_type_id,
         ],
