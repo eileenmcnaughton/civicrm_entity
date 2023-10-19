@@ -24,10 +24,16 @@ If upgrading from Drupal 9 to Drupal 10, simply include that module:
 
 ## Version support
 
+8.x-3.x for Drupal 9 Known to work with CiviCRM 5.51+
+4.0.x for Drupal 10 Requires CiviCRM 5.60+
+
 We do our best to support as many versions of CiviCRM Core as is feasible. 
 
 CiviCRM Entity is primarily tested and developed against and for ESR versions. Updates due to CiviCRM Core happen as bugs or changes are reported, or are contributed. It is rare that a more recent version of CiviCRM has a problem, but for best success use the ESR.
 https://civicrm.org/esr
+
+
+5.63 recommended at the time of this writing, but no known issues for later versions.
 
 ## Issues
 
@@ -65,9 +71,13 @@ If you or your organization has specific or immediate needs, or simply wishes to
 ## Developers
 
 [Mark Hanna](https://www.drupal.org/u/markusa), Architect and Senior Developer at Skvare, module maintainer.
+
 [Arnold French](https://www.drupal.org/u/dsdeiz), Developer at Skvare
+
 [Eileen Mcnaughton](https://github.com/eileenmcnaughton) Original creator of CiviCRM Entity, and tireless contributor to CiviCRM core and a multitude of CiviCRM Extensions
+
 [Matt Glaman](https://www.drupal.org/u/mglaman) Initial development of the Drupal 8 version was a massive contribution.
+
 [Jitendra Purohit](https://www.drupal.org/u/jitendrapurohit) Developer and contributor
 
 See all contributors: https://github.com/eileenmcnaughton/civicrm_entity/graphs/contributors
@@ -75,7 +85,11 @@ See all contributors: https://github.com/eileenmcnaughton/civicrm_entity/graphs/
 ## Supporting Organizations
 
 [Skvare](https://skvare.com) Supporting and managing CiviCRM for over 8 years. [Every Skvare team member](https://skvare.com/about) has a hand in CiviCRM Entity's continued development.
+
 [Fuzion](https://www.drupal.org/fuzion) Founding organization of the initial versions of CiviCRM Entity, and steady support and contribution throughout the years.
+
 [SemperIT](https://semper-it.com/) Sponsors contribution from D8 onwards
+
 [CiviCRM Core Team](https://civicrm.org/about/core-team) For creating CiviCRM, and supporting us all and Drupal integration in general.
+
 [MyDropWizard](https://www.drupal.org/mydropwizard) Original funding for the Drupal 8 version, and the composerization of CiviCRM
