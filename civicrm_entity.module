@@ -548,7 +548,7 @@ function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
   }
   else {
     // Special handling for EntityTag objects.
-    if ($entityType == 'civicrm_entity_tag') {
+    if ($entityType == 'civicrm_entity_tag' && is_array($objectRef)) {
       foreach ($objectRef[0] as $entityTag) {
         $object = new CRM_Core_BAO_EntityTag();
         $object->entity_id = $entityTag;
