@@ -48,7 +48,7 @@ class StateProvince extends ListField {
    */
   protected function valueForm(&$form, FormStateInterface $form_state) {
     $exposed = $form_state->get('exposed');
-    $view = $form_state->get('view');
+    $view = $this->view;
     $handler = $view->getHandler($this->view->current_display, 'filter', 'country_id');
 
     if ($exposed && !empty($handler) && $handler['table'] == 'civicrm_address' && $handler['field'] == 'country_id') {
