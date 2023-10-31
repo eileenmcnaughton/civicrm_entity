@@ -59,7 +59,7 @@ class CivicrmSql extends Sql {
    * @note we use this pattern to avoid constructor overrides.
    */
   public function setCacheService(CacheBackendInterface $cache_service) {
-    $this->cacheService = $cacheService;
+    $this->cacheService = $cache_service;
   }
 
   /**
