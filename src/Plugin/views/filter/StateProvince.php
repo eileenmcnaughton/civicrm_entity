@@ -3,6 +3,7 @@
 namespace Drupal\civicrm_entity\Plugin\views\filter;
 
 use Drupal\civicrm_entity\CiviCrmApiInterface;
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\options\Plugin\views\filter\ListField;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -52,6 +53,13 @@ class StateProvince extends ListField {
     $handler = $view->getHandler($this->view->current_display, 'filter', 'country_id');
 
     if ($exposed && !empty($handler) && $handler['table'] == 'civicrm_address' && $handler['field'] == 'country_id') {
+      $user_input = $form_state->getUserInput();
+
+      $selected = [];
+      if (isset($user_input[$this->options['expose']['identifier']])) {
+        $selected = is_array($user_input[$this->options['expose']['identifier']]) ? $user_input[$this->options['expose']['identifier']] : [$user_input[$this->options['expose']['identifier']]];
+      }
+
       if ($handler['exposed']) {
         $countries = array_keys(\CRM_Core_PseudoConstant::country());
         $country_states = $this->getStates($countries);
@@ -64,9 +72,11 @@ class StateProvince extends ListField {
           }
 
           foreach ($states as $k => $v) {
-            $js_country_states[$country_id] .= '<option value="' . $k . '">' . $v . '</option>';
+            $js_country_states[$country_id] .= '<option value="' . $k . '"' . (in_array($k, $selected) ? 'selected="selected"' : '') . '>' . $v . '</option>';
           }
         }
+        $form['#attached']['drupalSettings']['civicrm_entity']['states_identifier'] = Html::cleanCssIdentifier($this->options['expose']['identifier']);
+        $form['#attached']['drupalSettings']['civicrm_entity']['country_identifier'] = Html::cleanCssIdentifier($handler['expose']['identifier']);
         $form['#attached']['drupalSettings']['civicrm_entity']['states'] = $js_country_states;
         $form['#attached']['library'][] = 'civicrm_entity/states';
       }

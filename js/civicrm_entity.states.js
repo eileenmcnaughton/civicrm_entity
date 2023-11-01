@@ -14,11 +14,11 @@
    */
   Drupal.behaviors.civicrmEntityStates = {
     attach(context, settings) {
-      $(once('loadStates', '.views-exposed-form [data-drupal-selector="edit-country-id"]', context)).on('change', function() {
+      $(once('loadStates', '.views-exposed-form [data-drupal-selector="edit-' + settings.civicrm_entity.country_identifier + '"]', context)).on('change', function() {
         var countries = $(this).val();
 
         if (countries != Drupal.t('All')) {
-          var $stateElement = $('[data-drupal-selector="edit-state-province-id"]', $(this).parents('form'));
+          var $stateElement = $('[data-drupal-selector="edit-' + settings.civicrm_entity.states_identifier + '"]', $(this).parents('form'));
           $stateElement.find('option').not(':first').remove();
           countries = Array.isArray(countries) ? countries : [countries];
           countries.forEach((v) => {
