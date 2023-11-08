@@ -17,9 +17,10 @@
       $(once('loadStates', '.views-exposed-form [data-drupal-selector="edit-' + settings.civicrm_entity.country_identifier + '"]', context)).on('change', function() {
         var countries = $(this).val();
 
+        var $stateElement = $('[data-drupal-selector="edit-' + settings.civicrm_entity.states_identifier + '"]', $(this).parents('form'));
+        $stateElement.find('option').not(':first').remove();
+
         if (countries != Drupal.t('All')) {
-          var $stateElement = $('[data-drupal-selector="edit-' + settings.civicrm_entity.states_identifier + '"]', $(this).parents('form'));
-          $stateElement.find('option').not(':first').remove();
           countries = Array.isArray(countries) ? countries : [countries];
           countries.forEach((v) => {
             $stateElement.append(settings.civicrm_entity.states[v]);
