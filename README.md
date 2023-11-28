@@ -29,11 +29,8 @@ If upgrading from Drupal 9 to Drupal 10, simply include that module:
 
 We do our best to support as many versions of CiviCRM Core as is feasible. 
 
-CiviCRM Entity is primarily tested and developed against and for ESR versions. Updates due to CiviCRM Core happen as bugs or changes are reported, or are contributed. It is rare that a more recent version of CiviCRM has a problem, but for best success use the ESR.
+CiviCRM Entity is primarily tested and developed with a focus on Extended Support Release (ESR) versions of CiviCRM. Updates needed due to CiviCRM Core are typically driven by reported issues or contributed changes. While it's uncommon for a newer CiviCRM version to encounter issues, for best success use the ESR version.
 https://civicrm.org/esr
-
-
-5.63 recommended at the time of this writing, but no known issues for later versions.
 
 ## Issues
 
@@ -84,7 +81,7 @@ See all contributors: https://github.com/eileenmcnaughton/civicrm_entity/graphs/
 
 ## Supporting Organizations
 
-[Skvare](https://skvare.com) Supporting and managing CiviCRM for over 8 years. [Every Skvare team member](https://skvare.com/about) has a hand in CiviCRM Entity's continued development.
+[Skvare](https://skvare.com) Skvare Supporting and managing CiviCRM since 2008. [Every Skvare team member](https://skvare.com/about) has a hand in CiviCRM Entity's continued development.
 
 [Fuzion](https://www.drupal.org/fuzion) Founding organization of the initial versions of CiviCRM Entity, and steady support and contribution throughout the years.
 
