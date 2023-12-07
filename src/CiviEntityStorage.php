@@ -170,6 +170,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
         'id' => ['IN' => $ids],
         'return' => $field_names,
         'options' => ['limit' => 0],
+        'check_permissions' => 0,
       ];
 
       if ($this->entityType->get('civicrm_entity') === 'participant') {
