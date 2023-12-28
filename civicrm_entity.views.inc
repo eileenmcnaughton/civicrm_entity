@@ -144,6 +144,15 @@ function civicrm_entity_views_data_alter(&$data) {
   $data['civicrm_contact']['current_employer']['real field'] = 'organization_name';
   $data['civicrm_contact']['employer_id']['field']['id'] = 'standard';
   $data['civicrm_contribution']['contribution_source']['real field'] = 'source';
+
+  $service = \Drupal::service('entity_field.manager');
+  $field_definitions = $service->getFieldDefinitions('civicrm_activity', 'civicrm_activity');
+
+  foreach (['status_id', 'activity_type_id'] as $key) {
+    $data['civicrm_activity'][$key]['filter']['id'] = 'in_operator';
+    $data['civicrm_activity'][$key]['filter']['options callback'] = 'civicrm_entity_pseudoconstant_options';
+    $data['civicrm_activity'][$key]['filter']['options arguments'] = [$field_definitions[$key]];
+  }
 }
 
 /**
