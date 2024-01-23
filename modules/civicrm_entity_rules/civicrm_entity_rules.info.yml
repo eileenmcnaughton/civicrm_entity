@@ -1,0 +1,8 @@
+name: CiviCRM Entity Rules
+type: module
+description: 'Rules plugins for CiviCRM Entity types'
+package: CiviCRM
+core_version_requirement: ^10
+dependencies:
+  - civicrm_entity:civicrm_entity
+  - rules:rules

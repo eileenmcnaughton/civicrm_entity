@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\civicrm_entity\Plugin\Condition;
+namespace Drupal\civicrm_entity_rules\Plugin\Condition;
 
 use Drupal\civicrm_entity\CiviCrmApi;
 use Drupal\civicrm_entity\Entity\CivicrmEntity;
@@ -24,7 +24,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *     "group" = @ContextDefinition("string",
  *       label = @Translation("Group"),
  *       description = @Translation("The group the contact is in."),
- *       options_provider = "\Drupal\civicrm_entity\TypedData\Options\CivicrmGroupOptions",
+ *       options_provider = "\Drupal\civicrm_entity_rules\TypedData\Options\CivicrmGroupOptions",
  *       multiple = FALSE,
  *       required = TRUE
  *     ),

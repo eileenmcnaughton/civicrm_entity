@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\civicrm_entity\Plugin\Condition;
+namespace Drupal\civicrm_entity_rules\Plugin\Condition;
 
 use Drupal\rules\Core\RulesConditionBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
