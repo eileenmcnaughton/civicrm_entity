@@ -141,7 +141,7 @@ class CivicrmContactAddToGroup extends ViewsBulkOperationsActionBase implements 
    * {@inheritdoc}
    */
   public function access($object, AccountInterface $account = NULL, $return_as_object = FALSE) {
-    return $account->hasPermission('edit all contacts');
+    return $object->access('update', $account, $return_as_object);
   }
 
   /**
