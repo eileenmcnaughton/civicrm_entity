@@ -113,6 +113,9 @@ class CustomEntityField extends EntityField {
     if (in_array($this->fieldMetadata['html_type'], ['Multi-Select', 'CheckBox'])) {
       $options['type']['default'] = 'civicrm_entity_custom_multi_value';
     }
+    if ($this->fieldMetadata['data_type'] == 'ContactReference') {
+      $options['type']['default'] = 'civicrm_entity_contact_reference';
+    }
 
     return $options;
   }
