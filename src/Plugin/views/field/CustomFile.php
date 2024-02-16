@@ -76,7 +76,7 @@ class CustomFile extends FieldPluginBase {
       $entity_id = $this->getValue($values, 'entity_id');
       $file_hash = \CRM_Core_BAO_File::generateFileHash($entity_id, $value);
 
-      $query = ['id' => $value, 'eid' => $entity_id, 'fcs' => $file_hash];
+      $query = ['id' => $value, 'eid' => $entity_id, 'fcs' => $file_hash, 'reset' => 1];
       return \CRM_Utils_System::url($path, UrlHelper::buildQuery($query), TRUE, FALSE, FALSE, TRUE);
     }
 
