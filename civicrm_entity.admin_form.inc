@@ -79,12 +79,12 @@ function civicrm_entity_admin_settings_form($form, &$form_state) {
  * @param $form_state
  */
 function civicrm_entity_admin_settings_form_submit($form, $form_state) {
+  // Clear caches at start, to prevent them corrupting by the changes
+  drupal_flush_all_caches();
   $settings = array();
   foreach ($form_state['values']['civicrm_entity_admin_enabled_entities'] as $drupal_entity_type => $value) {
     $settings[$drupal_entity_type] = !empty($value) ? $drupal_entity_type : 0;
   }
   variable_set('civicrm_entity_contact_label_format', $form_state['values']['contact_label']);
-
   variable_set('civicrm_entity_admin_enabled_entities', $settings);
-  drupal_flush_all_caches();
 }
