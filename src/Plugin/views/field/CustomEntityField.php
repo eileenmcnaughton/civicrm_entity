@@ -99,6 +99,22 @@ class CustomEntityField extends EntityField {
   /**
    * {@inheritdoc}
    */
+  protected function getFieldDefinition() {
+    if (!$this->fieldDefinition) {
+      // The parent method always replaces the storage definition class with
+      // an instance of `BaseFieldDefinition`, causing us to lose the custom
+      // column names.
+      $field_storage = $this->getFieldStorageDefinition();
+      if ($field_storage instanceof FieldDefinitionInterface) {
+        $this->fieldDefinition = $field_storage;
+      }
+    }
+    return parent::getFieldDefinition();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function defineOptions() {
     $options = parent::defineOptions();
 
