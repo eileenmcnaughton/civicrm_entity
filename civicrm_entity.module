@@ -613,15 +613,33 @@ function civicrm_entity_views_query_alter(ViewExecutable $view, QueryPluginBase 
   // If CiviCRM tables in a separate database.
   $civicrm_connection_name = drupal_valid_test_ua() ? 'civicrm_test' : 'civicrm';
   $civicrm_database_info = Database::getConnectionInfo($civicrm_connection_name);
+  $cache_service = \Drupal::service('cache.data');
   if (isset($civicrm_database_info['default']) && method_exists($query, "getTableQueue")) {
-    $civicrm_connection = Database::getConnection('default', $civicrm_connection_name);
     $table_queue =& $query->getTableQueue();
     foreach ($table_queue as $alias => &$table_info) {
       if (!empty($table_info['table']) && ((strpos($table_info['table'], 'civicrm_') === 0 && strpos($table_info['table'], '.') === FALSE && strpos($table_info['table'], '__') === FALSE) || strpos($table_info['table'], 'civicrm_value_') === 0)) {
-        $table_info['table'] = $civicrm_connection->getFullQualifiedTableName($table_info['table']);
+        $table_name = $table_info['table'];
+        $cache_key = "ce-qualified-table-names:$table_name";
+        if ($cache = $cache_service->get($cache_key)) {
+          $table_info['table'] = $cache->data;
+        }
+        else {
+          $civicrm_connection = Database::getConnection('default', $civicrm_connection_name);
+          $table_info['table'] = $civicrm_connection->getFullQualifiedTableName($table_info['table']);
+          $cache_service->set($cache_key, $table_info['table']);
+        }
       }
       if (!empty($table_info['join']->table) && ((strpos($table_info['join']->table, 'civicrm_') === 0 && strpos($table_info['join']->table, '.') === FALSE && strpos($table_info['join']->table, '__') === FALSE) || strpos($table_info['join']->table, 'civicrm_value_') === 0)) {
-        $table_info['join']->table = $civicrm_connection->getFullQualifiedTableName($table_info['join']->table);
+        $table_name = $table_info['join']->table;
+        $cache_key = "ce-qualified-table-names:$table_name";
+        if ($cache = $cache_service->get($cache_key)) {
+          $table_info['join']->table = $cache->data;
+        }
+        else {
+          $civicrm_connection = Database::getConnection('default', $civicrm_connection_name);
+          $table_info['join']->table = $civicrm_connection->getFullQualifiedTableName($table_info['join']->table);
+          $cache_service->set($cache_key, $table_info['join']->table);
+        }
       }
     }
   }

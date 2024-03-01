@@ -3,6 +3,7 @@
 namespace Drupal\civicrm_entity\Plugin\views\query;
 
 use Drupal\civicrm\Civicrm;
+use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Database\Query\Select;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
@@ -31,6 +32,13 @@ class CivicrmSql extends Sql {
   protected $civicrm;
 
   /**
+   * The Cache service.
+   *
+   * @var \Drupal\Core\Cache\CacheBackendInterface
+   */
+  protected $cacheService;
+
+  /**
    * Set the CiviCRM service.
    *
    * @param \Drupal\civicrm\Civicrm $civicrm
@@ -43,12 +51,25 @@ class CivicrmSql extends Sql {
   }
 
   /**
+   * Set the Cache service.
+   *
+   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_service
+   *   The Cache service.
+   *
+   * @note we use this pattern to avoid constructor overrides.
+   */
+  public function setCacheService(CacheBackendInterface $cache_service) {
+    $this->cacheService = $cache_service;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
     assert($instance instanceof self);
     $instance->setCivicrm($container->get('civicrm'));
+    $instance->setCacheService($container->get('cache.data'));
     return $instance;
   }
 
@@ -75,7 +96,6 @@ class CivicrmSql extends Sql {
   public function query($get_count = FALSE) {
     $query = parent::query($get_count);
     assert($query instanceof Select);
-    $connection = Database::getConnection();
 
     foreach ($query->getTables() as &$table) {
       // If the table is not prefixed with civicrm_, assume it is a Drupal table
@@ -83,7 +103,15 @@ class CivicrmSql extends Sql {
       // not already been converted.
       // Also do not convert any drupal custom fields.
       if ((strpos($table['table'], 'civicrm_') !== 0 && strpos($table['table'], '.') === FALSE) || ((strpos($table['table'], 'civicrm_') === 0 && strpos($table['table'], '__') !== FALSE)) || strpos($table['table'], 'civicrm_value_') === 0) {
-        $table['table'] = $connection->getFullQualifiedTableName($table['table']);
+        $cache_key = "ce-qualified-table-names:$table_name";
+        if ($cache = $this->cacheService->get($cache_key)) {
+          $table['table'] = $cache->data;
+        }
+        else {
+          $connection = Database::getConnection();
+          $table['table'] = $connection->getFullQualifiedTableName($table['table']);
+          $this->cacheService->set($cache_key, $table['table']);
+        }
       }
     }
     return $query;
