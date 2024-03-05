@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="civicrm_entity">
+  <description>PHP CodeSniffer configuration for CiviCRM entity.</description>
+  <file>.</file>
+  <arg name="extensions" value="php,module,inc,install,test,profile,theme,info,yml"/>
+
+  <exclude-pattern>*/vendor/*</exclude-pattern>
+  <exclude-pattern>*/node_modules/*</exclude-pattern>
+
+  <rule ref="Drupal"/>
+  <rule ref="DrupalPractice"/>
+</ruleset>
