@@ -63,6 +63,9 @@ views.filter_value.civicrm_entity_civicrm_address_proximity:
       type: string
       label: 'Distance unit'
 
+views.filter.civicrm_entity_civicrm_address_state_province:
+  type: views.filter.many_to_one
+
 views.argument_validator.entity:civicrm_contact:
   type: views.argument_validator_entity
   label: 'Civicrm contact'
