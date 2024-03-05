@@ -745,3 +745,56 @@ function civicrm_entity_search_api_datasource_info_alter(array &$infos) {
     }
   }
 }
+
+/**
+ * Implements hook_civicrm_merge().
+ */
+function civicrm_entity_civicrm_merge($mode, &$sqls, $mainId = NULL, $otherId = NULL, $tables = NULL) {
+  if ($mode == 'sqls' && !empty($mainId) && !empty($otherId)) {
+    // Get List if civicrm contact entity reference field.
+    $entityRefFields = \Drupal::entityTypeManager()->getStorage('field_storage_config')
+      ->loadByProperties([
+        'type' => 'entity_reference',
+        'settings' => ['target_type' => 'civicrm_contact'],
+      ]);
+
+    // Iterate fields and prepare the array.
+    foreach ($entityRefFields as $entityRefField) {
+      // Get Field name.
+      $fieldName = $entityRefField->getName();
+      // Get Type, Node etc..
+      $entityRefType = $entityRefField->getTargetEntityTypeId();
+      $options[$entityRefType][] = $fieldName;
+    }
+
+    foreach ($options as $type => $fields) {
+      foreach ($fields as $field) {
+        try {
+          // $otherId is duplicate contact ID
+          $ids = \Drupal::entityQuery($type)
+            ->condition($field, $otherId, '=')
+            ->accessCheck(FALSE)
+            ->execute();
+          if (!empty($ids)) {
+            $entityRecords = Drupal::entityTypeManager()->getStorage($type)
+              ->loadMultiple($ids);
+            foreach ($entityRecords as $entityRecord) {
+              // Update new contact.
+              // Target Contact.
+              try {
+                $entityRecord->set($field, $mainId);
+                $entityRecord->save();
+              }
+              catch (\Exception $e) {
+                \Drupal::logger('civicrm_entity')->error($e->getMessage());
+              }
+            }
+          }
+        }
+        catch (\Exception $e) {
+          \Drupal::logger('civicrm_entity')->error($e->getMessage());
+        }
+      }
+    }
+  }
+}
