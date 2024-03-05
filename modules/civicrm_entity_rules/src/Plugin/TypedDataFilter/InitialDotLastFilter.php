@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\civicrm_entity\Plugin\TypedDataFilter;
+namespace Drupal\civicrm_entity_rules\Plugin\TypedDataFilter;
 
 use Drupal\Core\Render\BubbleableMetadata;
 use Drupal\Core\TypedData\DataDefinition;
@@ -8,14 +8,14 @@ use Drupal\Core\TypedData\DataDefinitionInterface;
 use Drupal\typed_data\DataFilterBase;
 
 /**
- * A data filter which changes a string to upper case.
+ * A data filter providing a default value if no value is set.
  *
  * @DataFilter(
- *   id = "firstdotlast",
- *   label = @Translation("Format username : firstname.lastname"),
+ *   id = "initialdotlast",
+ *   label = @Translation("Drupal Username : initial.lastname."),
  * )
  */
-class FirstDotLastFilter extends DataFilterBase {
+class InitialDotLastFilter extends DataFilterBase {
 
   /**
    * {@inheritdoc}
@@ -27,7 +27,6 @@ class FirstDotLastFilter extends DataFilterBase {
     else {
       return FALSE;
     }
-    // Return is_subclass_of($definition->getClass(), StringInterface::class);.
   }
 
   /**
@@ -41,7 +40,13 @@ class FirstDotLastFilter extends DataFilterBase {
    * {@inheritdoc}
    */
   public function filter(DataDefinitionInterface $definition, $value, array $arguments, BubbleableMetadata $bubbleable_metadata = NULL) {
-    $login = str_replace(' ', '', strtolower($value->get('first_name')->getString())) . '.' . strtolower($value->get('last_name')->getString());
+    $c = preg_match_all("/(?<=\b)[a-z]/i", ($value->get('first_name')->getString()), $m);
+    if ($c > 0) {
+      $login = strtolower(implode('', $m[0])) . '.' . strtolower($value->get('last_name')->getString());
+    }
+    else {
+      $login = strtolower($value->get('last_name')->getString());
+    }
 
     return filter_var($login, FILTER_SANITIZE_EMAIL);
   }
