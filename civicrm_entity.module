@@ -33,7 +33,6 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Entity\Display\EntityDisplayInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\civicrm_entity\Plugin\search_api\datasource\CivicrmEntity as DatasourceCivicrmEntity;
 
 /**
  * Implements hook_theme().
@@ -731,17 +730,5 @@ function civicrm_entity_rules_action_info_alter(&$rules_actions) {
         '@url' => 'https://www.drupal.org/docs/8/modules/typed-data-api-enhancements/typeddata-tokens',
         '@filters' => $filters,
       ]));
-  }
-}
-
-/**
- * Implements hook_search_api_datasource_info_alter().
- */
-function civicrm_entity_search_api_datasource_info_alter(array &$infos) {
-  foreach ($infos as $entity_type => &$info) {
-    if (strpos($entity_type, 'entity:civicrm_') !== FALSE) {
-      unset($info['deriver']);
-      $info['class'] = DatasourceCivicrmEntity::class;
-    }
   }
 }

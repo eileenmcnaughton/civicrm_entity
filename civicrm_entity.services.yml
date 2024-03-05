@@ -25,3 +25,8 @@ services:
     arguments: ['@civicrm_entity.module_installer.inner', '%app.root%', '@module_handler', '@kernel', '@database', '@update.update_hook_registry']
     tags:
       - { name: service_collector, tag: 'module_install.uninstall_validator', call: addUninstallValidator }
+
+  civicrm_entity.search_api:
+    class: Drupal\civicrm_entity\EventSubscriber\SearchApiSubscriber
+    tags:
+      - { name: event_subscriber }
