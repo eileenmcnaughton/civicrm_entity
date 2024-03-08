@@ -362,7 +362,7 @@ class CustomEntityField extends EntityField {
         'id' => $custom_field_id,
       ];
       $date_field = $this->civicrmApi->get('CustomField', $params);
-      if (!empty($date_field[0]['date_format']) && $date_field[0]['date_format'] === 'yy') {
+      if (empty($date_field[0]['time_format'])) {
         $utc = FALSE;
       }
     }
