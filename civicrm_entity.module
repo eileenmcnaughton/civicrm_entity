@@ -15,6 +15,7 @@ use Drupal\civicrm_entity\Entity\Sql\CivicrmEntityStorageSchema;
 use Drupal\civicrm_entity\Form\CivicrmEntityForm;
 use Drupal\civicrm_entity\Routing\CiviCrmEntityRouteProvider;
 use Drupal\civicrm_entity\SupportedEntities;
+use Drupal\Core\Database\Query\AlterableInterface;
 use Drupal\Core\Entity\ContentEntityDeleteForm;
 use Drupal\Core\Entity\ContentEntityType;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
@@ -742,6 +743,22 @@ function civicrm_entity_search_api_datasource_info_alter(array &$infos) {
     if (strpos($entity_type, 'entity:civicrm_') !== FALSE) {
       unset($info['deriver']);
       $info['class'] = DatasourceCivicrmEntity::class;
+    }
+  }
+}
+
+/**
+ * Implements hook_query_TAG_alter().
+ */
+function civicrm_entity_query_pathauto_bulk_update_alter(AlterableInterface $query) {
+  $tables = &$query->getTables();
+
+  if (strpos($tables['base_table']['table'], 'civicrm_') !== FALSE) {
+    $civicrm_connection_name = drupal_valid_test_ua() ? 'civicrm_test' : 'civicrm';
+    $civicrm_database_info = Database::getConnectionInfo($civicrm_connection_name);
+    if (isset($civicrm_database_info['default'])) {
+      $connection = Database::getConnection('default', $civicrm_connection_name);
+      $tables['base_table']['table'] = $connection->getFullQualifiedTableName($tables['base_table']['table']);
     }
   }
 }
