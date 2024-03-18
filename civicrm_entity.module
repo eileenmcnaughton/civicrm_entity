@@ -762,3 +762,19 @@ function civicrm_entity_query_pathauto_bulk_update_alter(AlterableInterface $que
     }
   }
 }
+
+/**
+ * Implements hook_query_TAG_alter().
+ */
+function civicrm_entity_query_pathauto_bulk_delete_alter(AlterableInterface $query) {
+  $tables = &$query->getTables();
+
+  if (strpos($tables['base_table']['table'], 'civicrm_') !== FALSE) {
+    $civicrm_connection_name = drupal_valid_test_ua() ? 'civicrm_test' : 'civicrm';
+    $civicrm_database_info = Database::getConnectionInfo($civicrm_connection_name);
+    if (isset($civicrm_database_info['default'])) {
+      $connection = Database::getConnection('default', $civicrm_connection_name);
+      $tables['base_table']['table'] = $connection->getFullQualifiedTableName($tables['base_table']['table']);
+    }
+  }
+}
