@@ -193,7 +193,7 @@ final class CivicrmAddressViewsTest extends CivicrmEntityViewsTestBase {
       case 2:
         $assert_session->pageTextContainsOnce('Billing');
         $assert_session->pageTextContains('United States');
-        $assert_session->pageTextContainsOnce(75001);
+        $assert_session->pageTextContainsOnce('75001');
         $assert_session->pageTextContainsOnce('Texas');
         $assert_session->pageTextContainsOnce('3820 Vitruvian Way');
         break;
