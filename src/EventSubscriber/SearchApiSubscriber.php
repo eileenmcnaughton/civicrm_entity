@@ -3,7 +3,6 @@
 namespace Drupal\civicrm_entity\EventSubscriber;
 
 use Drupal\search_api\Event\GatheringPluginInfoEvent;
-use Drupal\search_api\Event\SearchApiEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Drupal\civicrm_entity\Plugin\search_api\datasource\CivicrmEntity as DatasourceCivicrmEntity;
 
@@ -32,7 +31,7 @@ class SearchApiSubscriber implements EventSubscriberInterface {
    */
   public static function getSubscribedEvents() {
     return [
-      SearchApiEvents::GATHERING_DATA_SOURCES => ['onGatheringDataSources'],
+      'search_api.gathering_data_sources' => ['onGatheringDataSources'],
     ];
   }
 
