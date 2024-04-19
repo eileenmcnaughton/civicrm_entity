@@ -62,7 +62,7 @@ class CivicrmStorageGetTest extends CivicrmEntityTestBase {
     $this->assertInstanceOf(CivicrmEntity::class, $entity);
     $this->assertEquals($entity->id(), 10);
     $this->assertEquals($entity->get('display_name')->value, 'Emma Neal');
-    $this->assertEquals('1982/06/27', $entity->get('birth_date')->date->format('Y/m/d'));
+    $this->assertEquals('1982/06/28', $entity->get('birth_date')->date->format('Y/m/d'));
   }
 
   /**

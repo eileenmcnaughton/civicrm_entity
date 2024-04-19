@@ -229,4 +229,8 @@ class CivicrmEntity extends ContentEntityBase {
     return $params;
   }
 
+  public function getRawValue($field) {
+    return $this->values[$field] ?? '';
+  }
+
 }

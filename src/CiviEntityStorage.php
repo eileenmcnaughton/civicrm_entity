@@ -158,17 +158,13 @@ class CiviEntityStorage extends SqlContentEntityStorage {
 
     // Get all the fields.
     $fields = $this->getCiviCrmApi()->getFields($this->entityType->get('civicrm_entity'));
-    $field_names = [];
-    foreach ($fields as $field) {
-      $field_names[] = $field['name'];
-    }
 
     $ids = $this->cleanIds($ids);
 
     if (!empty($ids)) {
       $options = [
         'id' => ['IN' => $ids],
-        'return' => $field_names,
+        'return' => array_keys($fields),
         'options' => ['limit' => 0],
       ];
 
@@ -195,7 +191,14 @@ class CiviEntityStorage extends SqlContentEntityStorage {
             $civicrm_entity = $temporary;
           }
 
-          $entity = $this->prepareLoadedEntity($civicrm_entity);
+          $massaged_civicrm_entity = [];
+          foreach ($fields as $name => $field) {
+            if (isset($civicrm_entity[$name])) {
+              $massaged_civicrm_entity[$field['name']] = $civicrm_entity[$name];
+            }
+          }
+
+          $entity = $this->prepareLoadedEntity($civicrm_entity + $massaged_civicrm_entity);
           $entities[$entity->id()] = $entity;
         }
       }
@@ -418,7 +421,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
           }
           else {
             $datetime_format = $definition->getSetting('datetime_type') === DateTimeItem::DATETIME_TYPE_DATE ? DateTimeItemInterface::DATE_STORAGE_FORMAT : DateTimeItemInterface::DATETIME_STORAGE_FORMAT;
-            $default_timezone = \Drupal::config('system.date')->get('timezone.default') ?? date_default_timezone_get();
+            $default_timezone = $definition->getSetting('datetime_type') === DateTimeItem::DATETIME_TYPE_DATE ? DateTimeItemInterface::STORAGE_TIMEZONE : \Drupal::config('system.date')->get('timezone.default') ?? date_default_timezone_get();
             $datetime_value = (new \DateTime($item[$main_property_name], new \DateTimeZone($default_timezone)))->setTimezone(new \DateTimeZone('UTC'))->format($datetime_format);
             $item_values[$delta][$main_property_name] = $datetime_value;
           }
@@ -429,7 +432,21 @@ class CiviEntityStorage extends SqlContentEntityStorage {
 
     // Handle special cases for field definitions.
     foreach ($field_definitions as $definition) {
-      if (($field_metadata = $definition->getSetting('civicrm_entity_field_metadata')) && isset($field_metadata['custom_group_id']) && $field_metadata['data_type'] === 'File') {
+      if (($field_metadata = $definition->getSetting('civicrm_entity_field_metadata')) && isset($field_metadata['custom_group_id']) && in_array($field_metadata['data_type'],['Float', 'Money'])) {
+        $items = $entity->get($definition->getName());
+        $item_values = $items->getValue();
+        if (!empty($item_values)) {
+          $ret = [];
+          foreach ($item_values as $value) {
+            $v = \CRM_Utils_Rule::cleanMoney($value['value']);
+            $ret[] = ['value' => $v];
+          }
+          if (!empty($ret)) {
+            $items->setValue($ret);
+          }
+        }
+      }
+      elseif (($field_metadata = $definition->getSetting('civicrm_entity_field_metadata')) && isset($field_metadata['custom_group_id']) && $field_metadata['data_type'] === 'File') {
         $items = $entity->get($definition->getName());
         $item_values = $items->getValue();
 
