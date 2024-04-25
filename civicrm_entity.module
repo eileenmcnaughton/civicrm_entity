@@ -35,6 +35,7 @@ use Drupal\Core\Entity\Display\EntityDisplayInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\civicrm_entity\Plugin\search_api\datasource\CivicrmEntity as DatasourceCivicrmEntity;
+use Drupal\Core\Field\Entity\BaseFieldOverride;
 
 /**
  * Implements hook_theme().
@@ -235,6 +236,14 @@ function civicrm_entity_entity_bundle_field_info(EntityTypeInterface $entity_typ
     foreach ($cloned_field_configs as $field_instance) {
       $result[$field_instance->getName()] = $field_instance;
     }
+  }
+  // Ensure all fields have a definition.
+  foreach ($base_field_definitions as $field_name => $definition) {
+    if (isset($result[$field_name])) {
+      continue;
+    }
+    $field = BaseFieldOverride::createFromBaseFieldDefinition($base_field_definitions[$field_name], $bundle);
+    $result[$field_name] = $field;
   }
   return $result;
 }
