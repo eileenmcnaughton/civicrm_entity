@@ -2,25 +2,28 @@
 
 namespace Drupal\civicrm_entity\Access;
 
-use \Civi\Api4\Contact;
-use Drupal\Core\Routing\Access\AccessInterface;
-use Drupal\Core\Session\AccountInterface;
+use Civi\Api4\Contact;
+use Drupal\civicrm_entity\CiviCrmApiInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Logger\LoggerChannelTrait;
-use Drupal\civicrm_entity\CiviCrmApiInterface;
-
+use Drupal\Core\Routing\Access\AccessInterface;
+use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
-
 use Symfony\Component\Routing\Route;
 
-
-
-
 /**
- * Checks access for displaying views using the ContactChecksum plugin
+ * Checks access for displaying views using the ContactChecksum plugin.
  */
-class ContactChecksumCheckAccess implements AccessInterface {   
+class ContactChecksumCheckAccess implements AccessInterface {
+
   use LoggerChannelTrait;
+
+  /**
+   * The request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected $requestStack;
 
   /**
    * The CiviCRM API service.
@@ -43,7 +46,7 @@ class ContactChecksumCheckAccess implements AccessInterface {
   }
 
   /**
-   * A custom access check
+   * A custom access check.
    *
    * @param \Drupal\Core\Session\AccountInterface $account
    *   Run access checks for this account.
@@ -55,7 +58,6 @@ class ContactChecksumCheckAccess implements AccessInterface {
    */
   public function access(AccountInterface $account, Route $route) {
     $options = unserialize($route->getRequirement('var_options'));
-    $account_roles = $account->getRoles();
 
     $access_by_role = !empty(array_intersect(array_filter($options['role']), $account->getRoles()));
     if ($access_by_role) {
@@ -63,22 +65,23 @@ class ContactChecksumCheckAccess implements AccessInterface {
       return AccessResult::allowed();
     }
     $request = $this->requestStack->getCurrentRequest();
-    
+
     $cid1 = filter_var($request->query->get('cid1'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-    $checksum =  $request->query->get('cs');
+    $checksum = $request->query->get('cs');
 
     if (empty($cid1) || empty($checksum)) {
       $this->getlogger('ContactChecksumCheckAccess')->info('No cid1 or cs param');
       return AccessResult::forbidden();
     }
 
-    $this->civicrmAPI = \Drupal::service('civicrm_entity.api');
-    $this->civicrmAPI->getFields('Contact');  // This forces a call to Civicrm initialize.
+    // This forces a call to Civicrm initialize.
+    $this->civicrmApi->getFields('Contact');
 
-    $results = \Contact::validateChecksum(FALSE)
-             ->setContactId($cid1)
-             ->setChecksum($checksum)
-             ->execute();
+    $results = Contact::validateChecksum(FALSE)
+      ->setContactId($cid1)
+      ->setChecksum($checksum)
+      ->execute();
     return empty($results[0]['valid']) ? AccessResult::forbidden() : AccessResult::allowed();
   }
+
 }
