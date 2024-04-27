@@ -1,0 +1,41 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the civicrm_entity module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function civicrm_entity_install() {
+  module_set_weight('civicrm_entity', 1);
+}
+
+/**
+ * Set the module weight.
+ */
+function civicrm_entity_update_8001() {
+  module_set_weight('civicrm_entity', 1);
+}
+
+/**
+ * Enable Drupal pages for enabled entity types.
+ */
+function civicrm_entity_update_8002() {
+  $config = \Drupal::service('config.factory')->getEditable('civicrm_entity.settings');
+  $enable_links_per_type = [];
+
+  foreach ($config->get('enabled_entity_types') as $entity_type) {
+    $enable_links_per_type[$entity_type]['values'] = [
+      'view' => 'view',
+      'add' => 'add',
+      'edit' => 'edit',
+      'delete' => 'delete',
+    ];
+  }
+
+  $config
+    ->set('enable_links_per_type', $enable_links_per_type)
+    ->save();
+}

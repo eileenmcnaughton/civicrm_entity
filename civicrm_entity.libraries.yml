@@ -3,3 +3,12 @@ form:
   css:
     theme:
       css/civicrm_entity.form.css: {}
+
+states:
+  version: VERSION
+  js:
+    js/civicrm_entity.states.js: {}
+  dependencies:
+    - core/drupal
+    - core/jquery
+    - core/once

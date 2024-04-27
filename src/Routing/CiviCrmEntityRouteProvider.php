@@ -28,7 +28,7 @@ class CiviCrmEntityRouteProvider extends AdminHtmlRouteProvider {
   protected function getAddFormRoute(EntityTypeInterface $entity_type) {
     $has_bundles = $entity_type->hasKey('bundle');
     $entity_add_form_route = parent::getAddFormRoute($entity_type);
-    if ($has_bundles) {
+    if ($has_bundles && $entity_add_form_route) {
       // This ensures the form receives a default bundle from the
       // CivicrmEntity::preCreate method, avoiding the need for the `add_page`
       // route for selecting a bundle.

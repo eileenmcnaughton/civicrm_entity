@@ -490,12 +490,18 @@ class CivicrmEntityViewsData extends EntityViewsData {
 
       case 'civicrm_phone':
         if (isset($views_field['civicrm_contact']['reverse__civicrm_phone__contact_id']['relationship'])) {
-          $views_field['civicrm_contact']['reverse__civicrm_phone__contact_id']['relationship']['id'] = 'civicrm_entity_reverse_location';
+          $views_field['civicrm_contact']['reverse__civicrm_phone__contact_id']['relationship']['id'] = 'civicrm_entity_reverse_location_phone';
           $views_field['civicrm_contact']['reverse__civicrm_phone__contact_id']['relationship']['label'] = $this->t('Phone');
         }
 
         break;
-
+      case 'civicrm_website':
+        if (isset($views_field['civicrm_contact']['reverse__civicrm_website__contact_id']['relationship'])) {
+          $views_field['civicrm_contact']['reverse__civicrm_website__contact_id']['relationship']['id'] = 'civicrm_entity_reverse_website_type';
+          $views_field['civicrm_contact']['reverse__civicrm_website__contact_id']['relationship']['label'] = $this->t('Website');
+        }
+  
+        break;
       case 'civicrm_address':
         if (isset($views_field['civicrm_contact']['reverse__civicrm_address__contact_id']['relationship'])) {
           $views_field['civicrm_contact']['reverse__civicrm_address__contact_id']['relationship']['id'] = 'civicrm_entity_reverse_location';

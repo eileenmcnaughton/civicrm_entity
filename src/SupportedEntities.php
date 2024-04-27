@@ -143,7 +143,7 @@ final class SupportedEntities {
     $civicrm_entity_info['civicrm_contribution'] = [
       'civicrm entity label' => t('Contribution'),
       'civicrm entity name' => 'contribution',
-      'label property' => 'source',
+      'label property' => 'contribution_source',
       'permissions' => [
         'view' => ['access CiviContribute', 'administer CiviCRM'],
         'edit' => ['edit contributions', 'administer CiviCRM'],
@@ -605,6 +605,18 @@ final class SupportedEntities {
         'delete' => ['administer CiviCampaign'],
       ],
     ];
+    $civicrm_entity_info['civicrm_state_province'] = [
+      'civicrm entity label' => t('State/Province'),
+      'civicrm entity name' => 'state_province',
+      'label property' => 'name',
+      'permissions' => [
+        'view' => ['view all contacts'],
+        'edit' => [],
+        'update' => [],
+        'create' => [],
+        'delete' => [],
+      ],
+    ];
     $civicrm_entity_info['civicrm_tag'] = [
       'civicrm entity label' => t('Tag'),
       'civicrm entity name' => 'tag',
@@ -714,6 +726,22 @@ final class SupportedEntities {
     foreach ($civicrm_entity_info as $entity_type => $entity_info) {
       if (!in_array($entity_info['civicrm entity name'], $api_entity_types)) {
         unset($civicrm_entity_info[$entity_type]);
+      }
+      // Insert dblocale table names
+      $multilingual = \CRM_Core_I18n::isMultilingual();
+      if ($multilingual) {
+        // @codingStandardsIgnoreStart
+        global $dbLocale;
+        // @codingStandardsIgnoreEnd
+        if ($dbLocale) {
+          $tables = \CRM_Core_I18n_Schema::schemaStructureTables();
+          if (in_array($entity_type, $tables)) {
+            $locale_table_name = $entity_type . $dbLocale;
+            if (strlen($locale_table_name) <= 32) {
+              $civicrm_entity_info[$locale_table_name] = $entity_info;
+            }
+          }
+        }
       }
     }
     return $civicrm_entity_info;

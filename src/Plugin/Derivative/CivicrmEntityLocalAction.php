@@ -54,15 +54,18 @@ class CivicrmEntityLocalAction extends DeriverBase implements ContainerDeriverIn
 
     /** @var \Drupal\Core\Entity\EntityTypeInterface $entity_type */
     foreach ($civicrm_entities as $entity_type_id => $entity_type) {
-      $this->derivatives["civicrm_entity_add_$entity_type_id"] = [
-        'route_name' => "entity.$entity_type_id.add_form",
-        'title' => $this->t('Add :label', [':label' => $entity_type->getLabel()]),
-        'appears_on' => ["entity.$entity_type_id.collection"],
-      ] + $base_plugin_definition;
-      if ($entity_type->hasKey('bundle')) {
-        $this->derivatives["civicrm_entity_add_$entity_type_id"]['route_parameters'] = [
-          $entity_type->getKey('bundle') => $entity_type_id,
-        ];
+      if ($entity_type->hasLinkTemplate('add-form')) {
+        $this->derivatives["civicrm_entity_add_$entity_type_id"] = [
+          'route_name' => "entity.$entity_type_id.add_form",
+          'title' => $this->t('Add :label', [':label' => $entity_type->getLabel()]),
+          'appears_on' => ["entity.$entity_type_id.collection"],
+        ] + $base_plugin_definition;
+
+        if ($entity_type->hasKey('bundle')) {
+          $this->derivatives["civicrm_entity_add_$entity_type_id"]['route_parameters'] = [
+            $entity_type->getKey('bundle') => $entity_type_id,
+          ];
+        }
       }
     }
 

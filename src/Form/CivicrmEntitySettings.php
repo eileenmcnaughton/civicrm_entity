@@ -3,6 +3,7 @@
 namespace Drupal\civicrm_entity\Form;
 
 use Drupal\civicrm_entity\SupportedEntities;
+use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
@@ -55,6 +56,13 @@ class CivicrmEntitySettings extends ConfigFormBase {
   protected $menuLinkManager;
 
   /**
+   * The render cache manager.
+   *
+   * @var \Drupal\Core\Cache\CacheBackendInterface
+   */
+  protected $cacheRender;
+
+  /**
    * Constructs a \Drupal\system\ConfigFormBase object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -69,14 +77,17 @@ class CivicrmEntitySettings extends ConfigFormBase {
    *   The local task manager.
    * @param \Drupal\Core\Menu\MenuLinkManagerInterface $menu_link_manager
    *   The menu link manager.
+   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_render
+   *   The render cache manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, RouteBuilderInterface $route_builder, LocalActionManager $local_action_manager, LocalTaskManager $local_task_manager, MenuLinkManagerInterface $menu_link_manager) {
+  public function __construct(ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, RouteBuilderInterface $route_builder, LocalActionManager $local_action_manager, LocalTaskManager $local_task_manager, MenuLinkManagerInterface $menu_link_manager, CacheBackendInterface $cache_render) {
     parent::__construct($config_factory);
     $this->entityTypeManager = $entity_type_manager;
     $this->routeBuilder = $route_builder;
     $this->localActionManager = $local_action_manager;
     $this->localTaskManager = $local_task_manager;
     $this->menuLinkManager = $menu_link_manager;
+    $this->cacheRender = $cache_render;
   }
 
   /**
@@ -89,7 +100,8 @@ class CivicrmEntitySettings extends ConfigFormBase {
       $container->get('router.builder'),
       $container->get('plugin.manager.menu.local_action'),
       $container->get('plugin.manager.menu.local_task'),
-      $container->get('plugin.manager.menu.link')
+      $container->get('plugin.manager.menu.link'),
+      $container->get('cache.render')
     );
   }
 
@@ -127,18 +139,48 @@ class CivicrmEntitySettings extends ConfigFormBase {
     ];
 
     $civicrm_entity_types = SupportedEntities::getInfo();
-    // @todo Use tableselect so we can display entity descriptions.
-    $options = array_map(function (array $entity_info) {
-      return $entity_info['civicrm entity label'];
-    }, $civicrm_entity_types);
-    asort($options);
 
     $form['enabled_entity_types'] = [
-      '#type' => 'checkboxes',
+      '#tree' => TRUE,
+      '#type' => 'fieldset',
       '#title' => $this->t('Enabled entity types'),
-      '#options' => $options,
-      '#default_value' => $config->get('enabled_entity_types'),
+      '#collapsible' => FALSE,
     ];
+
+    $enabled_entity_types = $config->get('enabled_entity_types') ?? [];
+    $enable_links_per_type = $config->get('enable_links_per_type') ?? [];
+    foreach ($civicrm_entity_types as $key => $entity_info) {
+      $form['enabled_entity_types'][$key]['#type'] = 'fieldset';
+
+      $form['enabled_entity_types'][$key]['enabled'] = [
+        '#type' => 'checkbox',
+        '#title' => $entity_info['civicrm entity label'],
+        '#default_value' => in_array($key, $enabled_entity_types),
+      ];
+
+      $form['enabled_entity_types'][$key]['enable_links'] = [
+        '#states' => [
+          'visible' => [
+            ':input[name="enabled_entity_types[' . $key . '][enabled]"]' => ['checked' => TRUE],
+          ],
+        ],
+        '#type' => 'checkboxes',
+        '#title' => $this->t('Enable Drupal pages'),
+        // @todo Should this be a list of dynamic operations?
+        '#options' => [
+          'view' => $this->t('View'),
+          'add' => $this->t('Add'),
+          'edit' => $this->t('Edit'),
+          'delete' => $this->t('Delete'),
+        ],
+        '#default_value' => $enable_links_per_type[$key]['values'] ?? [
+          'view',
+          'add',
+          'edit',
+          'delete',
+        ],
+      ];
+    }
 
     $form['advanced_settings'] = [
       '#type' => 'details',
@@ -153,6 +195,13 @@ class CivicrmEntitySettings extends ConfigFormBase {
       '#description' => $this->t('Not intended for normal use. Provided to temporarily disable Drupal entity hooks for CiviCRM Entity types for special cases, such as migrations. Only disable if you know you need to.'),
     ];
 
+    $form['advanced_settings']['disable_links'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Disable Drupal pages'),
+      '#default_value' => $config->get('disable_links'),
+      '#description' => $this->t('Globally disables Drupal versions of view page and, add, edit, and delete forms for all enabled entity types. This option overrides the "per type" Drupal pages.'),
+    ];
+
     return $form;
   }
 
@@ -161,11 +210,21 @@ class CivicrmEntitySettings extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     parent::submitForm($form, $form_state);
-    $enabled_entity_type = array_filter($form_state->getValue('enabled_entity_types'));
+    $enabled_entity_types = [];
+    $enable_links_per_type = [];
+    foreach ($form_state->getValue('enabled_entity_types') as $entity_type => $value) {
+      if ($value['enabled']) {
+        $enabled_entity_types[] = $entity_type;
+        $enable_links_per_type[$entity_type]['values'] = $value['enable_links'];
+      }
+    }
+
     $this->config('civicrm_entity.settings')
       ->set('filter_format', $form_state->getValue('filter_format'))
-      ->set('enabled_entity_types', $enabled_entity_type)
+      ->set('enabled_entity_types', $enabled_entity_types)
       ->set('disable_hooks', $form_state->getValue('disable_hooks'))
+      ->set('disable_links', $form_state->getValue('disable_links'))
+      ->set('enable_links_per_type', $enable_links_per_type)
       ->save();
 
     // Need to rebuild derivative routes.
@@ -173,6 +232,7 @@ class CivicrmEntitySettings extends ConfigFormBase {
     $this->routeBuilder->rebuild();
     $this->localActionManager->clearCachedDefinitions();
     $this->localTaskManager->clearCachedDefinitions();
+    $this->cacheRender->invalidateAll();
   }
 
 }
