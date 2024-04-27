@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityAccessControlHandler;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\civicrm_entity\CiviCrmApiInterface;
 
 /**
  * Entity access handler for CiviCRM entities.
@@ -71,6 +72,25 @@ class CivicrmEntityAccessHandler extends EntityAccessControlHandler {
     $permissions = [];
     if (!empty($this->civicrmEntityInfo[$this->entityTypeId]['permissions'][$operation])) {
       $permissions = $this->civicrmEntityInfo[$this->entityTypeId]['permissions'][$operation];
+    }
+    if (in_array($operation, ['view', 'edit'])) {
+      \Drupal::service('civicrm')->initialize();
+      $contactID = NULL;
+      if ($this->entityTypeId == 'civicrm_contact') {
+        $contactID = $entity->id();
+      }
+      elseif ($this->entityTypeId == 'civicrm_membership') {
+        $membership = \Drupal::service('civicrm_entity.api')->get('Membership', ['id' => $entity->id()]);
+        $contactID = $membership[$entity->id()]['contact_id'] ?? NULL;
+      }
+
+      if (empty($contactID)) {
+        return AccessResult::allowedIfHasPermissions($account, $permissions, 'OR');
+      }
+      $op = $operation == 'view' ? \CRM_Core_Permission::VIEW : \CRM_Core_Permission::EDIT;
+      if (\CRM_Contact_BAO_Contact_Permission::allow($contactID, $op)) {
+        return AccessResult::allowed();
+      }
     }
     return AccessResult::allowedIfHasPermissions($account, $permissions, 'OR');
   }
