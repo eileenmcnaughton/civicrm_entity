@@ -882,7 +882,7 @@ final class SupportedEntities {
   public static function getEntityTypeDaoClass($entity_type_id) {
     \Drupal::service('civicrm_entity.api')->civicrmInitialize();
 
-    $tables = \CRM_Core_DAO_AllCoreTables::getCoreTables();
+    $tables = \CRM_Core_DAO_AllCoreTables::tables();
     return $tables[$entity_type_id] ?? NULL;
   }
 
