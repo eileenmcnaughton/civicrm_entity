@@ -13,9 +13,11 @@ use Drupal\Core\Entity\Sql\SqlContentEntityStorageSchema;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Language\LanguageInterface;
+use Drupal\Core\Utility\Error;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\field\FieldStorageConfigInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Defines entity class for external CiviCRM entities.
@@ -44,6 +46,13 @@ class CiviEntityStorage extends SqlContentEntityStorage {
   protected $entityFieldManager;
 
   /**
+   * The Logger.
+   *
+   * @var \Psr\Log\LoggerInterface
+   */
+  protected $logger;
+
+  /**
    * Gets the CiviCRM API.
    *
    * @return \Drupal\civicrm_entity\CiviCrmApiInterface
@@ -67,6 +76,19 @@ class CiviEntityStorage extends SqlContentEntityStorage {
       $this->configFactory = \Drupal::configFactory();
     }
     return $this->configFactory;
+  }
+
+    /**
+   * Gets the config factory.
+   *
+   * @return \Psr\Log\LoggerInterface
+   *   The logger channel.
+   */
+  private function getLogger() {
+    if (!$this->logger) {
+      $this->logger = \Drupal::logger('civicrm_entity');
+    }
+    return $this->logger;
   }
 
   /**
@@ -203,7 +225,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
         }
       }
       catch (\Exception $e) {
-        watchdog_exception('civicrm_entity', $e);
+        Error::logException($this->getLogger(), $e);
       }
     }
 

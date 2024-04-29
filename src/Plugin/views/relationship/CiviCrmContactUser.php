@@ -3,7 +3,9 @@
 namespace Drupal\civicrm_entity\Plugin\views\relationship;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Utility\Error;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Relationship for referencing civicrm_contact and user.
@@ -22,11 +24,19 @@ class CiviCrmContactUser extends CiviCrmBridgeRelationshipBase {
   protected $civicrmApi;
 
   /**
+   * The Logger.
+   *
+   * @var \Psr\Log\LoggerInterface
+   */
+  protected $logger;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
     $instance->civicrmApi = $container->get('civicrm_entity.api');
+    $instance->logger = $container->get('logger.factory')->get('civicrm_entity');
     return $instance;
   }
 
@@ -60,7 +70,7 @@ class CiviCrmContactUser extends CiviCrmBridgeRelationshipBase {
       }
     }
     catch (\Exception $e) {
-      watchdog_exception('civicrm_entity', $e);
+      Error::logException($this->logger, $e);
     }
 
     $form['domain_id'] = [
@@ -100,7 +110,7 @@ class CiviCrmContactUser extends CiviCrmBridgeRelationshipBase {
           }
         }
         catch (\Exception $e) {
-          watchdog_exception('civicrm_entity', $e);
+          Error::logException($this->logger, $e);
         }
       }
     }
