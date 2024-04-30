@@ -159,7 +159,7 @@ final class CivicrmAddressViewsTest extends CivicrmEntityViewsTestBase {
     $assert_session = $this->assertSession();
     $assert_session->elementTextContains('css', '.views-row:first-child', 'Texas');
     $assert_session->elementTextContains('css', '.views-row:first-child', 'United States');
-    $assert_session->elementTextContains('css', '.views-row:first-child', 75001);
+    $assert_session->elementTextContains('css', '.views-row:first-child', '75001');
     $assert_session->elementTextContains('css', '.views-row:first-child', '3820 Vitruvian Way');
   }
 

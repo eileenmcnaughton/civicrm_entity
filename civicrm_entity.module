@@ -15,6 +15,7 @@ use Drupal\civicrm_entity\Entity\Sql\CivicrmEntityStorageSchema;
 use Drupal\civicrm_entity\Form\CivicrmEntityForm;
 use Drupal\civicrm_entity\Routing\CiviCrmEntityRouteProvider;
 use Drupal\civicrm_entity\SupportedEntities;
+use Drupal\Core\Database\Query\AlterableInterface;
 use Drupal\Core\Entity\ContentEntityDeleteForm;
 use Drupal\Core\Entity\ContentEntityType;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
@@ -33,6 +34,7 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Entity\Display\EntityDisplayInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Field\Entity\BaseFieldOverride;
 
 /**
  * Implements hook_theme().
@@ -233,6 +235,14 @@ function civicrm_entity_entity_bundle_field_info(EntityTypeInterface $entity_typ
     foreach ($cloned_field_configs as $field_instance) {
       $result[$field_instance->getName()] = $field_instance;
     }
+  }
+  // Ensure all fields have a definition.
+  foreach ($base_field_definitions as $field_name => $definition) {
+    if (isset($result[$field_name])) {
+      continue;
+    }
+    $field = BaseFieldOverride::createFromBaseFieldDefinition($base_field_definitions[$field_name], $bundle);
+    $result[$field_name] = $field;
   }
   return $result;
 }
@@ -782,6 +792,38 @@ function civicrm_entity_civicrm_merge($mode, &$sqls, $mainId = NULL, $otherId = 
           \Drupal::logger('civicrm_entity')->error($e->getMessage());
         }
       }
+    }
+  }
+}
+
+/**
+ * Implements hook_query_TAG_alter().
+ */
+function civicrm_entity_query_pathauto_bulk_update_alter(AlterableInterface $query) {
+  $tables = &$query->getTables();
+
+  if (strpos($tables['base_table']['table'], 'civicrm_') !== FALSE) {
+    $civicrm_connection_name = drupal_valid_test_ua() ? 'civicrm_test' : 'civicrm';
+    $civicrm_database_info = Database::getConnectionInfo($civicrm_connection_name);
+    if (isset($civicrm_database_info['default'])) {
+      $connection = Database::getConnection('default', $civicrm_connection_name);
+      $tables['base_table']['table'] = $connection->getFullQualifiedTableName($tables['base_table']['table']);
+    }
+  }
+}
+
+/**
+ * Implements hook_query_TAG_alter().
+ */
+function civicrm_entity_query_pathauto_bulk_delete_alter(AlterableInterface $query) {
+  $tables = &$query->getTables();
+
+  if (strpos($tables['base_table']['table'], 'civicrm_') !== FALSE) {
+    $civicrm_connection_name = drupal_valid_test_ua() ? 'civicrm_test' : 'civicrm';
+    $civicrm_database_info = Database::getConnectionInfo($civicrm_connection_name);
+    if (isset($civicrm_database_info['default'])) {
+      $connection = Database::getConnection('default', $civicrm_connection_name);
+      $tables['base_table']['table'] = $connection->getFullQualifiedTableName($tables['base_table']['table']);
     }
   }
 }
