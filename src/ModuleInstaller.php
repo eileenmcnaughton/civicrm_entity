@@ -7,6 +7,7 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Extension\ModuleInstaller as ExtensionModuleInstaller;
 use Drupal\Core\Extension\ModuleInstallerInterface;
 use Drupal\Core\Database\Connection;
+use Drupal\Core\Logger\LoggerChannelFactory;
 use Drupal\Core\Update\UpdateHookRegistry;
 
 /**
@@ -24,8 +25,9 @@ class ModuleInstaller extends ExtensionModuleInstaller {
   /**
    * {@inheritdoc}
    */
-  public function __construct(ModuleInstallerInterface $module_installer, $root, ModuleHandlerInterface $module_handler, DrupalKernelInterface $kernel, Connection $connection, UpdateHookRegistry $update_registry) {
-    parent::__construct($root, $module_handler, $kernel, $connection, $update_registry);
+  public function __construct(ModuleInstallerInterface $module_installer, $root, ModuleHandlerInterface $module_handler, DrupalKernelInterface $kernel, Connection $connection, UpdateHookRegistry $update_registry, LoggerChannelFactory $logger_factory) {
+    $logger = $logger_factory->get('civicrm_entity');
+    parent::__construct($root, $module_handler, $kernel, $connection, $update_registry, $logger);
     $this->moduleInstaller = $module_installer;
   }
 
