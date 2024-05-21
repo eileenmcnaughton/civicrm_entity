@@ -487,7 +487,12 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
   else {
     // Special handling for EntityTag objects.
     if ($objectName == 'EntityTag') {
-      $id = $storage->getEntityTagEntityId($params[0][0], $params[1]);
+      if (isset($params['entity_id']) && isset($params['entity_table'])) {
+        $id = $storage->getEntityTagEntityId($params['entity_id'], $params['entity_table']);
+      }
+      else {
+        $id = $storage->getEntityTagEntityId($params[0][0], $params[1]);
+      }
     }
     /** @var \Drupal\civicrm_entity\Entity\CivicrmEntity $entity */
     $entity = $storage->load($id);
