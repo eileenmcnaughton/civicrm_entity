@@ -238,12 +238,14 @@ function civicrm_entity_entity_bundle_field_info(EntityTypeInterface $entity_typ
     }
   }
   // Ensure all fields have a definition.
-  foreach ($base_field_definitions as $field_name => $definition) {
-    if (isset($result[$field_name])) {
-      continue;
+  if ($entity_type->get('civicrm_entity_ui_exposed') && $entity_type->hasKey('bundle')) {
+    foreach ($base_field_definitions as $field_name => $definition) {
+      if (isset($result[$field_name])) {
+        continue;
+      }
+      $field = BaseFieldOverride::createFromBaseFieldDefinition($base_field_definitions[$field_name], $bundle);
+      $result[$field_name] = $field;
     }
-    $field = BaseFieldOverride::createFromBaseFieldDefinition($base_field_definitions[$field_name], $bundle);
-    $result[$field_name] = $field;
   }
   return $result;
 }
