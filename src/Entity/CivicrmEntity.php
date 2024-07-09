@@ -201,6 +201,10 @@ class CivicrmEntity extends ContentEntityBase {
         continue;
       }
 
+      if ($storage_definition->getType() == 'metatag_computed') {
+        continue;
+      }
+
       $main_property_name = $storage_definition->getMainPropertyName();
       $list = [];
       /** @var \Drupal\Core\Field\FieldItemInterface $item */
