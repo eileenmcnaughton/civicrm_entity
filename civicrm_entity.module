@@ -3598,7 +3598,7 @@ function civicrm_entity_civicrm_post($op, $object_name, $object_id, &$object_ref
       break;
 
   }
-  if ($entity_name == 'entity_tag') {
+  if ($entity_name == 'entity_tag' && is_array($object_ref)) {
     // Argh entity tag is completely non-standard!!!
     // @see CRM-11933
     foreach ($object_ref[0] as $entity_tag) {
