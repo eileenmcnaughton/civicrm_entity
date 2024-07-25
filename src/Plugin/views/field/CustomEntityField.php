@@ -180,7 +180,7 @@ class CustomEntityField extends EntityField {
     ];
 
     if (($entity = $this->getEntity($values)) && isset($entity->{$this->definition['field_name']})) {
-      $entity = $this->createEntity($entity);
+      // $entity = $this->createEntity($entity);
 
       if (isset($this->aliases['id']) && isset($values->{$this->aliases['id']})) {
         $values->delta = $this->getDelta($values->{$this->aliases['id']});
