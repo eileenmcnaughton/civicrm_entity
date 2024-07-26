@@ -240,22 +240,23 @@ class CustomEntityField extends EntityField {
    *   Returns the processed entity.
    */
   protected function createEntity(EntityInterface $entity) {
-    $processed_entity = clone $entity;
+    $processed_entity = $entity;
 
     try {
-      $result = $this->civicrmApi->get('CustomValue', [
-        'sequential' => 1,
-        'return' => [$this->definition['field_name']],
-        'entity_id' => $entity->id(),
-        'entity_table' => $entity->getEntityTypeId(),
-      ]);
-
+      $result = $processed_entity->{$this->definition['field_name']}->getValue();
       if (!empty($result)) {
         $result = reset($result);
-        $result = array_filter($result, function ($key) {
-          return is_int($key);
-        }, ARRAY_FILTER_USE_KEY);
-
+        if (isset($result['original_value'])) {
+          $result = [$result['original_value']];
+        }
+        elseif (isset($result['value'])) {
+          $result = [$result['value']];
+        }
+        else {
+          $result = array_filter($result, function ($key) {
+            return is_int($key);
+          }, ARRAY_FILTER_USE_KEY);
+        }
         if (!empty($result)) {
           if (isset($result[0]) && is_array($result[0])) {
             $result = reset($result);
