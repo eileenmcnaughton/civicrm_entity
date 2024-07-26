@@ -244,7 +244,6 @@ class CustomEntityField extends EntityField {
 
     try {
       $result = $processed_entity->{$this->definition['field_name']}->getValue();
-      error_log('Result: ' . print_r($result, TRUE));
       if (!empty($result)) {
         $result = reset($result);
         if (isset($result['original_value'])) {
