@@ -147,6 +147,24 @@ final class RouteSubscriber extends RouteSubscriberBase {
         ];
       }
 
+      if ($this->moduleHandler->moduleExists('base_field_override_ui')) {
+        $field_ui_routes["entity.base_field_override.{$entity_type_id}_base_field_override_add_form"] = [
+          'bundle' => $entity_type_id,
+        ];
+
+        $field_ui_routes["entity.base_field_override.{$entity_type_id}_base_field_override_add_form"] = [
+          'bundle' => $entity_type_id,
+        ];
+
+        $field_ui_routes["entity.base_field_override.{$entity_type_id}_base_field_override_edit_form"] = [
+          'bundle' => $entity_type_id,
+        ];
+
+        $field_ui_routes["entity.base_field_override.{$entity_type_id}.base_field_override_ui_fields"] = [
+          'bundle' => $entity_type_id,
+        ];
+      }
+
       foreach ($field_ui_routes as $route_name => $defaults) {
         $route = $collection->get($route_name);
 
