@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\civicrm_entity\Plugin\RulesAction;
+namespace Drupal\civicrm_entity_rules\Plugin\RulesAction;
 
 use Drupal\civicrm_entity\CiviCrmApiInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
