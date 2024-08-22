@@ -17,8 +17,13 @@ jobs:
         include:
           - drupal: '10.2.*'
             civicrm: '5.69.*'
-          - drupal: '10.2.*'
+            php: '8.1'
+          - drupal: '10.3.*'
+            civicrm: '5.75.*'
+            php: '8.3'
+          - drupal: '11.0.0-beta1@beta'
             civicrm: 'dev-master'
+            php: '8.3'
     name: Drupal ${{ matrix.drupal }} | CiviCRM ${{ matrix.civicrm }}
     services:
       mysql:
@@ -36,7 +41,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: shivammathur/setup-php@v2
         with:
-            php-version: 8.1
+            php-version: ${{ matrix.php }}
             extensions: dom, curl, libxml, mbstring, zip, pdo, mysql, pdo_mysql, bcmath, soap, intl, gd, exif, iconv
             coverage: none
             tools: composer:v2
@@ -90,7 +95,7 @@ jobs:
         run: php -S 127.0.0.1:8080 -t ~/drupal/web &
       - name: Run PHPUnit
         run: |
-          mkdir $BROWSERTEST_OUTPUT_DIRECTORY
+          mkdir -p $BROWSERTEST_OUTPUT_DIRECTORY
           cd ~/drupal/web
           ../vendor/bin/phpunit -c core modules/contrib/civicrm_entity
         env:
@@ -98,8 +103,8 @@ jobs:
           SIMPLETEST_DB: mysql://root:@127.0.0.1:${{ job.services.mysql.ports[3306] }}/db
           SIMPLETEST_CIVICRM_DB: mysql://root:@127.0.0.1:${{ job.services.mysql.ports[3306] }}/db_civicrm
           SIMPLETEST_BASE_URL: http://127.0.0.1:8080
-          MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu", "--no-sandbox", "--headless"]}}, "http://127.0.0.1:9515"]'
-          BROWSERTEST_OUTPUT_DIRECTORY: '${{ runner.temp }}/browser_output'
+          MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","goog:chromeOptions":{"args":["--disable-gpu", "--no-sandbox", "--headless"]}}, "http://127.0.0.1:9515"]'
+          BROWSERTEST_OUTPUT_DIRECTORY: '/home/runner/drupal/web/sites/simpletest/browser_output'
       - uses: actions/upload-artifact@v2
         if: ${{ failure() || success() }}
         with:

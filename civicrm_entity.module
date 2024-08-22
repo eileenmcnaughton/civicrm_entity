@@ -237,12 +237,14 @@ function civicrm_entity_entity_bundle_field_info(EntityTypeInterface $entity_typ
     }
   }
   // Ensure all fields have a definition.
-  foreach ($base_field_definitions as $field_name => $definition) {
-    if (isset($result[$field_name])) {
-      continue;
+  if ($entity_type->get('civicrm_entity_ui_exposed') && $entity_type->hasKey('bundle')) {
+    foreach ($base_field_definitions as $field_name => $definition) {
+      if (isset($result[$field_name]) || isset($definition)) {
+        continue;
+      }
+      $field = BaseFieldOverride::createFromBaseFieldDefinition($base_field_definitions[$field_name], $bundle);
+      $result[$field_name] = $field;
     }
-    $field = BaseFieldOverride::createFromBaseFieldDefinition($base_field_definitions[$field_name], $bundle);
-    $result[$field_name] = $field;
   }
   return $result;
 }
@@ -486,7 +488,12 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
   else {
     // Special handling for EntityTag objects.
     if ($objectName == 'EntityTag') {
-      $id = $storage->getEntityTagEntityId($params[0][0], $params[1]);
+      if (isset($params['entity_id']) && isset($params['entity_table'])) {
+        $id = $storage->getEntityTagEntityId($params['entity_id'], $params['entity_table']);
+      }
+      else {
+        $id = $storage->getEntityTagEntityId($params[0][0], $params[1]);
+      }
     }
     /** @var \Drupal\civicrm_entity\Entity\CivicrmEntity $entity */
     $entity = $storage->load($id);

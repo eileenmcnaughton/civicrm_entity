@@ -5,6 +5,7 @@ namespace Drupal\civicrm_entity\Form;
 use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -67,6 +68,8 @@ class CivicrmEntitySettings extends ConfigFormBase {
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
+   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager
+   *   The typed config manager.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\Core\Routing\RouteBuilderInterface $route_builder
@@ -80,8 +83,8 @@ class CivicrmEntitySettings extends ConfigFormBase {
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache_render
    *   The render cache manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, RouteBuilderInterface $route_builder, LocalActionManager $local_action_manager, LocalTaskManager $local_task_manager, MenuLinkManagerInterface $menu_link_manager, CacheBackendInterface $cache_render) {
-    parent::__construct($config_factory);
+  public function __construct(ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $typedConfigManager, EntityTypeManagerInterface $entity_type_manager, RouteBuilderInterface $route_builder, LocalActionManager $local_action_manager, LocalTaskManager $local_task_manager, MenuLinkManagerInterface $menu_link_manager, CacheBackendInterface $cache_render) {
+    parent::__construct($config_factory, $typedConfigManager);
     $this->entityTypeManager = $entity_type_manager;
     $this->routeBuilder = $route_builder;
     $this->localActionManager = $local_action_manager;
@@ -96,6 +99,7 @@ class CivicrmEntitySettings extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
+      $container->get('config.typed'),
       $container->get('entity_type.manager'),
       $container->get('router.builder'),
       $container->get('plugin.manager.menu.local_action'),
