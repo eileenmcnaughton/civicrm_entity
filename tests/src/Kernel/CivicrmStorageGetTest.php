@@ -84,7 +84,7 @@ class CivicrmStorageGetTest extends CivicrmEntityTestBase {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function testDatetimeTimezone(array $original_datetimes, array $expected_utc_datetime, $timezone) {
+  public static function testDatetimeTimezone(array $original_datetimes, array $expected_utc_datetime, $timezone) {
     date_default_timezone_set($timezone);
     $civicrm_api_mock = $this->prophesize(CiviCrmApiInterface::class);
     $civicrm_api_mock->get('event', [

@@ -179,7 +179,7 @@ final class CivicrmEventViewsTest extends CivicrmEntityViewsTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function doSetupViewWithArguments() {
+  public static function doSetupViewWithArguments() {
     $this->addArgumentToDisplay('name[civicrm_event.id]');
     $this->addFieldToDisplay('name[civicrm_event.description__value]');
     $this->addFieldToDisplay('name[civicrm_event.summary]');

@@ -2,7 +2,7 @@ name: CiviCRM Entity Views Test
 type: module
 description: 'Test module for CiviCRM Entity and Views.'
 package: CiviCRM
-core_version_requirement: ^10
+core_version_requirement: ^10 || ^11
 dependencies:
   - drupal:views
   - civicrm:civicrm
