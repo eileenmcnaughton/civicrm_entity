@@ -257,7 +257,7 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
    * @return \Generator
    *   The arguments test data.
    */
-  abstract public function dataArgumentValues();
+  abstract public static function dataArgumentValues();
 
   /**
    * Creates a new View for the tested entity type.

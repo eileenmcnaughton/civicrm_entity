@@ -179,7 +179,7 @@ final class CivicrmActivityViewsTest extends CivicrmEntityViewsTestBase {
   /**
    * {@inheritdoc}
    */
-  public function dataArgumentValues() {
+  public static function dataArgumentValues() {
     yield [[1]];
     yield [[2]];
   }
