@@ -241,7 +241,7 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
   /**
    * Runs setup for the ::testViewWithArguments test.
    */
-  abstract protected function doSetupViewWithArguments();
+  abstract public function doSetupViewWithArguments();
 
   /**
    * Runs assertions for the ::testViewWithArguments test.
