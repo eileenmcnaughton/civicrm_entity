@@ -166,7 +166,7 @@ final class CivicrmAddressViewsTest extends CivicrmEntityViewsTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function doSetupViewWithArguments() {
+  public function doSetupViewWithArguments() {
     $this->addArgumentToDisplay('name[civicrm_address.id]');
     $this->addFieldToDisplay('name[civicrm_address.location_type_id]');
     $this->addFieldToDisplay('name[civicrm_address.country_id]');
