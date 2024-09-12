@@ -107,7 +107,7 @@ class CivicrmStorageGetTest extends CivicrmEntityTestBase {
   /**
    * Provides datetime and timezone test data.
    */
-  public function datetimeTimezoneDataProvider() {
+  public static function datetimeTimezoneDataProvider() {
     yield [
       [
         'start_date' => '2018-05-02 17:00:00',
