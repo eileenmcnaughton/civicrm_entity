@@ -154,7 +154,7 @@ final class ActivityFullcalendarViewTest extends CivicrmEntityTestBase {
     // @todo deprecated in Drupal 9.2 PHPUnit bump.
     // Change to assertMatchesRegularExpression for PHPUnit 10.
     // @see https://www.drupal.org/project/drupal/issues/3217709
-    $this->assertRegExp(
+    $this->assertMatchesRegularExpression(
       '/^Meeting about new seeds start is now ([0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9]) (2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9]) and end is now ([0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9]) (2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9]) - Do you want to save this change\?$/',
       $alert_text
     );
