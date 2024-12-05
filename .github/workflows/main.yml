@@ -19,7 +19,7 @@ jobs:
             civicrm: '5.75.*'
             php: '8.1'
           - drupal: '10.4.x-dev'
-            civicrm: '5.81-dev'
+            civicrm: '5.81.x-dev'
             php: '8.3'
           - drupal: '11.1.x-dev'
             civicrm: 'dev-master'
