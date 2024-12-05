@@ -18,10 +18,10 @@ jobs:
           - drupal: '10.3.*'
             civicrm: '5.75.*'
             php: '8.1'
-          - drupal: 'dev-10.4.x'
-            civicrm: 'dev-5.81'
+          - drupal: '10.4.x-dev'
+            civicrm: '5.81-dev'
             php: '8.3'
-          - drupal: 'dev-11.1.x'
+          - drupal: '11.1.x-dev'
             civicrm: 'dev-master'
             php: '8.4'
     name: Drupal ${{ matrix.drupal }} | CiviCRM ${{ matrix.civicrm }}
