@@ -2,6 +2,7 @@
 
 namespace Drupal\civicrm_entity\Plugin\views\relationship;
 
+use Drupal\views\Attribute\ViewsRelationship;
 use Drupal\views\Plugin\views\relationship\EntityReverse as CoreEntityReverse;
 
 /**
@@ -11,6 +12,7 @@ use Drupal\views\Plugin\views\relationship\EntityReverse as CoreEntityReverse;
  *
  * @ViewsRelationship("civicrm_entity_reverse")
  */
+#[ViewsRelationship("civicrm_entity_reverse")]
 class EntityReverse extends CoreEntityReverse {
 
   /**

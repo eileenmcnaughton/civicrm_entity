@@ -4,6 +4,7 @@ namespace Drupal\civicrm_entity\Plugin\views\relationship;
 
 use Drupal\civicrm_entity\Plugin\views\relationship\EntityReverse as CivicrmEntityReverse;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\views\Attribute\ViewsRelationship;
 
 /**
  * Relationship for referencing civicrm_contact and civicrm_relationship.
@@ -12,6 +13,7 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @ViewsRelationship("civicrm_entity_civicrm_relationship")
  */
+#[ViewsRelationship("civicrm_entity_civicrm_relationship")]
 class CiviCrmRelationship extends CivicrmEntityReverse {
 
   /**

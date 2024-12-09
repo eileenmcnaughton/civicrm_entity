@@ -2,6 +2,7 @@
 
 namespace Drupal\civicrm_entity\Plugin\views\field;
 
+use Drupal\views\Attribute\ViewsField;
 use Drupal\views\Plugin\views\field\EntityField;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
@@ -30,6 +31,7 @@ use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
  *
  * @ViewsField("civicrm_entity_custom_field")
  */
+#[ViewsField("civicrm_entity_custom_field")]
 class CustomEntityField extends EntityField {
   /**
    * The field definition.

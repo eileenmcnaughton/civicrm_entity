@@ -4,6 +4,7 @@ namespace Drupal\civicrm_entity\Plugin\views\join;
 
 use Drupal\civicrm_entity\CiviCrmApiInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\views\Attribute\ViewsJoin;
 use Drupal\views\Plugin\views\join\JoinPluginBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -13,6 +14,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @ingroup views_join_handlers
  * @ViewsJoin("civicrm_entity_contact_reference")
  */
+#[ViewsJoin("civicrm_entity_contact_reference")]
 class ContactReference extends JoinPluginBase implements ContainerFactoryPluginInterface {
 
   /**

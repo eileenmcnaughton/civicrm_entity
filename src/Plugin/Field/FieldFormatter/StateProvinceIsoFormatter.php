@@ -3,9 +3,11 @@
 namespace Drupal\civicrm_entity\Plugin\Field\FieldFormatter;
 
 use Drupal\civicrm_entity\CiviCrmApiInterface;
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -19,6 +21,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   }
  * )
  */
+#[FieldFormatter(
+  id: "civicrm_entity_state_province_iso",
+  label: new TranslatableMarkup("State province ISO"),
+  field_types: [
+    "list_integer"
+  ]
+)]
 class StateProvinceIsoFormatter extends FormatterBase {
 
   /**

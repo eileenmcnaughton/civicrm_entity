@@ -5,6 +5,9 @@ namespace Drupal\civicrm_entity\Plugin\RulesAction;
 use Drupal\civicrm_entity\CiviCrmApiInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\rules\Context\ContextDefinition;
+use Drupal\rules\Core\Attribute\RulesAction;
 use Drupal\rules\Core\RulesActionBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -29,6 +32,25 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   }
  * )
  */
+#[RulesAction(
+  id: "civicrm_entity_load_linked_user",
+  label: new TranslatableMarkup("Load Linked User"),
+  category: new TranslatableMarkup("CiviCRM"),
+  context_definitions: [
+    "contact_id" => new ContextDefinition(
+      data_type: "integer",
+      label: new TranslatableMarkup("Contact ID"),
+      description: new TranslatableMarkup("The numeric contact id."),
+      required: TRUE
+    ),
+  ],
+  provides: [
+    "user_fetched" => new ContextDefinition(
+      data_type: "entity:user",
+      label: new TranslatableMarkup("Fetched user"),
+    )
+  ]
+)]
 class LoadLinkedUser extends RulesActionBase implements ContainerFactoryPluginInterface {
 
   /**

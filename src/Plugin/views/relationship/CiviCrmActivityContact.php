@@ -2,6 +2,7 @@
 
 namespace Drupal\civicrm_entity\Plugin\views\relationship;
 
+use Drupal\views\Attribute\ViewsRelationship;
 use Drupal\views\ViewExecutable;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -15,6 +16,7 @@ use Drupal\views\Views;
  *
  * @ViewsRelationship("civicrm_entity_activity_contact")
  */
+#[ViewsRelationship("civicrm_entity_activity_contact")]
 class CiviCrmActivityContact extends RelationshipPluginBase {
 
   /**

@@ -2,6 +2,7 @@
 
 namespace Drupal\civicrm_entity\Plugin\views\field;
 
+use Drupal\views\Attribute\ViewsField;
 use Drupal\views\Plugin\views\field\EntityField;
 
 /**
@@ -11,6 +12,7 @@ use Drupal\views\Plugin\views\field\EntityField;
  *
  * @ViewsField("civicrm_entity_activity_end_datetime")
  */
+#[ViewsField("civicrm_entity_activity_end_datetime")]
 class ActivityEndDatetime extends EntityField {
 
   /**

@@ -4,6 +4,7 @@ namespace Drupal\civicrm_entity\Plugin\views\relationship;
 
 use Drupal\civicrm_entity\CiviCrmApiInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\views\Attribute\ViewsRelationship;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\Plugin\ViewsHandlerManager;
 use Drupal\views\ViewExecutable;
@@ -16,6 +17,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @ViewsRelationship("civicrm_entity_reverse_website_type")
  */
+#[ViewsRelationship("civicrm_entity_reverse_website_type")]
 class EntityReverseWebsiteType extends EntityReverse {
 
   /**

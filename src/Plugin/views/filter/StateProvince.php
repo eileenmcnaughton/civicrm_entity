@@ -6,6 +6,7 @@ use Drupal\civicrm_entity\CiviCrmApiInterface;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\options\Plugin\views\filter\ListField;
+use Drupal\views\Attribute\ViewsFilter;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -13,6 +14,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @ViewsFilter("civicrm_entity_civicrm_address_state_province")
  */
+#[ViewsFilter("civicrm_entity_civicrm_address_state_province")]
 class StateProvince extends ListField {
 
   /**

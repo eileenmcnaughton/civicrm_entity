@@ -2,7 +2,9 @@
 
 namespace Drupal\civicrm_entity\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\options\Plugin\Field\FieldFormatter\OptionsDefaultFormatter;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\civicrm_entity\CiviCrmApiInterface;
@@ -23,6 +25,15 @@ use Drupal\Core\Form\FormStateInterface;
  *   }
  * )
  */
+#[FieldFormatter(
+  id: "civicrm_entity_custom_multi_value",
+  label: new TranslatableMarkup("CiviCRM custom multivalue field"),
+  field_types: [
+    "list_integer",
+    "list_float",
+    "list_string"
+  ]
+)]
 class CustomMultiValue extends OptionsDefaultFormatter {
 
   /**

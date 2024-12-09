@@ -3,6 +3,7 @@
 namespace Drupal\civicrm_entity\Plugin\views\relationship;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\views\Attribute\ViewsRelationship;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\ViewExecutable;
 
@@ -13,6 +14,7 @@ use Drupal\views\ViewExecutable;
  *
  * @ViewsRelationship("civicrm_entity_reverse_location_phone")
  */
+#[ViewsRelationship("civicrm_entity_reverse_location_phone")]
 class EntityReverseLocationPhone extends EntityReverseLocation {
 
   /**

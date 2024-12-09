@@ -5,7 +5,9 @@ namespace Drupal\civicrm_entity\Plugin\views\access;
 use Civi\Api4\Contact;
 use Drupal\Core\Cache\CacheableDependencyInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\user\Plugin\views\access\Role;
+use Drupal\views\Attribute\ViewsAccess;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\Route;
 
@@ -20,6 +22,11 @@ use Symfony\Component\Routing\Route;
  *   help = @Translation("Access will be granted if the contact checksum validates against contact cid1")
  * )
  */
+#[ViewsAccess(
+  id: 'civicrm_entity_contact_checksum',
+  title: new TranslatableMarkup('CiviCRM Entity: Contact Checksum'),
+  help: new TranslatableMarkup('Access will be granted if the contact checksum validates against contact cid1'),
+)]
 class ContactChecksum extends Role implements CacheableDependencyInterface {
 
   /**

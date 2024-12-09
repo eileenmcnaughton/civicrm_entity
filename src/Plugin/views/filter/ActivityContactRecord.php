@@ -3,6 +3,7 @@
 namespace Drupal\civicrm_entity\Plugin\views\filter;
 
 use Drupal\Core\Database\Query\Condition;
+use Drupal\views\Attribute\ViewsFilter;
 use Drupal\views\Plugin\views\filter\NumericFilter;
 use Drupal\views\Views;
 
@@ -11,6 +12,7 @@ use Drupal\views\Views;
  *
  * @ViewsFilter("civicrm_entity_civicrm_activity_contact_record")
  */
+#[ViewsFilter("civicrm_entity_civicrm_activity_contact_record")]
 class ActivityContactRecord extends NumericFilter {
 
   /**

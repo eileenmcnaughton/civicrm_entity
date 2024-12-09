@@ -2,6 +2,7 @@
 
 namespace Drupal\civicrm_entity\Plugin\views\relationship;
 
+use Drupal\views\Attribute\ViewsRelationship;
 use Drupal\views\Plugin\views\relationship\RelationshipPluginBase;
 use Drupal\views\Views;
 
@@ -21,6 +22,7 @@ use Drupal\views\Views;
  *
  * @ViewsRelationship("civicrm_entity_civicrm_bridge")
  */
+#[ViewsRelationship("civicrm_entity_civicrm_bridge")]
 class CiviCrmBridgeRelationshipBase extends RelationshipPluginBase {
 
   /**

@@ -4,6 +4,8 @@ namespace Drupal\civicrm_entity\Plugin\views\argument_default;
 
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheableDependencyInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\views\Attribute\ViewsArgumentDefault;
 use Drupal\views\Plugin\views\argument_default\ArgumentDefaultPluginBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -20,6 +22,10 @@ use Drupal\civicrm_entity\CiviCrmApiInterface;
  *   title = @Translation("Contact subtype from logged in user")
  * )
  */
+#[ViewsArgumentDefault(
+  id: 'current_user_contact_subtype',
+  title: new TranslatableMarkup('Contact subtype from logged in user'),
+)]
 class ContactSubtype extends ArgumentDefaultPluginBase implements CacheableDependencyInterface {
 
   /**

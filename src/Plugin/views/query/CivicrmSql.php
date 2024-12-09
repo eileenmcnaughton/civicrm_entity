@@ -5,6 +5,8 @@ namespace Drupal\civicrm_entity\Plugin\views\query;
 use Drupal\civicrm\Civicrm;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Database\Query\Select;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\views\Attribute\ViewsQuery;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\Plugin\views\query\Sql;
 use Drupal\views\ViewExecutable;
@@ -21,6 +23,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   help = @Translation("Query will be generated and run using the Drupal database API against the CiviCRM database.")
  * )
  */
+#[ViewsQuery(
+  id: 'civicrm_views_query',
+  title: new TranslatableMarkup('CiviCRM SQL Query'),
+  help: new TranslatableMarkup('Query will be generated and run using the Drupal database API against the CiviCRM database.')
+)]
 class CivicrmSql extends Sql {
 
   /**

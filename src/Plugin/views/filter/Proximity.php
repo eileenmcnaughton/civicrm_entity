@@ -2,6 +2,7 @@
 
 namespace Drupal\civicrm_entity\Plugin\views\filter;
 
+use Drupal\views\Attribute\ViewsFilter;
 use Drupal\views\Plugin\views\filter\FilterPluginBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\civicrm_entity\CiviCrmApiInterface;
@@ -15,6 +16,7 @@ use Drupal\Core\Database\Query\Condition;
  *
  * @ViewsFilter("civicrm_entity_civicrm_address_proximity")
  */
+#[ViewsFilter("civicrm_entity_civicrm_address_proximity")]
 class Proximity extends FilterPluginBase {
 
   /**

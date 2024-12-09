@@ -3,8 +3,10 @@
 namespace Drupal\civicrm_entity\Plugin\TypedDataFilter;
 
 use Drupal\Core\Render\BubbleableMetadata;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\Core\TypedData\DataDefinitionInterface;
+use Drupal\typed_data\Attribute\DataFilter;
 use Drupal\typed_data\DataFilterBase;
 
 /**
@@ -15,6 +17,10 @@ use Drupal\typed_data\DataFilterBase;
  *   label = @Translation("Drupal Username : initial.lastname."),
  * )
  */
+#[DataFilter(
+  id: "initialdotlast",
+  label: new TranslatableMarkup("Drupal Username : initial.lastname.")
+)]
 class InitialDotLastFilter extends DataFilterBase {
 
   /**

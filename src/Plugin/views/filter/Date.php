@@ -2,6 +2,7 @@
 
 namespace Drupal\civicrm_entity\Plugin\views\filter;
 
+use Drupal\views\Attribute\ViewsFilter;
 use Drupal\views\Plugin\views\filter\Date as BaseDate;
 use Drupal\Component\Datetime\DateTimePlus;
 use Drupal\Core\Datetime\DateFormatterInterface;
@@ -14,6 +15,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @ViewsFilter("civicrm_entity_date")
  */
+#[ViewsFilter("civicrm_entity_date")]
 class Date extends BaseDate {
   /**
    * The date formatter service.

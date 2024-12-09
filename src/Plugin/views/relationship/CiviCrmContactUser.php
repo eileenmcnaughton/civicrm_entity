@@ -4,6 +4,7 @@ namespace Drupal\civicrm_entity\Plugin\views\relationship;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Utility\Error;
+use Drupal\views\Attribute\ViewsRelationship;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -14,6 +15,7 @@ use Psr\Log\LoggerInterface;
  *
  * @ViewsRelationship("civicrm_entity_civicrm_contact_user")
  */
+#[ViewsRelationship("civicrm_entity_civicrm_contact_user")]
 class CiviCrmContactUser extends CiviCrmBridgeRelationshipBase {
 
   /**

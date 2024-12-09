@@ -5,6 +5,7 @@ namespace Drupal\civicrm_entity\Plugin\views\filter;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Query\Condition;
 use Drupal\civicrm_entity\CiviCrmApiInterface;
+use Drupal\views\Attribute\ViewsFilter;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\Plugin\views\filter\InOperator as BaseInOperator;
 use Drupal\views\ViewExecutable;
@@ -17,6 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @ViewsFilter("civicrm_entity_in_operator")
  */
+#[ViewsFilter("civicrm_entity_in_operator")]
 class InOperator extends BaseInOperator {
 
   /**

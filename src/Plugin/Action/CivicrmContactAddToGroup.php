@@ -2,6 +2,8 @@
 
 namespace Drupal\civicrm_entity\Plugin\Action;
 
+use Drupal\Core\Action\Attribute\Action;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\views_bulk_operations\Action\ViewsBulkOperationsActionBase;
 use Drupal\views_bulk_operations\Action\ViewsBulkOperationsPreconfigurationInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
@@ -25,6 +27,11 @@ if (!class_exists('Drupal\views_bulk_operations\Action\ViewsBulkOperationsAction
  *   confirm = TRUE,
  * )
  */
+#[Action(
+  id: 'civicrm_contact_add_to_group',
+  label: new TranslatableMarkup('Add Contact to Group'),
+  type: 'civicrm_contact',
+)]
 class CivicrmContactAddToGroup extends ViewsBulkOperationsActionBase implements ViewsBulkOperationsPreconfigurationInterface, PluginFormInterface, ContainerFactoryPluginInterface {
 
   /**

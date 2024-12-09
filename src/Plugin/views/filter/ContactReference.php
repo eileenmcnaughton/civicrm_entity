@@ -4,6 +4,7 @@ namespace Drupal\civicrm_entity\Plugin\views\filter;
 
 use Drupal\Core\Entity\Element\EntityAutocomplete;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\views\Attribute\ViewsFilter;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\ViewExecutable;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -15,6 +16,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @ViewsFilter("civicrm_entity_contact_reference")
  */
+#[ViewsFilter("civicrm_entity_contact_reference")]
 class ContactReference extends InOperator {
 
   /**

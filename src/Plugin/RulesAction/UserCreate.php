@@ -6,6 +6,9 @@ use Drupal\civicrm_entity\CiviCrmApiInterface;
 use Drupal\civicrm_entity\CiviEntityStorage;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\rules\Context\ContextDefinition;
+use Drupal\rules\Core\Attribute\RulesAction;
 use Drupal\rules\Core\RulesActionBase;
 use Drupal\user\UserStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -56,6 +59,54 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   }
  * )
  */
+#[RulesAction(
+  id: "civicrm_entity_user_create",
+  label: new TranslatableMarkup("Create linked drupal user account"),
+  category: new TranslatableMarkup("CiviCRM"),
+  context_definitions: [
+    "contact_id" => new ContextDefinition(
+      data_type: "integer",
+      label: new TranslatableMarkup("CiviCRM contact ID"),
+      description: new TranslatableMarkup("The CiviCRM contact ID."),
+      required: TRUE
+     ),
+    "is_active" => new ContextDefinition(
+      data_type: "boolean",
+      label: new TranslatableMarkup("Activate account"),
+      description: new TranslatableMarkup("Set to TRUE to activate account. Leave empty to NOT activate the account. Defaults to TRUE."),
+      assignment_restriction: "input",
+      default_value: "TRUE",
+      required: FALSE
+     ),
+    "notify" => new ContextDefinition(
+      data_type: "boolean",
+      label: new TranslatableMarkup("Send account notification email"),
+      description: new TranslatableMarkup("Set to TRUE to send a notification email. Leave empty to not send an account notification email."),
+      assignment_restriction: "input",
+      default_value: FALSE,
+      required: FALSE
+     ),
+    "signin" => new ContextDefinition(
+      data_type: "boolean",
+      label: new TranslatableMarkup("Instant signin"),
+      description: new TranslatableMarkup("Set to TRUE to automatically log in the user. Leave empty to not automatically log in the user."),
+      assignment_restriction: "input",
+      default_value: FALSE,
+      required: FALSE
+     ),
+    "format" => new ContextDefinition(
+      data_type: "string",
+      label: new TranslatableMarkup("Format"),
+      description: new TranslatableMarkup("Format of the username.")
+     )
+  ],
+  provides: [
+    "user_fetched" => new ContextDefinition(
+      data_type: "entity:user",
+      label: new TranslatableMarkup("Created Drupal user"),
+    )
+  ]
+)]
 class UserCreate extends RulesActionBase implements ContainerFactoryPluginInterface {
 
   /**

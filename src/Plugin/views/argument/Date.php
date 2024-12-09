@@ -2,6 +2,7 @@
 
 namespace Drupal\civicrm_entity\Plugin\views\argument;
 
+use Drupal\views\Attribute\ViewsArgument;
 use Drupal\views\Plugin\views\argument\Date as BaseDate;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -13,6 +14,9 @@ use Drupal\Core\Routing\RouteMatchInterface;
  *
  * @ViewsArgument("civicrm_entity_date")
  */
+#[ViewsArgument(
+  id: 'civicrm_entity_date'
+)]
 class Date extends BaseDate {
 
   /**

@@ -2,7 +2,9 @@
 
 namespace Drupal\civicrm_entity\Plugin\EntityReferenceSelection;
 
+use Drupal\Core\Entity\Attribute\EntityReferenceSelection;
 use Drupal\Core\Entity\Plugin\EntityReferenceSelection\DefaultSelection;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * Provides specific access control for the civicrm_contact entity type.
@@ -18,6 +20,13 @@ use Drupal\Core\Entity\Plugin\EntityReferenceSelection\DefaultSelection;
  *   weight = 1
  * )
  */
+#[EntityReferenceSelection(
+  id: "default:civicrm_contact",
+  label: new TranslatableMarkup("CiviCRM Contact selection"),
+  entity_types: ["civicrm_contact"],
+  group: "default",
+  weight: 1
+)]
 class CivicrmContactSelection extends DefaultSelection {
 
   /**

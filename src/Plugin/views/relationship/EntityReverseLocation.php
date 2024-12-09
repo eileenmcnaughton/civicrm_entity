@@ -2,6 +2,7 @@
 
 namespace Drupal\civicrm_entity\Plugin\views\relationship;
 
+use Drupal\views\Attribute\ViewsRelationship;
 use Drupal\views\Plugin\ViewsHandlerManager;
 use Drupal\civicrm_entity\CiviCrmApiInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -16,6 +17,7 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @ViewsRelationship("civicrm_entity_reverse_location")
  */
+#[ViewsRelationship("civicrm_entity_reverse_location")]
 class EntityReverseLocation extends EntityReverse {
 
   /**

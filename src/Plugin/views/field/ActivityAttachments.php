@@ -2,6 +2,7 @@
 
 namespace Drupal\civicrm_entity\Plugin\views\field;
 
+use Drupal\views\Attribute\ViewsField;
 use Drupal\views\Plugin\views\field\FieldPluginBase;
 use Drupal\views\ResultRow;
 use Drupal\views\ViewExecutable;
@@ -16,6 +17,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @ViewsField("civicrm_entity_activity_attachments")
  */
+#[ViewsField("civicrm_entity_activity_attachments")]
 class ActivityAttachments extends FieldPluginBase {
 
   /**

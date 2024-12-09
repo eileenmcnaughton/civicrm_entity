@@ -2,6 +2,7 @@
 
 namespace Drupal\civicrm_entity\Plugin\views\field;
 
+use Drupal\views\Attribute\ViewsField;
 use Drupal\views\Plugin\views\field\NumericField;
 use Drupal\views\ResultRow;
 
@@ -10,6 +11,7 @@ use Drupal\views\ResultRow;
  *
  * @ViewsField("civicrm_entity_mailing_event_opened_rate")
  */
+#[ViewsField("civicrm_entity_mailing_event_opened_rate")]
 class MailingEventOpenedRate extends MailingEvent {
 
   /**
