@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\civicrm_entity\FunctionalJavascript;
 
 use Drupal\civicrm_entity\SupportedEntities;
+use Drupal\Core\Datetime\Entity\DateFormat;
 use Drupal\Core\Url;
 
 /**
@@ -130,6 +131,11 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
    * Tests creating a basic view with the entity type.
    */
   public function testCreateView() {
+    $date_format = DateFormat::load('medium');
+    $date_format
+      ->setPattern('D, m/d/Y - H:i')
+      ->save();
+
     $this->createNewView();
     $this->doSetupCreateView();
     $this->getSession()->getPage()->pressButton('Save');
