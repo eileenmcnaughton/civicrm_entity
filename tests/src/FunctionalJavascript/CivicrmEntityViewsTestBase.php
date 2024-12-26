@@ -103,6 +103,11 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
       ->set('ui.always_live_preview', FALSE)
       ->set('ui.show.advanced_column', TRUE)
       ->save();
+
+    $date_format = DateFormat::load('medium');
+    $date_format
+      ->setPattern('D, m/d/Y - H:i')
+      ->save();
   }
 
   /**
@@ -131,11 +136,6 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
    * Tests creating a basic view with the entity type.
    */
   public function testCreateView() {
-    $date_format = DateFormat::load('medium');
-    $date_format
-      ->setPattern('D, m/d/Y - H:i')
-      ->save();
-
     $this->createNewView();
     $this->doSetupCreateView();
     $this->getSession()->getPage()->pressButton('Save');
