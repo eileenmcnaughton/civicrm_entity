@@ -34,7 +34,6 @@ class StateProvinceIsoFormatter extends FormatterBase {
    * {@inheritdoc}
    */
   public static function isApplicable(FieldDefinitionInterface $field_definition) {
-    dpm($field_definition->getName());
     return parent::isApplicable($field_definition) && $field_definition->getName() === 'state_province_id';
   }
 
