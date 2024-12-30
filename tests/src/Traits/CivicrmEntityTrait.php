@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\civicrm_entity\Traits;
 
+use Civi\Setup\Event\InstallDatabaseEvent;
 use Civi\Setup\Event\InstallFilesEvent;
 use Civi\Setup;
 use Drupal\Core\Database\Database;
@@ -42,6 +43,11 @@ trait CivicrmEntityTrait {
           'civicrm',
           'templates_c',
         ]);
+      }, 900);
+
+    Setup::dispatcher()
+      ->addListener('civi.setup.installDatabase', function (InstallDatabaseEvent $e) {
+        $e->getModel()->syncUsers = FALSE;
       }, 900);
 
     $setup->installFiles();
