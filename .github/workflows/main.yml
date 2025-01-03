@@ -22,6 +22,9 @@ jobs:
             civicrm: '5.80.*'
             php: '8.3'
           - drupal: '11.1.*'
+            civicrm: '5.75.*'
+            php: '8.3'
+          - drupal: '11.1.*'
             civicrm: '5.80.*'
             php: '8.3'
     name: Drupal ${{ matrix.drupal }} | CiviCRM ${{ matrix.civicrm }}
