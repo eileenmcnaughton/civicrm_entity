@@ -62,7 +62,7 @@ class CivicrmSql extends Sql {
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
     // Ensure that Drupal is aware of the CiviCRM database connection.
     // This should be added into the settings.php, but we provide a backwards
     // compatibility layer here.

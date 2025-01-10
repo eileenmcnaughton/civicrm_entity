@@ -33,7 +33,7 @@ class ContactReferenceFormatter extends EntityReferenceLabelFormatter {
   protected function checkAccess(EntityInterface $entity) {
     $permissions = [
       'view all contacts',
-      'access all custom data'
+      'access all custom data',
     ];
     $account = User::load(\Drupal::currentUser()->id());
     return AccessResult::allowedIfHasPermissions($account, $permissions, 'OR');

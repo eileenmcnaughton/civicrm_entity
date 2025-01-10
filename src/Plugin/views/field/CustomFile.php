@@ -46,7 +46,7 @@ class CustomFile extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
     parent::init($view, $display, $options);
     $this->civicrmApi->civicrmInitialize();
     $this->additional_fields['entity_id'] = 'entity_id';

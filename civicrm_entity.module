@@ -365,7 +365,7 @@ function civicrm_entity_module_implements_alter(&$implementations, $hook) {
  * @return array
  *   The array of field options.
  */
-function civicrm_entity_pseudoconstant_options(FieldStorageDefinitionInterface $definition, FieldableEntityInterface $entity = NULL, &$cacheable = NULL) {
+function civicrm_entity_pseudoconstant_options(FieldStorageDefinitionInterface $definition, ?FieldableEntityInterface $entity = NULL, &$cacheable = NULL) {
   /** @var \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api */
   $civicrm_api = \Drupal::service('civicrm_entity.api');
   $entity_type = \Drupal::entityTypeManager()->getDefinition($definition->getTargetEntityTypeId());

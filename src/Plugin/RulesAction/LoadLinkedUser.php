@@ -48,7 +48,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
     "user_fetched" => new ContextDefinition(
       data_type: "entity:user",
       label: new TranslatableMarkup("Fetched user"),
-    )
+    ),
   ]
 )]
 class LoadLinkedUser extends RulesActionBase implements ContainerFactoryPluginInterface {

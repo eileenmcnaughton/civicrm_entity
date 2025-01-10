@@ -25,7 +25,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
   id: "civicrm_entity_state_province_iso",
   label: new TranslatableMarkup("State province ISO"),
   field_types: [
-    "list_integer"
+    "list_integer",
   ]
 )]
 class StateProvinceIsoFormatter extends FormatterBase {

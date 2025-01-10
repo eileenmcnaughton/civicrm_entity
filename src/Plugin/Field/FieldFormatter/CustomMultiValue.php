@@ -31,7 +31,7 @@ use Drupal\Core\Form\FormStateInterface;
   field_types: [
     "list_integer",
     "list_float",
-    "list_string"
+    "list_string",
   ]
 )]
 class CustomMultiValue extends OptionsDefaultFormatter {

@@ -69,7 +69,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
       label: new TranslatableMarkup("CiviCRM contact ID"),
       description: new TranslatableMarkup("The CiviCRM contact ID."),
       required: TRUE
-     ),
+    ),
     "is_active" => new ContextDefinition(
       data_type: "boolean",
       label: new TranslatableMarkup("Activate account"),
@@ -77,7 +77,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
       assignment_restriction: "input",
       default_value: "TRUE",
       required: FALSE
-     ),
+    ),
     "notify" => new ContextDefinition(
       data_type: "boolean",
       label: new TranslatableMarkup("Send account notification email"),
@@ -85,7 +85,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
       assignment_restriction: "input",
       default_value: FALSE,
       required: FALSE
-     ),
+    ),
     "signin" => new ContextDefinition(
       data_type: "boolean",
       label: new TranslatableMarkup("Instant signin"),
@@ -93,18 +93,18 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
       assignment_restriction: "input",
       default_value: FALSE,
       required: FALSE
-     ),
+    ),
     "format" => new ContextDefinition(
       data_type: "string",
       label: new TranslatableMarkup("Format"),
       description: new TranslatableMarkup("Format of the username.")
-     )
+    ),
   ],
   provides: [
     "user_fetched" => new ContextDefinition(
       data_type: "entity:user",
       label: new TranslatableMarkup("Created Drupal user"),
-    )
+    ),
   ]
 )]
 class UserCreate extends RulesActionBase implements ContainerFactoryPluginInterface {

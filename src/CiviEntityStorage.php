@@ -17,7 +17,6 @@ use Drupal\Core\Utility\Error;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\field\FieldStorageConfigInterface;
-use Psr\Log\LoggerInterface;
 
 /**
  * Defines entity class for external CiviCRM entities.
@@ -78,7 +77,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
     return $this->configFactory;
   }
 
-    /**
+  /**
    * Gets the config factory.
    *
    * @return \Psr\Log\LoggerInterface
@@ -169,7 +168,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
    *
    * @throws \Drupal\Core\Entity\Sql\SqlContentEntityStorageException
    */
-  protected function doLoadMultiple(array $ids = NULL) {
+  protected function doLoadMultiple(?array $ids = NULL) {
     $entities = [];
     if ($ids === NULL) {
       $civicrm_entity = $this->getCiviCrmApi()->get($this->entityType->get('civicrm_entity'));
@@ -463,7 +462,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
 
     // Handle special cases for field definitions.
     foreach ($field_definitions as $definition) {
-      if (($field_metadata = $definition->getSetting('civicrm_entity_field_metadata')) && isset($field_metadata['custom_group_id']) && in_array($field_metadata['data_type'],['Float', 'Money'])) {
+      if (($field_metadata = $definition->getSetting('civicrm_entity_field_metadata')) && isset($field_metadata['custom_group_id']) && in_array($field_metadata['data_type'], ['Float', 'Money'])) {
         $items = $entity->get($definition->getName());
         $item_values = $items->getValue();
         if (!empty($item_values)) {
@@ -502,7 +501,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
   /**
    * {@inheritdoc}
    */
-  public function getTableMapping(array $storage_definitions = NULL) {
+  public function getTableMapping(?array $storage_definitions = NULL) {
     $table_mapping = $this->tableMapping;
 
     if ($table_mapping) {

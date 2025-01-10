@@ -24,7 +24,7 @@ use Drupal\text\Plugin\Field\FieldWidget\TextareaWidget as CoreTextareaWidget;
   id: "civicrm_entity_textarea",
   label: new TranslatableMarkup("Text area (multiple rows, default CiviCRM format 1)"),
   field_types: [
-    "text_long"
+    "text_long",
   ]
 )]
 class TextareaWidget extends CoreTextareaWidget {

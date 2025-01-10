@@ -6,6 +6,9 @@ use Drupal\Core\Database\Database;
 use Drupal\search_api\Plugin\search_api\datasource\ContentEntity;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Datasource for CiviCRM entity.
+ */
 class CivicrmEntity extends ContentEntity {
 
   /**

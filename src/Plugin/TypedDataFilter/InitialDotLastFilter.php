@@ -45,7 +45,7 @@ class InitialDotLastFilter extends DataFilterBase {
   /**
    * {@inheritdoc}
    */
-  public function filter(DataDefinitionInterface $definition, $value, array $arguments, BubbleableMetadata $bubbleable_metadata = NULL) {
+  public function filter(DataDefinitionInterface $definition, $value, array $arguments, ?BubbleableMetadata $bubbleable_metadata = NULL) {
     $c = preg_match_all("/(?<=\b)[a-z]/i", ($value->get('first_name')->getString()), $m);
     if ($c > 0) {
       $login = strtolower(implode('', $m[0])) . '.' . strtolower($value->get('last_name')->getString());

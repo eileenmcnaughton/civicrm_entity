@@ -65,7 +65,7 @@ class EntityReverseWebsiteType extends EntityReverse {
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
     parent::init($view, $display, $options);
     $this->civicrmApi->civicrmInitialize();
     $this->websiteTypes = \CRM_Core_BAO_Website::buildOptions('website_type_id');

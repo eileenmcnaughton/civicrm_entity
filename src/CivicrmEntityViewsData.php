@@ -27,7 +27,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
   /**
    * {@inheritdoc}
    */
-  public function __construct(EntityTypeInterface $entity_type, SqlEntityStorageInterface $storage_controller, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, TranslationInterface $translation_manager, EntityFieldManagerInterface $entity_field_manager = NULL, CiviCrmApiInterface $civicrm_api) {
+  public function __construct(EntityTypeInterface $entity_type, SqlEntityStorageInterface $storage_controller, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, TranslationInterface $translation_manager, ?EntityFieldManagerInterface $entity_field_manager = NULL, CiviCrmApiInterface $civicrm_api) {
     parent::__construct($entity_type, $storage_controller, $entity_type_manager, $module_handler, $translation_manager, $entity_field_manager);
     $this->civicrmApi = $civicrm_api;
     $this->civicrmApi->civicrmInitialize();
@@ -495,13 +495,15 @@ class CivicrmEntityViewsData extends EntityViewsData {
         }
 
         break;
+
       case 'civicrm_website':
         if (isset($views_field['civicrm_contact']['reverse__civicrm_website__contact_id']['relationship'])) {
           $views_field['civicrm_contact']['reverse__civicrm_website__contact_id']['relationship']['id'] = 'civicrm_entity_reverse_website_type';
           $views_field['civicrm_contact']['reverse__civicrm_website__contact_id']['relationship']['label'] = $this->t('Website');
         }
-  
+
         break;
+
       case 'civicrm_address':
         if (isset($views_field['civicrm_contact']['reverse__civicrm_address__contact_id']['relationship'])) {
           $views_field['civicrm_contact']['reverse__civicrm_address__contact_id']['relationship']['id'] = 'civicrm_entity_reverse_location';

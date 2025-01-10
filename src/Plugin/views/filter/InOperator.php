@@ -47,7 +47,7 @@ class InOperator extends BaseInOperator {
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
     parent::init($view, $display, $options);
     $this->civicrmApi->civicrmInitialize();
   }
@@ -140,6 +140,9 @@ class InOperator extends BaseInOperator {
     }
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function operators() {
     $operators = parent::operators();
     if (!empty($this->definition['allow empty'])) {
@@ -161,6 +164,9 @@ class InOperator extends BaseInOperator {
     return $operators;
   }
 
+  /**
+   * Operation for empty string.
+   */
   protected function opEmptyString() {
     $this->ensureMyTable();
     $field = "$this->tableAlias.$this->realField";

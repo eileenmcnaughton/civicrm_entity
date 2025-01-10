@@ -27,7 +27,7 @@ class EntityReverseLocationPhone extends EntityReverseLocation {
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
     parent::init($view, $display, $options);
 
     $this->phoneTypes = \CRM_Core_BAO_Phone::buildOptions('phone_type_id');

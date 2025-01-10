@@ -740,7 +740,7 @@ final class SupportedEntities {
       if (!in_array($entity_info['civicrm entity name'], $api_entity_types)) {
         unset($civicrm_entity_info[$entity_type]);
       }
-      // Insert dblocale table names
+      // Insert dblocale table names.
       $multilingual = \CRM_Core_I18n::isMultilingual();
       if ($multilingual) {
         // @codingStandardsIgnoreStart
@@ -915,7 +915,7 @@ final class SupportedEntities {
     \Drupal::service('civicrm_entity.api')->civicrmInitialize();
 
     if (!Container::isContainerBooted()) {
-        return FALSE;
+      return FALSE;
     }
 
     $code_version = explode('.', \CRM_Utils_System::version());

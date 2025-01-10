@@ -41,7 +41,7 @@ class CivicrmGroupOptions extends OptionsProviderBase implements ContainerInject
   /**
    * {@inheritdoc}
    */
-  public function getPossibleOptions(AccountInterface $account = NULL) {
+  public function getPossibleOptions(?AccountInterface $account = NULL) {
     $options = [];
 
     // Load all the node types.
