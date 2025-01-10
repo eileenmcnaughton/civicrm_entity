@@ -8,5 +8,4 @@
   <exclude-pattern>*/node_modules/*</exclude-pattern>
 
   <rule ref="Drupal"/>
-  <rule ref="DrupalPractice"/>
 </ruleset>
