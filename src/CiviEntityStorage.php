@@ -462,7 +462,8 @@ class CiviEntityStorage extends SqlContentEntityStorage {
 
     // Handle special cases for field definitions.
     foreach ($field_definitions as $definition) {
-      if (($field_metadata = $definition->getSetting('civicrm_entity_field_metadata')) && isset($field_metadata['custom_group_id']) && in_array($field_metadata['data_type'], ['Float', 'Money'])) {
+      $data_types = ['Float', 'Money'];
+      if (($field_metadata = $definition->getSetting('civicrm_entity_field_metadata')) && isset($field_metadata['custom_group_id']) && in_array($field_metadata['data_type'], $data_types)) {
         $items = $entity->get($definition->getName());
         $item_values = $items->getValue();
         if (!empty($item_values)) {
