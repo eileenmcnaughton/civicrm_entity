@@ -798,7 +798,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
             'options callback' => "{$class_name}::buildOptions",
             'options arguments' => $field_metadata['name'],
           ];
-          $multi_type_fields = ['Multi-Select', 'CheckBox'];
+          $multi_type_fields = ['Multi-Select', 'CheckBox', 'Autocomplete-Select'];
           if (in_array($field_metadata['html_type'], $multi_type_fields)) {
             $filter['multi'] = TRUE;
           }
