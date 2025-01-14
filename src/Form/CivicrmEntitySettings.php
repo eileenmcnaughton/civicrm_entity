@@ -153,6 +153,7 @@ class CivicrmEntitySettings extends ConfigFormBase {
 
     $enabled_entity_types = $config->get('enabled_entity_types') ?? [];
     $enable_links_per_type = $config->get('enable_links_per_type') ?? [];
+    $disable_hooks_per_type = $config->get('disable_hooks_per_type') ?? [];
     foreach ($civicrm_entity_types as $key => $entity_info) {
       $form['enabled_entity_types'][$key]['#type'] = 'fieldset';
 
@@ -192,13 +193,6 @@ class CivicrmEntitySettings extends ConfigFormBase {
       '#open' => FALSE,
     ];
 
-    $form['advanced_settings']['disable_hooks'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Disable pre/post hooks'),
-      '#default_value' => $config->get('disable_hooks'),
-      '#description' => $this->t('Not intended for normal use. Provided to temporarily disable Drupal entity hooks for CiviCRM Entity types for special cases, such as migrations. Only disable if you know you need to.'),
-    ];
-
     $form['advanced_settings']['disable_links'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Disable Drupal pages'),
@@ -206,6 +200,27 @@ class CivicrmEntitySettings extends ConfigFormBase {
       '#description' => $this->t('Globally disables Drupal versions of view page and, add, edit, and delete forms for all enabled entity types. This option overrides the "per type" Drupal pages.'),
     ];
 
+    $form['advanced_settings']['disable_hooks'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Disable pre/post hooks'),
+      '#default_value' => $config->get('disable_hooks'),
+      '#description' => $this->t('Not intended for normal use. Provided to temporarily disable Drupal entity hooks for CiviCRM Entity types for special cases, such as migrations. Only disable if you know you need to.'),
+    ];
+
+    $form['advanced_settings']['disable_hooks_per_type'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Disable pre/post hooks per entity type'),
+      '#description' => $this->t('Pre/post hooks are used by Rules integration, or anytime Drupal CRUD hooks are required for an entity type. They have a performance cost though. Disable pre/post hooks per entity type here.'),
+      '#open' => FALSE,
+      '#tree' => TRUE,
+    ];
+    foreach ($civicrm_entity_types as $key => $entity_info) {
+      $form['advanced_settings']['disable_hooks_per_type'][$key] = [
+        '#type' => 'checkbox',
+        '#title' => $entity_info['civicrm entity label'],
+        '#default_value' => !empty($disable_hooks_per_type[$key]) ?? 0,
+      ];
+    }
     return $form;
   }
 
@@ -229,6 +244,7 @@ class CivicrmEntitySettings extends ConfigFormBase {
       ->set('disable_hooks', $form_state->getValue('disable_hooks'))
       ->set('disable_links', $form_state->getValue('disable_links'))
       ->set('enable_links_per_type', $enable_links_per_type)
+      ->set('disable_hooks_per_type', $form_state->getValue('disable_hooks_per_type'))
       ->save();
 
     // Need to rebuild derivative routes.

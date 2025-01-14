@@ -473,6 +473,12 @@ function civicrm_entity_civicrm_pre($op, $objectName, $id, &$params) {
     return;
   }
 
+  // Disable hook per entity type settings.
+  $disable_hooks_per_type = \Drupal::config('civicrm_entity.settings')->get('disable_hooks_per_type');
+  if (!empty($disable_hooks_per_type[$entityType])) {
+    return;
+  }
+
   /** @var \Drupal\civicrm_entity\CiviEntityStorage $storage */
   $storage = \Drupal::entityTypeManager()->getStorage($entityType);
 
@@ -542,6 +548,12 @@ function civicrm_entity_civicrm_post($op, $objectName, $objectId, &$objectRef) {
 
   // Check valid entity type.
   if (!$entityType) {
+    return;
+  }
+
+  // Disable hook per entity type settings.
+  $disable_hooks_per_type = \Drupal::config('civicrm_entity.settings')->get('disable_hooks_per_type');
+  if (!empty($disable_hooks_per_type[$entityType])) {
     return;
   }
 
