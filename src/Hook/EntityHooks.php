@@ -130,9 +130,9 @@ class EntityHooks {
         }
       }
 
-      // If this entity has bundle support, we define the bundle field as "bundle"
-      // and will use the "bundle property" as the field to fetch field options
-      // from CiviCRM with.
+      // If this entity has bundle support, we define the bundle field as
+      // "bundle" and will use the "bundle property" as the field to fetch field
+      // options from CiviCRM with.
       //
       // @see civicrm_entity_entity_bundle_info()
       // @see \Drupal\civicrm_entity\Entity\CivicrmEntity::baseFieldDefinitions()
@@ -142,7 +142,8 @@ class EntityHooks {
         if (isset($entity_type_info['links']['add-form'])) {
           // For entities with bundles that are exposed, add the `bundle` key to
           // the add-form route. In CiviCrmEntityRouteProvider::getAddFormRoute
-          // we default the value, so that it isn't actually required in the URL.
+          // we default the value, so that it isn't actually required in the
+          // URL.
           $entity_type_info['links']['add-form'] = sprintf('%s/{%s}', $entity_type_info['links']['add-form'], $entity_type_info['entity_keys']['bundle']);
         }
       }
@@ -231,9 +232,9 @@ class EntityHooks {
   /**
    * Implements hook_rebuild().
    *
-   * This resets the field storage and entity type definitions for civicrm_entity
-   * according to the active definitions to avoid mismatches since the definitions
-   * are not necessary to be updated.
+   * This resets the field storage and entity type definitions for
+   * civicrm_entity according to the active definitions to avoid mismatches
+   * since the definitions are not necessary to be updated.
    */
   #[Hook('rebuild')]
   public function rebuild(): void {

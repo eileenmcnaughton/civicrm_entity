@@ -5,41 +5,25 @@
  * Module file for the CiviCRM Entity module.
  */
 
-use Drupal\civicrm_entity\CivicrmEntityAccessHandler;
-use Drupal\civicrm_entity\CivicrmEntityListBuilder;
-use Drupal\civicrm_entity\CiviCrmEntityViewBuilder;
-use Drupal\civicrm_entity\CivicrmEntityViewsData;
 use Drupal\civicrm_entity\CiviEntityStorage;
 use Drupal\civicrm_entity\Entity\CivicrmEntity;
-use Drupal\civicrm_entity\Entity\Sql\CivicrmEntityStorageSchema;
-use Drupal\civicrm_entity\Form\CivicrmEntityForm;
 use Drupal\civicrm_entity\Hook\EntityAlterHooks;
 use Drupal\civicrm_entity\Hook\EntityHooks;
 use Drupal\civicrm_entity\Hook\FormHooks;
 use Drupal\civicrm_entity\Hook\QueryHooks;
 use Drupal\civicrm_entity\Hook\RulesHooks;
-use Drupal\civicrm_entity\Routing\CiviCrmEntityRouteProvider;
 use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Core\Database\Query\AlterableInterface;
-use Drupal\Core\Entity\ContentEntityDeleteForm;
-use Drupal\Core\Entity\ContentEntityType;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
-use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Render\Element;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\field\Entity\FieldConfig;
-use Drupal\field\FieldConfigInterface;
-use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\views\ViewExecutable;
 use Drupal\views\Plugin\views\query\QueryPluginBase;
-use Drupal\Core\Database\Database;
 use Drupal\Core\Entity\Display\EntityDisplayInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Field\Entity\BaseFieldOverride;
 use Drupal\Core\Hook\Attribute\LegacyHook;
 
 /**

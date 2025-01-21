@@ -17,7 +17,7 @@ class EntityAlterHooks {
   /**
    * Implements hook_entity_view_display_alter().
    *
-   * There is no way to handle this in the entity type's view build
+   * There is no way to handle this in the entity type's view build.
    */
   #[Hook('entity_view_display_alter')]
   public function entityViewDisplayAlter(EntityViewDisplayInterface $display, array $context): void {
