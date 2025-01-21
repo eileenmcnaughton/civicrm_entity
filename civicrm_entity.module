@@ -13,6 +13,11 @@ use Drupal\civicrm_entity\CiviEntityStorage;
 use Drupal\civicrm_entity\Entity\CivicrmEntity;
 use Drupal\civicrm_entity\Entity\Sql\CivicrmEntityStorageSchema;
 use Drupal\civicrm_entity\Form\CivicrmEntityForm;
+use Drupal\civicrm_entity\Hook\EntityAlterHooks;
+use Drupal\civicrm_entity\Hook\EntityHooks;
+use Drupal\civicrm_entity\Hook\FormHooks;
+use Drupal\civicrm_entity\Hook\QueryHooks;
+use Drupal\civicrm_entity\Hook\RulesHooks;
 use Drupal\civicrm_entity\Routing\CiviCrmEntityRouteProvider;
 use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Core\Database\Query\AlterableInterface;
@@ -58,122 +63,7 @@ function civicrm_entity_theme() {
  */
 #[LegacyHook]
 function civicrm_entity_entity_type_build(array &$entity_types) {
-  $logger = \Drupal::logger('civicrm-entity');
-  $supported_entities = SupportedEntities::getInfo();
-  $config = \Drupal::config('civicrm_entity.settings');
-  $enabled_entity_types = $config->get('enabled_entity_types') ?: [];
-  $enable_links_per_type = $config->get('enable_links_per_type') ?: [];
-  foreach ($supported_entities as $entity_type_id => $civicrm_entity_info) {
-    $clean_entity_type_id = str_replace('_', '-', $entity_type_id);
-    $civicrm_entity_name = $civicrm_entity_info['civicrm entity name'];
-
-    if (empty($civicrm_entity_info['label property'])) {
-      $logger->debug(sprintf('Missing label property: %s', $entity_type_id));
-      continue;
-    }
-
-    $entity_type_info = [
-      'provider' => 'civicrm_entity',
-      'class' => CivicrmEntity::class,
-      'originalClass' => CivicrmEntity::class,
-      'id' => $entity_type_id,
-      'component' => $civicrm_entity_info['component'] ?? NULL,
-      'civicrm_entity' => $civicrm_entity_name,
-      'civicrm_entity_ui_exposed' => in_array($entity_type_id, $enabled_entity_types),
-      'label' => new TranslatableMarkup('CiviCRM :name', [':name' => $civicrm_entity_info['civicrm entity label']]),
-      // @todo add label_singular
-      // @todo add label_plural
-      // @todo add label_count
-      'entity_keys' => [
-        'id' => 'id',
-        'label' => $civicrm_entity_info['label property'],
-      ],
-      'base_table' => $civicrm_entity_info['base table'] ?? $entity_type_id,
-      'admin_permission' => 'administer civicrm entity',
-      'permission_granularity' => 'entity_type',
-      'handlers' => [
-        'storage' => CiviEntityStorage::class,
-        'access' => CivicrmEntityAccessHandler::class,
-        'views_data' => CivicrmEntityViewsData::class,
-        'storage_schema' => CivicrmEntityStorageSchema::class,
-      ],
-    ];
-
-    if (in_array($entity_type_id, $enabled_entity_types)) {
-      $entity_type_info = array_merge_recursive($entity_type_info, [
-        'handlers' => [
-          'list_builder' => CivicrmEntityListBuilder::class,
-          'view_builder' => CiviCrmEntityViewBuilder::class,
-          'route_provider' => [
-            'default' => CiviCrmEntityRouteProvider::class,
-          ],
-          'form' => [
-            'default' => CivicrmEntityForm::class,
-            'add' => CivicrmEntityForm::class,
-            'edit' => CivicrmEntityForm::class,
-            'delete' => ContentEntityDeleteForm::class,
-          ],
-        ],
-        // Generate route paths.
-        'links' => [
-          'canonical' => sprintf('/%s/{%s}', $clean_entity_type_id, $entity_type_id),
-          'delete-form' => sprintf('/%s/{%s}/delete', $clean_entity_type_id, $entity_type_id),
-          'edit-form' => sprintf('/%s/{%s}/edit', $clean_entity_type_id, $entity_type_id),
-          'add-form' => sprintf('/%s/add', $clean_entity_type_id, $entity_type_id),
-          'collection' => sprintf('/admin/structure/civicrm-entity/%s', $clean_entity_type_id),
-        ],
-        'field_ui_base_route' => "entity.$entity_type_id.collection",
-      ]);
-
-      if (!empty($enable_links_per_type) && in_array($entity_type_id, array_keys($enable_links_per_type))) {
-        $enable_links = array_filter($enable_links_per_type[$entity_type_id]['values']);
-
-        if (!in_array('view', $enable_links)) {
-          unset($entity_type_info['links']['canonical']);
-        }
-
-        if (!in_array('delete', $enable_links)) {
-          unset($entity_type_info['links']['delete-form']);
-        }
-
-        if (!in_array('edit', $enable_links)) {
-          unset($entity_type_info['links']['edit-form']);
-        }
-
-        if (!in_array('add', $enable_links)) {
-          unset($entity_type_info['links']['add-form']);
-        }
-      }
-
-      if ($config->get('disable_links')) {
-        unset(
-          $entity_type_info['links']['canonical'],
-          $entity_type_info['links']['delete-form'],
-          $entity_type_info['links']['edit-form'],
-          $entity_type_info['links']['add-form'],
-        );
-      }
-    }
-
-    // If this entity has bundle support, we define the bundle field as "bundle"
-    // and will use the "bundle property" as the field to fetch field options
-    // from CiviCRM with.
-    //
-    // @see civicrm_entity_entity_bundle_info()
-    // @see \Drupal\civicrm_entity\Entity\CivicrmEntity::baseFieldDefinitions()
-    if (!empty($civicrm_entity_info['bundle property'])) {
-      $entity_type_info['entity_keys']['bundle'] = 'bundle';
-      $entity_type_info['civicrm_bundle_property'] = $civicrm_entity_info['bundle property'];
-      if (isset($entity_type_info['links']['add-form'])) {
-        // For entities with bundles that are exposed, add the `bundle` key to
-        // the add-form route. In CiviCrmEntityRouteProvider::getAddFormRoute
-        // we default the value, so that it isn't actually required in the URL.
-        $entity_type_info['links']['add-form'] = sprintf('%s/{%s}', $entity_type_info['links']['add-form'], $entity_type_info['entity_keys']['bundle']);
-      }
-    }
-
-    $entity_types[$entity_type_id] = new ContentEntityType($entity_type_info);
-  }
+  \Drupal::service(EntityHooks::class)->entityTypeBuild($entity_types);
 }
 
 /**
@@ -181,29 +71,7 @@ function civicrm_entity_entity_type_build(array &$entity_types) {
  */
 #[LegacyHook]
 function civicrm_entity_entity_bundle_info() {
-  $transliteration = \Drupal::transliteration();
-  /** @var \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api */
-  $civicrm_api = \Drupal::service('civicrm_entity.api');
-
-  $bundles = [];
-  $entity_types_with_bundles = array_filter(SupportedEntities::getInfo(), static function (array $civicrm_entity_info) {
-    return !empty($civicrm_entity_info['bundle property']);
-  });
-  foreach ($entity_types_with_bundles as $entity_type_id => $civicrm_entity_info) {
-    // We keep a bundle that is the same as the entity type ID. This allows us
-    // to create fields as if this entity has no bundles.
-    $bundles[$entity_type_id] = [
-      $entity_type_id => [
-        'label' => $civicrm_entity_info['civicrm entity label'],
-      ],
-    ];
-    $options = $civicrm_api->getOptions($civicrm_entity_info['civicrm entity name'], $civicrm_entity_info['bundle property']);
-    foreach ($options as $option) {
-      $machine_name = SupportedEntities::optionToMachineName($option, $transliteration);
-      $bundles[$entity_type_id][$machine_name]['label'] = $option;
-    }
-  }
-  return $bundles;
+  return \Drupal::service(EntityHooks::class)->entityBundleInfo();
 }
 
 /**
@@ -217,40 +85,7 @@ function civicrm_entity_entity_bundle_info() {
  */
 #[LegacyHook]
 function civicrm_entity_entity_bundle_field_info(EntityTypeInterface $entity_type, $bundle, array $base_field_definitions) {
-  $result = [];
-  if ($entity_type->get('civicrm_entity_ui_exposed') && $entity_type->hasKey('bundle')) {
-    // Query by filtering on the ID as this is more efficient than filtering
-    // on the entity_type property directly.
-    $ids = \Drupal::entityQuery('field_config')
-      ->condition('id', $entity_type->id() . '.', 'STARTS_WITH')
-      ->accessCheck(FALSE)
-      ->execute();
-    // Fetch all fields and key them by field name.
-    $field_configs = FieldConfig::loadMultiple($ids);
-
-    // Clone the field configs, so that we can modify them and change the
-    // target bundle type without manipulating the statically cached entries
-    // in the entity storage;.
-    $cloned_field_configs = array_map(static function (FieldConfigInterface $field) use ($bundle) {
-      $cloned = clone $field;
-      $cloned->set('bundle', $bundle);
-      return $cloned;
-    }, $field_configs);
-    foreach ($cloned_field_configs as $field_instance) {
-      $result[$field_instance->getName()] = $field_instance;
-    }
-  }
-  // Ensure all fields have a definition.
-  if ($entity_type->get('civicrm_entity_ui_exposed') && $entity_type->hasKey('bundle')) {
-    foreach ($base_field_definitions as $field_name => $definition) {
-      if (isset($result[$field_name]) || isset($definition) || empty($bundle)) {
-        continue;
-      }
-      $field = BaseFieldOverride::createFromBaseFieldDefinition($base_field_definitions[$field_name], $bundle);
-      $result[$field_name] = $field;
-    }
-  }
-  return $result;
+  return \Drupal::service(EntityHooks::class)->entityBundleFieldInfo($entity_type, $bundle, $base_field_definitions);
 }
 
 /**
@@ -260,34 +95,7 @@ function civicrm_entity_entity_bundle_field_info(EntityTypeInterface $entity_typ
  */
 #[LegacyHook]
 function civicrm_entity_entity_view_display_alter(EntityViewDisplayInterface $display, array $context) {
-  $entity_type = \Drupal::entityTypeManager()->getDefinition($context['entity_type']);
-  assert($entity_type !== NULL);
-  if ($entity_type->get('civicrm_entity') && $entity_type->hasKey('bundle')) {
-    $entity_display_repository = \Drupal::service('entity_display.repository');
-    assert($entity_display_repository instanceof EntityDisplayRepositoryInterface);
-    $entity_view_mode_ids = array_keys($entity_display_repository->getViewModeOptions($entity_type->id()));
-    $view_mode = !empty($context['view_mode']) && in_array($context['view_mode'], $entity_view_mode_ids) ? $context['view_mode'] : $entity_display_repository::DEFAULT_DISPLAY_MODE;
-    $root_display = $entity_display_repository->getViewDisplay(
-      $entity_type->id(),
-      $entity_type->id(),
-      $view_mode
-    );
-    $display->set('content', $root_display->get('content'));
-    $display->set('hidden', $root_display->get('hidden'));
-
-    if ($root_display instanceof LayoutBuilderEntityViewDisplay) {
-      $layout_builder_settings = $root_display->getThirdPartySettings('layout_builder');
-      foreach ($layout_builder_settings as $setting_key => $setting) {
-        $display->setThirdPartySetting('layout_builder', $setting_key, $setting);
-      }
-    }
-    $ds_settings = $root_display->getThirdPartySettings('ds');
-    if (!empty($ds_settings) && is_array($ds_settings)) {
-      foreach ($ds_settings as $setting_key => $setting) {
-        $display->setThirdPartySetting('ds', $setting_key, $setting);
-      }
-    }
-  }
+  \Drupal::service(EntityAlterHooks::class)->entityBundleFieldInfo($display, $context);
 }
 
 /**
@@ -295,21 +103,7 @@ function civicrm_entity_entity_view_display_alter(EntityViewDisplayInterface $di
  */
 #[LegacyHook]
 function civicrm_entity_entity_view_alter(array &$build, EntityInterface $entity, EntityDisplayInterface $display) {
-  $entity_type = $entity->getEntityType();
-  if ($entity_type->get('civicrm_entity') && $entity_type->hasKey('bundle') && \Drupal::moduleHandler()->moduleExists('field_group')) {
-    $entity_display_repository = \Drupal::service('entity_display.repository');
-    $entity_view_mode_ids = array_keys($entity_display_repository->getViewModeOptions($entity_type->id()));
-
-    $context = [
-      'entity_type' => $display->getTargetEntityTypeId(),
-      'bundle' => $entity_type->id(),
-      'entity' => $entity,
-      'display_context' => 'view',
-      'mode' => in_array($display->getMode(), $entity_view_mode_ids) ? $display->getMode() : $entity_display_repository::DEFAULT_DISPLAY_MODE,
-    ];
-
-    field_group_attach_groups($build, $context);
-  }
+  \Drupal::service(EntityAlterHooks::class)->entityViewAlter($build, $entity, $display);
 }
 
 /**
@@ -317,31 +111,7 @@ function civicrm_entity_entity_view_alter(array &$build, EntityInterface $entity
  */
 #[LegacyHook]
 function civicrm_entity_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
-  $form_object = $form_state->getFormObject();
-  if ($form_object instanceof CivicrmEntityForm) {
-
-    /**
-     * @var \Drupal\Core\Entity\Display\EntityFormDisplayInterface $form_display
-     */
-    $storage = $form_state->getStorage();
-    if (!empty($storage['form_display'])) {
-      $form_display = $storage['form_display'];
-      $entity = $form_object->getEntity();
-
-      if ($entity->getEntityType()->hasKey('bundle') && \Drupal::moduleHandler()->moduleExists('field_group')) {
-        $context = [
-          'entity_type' => $entity->getEntityTypeId(),
-          'bundle' => $entity->getEntityTypeId(),
-          'entity' => $entity,
-          'context' => 'form',
-          'display_context' => 'form',
-          'mode' => $form_display->getMode(),
-        ];
-
-        field_group_attach_groups($form, $context);
-      }
-    }
-  }
+  \Drupal::service(FormHooks::class)->formAlter($form, $form_state, $form_id);
 }
 
 /**
@@ -643,67 +413,9 @@ function _civicrm_entity_post_invoke($op, CiviEntityStorage $storage, EntityInte
 /**
  * Implements hook_views_query_alter().
  */
+#[LegacyHook]
 function civicrm_entity_views_query_alter(ViewExecutable $view, QueryPluginBase $query) {
-  // Provide fully qualified table name in all Views queries.
-  // If CiviCRM tables in a separate database.
-  $civicrm_connection_name = drupal_valid_test_ua() ? 'civicrm_test' : 'civicrm';
-  $civicrm_database_info = Database::getConnectionInfo($civicrm_connection_name);
-  if (isset($civicrm_database_info['default']) && method_exists($query, "getTableQueue")) {
-    $civicrm_connection = Database::getConnection('default', $civicrm_connection_name);
-    $table_queue =& $query->getTableQueue();
-    foreach ($table_queue as $alias => &$table_info) {
-      if (!empty($table_info['table']) && ((strpos($table_info['table'], 'civicrm_') === 0 && strpos($table_info['table'], '.') === FALSE && strpos($table_info['table'], '__') === FALSE) || strpos($table_info['table'], 'civicrm_value_') === 0)) {
-        $table_info['table'] = $civicrm_connection->getFullQualifiedTableName($table_info['table']);
-      }
-      if (!empty($table_info['join']->table) && ((strpos($table_info['join']->table, 'civicrm_') === 0 && strpos($table_info['join']->table, '.') === FALSE && strpos($table_info['join']->table, '__') === FALSE) || strpos($table_info['join']->table, 'civicrm_value_') === 0)) {
-        $table_info['join']->table = $civicrm_connection->getFullQualifiedTableName($table_info['join']->table);
-      }
-    }
-  }
-
-  \Drupal::service('civicrm')->initialize();
-  $multilingual = \CRM_Core_I18n::isMultilingual();
-
-  if ($multilingual) {
-    // @codingStandardsIgnoreStart
-    global $dbLocale;
-    // @codingStandardsIgnoreEnd
-    $columns = CRM_Core_I18n_SchemaStructure::columns();
-    $affectedColumns = [];
-    foreach ($columns as $table => $hash) {
-      foreach (array_keys($hash) as $column) {
-        $affectedColumns[] = "{$table}.{$column}";
-      }
-    }
-    $class = get_class($query);
-    if ($class == 'Drupal\search_api\Plugin\views\query\SearchApiQuery' && method_exists($query, "getWhere")) {
-      $where = $query->getWhere();
-    }
-    elseif (isset($query->where)) {
-      $where = $query->where;
-    }
-    if (!empty($where)) {
-      foreach ($where as &$condition_group) {
-        foreach ($condition_group['conditions'] as &$condition) {
-          if (!is_object($condition['field'])) {
-            foreach ($affectedColumns as $aff_column) {
-              if (strpos($aff_column, $condition['field']) !== FALSE) {
-                $condition['field'] = str_replace($aff_column, $aff_column . $dbLocale, $condition['field']);
-              }
-            }
-          }
-        }
-      }
-    }
-
-    if (!empty($query->fields)) {
-      foreach ($query->fields as &$field) {
-        if (array_key_exists($field['table'], $columns) && array_key_exists($field['field'], $columns[$field['table']])) {
-          $field['field'] .= $dbLocale;
-        }
-      }
-    }
-  }
+  \Drupal::service(QueryHooks::class)->viewsQueryAlter($view, $query);
 }
 
 /**
@@ -720,53 +432,17 @@ function civicrm_entity_theme_registry_alter(&$theme_registry) {
  * according to the active definitions to avoid mismatches since the definitions
  * are not necessary to be updated.
  */
+#[LegacyHook]
 function civicrm_entity_rebuild() {
-  /** @var \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface $entity_last_installed_repository */
-  $entity_last_installed_repository = \Drupal::service('entity.last_installed_schema.repository');
-  /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager */
-  $entity_field_manager = \Drupal::service('entity_field.manager');
-  /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager */
-  $entity_type_manager = \Drupal::service('entity_type.manager');
-
-  $supported_entities = SupportedEntities::getInfo();
-
-  foreach (array_keys($supported_entities) as $entity_type_id) {
-    // Reset field storage definitions.
-    $field_storage_definitions = $entity_field_manager->getFieldStorageDefinitions($entity_type_id);
-    $entity_last_installed_repository->setLastInstalledFieldStorageDefinitions($entity_type_id, $field_storage_definitions);
-
-    // Reset entity type definition.
-    $definition = $entity_type_manager->getDefinition($entity_type_id);
-    $entity_last_installed_repository->setLastInstalledDefinition($definition);
-  }
+  \Drupal::service(EntityHooks::class)->rebuild();
 }
 
 /**
  * Implements hook_rules_action_info_alter().
  */
+#[LegacyHook]
 function civicrm_entity_rules_action_info_alter(&$rules_actions) {
-  $definitions = \Drupal::service('plugin.manager.typed_data_filter')->getDefinitions();
-  $filters = "";
-  foreach ($definitions as $key) {
-    if ($key['provider'] == 'civicrm_entity') {
-      $filters .= ($filters == '' ? '' : ', ') . $key['id'];
-    }
-  }
-  if (array_key_exists('format', $rules_actions['civicrm_entity_user_create']['context_definitions'])) {
-    // Drupal 9 use 'context_definitions' instead of 'context'.
-    $rules_actions['civicrm_entity_user_create']['context_definitions']['format']->setDescription(t('Format of the username. Use <a href="@url">Twig style</a> tokens for using the available data.<br>Civicrm Entity filter available : @filters.',
-      [
-        '@url' => 'https://www.drupal.org/docs/8/modules/typed-data-api-enhancements/typeddata-tokens',
-        '@filters' => $filters,
-      ]));
-  }
-  else {
-    $rules_actions['civicrm_entity_user_create']['context']['format']->setDescription(t('Format of the username. Use <a href="@url">Twig style</a> tokens for using the available data.<br>Civicrm Entity filter available : @filters.',
-      [
-        '@url' => 'https://www.drupal.org/docs/8/modules/typed-data-api-enhancements/typeddata-tokens',
-        '@filters' => $filters,
-      ]));
-  }
+  \Drupal::service(RulesHooks::class)->rulesActionInfoAlter($rules_actions);
 }
 
 /**
@@ -825,31 +501,15 @@ function civicrm_entity_civicrm_merge($mode, &$sqls, $mainId = NULL, $otherId = 
 /**
  * Implements hook_query_TAG_alter().
  */
+#[LegacyHook]
 function civicrm_entity_query_pathauto_bulk_update_alter(AlterableInterface $query) {
-  $tables = &$query->getTables();
-
-  if (strpos($tables['base_table']['table'], 'civicrm_') !== FALSE) {
-    $civicrm_connection_name = drupal_valid_test_ua() ? 'civicrm_test' : 'civicrm';
-    $civicrm_database_info = Database::getConnectionInfo($civicrm_connection_name);
-    if (isset($civicrm_database_info['default'])) {
-      $connection = Database::getConnection('default', $civicrm_connection_name);
-      $tables['base_table']['table'] = $connection->getFullQualifiedTableName($tables['base_table']['table']);
-    }
-  }
+  \Drupal::service(QueryHooks::class)->queryPathautoBulkUpdateAlter($query);
 }
 
 /**
  * Implements hook_query_TAG_alter().
  */
+#[LegacyHook]
 function civicrm_entity_query_pathauto_bulk_delete_alter(AlterableInterface $query) {
-  $tables = &$query->getTables();
-
-  if (strpos($tables['base_table']['table'], 'civicrm_') !== FALSE) {
-    $civicrm_connection_name = drupal_valid_test_ua() ? 'civicrm_test' : 'civicrm';
-    $civicrm_database_info = Database::getConnectionInfo($civicrm_connection_name);
-    if (isset($civicrm_database_info['default'])) {
-      $connection = Database::getConnection('default', $civicrm_connection_name);
-      $tables['base_table']['table'] = $connection->getFullQualifiedTableName($tables['base_table']['table']);
-    }
-  }
+  \Drupal::service(QueryHooks::class)->queryPathautoBulkDeleteAlter($query);
 }
