@@ -3,6 +3,8 @@ services:
     class: 'Drupal\civicrm_entity\CiviCrmApi'
     arguments: ['@civicrm']
 
+  Drupal\civicrm_entity\CiviCrmApiInterface: '@civicrm_entity.api'
+
   civicrm_entity.field_definition_provider:
     class: Drupal\civicrm_entity\Entity\FieldDefinitionProvider
 
