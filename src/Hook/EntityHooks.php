@@ -2,6 +2,7 @@
 
 namespace Drupal\civicrm_entity\Hook;
 
+use Drupal\civicrm_entity\CiviCrmApiInterface;
 use Drupal\civicrm_entity\CivicrmEntityAccessHandler;
 use Drupal\civicrm_entity\CivicrmEntityListBuilder;
 use Drupal\civicrm_entity\CiviCrmEntityViewBuilder;
@@ -12,11 +13,18 @@ use Drupal\civicrm_entity\Entity\Sql\CivicrmEntityStorageSchema;
 use Drupal\civicrm_entity\Form\CivicrmEntityForm;
 use Drupal\civicrm_entity\Routing\CiviCrmEntityRouteProvider;
 use Drupal\civicrm_entity\SupportedEntities;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\Entity\ContentEntityDeleteForm;
 use Drupal\Core\Entity\ContentEntityType;
+use Drupal\Core\Entity\EntityFieldManagerInterface;
+use Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\Entity\BaseFieldOverride;
 use Drupal\Core\Hook\Attribute\Hook;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\FieldConfigInterface;
@@ -27,23 +35,50 @@ use Drupal\field\FieldConfigInterface;
 class EntityHooks {
 
   /**
+   * The logger channel.
+   *
+   * @var \Drupal\Core\Logger\LoggerChannelInterface
+   */
+  protected LoggerChannelInterface $logger;
+
+  /**
+   * The configuration.
+   *
+   * @var \Drupal\Core\Config\ImmutableConfig
+   */
+  protected ImmutableConfig $config;
+
+  /**
+   * Constructor for EntityHooks.
+   */
+  public function __construct(
+    LoggerChannelFactoryInterface $loggerChannelFactory,
+    ConfigFactoryInterface $configFactory,
+    protected CiviCrmApiInterface $civicrmApi,
+    protected EntityTypeManagerInterface $entityTypeManager,
+    protected EntityLastInstalledSchemaRepositoryInterface $entityLastInstalledSchemaRepository,
+    protected EntityFieldManagerInterface $entityFieldManager,
+  ) {
+    $this->logger = $loggerChannelFactory->get('civicrm_entity');
+    $this->config = $configFactory->get('civicrm_entity.settings');
+  }
+
+  /**
    * Implements hook_entity_type_build().
    *
    * Populates supported CiviCRM Entity definitions.
    */
   #[Hook('entity_type_build')]
   public function entityTypeBuild(array &$entity_types): void {
-    $logger = \Drupal::logger('civicrm-entity');
     $supported_entities = SupportedEntities::getInfo();
-    $config = \Drupal::config('civicrm_entity.settings');
-    $enabled_entity_types = $config->get('enabled_entity_types') ?: [];
-    $enable_links_per_type = $config->get('enable_links_per_type') ?: [];
+    $enabled_entity_types = $this->config->get('enabled_entity_types') ?: [];
+    $enable_links_per_type = $this->config->get('enable_links_per_type') ?: [];
     foreach ($supported_entities as $entity_type_id => $civicrm_entity_info) {
       $clean_entity_type_id = str_replace('_', '-', $entity_type_id);
       $civicrm_entity_name = $civicrm_entity_info['civicrm entity name'];
 
       if (empty($civicrm_entity_info['label property'])) {
-        $logger->debug(sprintf('Missing label property: %s', $entity_type_id));
+        $this->logger->debug(sprintf('Missing label property: %s', $entity_type_id));
         continue;
       }
 
@@ -120,7 +155,7 @@ class EntityHooks {
           }
         }
 
-        if ($config->get('disable_links')) {
+        if ($this->config->get('disable_links')) {
           unset(
             $entity_type_info['links']['canonical'],
             $entity_type_info['links']['delete-form'],
@@ -158,8 +193,6 @@ class EntityHooks {
   #[Hook('entity_bundle_info')]
   public function entityBundleInfo(): array {
     $transliteration = \Drupal::transliteration();
-    /** @var \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api */
-    $civicrm_api = \Drupal::service('civicrm_entity.api');
 
     $bundles = [];
     $entity_types_with_bundles = array_filter(SupportedEntities::getInfo(), static function (array $civicrm_entity_info) {
@@ -173,7 +206,7 @@ class EntityHooks {
           'label' => $civicrm_entity_info['civicrm entity label'],
         ],
       ];
-      $options = $civicrm_api->getOptions($civicrm_entity_info['civicrm entity name'], $civicrm_entity_info['bundle property']);
+      $options = $this->civicrmApi->getOptions($civicrm_entity_info['civicrm entity name'], $civicrm_entity_info['bundle property']);
       foreach ($options as $option) {
         $machine_name = SupportedEntities::optionToMachineName($option, $transliteration);
         $bundles[$entity_type_id][$machine_name]['label'] = $option;
@@ -197,7 +230,9 @@ class EntityHooks {
     if ($entity_type->get('civicrm_entity_ui_exposed') && $entity_type->hasKey('bundle')) {
       // Query by filtering on the ID as this is more efficient than filtering
       // on the entity_type property directly.
-      $ids = \Drupal::entityQuery('field_config')
+      $ids = $this->entityTypeManager
+        ->getStorage('field_config')
+        ->getQuery()
         ->condition('id', $entity_type->id() . '.', 'STARTS_WITH')
         ->accessCheck(FALSE)
         ->execute();
@@ -238,23 +273,16 @@ class EntityHooks {
    */
   #[Hook('rebuild')]
   public function rebuild(): void {
-    /** @var \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface $entity_last_installed_repository */
-    $entity_last_installed_repository = \Drupal::service('entity.last_installed_schema.repository');
-    /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager */
-    $entity_field_manager = \Drupal::service('entity_field.manager');
-    /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager */
-    $entity_type_manager = \Drupal::service('entity_type.manager');
-
     $supported_entities = SupportedEntities::getInfo();
 
     foreach (array_keys($supported_entities) as $entity_type_id) {
       // Reset field storage definitions.
-      $field_storage_definitions = $entity_field_manager->getFieldStorageDefinitions($entity_type_id);
-      $entity_last_installed_repository->setLastInstalledFieldStorageDefinitions($entity_type_id, $field_storage_definitions);
+      $field_storage_definitions = $this->entityFieldManager->getFieldStorageDefinitions($entity_type_id);
+      $this->entityLastInstalledSchemaRepository->setLastInstalledFieldStorageDefinitions($entity_type_id, $field_storage_definitions);
 
       // Reset entity type definition.
-      $definition = $entity_type_manager->getDefinition($entity_type_id);
-      $entity_last_installed_repository->setLastInstalledDefinition($definition);
+      $definition = $this->entityTypeManager->getDefinition($entity_type_id);
+      $this->entityLastInstalledSchemaRepository->setLastInstalledDefinition($definition);
     }
   }
 

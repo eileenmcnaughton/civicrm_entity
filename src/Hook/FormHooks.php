@@ -3,6 +3,7 @@
 namespace Drupal\civicrm_entity\Hook;
 
 use Drupal\civicrm_entity\Form\CivicrmEntityForm;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Hook\Attribute\Hook;
 
@@ -10,6 +11,12 @@ use Drupal\Core\Hook\Attribute\Hook;
  * Hook implementations for forms.
  */
 class FormHooks {
+
+  /**
+   * Constructor for EntityHooks.
+   */
+  public function __construct(protected ModuleHandlerInterface $moduleHandler) {
+  }
 
   /**
    * Implements hook_form_alter().)
@@ -27,7 +34,7 @@ class FormHooks {
         $form_display = $storage['form_display'];
         $entity = $form_object->getEntity();
 
-        if ($entity->getEntityType()->hasKey('bundle') && \Drupal::moduleHandler()->moduleExists('field_group')) {
+        if ($entity->getEntityType()->hasKey('bundle') && $this->moduleHandler->moduleExists('field_group')) {
           $context = [
             'entity_type' => $entity->getEntityTypeId(),
             'bundle' => $entity->getEntityTypeId(),

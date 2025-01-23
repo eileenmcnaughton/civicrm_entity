@@ -6,6 +6,8 @@ use Drupal\Core\Entity\Display\EntityDisplayInterface;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 
@@ -15,16 +17,26 @@ use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 class EntityAlterHooks {
 
   /**
+   * Constructor for EntityHooks.
+   */
+  public function __construct(
+    protected EntityTypeManagerInterface $entityTypeManager,
+    protected EntityDisplayRepositoryInterface $entityDisplayRepository,
+    protected ModuleHandlerInterface $moduleHandler,
+  ) {
+  }
+
+  /**
    * Implements hook_entity_view_display_alter().
    *
    * There is no way to handle this in the entity type's view build.
    */
   #[Hook('entity_view_display_alter')]
   public function entityViewDisplayAlter(EntityViewDisplayInterface $display, array $context): void {
-    $entity_type = \Drupal::entityTypeManager()->getDefinition($context['entity_type']);
+    $entity_type = $this->entityTypeManager->getDefinition($context['entity_type']);
     assert($entity_type !== NULL);
     if ($entity_type->get('civicrm_entity') && $entity_type->hasKey('bundle')) {
-      $entity_display_repository = \Drupal::service('entity_display.repository');
+      $entity_display_repository = $this->entityDisplayRepository;
       assert($entity_display_repository instanceof EntityDisplayRepositoryInterface);
       $entity_view_mode_ids = array_keys($entity_display_repository->getViewModeOptions($entity_type->id()));
       $view_mode = !empty($context['view_mode']) && in_array($context['view_mode'], $entity_view_mode_ids) ? $context['view_mode'] : $entity_display_repository::DEFAULT_DISPLAY_MODE;
@@ -57,8 +69,8 @@ class EntityAlterHooks {
   #[Hook('entity_view_alter')]
   public function entityViewAlter(array &$build, EntityInterface $entity, EntityDisplayInterface $display): void {
     $entity_type = $entity->getEntityType();
-    if ($entity_type->get('civicrm_entity') && $entity_type->hasKey('bundle') && \Drupal::moduleHandler()->moduleExists('field_group')) {
-      $entity_display_repository = \Drupal::service('entity_display.repository');
+    if ($entity_type->get('civicrm_entity') && $entity_type->hasKey('bundle') && $this->moduleHandler->moduleExists('field_group')) {
+      $entity_display_repository = $this->entityDisplayRepository;
       $entity_view_mode_ids = array_keys($entity_display_repository->getViewModeOptions($entity_type->id()));
 
       $context = [
