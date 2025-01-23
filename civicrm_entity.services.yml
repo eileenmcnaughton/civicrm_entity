@@ -37,3 +37,23 @@ services:
     class: Drupal\civicrm_entity\EventSubscriber\SearchApiSubscriber
     tags:
       - { name: event_subscriber }
+
+  Drupal\civicrm_entity\Hook\EntityAlterHooks:
+    class: Drupal\civicrm_entity\Hook\EntityAlterHooks
+    autowire: true
+
+  Drupal\civicrm_entity\Hook\EntityHooks:
+    class: Drupal\civicrm_entity\Hook\EntityHooks
+    autowire: true
+
+  Drupal\civicrm_entity\Hook\FormHooks:
+    class: Drupal\civicrm_entity\Hook\FormHooks
+    autowire: true
+
+  Drupal\civicrm_entity\Hook\QueryHooks:
+    class: Drupal\civicrm_entity\Hook\QueryHooks
+    autowire: true
+
+  Drupal\civicrm_entity\Hook\RulesHooks:
+    class: Drupal\civicrm_entity\Hook\RulesHooks
+    autowire: true
