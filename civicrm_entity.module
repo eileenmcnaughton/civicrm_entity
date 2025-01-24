@@ -79,7 +79,7 @@ function civicrm_entity_entity_bundle_field_info(EntityTypeInterface $entity_typ
  */
 #[LegacyHook]
 function civicrm_entity_entity_view_display_alter(EntityViewDisplayInterface $display, array $context) {
-  \Drupal::service(EntityAlterHooks::class)->entityBundleFieldInfo($display, $context);
+  \Drupal::service(EntityAlterHooks::class)->entityViewDisplayAlter($display, $context);
 }
 
 /**
