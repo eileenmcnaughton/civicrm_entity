@@ -42,25 +42,16 @@ class EntityHooks {
   protected LoggerChannelInterface $logger;
 
   /**
-   * The configuration.
-   *
-   * @var \Drupal\Core\Config\ImmutableConfig
-   */
-  protected ImmutableConfig $config;
-
-  /**
    * Constructor for EntityHooks.
    */
   public function __construct(
     LoggerChannelFactoryInterface $loggerChannelFactory,
-    ConfigFactoryInterface $configFactory,
     protected CiviCrmApiInterface $civicrmApi,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected EntityLastInstalledSchemaRepositoryInterface $entityLastInstalledSchemaRepository,
     protected EntityFieldManagerInterface $entityFieldManager,
   ) {
     $this->logger = $loggerChannelFactory->get('civicrm_entity');
-    $this->config = $configFactory->get('civicrm_entity.settings');
   }
 
   /**
@@ -71,8 +62,9 @@ class EntityHooks {
   #[Hook('entity_type_build')]
   public function entityTypeBuild(array &$entity_types): void {
     $supported_entities = SupportedEntities::getInfo();
-    $enabled_entity_types = $this->config->get('enabled_entity_types') ?: [];
-    $enable_links_per_type = $this->config->get('enable_links_per_type') ?: [];
+    $config = \Drupal::config('civicrm_entity.settings');
+    $enabled_entity_types = $config->get('enabled_entity_types') ?: [];
+    $enable_links_per_type = $config->get('enable_links_per_type') ?: [];
     foreach ($supported_entities as $entity_type_id => $civicrm_entity_info) {
       $clean_entity_type_id = str_replace('_', '-', $entity_type_id);
       $civicrm_entity_name = $civicrm_entity_info['civicrm entity name'];
@@ -155,7 +147,7 @@ class EntityHooks {
           }
         }
 
-        if ($this->config->get('disable_links')) {
+        if ($config->get('disable_links')) {
           unset(
             $entity_type_info['links']['canonical'],
             $entity_type_info['links']['delete-form'],
