@@ -151,11 +151,15 @@ class CivicrmEntity extends ContentEntityBase {
     }
     $module_handler = \Drupal::getContainer()->get('module_handler');
     if ($module_handler->moduleExists('path')) {
-      $fields['path'] = BaseFieldDefinition::create('path')
-        ->setLabel(t('URL alias'))
-        ->setDisplayOptions('form', ['type' => 'path', 'weight' => 30])
-        ->setDisplayConfigurable('form', TRUE)
-        ->setComputed(TRUE);
+      $config = \Drupal::config('civicrm_entity.settings');
+      $enabled_entity_types = $config->get('enabled_entity_types') ?: [];
+      if (in_array($entity_type->id(), $enabled_entity_types)) {
+        $fields['path'] = BaseFieldDefinition::create('path')
+          ->setLabel(t('URL alias'))
+          ->setDisplayOptions('form', ['type' => 'path', 'weight' => 30])
+          ->setDisplayConfigurable('form', TRUE)
+          ->setComputed(TRUE);
+      }
     }
     return $fields;
   }
