@@ -149,7 +149,14 @@ class CivicrmEntity extends ContentEntityBase {
         ->setDisplayConfigurable('form', FALSE)
         ->setClass(ActivityEndDateFieldItemList::class);
     }
-
+    $module_handler = \Drupal::getContainer()->get('module_handler');
+    if ($module_handler->moduleExists('path')) {
+      $fields['path'] = BaseFieldDefinition::create('path')
+        ->setLabel(t('URL alias'))
+        ->setDisplayOptions('form', ['type' => 'path', 'weight' => 30])
+        ->setDisplayConfigurable('form', TRUE)
+        ->setComputed(TRUE);
+    }
     return $fields;
   }
 
