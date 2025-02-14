@@ -78,4 +78,14 @@ final class CivicrmEntitySettingsFormTest extends CivicrmEntityTestBase {
     $this->assertSession()->pageTextContains('The configuration options have been saved.');
   }
 
+  /**
+   * Tests that going to uninstall page works.
+   */
+  public function testModuleUninstall() {
+    $admin_user = $this->createUser(['administer modules']);
+    $this->drupalLogin($admin_user);
+    $this->drupalGet(Url::fromRoute('system.modules_uninstall'));
+    $this->assertSession()->elementExists('css', 'form.system-modules-uninstall');
+  }
+
 }
