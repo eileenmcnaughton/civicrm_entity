@@ -9,6 +9,7 @@ use Drupal\Core\Extension\ModuleInstallerInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Update\UpdateHookRegistry;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class ContentUninstallValidator.
@@ -25,8 +26,7 @@ class ModuleInstaller extends ExtensionModuleInstaller {
   /**
    * {@inheritdoc}
    */
-  public function __construct(ModuleInstallerInterface $module_installer, $root, ModuleHandlerInterface $module_handler, DrupalKernelInterface $kernel, Connection $connection, UpdateHookRegistry $update_registry, LoggerChannelFactoryInterface $logger_factory) {
-    $logger = $logger_factory->get('civicrm_entity');
+  public function __construct(ModuleInstallerInterface $module_installer, $root, ModuleHandlerInterface $module_handler, DrupalKernelInterface $kernel, Connection $connection, UpdateHookRegistry $update_registry, protected ?LoggerInterface $logger = NULL) {
     parent::__construct($root, $module_handler, $kernel, $connection, $update_registry, $logger);
     $this->moduleInstaller = $module_installer;
   }
