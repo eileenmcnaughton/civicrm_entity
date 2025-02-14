@@ -13,23 +13,8 @@ use Drupal\Core\Update\UpdateHookRegistry;
 /**
  * Class ContentUninstallValidator.
  */
+#[AsDecorator(decorates: ExtensionModuleInstaller::class)]
 class ModuleInstaller extends ExtensionModuleInstaller {
-
-  /**
-   * The module installer.
-   *
-   * @var \Drupal\Core\Extension\ModuleInstallerInterface
-   */
-  protected $moduleInstaller;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(ModuleInstallerInterface $module_installer, $root, ModuleHandlerInterface $module_handler, DrupalKernelInterface $kernel, Connection $connection, UpdateHookRegistry $update_registry, LoggerChannelFactoryInterface $logger_factory) {
-    $logger = $logger_factory->get('civicrm_entity');
-    parent::__construct($root, $module_handler, $kernel, $connection, $update_registry, $logger);
-    $this->moduleInstaller = $module_installer;
-  }
 
   /**
    * {@inheritdoc}

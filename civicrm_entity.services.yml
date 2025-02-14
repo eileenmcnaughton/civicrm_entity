@@ -20,14 +20,6 @@ services:
     tags:
       - { name: event_subscriber }
 
-  civicrm_entity.module_installer:
-    class: Drupal\civicrm_entity\ModuleInstaller
-    decorates: module_installer
-    public: true
-    arguments: ['@civicrm_entity.module_installer.inner', '%app.root%', '@module_handler', '@kernel', '@database', '@update.update_hook_registry', '@logger.factory']
-    tags:
-      - { name: service_collector, tag: 'module_install.uninstall_validator', call: addUninstallValidator }
-
   civicrm_entity.contact_checksum_access_checker:
     class: Drupal\civicrm_entity\Access\ContactChecksumCheckAccess
     autowire: true
