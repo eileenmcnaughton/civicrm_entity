@@ -7,7 +7,6 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Extension\ModuleInstaller as ExtensionModuleInstaller;
 use Drupal\Core\Extension\ModuleInstallerInterface;
 use Drupal\Core\Database\Connection;
-use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Update\UpdateHookRegistry;
 use Psr\Log\LoggerInterface;
 
@@ -26,7 +25,7 @@ class ModuleInstaller extends ExtensionModuleInstaller {
   /**
    * {@inheritdoc}
    */
-  public function __construct(ModuleInstallerInterface $module_installer, $root, ModuleHandlerInterface $module_handler, DrupalKernelInterface $kernel, Connection $connection, UpdateHookRegistry $update_registry, protected ?LoggerInterface $logger = NULL) {
+  public function __construct(ModuleInstallerInterface $module_installer, $root, ModuleHandlerInterface $module_handler, DrupalKernelInterface $kernel, Connection $connection, UpdateHookRegistry $update_registry, protected LoggerInterface $logger) {
     parent::__construct($root, $module_handler, $kernel, $connection, $update_registry, $logger);
     $this->moduleInstaller = $module_installer;
   }
