@@ -42,7 +42,7 @@ class QueryHooks {
       // @codingStandardsIgnoreStart
       global $dbLocale;
       // @codingStandardsIgnoreEnd
-      $columns = CRM_Core_I18n_SchemaStructure::columns();
+      $columns = \CRM_Core_I18n_SchemaStructure::columns();
       $affectedColumns = [];
       foreach ($columns as $table => $hash) {
         foreach (array_keys($hash) as $column) {
