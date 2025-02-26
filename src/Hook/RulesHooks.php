@@ -13,7 +13,7 @@ class RulesHooks {
    * Implements hook_rules_action_info_alter().
    */
   #[Hook('rules_action_info_alter')]
-  public function rulesInfoActionAlter(array &$rules_actions): void {
+  public function rulesActionInfoAlter(array &$rules_actions): void {
     $definitions = \Drupal::service('plugin.manager.typed_data_filter')->getDefinitions();
     $filters = "";
     foreach ($definitions as $key) {
