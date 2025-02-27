@@ -5,7 +5,7 @@ namespace Drupal\civicrm_entity;
 use Drupal\Core\Extension\ModuleInstaller as ExtensionModuleInstaller;
 
 /**
- * Class ModuleInstaller.
+ * Class for ModuleInstaller.
  */
 class ModuleInstaller extends ExtensionModuleInstaller {
 
