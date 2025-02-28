@@ -103,6 +103,9 @@ class CustomEntityField extends EntityField {
         $this->fieldDefinition->setCardinality($this->fieldMetadata['max_multiple']);
       }
     }
+
+    $options['entity_field'] = $options['field'];
+
     parent::init($view, $display, $options);
   }
 
