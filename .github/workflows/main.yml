@@ -105,9 +105,9 @@ jobs:
           SIMPLETEST_BASE_URL: http://127.0.0.1:8080
           MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","goog:chromeOptions":{"args":["--disable-gpu", "--no-sandbox", "--headless"]}}, "http://127.0.0.1:9515"]'
           BROWSERTEST_OUTPUT_DIRECTORY: '/home/runner/drupal/web/sites/simpletest/browser_output'
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: ${{ failure() || success() }}
         with:
-          name: phpunit_browser_output
+          name: phpunit_browser_output-${{ strategy.job-index }}
           # For some reason Drupal prints here and not our specified BROWSERTEST_OUTPUT_DIRECTORY.
           path: '/home/runner/drupal/web/sites/simpletest/browser_output'
