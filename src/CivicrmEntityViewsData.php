@@ -802,7 +802,15 @@ class CivicrmEntityViewsData extends EntityViewsData {
           ];
           $multi_type_fields = ['Multi-Select', 'CheckBox', 'Autocomplete-Select'];
           if (in_array($field_metadata['html_type'], $multi_type_fields)) {
-            $filter['multi'] = TRUE;
+            // Check if the field type is in the list of multi-type fields (e.g., multiple select options)            
+            if ($field_metadata['html_type'] == 'Autocomplete-Select') {
+                // If the field type is 'Autocomplete-Select', set the 'multi' filter 
+                // based on the 'serialize' attribute (whether multi-select is enabled)
+                $filter['multi'] = $field_metadata['serialize'];
+            } else {
+                // For other types, assume it's a multi-select field
+                $filter['multi'] = TRUE;
+            }
           }
 
           return $filter;
