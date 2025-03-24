@@ -65,29 +65,10 @@ class CustomEntityField extends EntityField {
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, FormatterPluginManager $formatter_plugin_manager, FieldTypePluginManagerInterface $field_type_plugin_manager, LanguageManagerInterface $language_manager, RendererInterface $renderer, ?EntityRepositoryInterface $entity_repository = NULL, ?EntityFieldManagerInterface $entity_field_manager = NULL, EntityTypeBundleInfoInterface $entity_type_bundle_info, CiviCrmApiInterface $civicrm_api) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_type_manager, $formatter_plugin_manager, $field_type_plugin_manager, $language_manager, $renderer, $entity_repository, $entity_field_manager, $entity_type_bundle_info);
-    $this->civicrmApi = $civicrm_api;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('entity_type.manager'),
-      $container->get('plugin.manager.field.formatter'),
-      $container->get('plugin.manager.field.field_type'),
-      $container->get('language_manager'),
-      $container->get('renderer'),
-      $container->get('entity.repository'),
-      $container->get('entity_field.manager'),
-      $container->get('entity_type.bundle.info'),
-      $container->get('civicrm_entity.api')
-    );
+    $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
+    $instance->civicrmApi = $container->get('civicrm_entity.api');
+    return $instance;
   }
 
   /**
