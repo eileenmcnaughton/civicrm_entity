@@ -24,6 +24,10 @@ jobs:
           - drupal: '^11.1'
             civicrm: '5.81.*'
             php: '8.3'
+          - drupal: '^11.1'
+            civicrm: '6.0.*'
+            php: '8.4'
+            chromedriver: latest
     name: Drupal ${{ matrix.drupal }} | CiviCRM ${{ matrix.civicrm }}
     services:
       mysql:
@@ -89,14 +93,18 @@ jobs:
           cd ~/drupal
           COMPOSER_MEMORY_LIMIT=-1 composer require drupal/fullcalendar_view
       - name: Downgrade chrome
+        if: ${{ matrix.chromedriver == '' }}
         run: |
-          curl -L -o chrome.deb http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_127.0.6533.119-1_amd64.deb
+          curl -L -o chrome.deb http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_133.0.6943.126-1_amd64.deb
           sudo apt-get install libu2f-udev
           sudo dpkg -i chrome.deb
           google-chrome-stable --version
       - uses: nanasess/setup-chromedriver@master
+        if: ${{ matrix.chromedriver == '' }}
         with:
-          chromedriver-version: '127.0.6533.119'
+          chromedriver-version: '133.0.6943.126'
+      - uses: nanasess/setup-chromedriver@master
+        if: ${{ matrix.chromedriver == 'latest' }}
       - name: Run chromedriver
         run: chromedriver --port=9515 &
       - name: Run php built-in server
