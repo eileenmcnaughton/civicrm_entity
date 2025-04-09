@@ -201,6 +201,11 @@ class CivicrmEntity extends ContentEntityBase {
     /** @var \Drupal\Core\Field\FieldItemListInterface $items */
     foreach ($this->getFields() as $field_name => $items) {
       $items->filterEmptyItems();
+
+      if ($field_name == 'path' && (!$this->hasLinkTemplate('canonical') || !$this->hasLinkTemplate('edit-form'))) {
+        continue;
+      }
+
       if ($items->isEmpty()) {
         continue;
       }

@@ -419,6 +419,10 @@ class CiviEntityStorage extends SqlContentEntityStorage {
         continue;
       }
 
+      if ($definition->getName() == 'path' && (!$entity->hasLinkTemplate('canonical') || !$entity->hasLinkTemplate('edit-form'))) {
+        continue;
+      }
+
       $items = $entity->get($definition->getName());
       if ($items->isEmpty()) {
         continue;
