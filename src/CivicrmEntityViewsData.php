@@ -677,7 +677,15 @@ class CivicrmEntityViewsData extends EntityViewsData {
           'left_field' => 'id',
           'field' => 'entity_id',
         ];
+        $views_field['civicrm_contribution_page']['table']['join']['civicrm_price_set_entity'] = [
+          'left_field' => 'entity_id',
+          'field' => 'id',
+        ];
 
+        $views_field['civicrm_price_set_entity']['table']['join']['civicrm_contribution_page'] = [
+          'left_field' => 'id',
+          'field' => 'entity_id',
+        ];
         break;
 
       case 'civicrm_participant':
