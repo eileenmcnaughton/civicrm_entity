@@ -133,6 +133,11 @@ class FieldDefinitionProvider implements FieldDefinitionProviderInterface {
       $field->setDefaultValue($field['api.default']);
     }
 
+    if (isset($civicrm_field['is_multiple']) && $civicrm_field['is_multiple']) {
+      $field->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED);
+      $field->setCustomStorage(TRUE);
+    }
+
     return $field;
   }
 

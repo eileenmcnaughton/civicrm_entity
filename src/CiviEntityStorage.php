@@ -3,6 +3,7 @@
 namespace Drupal\civicrm_entity;
 
 use Drupal\civicrm_entity\Entity\CivicrmEntity;
+use Drupal\Core\Database\Database;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageException;
@@ -428,6 +429,34 @@ class CiviEntityStorage extends SqlContentEntityStorage {
         continue;
       }
       $main_property_name = $definition->getFieldStorageDefinition()->getMainPropertyName();
+
+      if ($definition->getFieldStorageDefinition()->getCardinality() == FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED &&
+        $definition->getFieldStorageDefinition()->hasCustomStorage() && strpos($definition->getName(), 'custom_') !== FALSE) {
+        $civicrm_connection_name = drupal_valid_test_ua() ? 'civicrm_test' : 'civicrm';
+        $civicrm_database_info = Database::getConnectionInfo($civicrm_connection_name);
+
+        if (isset($civicrm_database_info['default'])) {
+          $settings = $definition->getItemDefinition()->getSetting('civicrm_entity_field_metadata');
+
+          if (isset($settings['table_name']) && isset($settings['column_name']) && $settings['is_multiple']) {
+            $connection = Database::getConnection('default', $civicrm_connection_name);
+            $query = $connection
+              ->select($settings['table_name'], 't')
+              ->fields('t', [$settings['column_name']])
+              ->condition('entity_id', $entity->id(), '=')
+              ->orderBy('id', 'ASC');
+
+            $result = $query->execute();
+
+            $item_values = [];
+            foreach ($result as $row) {
+              $item_values[] = $row->{$settings['column_name']};
+            }
+
+            $items->setValue($item_values);
+          }
+        }
+      }
 
       // Set a default format for text fields.
       if ($definition->getType() === 'text_long') {
