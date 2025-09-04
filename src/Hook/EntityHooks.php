@@ -21,8 +21,6 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\Entity\BaseFieldOverride;
 use Drupal\Core\Hook\Attribute\Hook;
-use Drupal\Core\Logger\LoggerChannelFactoryInterface;
-use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\FieldConfigInterface;
@@ -33,23 +31,14 @@ use Drupal\field\FieldConfigInterface;
 class EntityHooks {
 
   /**
-   * The logger channel.
-   *
-   * @var \Drupal\Core\Logger\LoggerChannelInterface
-   */
-  protected LoggerChannelInterface $logger;
-
-  /**
    * Constructor for EntityHooks.
    */
   public function __construct(
-    LoggerChannelFactoryInterface $loggerChannelFactory,
     protected CiviCrmApiInterface $civicrmApi,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected EntityLastInstalledSchemaRepositoryInterface $entityLastInstalledSchemaRepository,
     protected EntityFieldManagerInterface $entityFieldManager,
   ) {
-    $this->logger = $loggerChannelFactory->get('civicrm_entity');
   }
 
   /**
@@ -68,7 +57,7 @@ class EntityHooks {
       $civicrm_entity_name = $civicrm_entity_info['civicrm entity name'];
 
       if (empty($civicrm_entity_info['label property'])) {
-        $this->logger->debug(sprintf('Missing label property: %s', $entity_type_id));
+        \Drupal::logger('civicrm_entity')->debug(sprintf('Missing label property: %s', $entity_type_id));
         continue;
       }
 
