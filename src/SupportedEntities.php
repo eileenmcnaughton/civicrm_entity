@@ -191,7 +191,6 @@ final class SupportedEntities {
       'label property' => 'name',
       'permissions' => [
         'view' => ['access CiviCRM'],
-
         'update' => [],
         'create' => [],
         'delete' => [],
