@@ -117,7 +117,7 @@ class ContactSubtype extends ArgumentDefaultPluginBase implements CacheableDepen
 
     $results = $this->civicrmApi->get('UFMatch', [
       'sequential' => 1,
-      'id' => $this->currentUser->id(),
+      'uf_id' => $this->currentUser->id(),
     ]);
 
     if (!empty($results) && !empty($results[0]['contact_id'])) {
