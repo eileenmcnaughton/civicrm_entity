@@ -172,6 +172,14 @@ class Proximity extends FilterPluginBase {
 
       $geocoded_address = $this->getGeocodedAddress($proximity_address);
 
+      $this->view->proximity_center = [
+        'latitude' => $geocoded_address['latitude'],
+        'longitude' => $geocoded_address['longitude'],
+        'distance' => $this->value['distance'],
+        'distance_unit' => $this->value['distance_unit'],
+        'distance_meters' => $distance,
+      ];
+
       [$min_longitude, $max_longitude] = \CRM_Contact_BAO_ProximityQuery::earthLongitudeRange($geocoded_address['longitude'], $geocoded_address['latitude'], $distance);
       [$min_latitude, $max_latitude] = \CRM_Contact_BAO_ProximityQuery::earthLatitudeRange($geocoded_address['longitude'], $geocoded_address['latitude'], $distance);
 
@@ -265,4 +273,53 @@ class Proximity extends FilterPluginBase {
     ];
   }
 
+  /**
+   * NEW: Get the processed proximity values for use by distance field.
+   */
+  public function getProximityValues() {
+    if (empty($this->value) || 
+        (empty($this->value['value']) && empty($this->value['city']) && empty($this->value['state_province_id'])) || 
+        empty($this->value['distance'])) {
+      return [];
+    }
+
+    try {
+      $config = \CRM_Core_Config::singleton();
+      $countries = $this->civicrmApi->get('Country', [
+        'sequential' => 1,
+        'id' => $config->defaultContactCountry,
+        'return' => ['name'],
+      ]);
+
+      $proximity_address = [
+        'postal_code' => $this->value['value'],
+        'state_province_id' => $this->value['state_province_id'],
+        'city' => $this->value['city'],
+        'country' => !empty($countries) ? $countries[0]['name'] : '',
+        'country_id' => $config->defaultContactCountry,
+        'distance_unit' => $this->value['distance_unit'],
+      ];
+
+      $geocoded_address = $this->getGeocodedAddress($proximity_address);
+      
+      return [
+        'latitude' => $geocoded_address['latitude'],
+        'longitude' => $geocoded_address['longitude'],
+        'distance' => $this->value['distance'],
+        'distance_unit' => $this->value['distance_unit'],
+        'distance_meters' => $this->getCalculatedDistance($this->value['distance'], $this->value['distance_unit']),
+      ];
+    } catch (\Exception $e) {
+      \Drupal::logger('civicrm_entity')->error('Error getting proximity values: @error', ['@error' => $e->getMessage()]);
+      return [];
+    }
+  }
+
+  /**
+   * Check if proximity filter has valid geocoded coordinates.
+   */
+  public function hasValidProximityData() {
+    $values = $this->getProximityValues();
+    return !empty($values['latitude']) && !empty($values['longitude']);
+  }
 }

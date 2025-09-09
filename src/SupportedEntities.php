@@ -190,8 +190,7 @@ final class SupportedEntities {
       'civicrm entity name' => 'country',
       'label property' => 'name',
       'permissions' => [
-        'view' => ['view all contacts'],
-
+        'view' => ['access CiviCRM'],
         'update' => [],
         'create' => [],
         'delete' => [],
@@ -611,7 +610,7 @@ final class SupportedEntities {
       'civicrm entity name' => 'state_province',
       'label property' => 'name',
       'permissions' => [
-        'view' => ['view all contacts'],
+        'view' => ['access CiviCRM'],
         'edit' => [],
         'update' => [],
         'create' => [],

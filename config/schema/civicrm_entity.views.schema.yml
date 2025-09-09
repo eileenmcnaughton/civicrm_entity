@@ -36,6 +36,10 @@ views.filter.civicrm_entity_in_operator:
   type: views.filter.in_operator
   label: 'IN operator'
 
+views.filter.civicrm_entity_contact_reference:
+  type: views.filter.in_operator
+  label: 'Contact Reference'
+
 views.filter.civicrm_entity_date:
   type: views.filter.date
 
