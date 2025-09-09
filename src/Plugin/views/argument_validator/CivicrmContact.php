@@ -37,7 +37,7 @@ class CivicrmContact extends Entity {
     EntityTypeManagerInterface $entity_type_manager,
     EntityTypeBundleInfoInterface $entity_type_bundle_info,
     AccountProxy $currentUser,
-    CiviCrmApiInterface $civicrmApi
+    CiviCrmApiInterface $civicrmApi,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_type_manager, $entity_type_bundle_info);
     $this->currentUser = $currentUser;
@@ -85,7 +85,7 @@ class CivicrmContact extends Entity {
       '#options' => array_combine($contact_types, $contact_types),
     ];
     $form['limit_own_contact'] = [
-      '#title' => $this->t('Limit to current user\'s own contact'),
+      '#title' => $this->t("Limit to current user's own contact"),
       '#default_value' => $this->options['limit_own_contact'],
       '#type' => 'checkbox',
     ];
@@ -126,4 +126,3 @@ class CivicrmContact extends Entity {
   }
 
 }
-

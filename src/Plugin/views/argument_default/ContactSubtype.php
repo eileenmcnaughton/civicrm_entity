@@ -6,7 +6,6 @@ use Drupal\Core\Cache\Cache;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\views\Attribute\ViewsArgumentDefault;
 use Drupal\Core\Form\FormStateInterface;
-use \Drupal\civicrm_entity\Plugin\views\argument_default\ContactId;
 
 /**
  * Default argument plugin to get the current user's civicrm contact subtype.
@@ -106,4 +105,3 @@ class ContactSubtype extends ContactId {
   }
 
 }
-

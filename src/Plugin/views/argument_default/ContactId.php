@@ -70,7 +70,6 @@ class ContactId extends ArgumentDefaultPluginBase implements CacheableDependency
       $container->get('civicrm_entity.api'));
   }
 
-
   /**
    * {@inheritdoc}
    */
