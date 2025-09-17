@@ -3,14 +3,9 @@
 namespace Drupal\civicrm_entity\Plugin\views\argument_default;
 
 use Drupal\Core\Cache\Cache;
-#use Drupal\Core\Cache\CacheableDependencyInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\views\Attribute\ViewsArgumentDefault;
-#use Drupal\views\Plugin\views\argument_default\ArgumentDefaultPluginBase;
-#use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Form\FormStateInterface;
-#use Drupal\Core\Session\AccountProxy;
-#use Drupal\civicrm_entity\CiviCrmApiInterface;
 
 /**
  * Default argument plugin to get the current user's civicrm contact subtype.
