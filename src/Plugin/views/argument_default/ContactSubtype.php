@@ -3,19 +3,17 @@
 namespace Drupal\civicrm_entity\Plugin\views\argument_default;
 
 use Drupal\Core\Cache\Cache;
-use Drupal\Core\Cache\CacheableDependencyInterface;
+#use Drupal\Core\Cache\CacheableDependencyInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\views\Attribute\ViewsArgumentDefault;
-use Drupal\views\Plugin\views\argument_default\ArgumentDefaultPluginBase;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+#use Drupal\views\Plugin\views\argument_default\ArgumentDefaultPluginBase;
+#use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Session\AccountProxy;
-use Drupal\civicrm_entity\CiviCrmApiInterface;
+#use Drupal\Core\Session\AccountProxy;
+#use Drupal\civicrm_entity\CiviCrmApiInterface;
 
 /**
  * Default argument plugin to get the current user's civicrm contact subtype.
- *
- * This plugin actually has no options so it does not need to do a great deal.
  *
  * @ViewsArgumentDefault(
  *   id = "current_user_contact_subtype",
@@ -26,50 +24,7 @@ use Drupal\civicrm_entity\CiviCrmApiInterface;
   id: 'current_user_contact_subtype',
   title: new TranslatableMarkup('Contact subtype from logged in user'),
 )]
-class ContactSubtype extends ArgumentDefaultPluginBase implements CacheableDependencyInterface {
-
-  /**
-   * Drupal\Core\Session\AccountProxy definition.
-   *
-   * @var \Drupal\Core\Session\AccountProxy
-   */
-  protected $currentUser;
-
-  /**
-   * The CiviCRM API.
-   *
-   * @var \Drupal\civicrm_entity\CiviCrmApiInterface
-   */
-  protected $civicrmApi;
-
-  /**
-   * Constructs a new ContactSubtype instance.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin_id for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Session\AccountProxy $currentUser
-   *   The current user.
-   * @param \Drupal\civicrm_entity\CiviCrmApiInterface $civicrmApi
-   *   The CiviCRM Api.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, AccountProxy $currentUser, CiviCrmApiInterface $civicrmApi) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->currentUser = $currentUser;
-    $this->civicrmApi = $civicrmApi;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static($configuration, $plugin_id, $plugin_definition,
-      $container->get('current_user'),
-      $container->get('civicrm_entity.api'));
-  }
+class ContactSubtype extends ContactId {
 
   /**
    * {@inheritdoc}
@@ -115,14 +70,8 @@ class ContactSubtype extends ArgumentDefaultPluginBase implements CacheableDepen
 
     $current_user_contact_subtype = ($this->options['no_subtype'] == 'none') ? '<none>' : 'all';
 
-    $results = $this->civicrmApi->get('UFMatch', [
-      'sequential' => 1,
-      'uf_id' => $this->currentUser->id(),
-    ]);
-
-    if (!empty($results) && !empty($results[0]['contact_id'])) {
-      $cid = $results[0]['contact_id'];
-
+    $cid = parent::getArgument();
+    if ($cid) {
       $results = $this->civicrmApi->get('contact', [
         'sequential' => 1,
         'return' => ['contact_sub_type'],
