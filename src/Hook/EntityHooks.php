@@ -143,6 +143,9 @@ class EntityHooks {
           );
         }
       }
+      
+      // Add inline_form handler for all civicrm entity types
+      $entity_type_info['handlers']['inline_form'] = '\Drupal\civicrm_entity\Plugin\InlineForm\CivicrmEntityInlineForm';
 
       // If this entity has bundle support, we define the bundle field as
       // "bundle" and will use the "bundle property" as the field to fetch field

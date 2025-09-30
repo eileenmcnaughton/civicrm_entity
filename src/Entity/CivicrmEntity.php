@@ -178,13 +178,18 @@ class CivicrmEntity extends ContentEntityBase {
     if (!empty($civicrm_violations)) {
       foreach (reset($civicrm_violations) as $civicrm_field => $civicrm_violation) {
         $definition = $this->getFieldDefinition($civicrm_field);
+        // Use Drupal's translation system to safely format the message.
+        $field_label = $definition->getLabel();
+        $message = $civicrm_violation['message'] ?? '';
+        // Create a TranslatableMarkup object to safely handle the replacement.
+        $translated_message = new \Drupal\Core\StringTranslation\TranslatableMarkup($message, [':' . $civicrm_field => $field_label]);
         $violation = new ConstraintViolation(
-          str_replace($civicrm_field, $definition->getLabel(), $civicrm_violation['message']),
-          str_replace($civicrm_field, $definition->getLabel(), $civicrm_violation['message']),
+          $translated_message,
+          $translated_message,
           [],
           '',
           $civicrm_field,
-          $params[$civicrm_field]
+          ''
         );
         $violations->add($violation);
       }
