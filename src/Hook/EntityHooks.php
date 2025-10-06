@@ -148,7 +148,7 @@ class EntityHooks {
       
       // Add inline_form handler for all civicrm entity types if inline_entity_form module is enabled.
       if ($this->moduleHandler->moduleExists('inline_entity_form')) {
-        $entity_type_info['handlers']['inline_form'] = '\Drupal\civicrm_entity\Plugin\InlineForm\CivicrmEntityInlineForm';
+        $entity_type_info['handlers']['inline_form'] = '\Drupal\inline_entity_form\Form\EntityInlineForm';
       }
 
       // If this entity has bundle support, we define the bundle field as
