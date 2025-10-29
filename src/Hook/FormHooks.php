@@ -6,6 +6,7 @@ use Drupal\civicrm_entity\Form\CivicrmEntityForm;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Hook\Attribute\Hook;
+use Drupal\Core\Hook\Order\OrderAfter;
 
 /**
  * Hook implementations for forms.
@@ -21,7 +22,7 @@ class FormHooks {
   /**
    * Implements hook_form_alter().)
    */
-  #[Hook('form_alter')]
+  #[Hook('form_alter', order: new OrderAfter(['field_group']))]
   public function formAlter(array &$form, FormStateInterface $form_state, $form_id) {
     $form_object = $form_state->getFormObject();
     if ($form_object instanceof CivicrmEntityForm) {
