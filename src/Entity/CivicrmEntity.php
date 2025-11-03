@@ -189,7 +189,7 @@ class CivicrmEntity extends ContentEntityBase {
           [],
           '',
           $civicrm_field,
-          $params[$civicrm_field]
+          $params[$civicrm_field] ?? NULL
         );
         $violations->add($violation);
       }

@@ -58,7 +58,43 @@ class CiviCrmApi implements CiviCrmApiInterface {
     if (!function_exists('_civicrm_api3_validate')) {
       require_once 'api/v3/utils.php';
     }
-    return _civicrm_api3_validate($entity, 'create', $params);
+    [$errors] = _civicrm_api3_validate($entity, 'create', $params);
+
+    if (empty($errors)) {
+      // Validate that all optional params are also valid.
+      /** @see \_civicrm_api3_activity_check_params() */
+      /** @see \_civicrm_api3_contact_check_params() */
+      $check_params_callback = "_civicrm_api3_{$entity}_check_params";
+      if (function_exists($check_params_callback)) {
+        try {
+          $check_params = $params + ['version' => 3];
+          $check_params_callback($check_params);
+        }
+        catch (\CRM_Core_Exception $e) {
+          $handled_missing_fields = FALSE;
+          if ($e->getErrorCode() === 'mandatory_missing') {
+            $mandatory_fields = $e->getErrorData()['fields'] ?? [];
+            foreach ($mandatory_fields as $mandatory_field) {
+              $handled_missing_fields = TRUE;
+              if (!isset($errors[$mandatory_field])) {
+                $errors[$mandatory_field] = [
+                  'message' => ":{$mandatory_field} field is required.",
+                  'code' => 'mandatory_missing',
+                ];
+              }
+            }
+          }
+          if (!$handled_missing_fields) {
+            $errors["{$entity}_validation_error"] = [
+              'message' => $e->getMessage(),
+              'code' => $e->getErrorCode(),
+            ];
+          }
+        }
+      }
+    }
+
+    return [$errors];
   }
 
   /**
