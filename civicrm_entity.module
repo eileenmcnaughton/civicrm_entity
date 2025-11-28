@@ -6,19 +6,18 @@
  */
 
 use Drupal\civicrm_entity\CiviEntityStorage;
-use Drupal\civicrm_entity\Entity\CivicrmEntity;
 use Drupal\civicrm_entity\Hook\EntityAlterHooks;
 use Drupal\civicrm_entity\Hook\EntityHooks;
 use Drupal\civicrm_entity\Hook\FormHooks;
 use Drupal\civicrm_entity\Hook\QueryHooks;
 use Drupal\civicrm_entity\Hook\RulesHooks;
+use Drupal\civicrm_entity\Hook\ThemeHooks;
 use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Core\Database\Query\AlterableInterface;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
-use Drupal\Core\Render\Element;
 use Drupal\views\ViewExecutable;
 use Drupal\views\Plugin\views\query\QueryPluginBase;
 use Drupal\Core\Entity\Display\EntityDisplayInterface;
@@ -29,6 +28,7 @@ use Drupal\Core\Hook\Attribute\LegacyHook;
 /**
  * Implements hook_theme().
  */
+#[LegacyHook]
 function civicrm_entity_theme() {
   return [
     'civicrm_entity_entity_form' => [
@@ -137,53 +137,17 @@ function civicrm_entity_pseudoconstant_options(FieldStorageDefinitionInterface $
 /**
  * Implements hook_preprocess().
  */
+#[LegacyHook]
 function template_preprocess_civicrm_entity(&$variables) {
-  // Add fields as content to template.
-  $variables += ['content' => []];
-  foreach (Element::children($variables['elements']) as $key) {
-    $variables['content'][$key] = $variables['elements'][$key];
-  }
-
-  // Add the view_mode to the template.
-  $variables['view_mode'] = $variables['elements']['#view_mode'];
-
-  // Add the bundle to the template.
-  $variables['entity_type'] = _civicrm_entity_get_entity_type_from_elements($variables['elements']);
+  \Drupal::service(ThemeHooks::class)->preprocessCivicrmEntity($variables);
 }
 
 /**
  * Implements hook_theme_suggestions_HOOK_alter().
  */
+#[LegacyHook]
 function civicrm_entity_theme_suggestions_civicrm_entity_alter(array &$suggestions, array $variables) {
-  $view_mode = $variables['elements']['#view_mode'];
-  $hook = $variables['theme_hook_original'];
-
-  // Add a suggestion based on the entity type.
-  if ($entity_type = _civicrm_entity_get_entity_type_from_elements($variables['elements'])) {
-    $suggestions[] = $hook . '__' . $entity_type;
-
-    // Add a suggestion based on the view mode.
-    $suggestions[] = $hook . '__' . $entity_type . '__' . $view_mode;
-  }
-}
-
-/**
- * Helper to find the entity type from $variables['elements'].
- */
-function _civicrm_entity_get_entity_type_from_elements($elements) {
-  if (isset($elements['#entity_type'])) {
-    return $elements['#entity_type'];
-  }
-
-  // Find the CivicrmEntity from elements if #entity_type is not set.
-  foreach ($elements as $element) {
-    if ($element instanceof CivicrmEntity) {
-      /** @var \Drupal\civicrm_entity\Entity\CivicrmEntity $element */
-      return $element->getEntityTypeId();
-    }
-  }
-
-  return NULL;
+  \Drupal::service(ThemeHooks::class)->themeSuggestionsCivicrmEntityAlter($suggestions, $variables);
 }
 
 /**
@@ -405,8 +369,9 @@ function civicrm_entity_views_query_alter(ViewExecutable $view, QueryPluginBase 
 /**
  * Implements hook_theme_registry_alter().
  */
+#[LegacyHook]
 function civicrm_entity_theme_registry_alter(&$theme_registry) {
-  $theme_registry['civicrm_entity']['preprocess functions'][] = 'field_group_build_entity_groups';
+  \Drupal::service(ThemeHooks::class)->themeRegistryAlter($theme_registry);
 }
 
 /**

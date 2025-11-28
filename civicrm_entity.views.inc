@@ -15,7 +15,6 @@ use Drupal\field\FieldStorageConfigInterface;
 /**
  * Implements hook_views_data_alter().
  *
- * @note
  * @note Copy and paste of views_views_data_alter to support our storage check.
  *
  * @see views_views_data()
@@ -145,7 +144,7 @@ function civicrm_entity_views_data_alter(&$data) {
   $data['civicrm_contact']['employer_id']['field']['id'] = 'standard';
   $data['civicrm_contribution']['contribution_source']['real field'] = 'source';
   $data['civicrm_address']['state_province_id']['filter']['id'] = 'civicrm_entity_civicrm_address_state_province';
-  
+
   if (isset($data['civicrm_address'])) {
     $data['civicrm_address']['distance'] = [
       'title' => t('Distance'),

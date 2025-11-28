@@ -51,3 +51,7 @@ services:
   Drupal\civicrm_entity\Hook\RulesHooks:
     class: Drupal\civicrm_entity\Hook\RulesHooks
     autowire: true
+
+  Drupal\civicrm_entity\Hook\ThemeHooks:
+    class: Drupal\civicrm_entity\Hook\ThemeHooks
+    autowire: true
