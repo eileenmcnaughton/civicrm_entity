@@ -49,25 +49,16 @@ class QueryHooks {
           $affectedColumns[] = "{$table}.{$column}";
         }
       }
+      $where = NULL;
       $class = get_class($query);
       if ($class == 'Drupal\search_api\Plugin\views\query\SearchApiQuery' && method_exists($query, "getWhere")) {
-        $where = $query->getWhere();
+        $where = &$query->getWhere();
       }
       elseif (isset($query->where)) {
-        $where = $query->where;
+        $where = &$query->where;
       }
       if (!empty($where)) {
-        foreach ($where as &$condition_group) {
-          foreach ($condition_group['conditions'] as &$condition) {
-            if (!is_object($condition['field'])) {
-              foreach ($affectedColumns as $aff_column) {
-                if (strpos($aff_column, $condition['field']) !== FALSE) {
-                  $condition['field'] = str_replace($aff_column, $aff_column . $dbLocale, $condition['field']);
-                }
-              }
-            }
-          }
-        }
+        $this->localizeWhereConditions($where, $affectedColumns, $dbLocale);
       }
 
       if (!empty($query->fields)) {
@@ -78,6 +69,81 @@ class QueryHooks {
         }
       }
     }
+  }
+
+  /**
+   * Rewrites localized CiviCRM fields in a Views WHERE tree.
+   *
+   * @param array $where
+   *   The Views WHERE groups.
+   * @param string[] $affected_columns
+   *   The multilingual base columns keyed as "table.column".
+   * @param string $db_locale
+   *   The active CiviCRM DB locale suffix.
+   */
+  protected function localizeWhereConditions(array &$where, array $affected_columns, string $db_locale): void {
+    foreach ($where as &$condition_group) {
+      if (!empty($condition_group['conditions']) && is_array($condition_group['conditions'])) {
+        $this->localizeConditionTree($condition_group['conditions'], $affected_columns, $db_locale);
+      }
+    }
+  }
+
+  /**
+   * Recursively rewrites localized fields inside a condition tree.
+   *
+   * @param array $conditions
+   *   The condition tree.
+   * @param string[] $affected_columns
+   *   The multilingual base columns keyed as "table.column".
+   * @param string $db_locale
+   *   The active CiviCRM DB locale suffix.
+   */
+  protected function localizeConditionTree(array &$conditions, array $affected_columns, string $db_locale): void {
+    foreach ($conditions as &$condition) {
+      if (!is_array($condition) || !array_key_exists('field', $condition)) {
+        continue;
+      }
+
+      if (is_object($condition['field']) && method_exists($condition['field'], 'conditions')) {
+        $nested_conditions = &$condition['field']->conditions();
+        $this->localizeConditionTree($nested_conditions, $affected_columns, $db_locale);
+        continue;
+      }
+
+      if (is_string($condition['field'])) {
+        $condition['field'] = $this->localizeConditionField($condition['field'], $affected_columns, $db_locale);
+      }
+    }
+  }
+
+  /**
+   * Rewrites a localized field reference if needed.
+   *
+   * @param string $field
+   *   The current field expression.
+   * @param string[] $affected_columns
+   *   The multilingual base columns keyed as "table.column".
+   * @param string $db_locale
+   *   The active CiviCRM DB locale suffix.
+   *
+   * @return string
+   *   The localized field expression.
+   */
+  protected function localizeConditionField(string $field, array $affected_columns, string $db_locale): string {
+    foreach ($affected_columns as $affected_column) {
+      $localized_column = $affected_column . $db_locale;
+
+      if (strpos($field, $localized_column) !== FALSE) {
+        continue;
+      }
+
+      if (strpos($field, $affected_column) !== FALSE) {
+        return str_replace($affected_column, $localized_column, $field);
+      }
+    }
+
+    return $field;
   }
 
   /**
