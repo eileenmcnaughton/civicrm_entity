@@ -90,7 +90,7 @@ final class CivicrmContactUserRelationshipTest extends CivicrmEntityTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function changeDatabasePrefix() {
+  protected function changeDatabasePrefix(): void {
     parent::changeDatabasePrefix();
     // Change the CiviCRM connection to use the separate database.
     if ($this->toString() === 'testWithSeperateDatabase') {
