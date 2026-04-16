@@ -77,22 +77,39 @@ class CivicrmEntity extends ContentEntityBase {
     // This ensures the values array has the bundle property set.
     $entity_type = $storage->getEntityType();
     if ($entity_type->hasKey('bundle')) {
+      $bundle_key = $entity_type->getKey('bundle');
       $bundle_property = $entity_type->get('civicrm_bundle_property');
       /** @var \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api */
       $civicrm_api = \Drupal::service('civicrm_entity.api');
       $options = $civicrm_api->getOptions($entity_type->get('civicrm_entity'), $bundle_property);
+      $transliteration = \Drupal::transliteration();
 
-      if (isset($values[$entity_type->getKey('bundle')]) && $values[$entity_type->getKey('bundle')] === $entity_type->id()) {
+      if (isset($values[$bundle_key]) && $values[$bundle_key] !== $entity_type->id()) {
+        if (!isset($values[$bundle_property])) {
+          foreach ($options as $raw => $label) {
+            if (SupportedEntities::optionToMachineName($label, $transliteration) === $values[$bundle_key]) {
+              $values[$bundle_property] = $raw;
+              break;
+            }
+          }
+        }
+        return;
+      }
+
+      if (isset($values[$bundle_key]) && $values[$bundle_key] === $entity_type->id()) {
         $raw_bundle_value = key($options);
       }
       else {
-        $raw_bundle_value = $values[$bundle_property];
+        $raw_bundle_value = $values[$bundle_property] ?? key($options);
       }
 
       $bundle_value = $options[$raw_bundle_value];
-      $transliteration = \Drupal::transliteration();
       $machine_name = SupportedEntities::optionToMachineName($bundle_value, $transliteration);
-      $values[$entity_type->getKey('bundle')] = $machine_name;
+      $values[$bundle_key] = $machine_name;
+      // Ensure the bundle property is set for CiviCRM.
+      if (!isset($values[$bundle_property])) {
+        $values[$bundle_property] = $raw_bundle_value;
+      }
     }
   }
 
