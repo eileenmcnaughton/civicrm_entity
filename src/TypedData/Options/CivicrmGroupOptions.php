@@ -5,6 +5,7 @@ namespace Drupal\civicrm_entity\TypedData\Options;
 use Drupal\civicrm_entity\CiviCrmApi;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\rules\TypedData\Options\OptionsProviderBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

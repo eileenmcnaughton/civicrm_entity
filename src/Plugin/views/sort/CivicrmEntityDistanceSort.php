@@ -2,6 +2,7 @@
 
 namespace Drupal\civicrm_entity\Plugin\views\sort;
 
+use Drupal\views\Plugin\views\query\Sql;
 use Drupal\views\Plugin\views\sort\SortPluginBase;
 
 /**
@@ -15,6 +16,7 @@ class CivicrmEntityDistanceSort extends SortPluginBase {
    * {@inheritdoc}
    */
   public function query() {
+    assert($this->query instanceof Sql);
     // Get coordinates from proximity filter
     $center_lat = $center_lon = NULL;
     

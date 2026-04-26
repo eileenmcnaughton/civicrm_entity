@@ -2,10 +2,13 @@
 
 namespace Drupal\civicrm_entity\Plugin\views\argument;
 
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\views\Attribute\ViewsArgument;
 use Drupal\views\Plugin\views\argument\Date as BaseDate;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\views\Plugin\views\query\Sql;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Argument handler for CiviCRM dates.
@@ -22,9 +25,23 @@ class Date extends BaseDate {
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match, DateFormatterInterface $date_formatter) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $route_match, $date_formatter);
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match, DateFormatterInterface $date_formatter, TimeInterface $time) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $route_match, $date_formatter, $time);
     $this->argFormat = 'Y-m-d h:i:s';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('current_route_match'),
+      $container->get('date.formatter'),
+      $container->get('datetime.time'),
+    );
   }
 
   /**
@@ -46,7 +63,7 @@ class Date extends BaseDate {
    */
   public function query($group_by = FALSE) {
     $this->ensureMyTable();
-
+    assert($this->query instanceof Sql);
     // Override the query so we can use a simple expression rather than
     // placeholders.
     $value = $this->query->getDateFormat($this->query->getDateField("'" . $this->argument . "'", TRUE, FALSE), $this->argFormat);

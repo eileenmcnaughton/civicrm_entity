@@ -8,6 +8,7 @@ use Drupal\civicrm_entity\CiviCrmApiInterface;
 use Drupal\views\Attribute\ViewsFilter;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\Plugin\views\filter\InOperator as BaseInOperator;
+use Drupal\views\Plugin\views\query\Sql;
 use Drupal\views\ViewExecutable;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -99,7 +100,7 @@ class InOperator extends BaseInOperator {
       return;
     }
     $this->ensureMyTable();
-
+    assert($this->query instanceof Sql);
     $values = array_values($this->value);
     $field = "$this->tableAlias.$this->realField";
 
@@ -169,6 +170,7 @@ class InOperator extends BaseInOperator {
    */
   protected function opEmptyString() {
     $this->ensureMyTable();
+    assert($this->query instanceof Sql);
     $field = "$this->tableAlias.$this->realField";
 
     if ($this->operator == 'empty string') {

@@ -6,6 +6,7 @@ use Drupal\civicrm_entity\CiviCrmApiInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\views\Attribute\ViewsJoin;
 use Drupal\views\Plugin\views\join\JoinPluginBase;
+use Drupal\views\Plugin\views\query\Sql;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -56,6 +57,7 @@ class ContactReference extends JoinPluginBase implements ContainerFactoryPluginI
     }
 
     if ($this->leftTable) {
+      assert($view_query instanceof Sql);
       $left_table = $view_query->getTableInfo($this->leftTable);
       $left_field = $this->leftFormula ?: "$left_table[alias].$this->leftField";
     }

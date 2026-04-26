@@ -78,7 +78,7 @@ class LoadLinkedUser extends RulesActionBase implements ContainerFactoryPluginIn
    *   The plugin implementation definition.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
-   * @param \\Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api
+   * @param \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api
    *   The civicrm api service.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, CiviCrmApiInterface $civicrm_api) {

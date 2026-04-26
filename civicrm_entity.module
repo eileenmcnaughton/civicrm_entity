@@ -445,6 +445,7 @@ function civicrm_entity_civicrm_merge($mode, &$sqls, $mainId = NULL, $otherId = 
       ]);
 
     // Iterate fields and prepare the array.
+    $options = [];
     foreach ($entityRefFields as $entityRefField) {
       // Get Field name.
       $fieldName = $entityRefField->getName();
@@ -468,6 +469,9 @@ function civicrm_entity_civicrm_merge($mode, &$sqls, $mainId = NULL, $otherId = 
               // Update new contact.
               // Target Contact.
               try {
+                if (!($entityRecord instanceof \Drupal\Core\Entity\ContentEntityBase)) {
+                  continue;
+                }
                 $entityRecord->set($field, $mainId);
                 $entityRecord->save();
               }

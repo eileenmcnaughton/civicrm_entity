@@ -110,7 +110,7 @@ class EntityHooks {
             'canonical' => sprintf('/%s/{%s}', $clean_entity_type_id, $entity_type_id),
             'delete-form' => sprintf('/%s/{%s}/delete', $clean_entity_type_id, $entity_type_id),
             'edit-form' => sprintf('/%s/{%s}/edit', $clean_entity_type_id, $entity_type_id),
-            'add-form' => sprintf('/%s/add', $clean_entity_type_id, $entity_type_id),
+            'add-form' => sprintf('/%s/add', $clean_entity_type_id),
             'collection' => sprintf('/admin/structure/civicrm-entity/%s', $clean_entity_type_id),
           ],
           'field_ui_base_route' => "entity.$entity_type_id.collection",

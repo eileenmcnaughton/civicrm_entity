@@ -3,6 +3,7 @@
 namespace Drupal\civicrm_entity\Plugin\views\relationship;
 
 use Drupal\views\Attribute\ViewsRelationship;
+use Drupal\views\Plugin\views\query\Sql;
 use Drupal\views\Plugin\views\relationship\RelationshipPluginBase;
 use Drupal\views\Views;
 
@@ -30,7 +31,7 @@ class CiviCrmBridgeRelationshipBase extends RelationshipPluginBase {
    */
   public function query() {
     $this->ensureMyTable();
-
+    assert($this->query instanceof Sql);
     $views_data = Views::viewsData()->get($this->table);
     $left_field = $views_data['table']['base']['field'];
 
