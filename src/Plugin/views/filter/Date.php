@@ -6,6 +6,7 @@ use Drupal\views\Attribute\ViewsFilter;
 use Drupal\views\Plugin\views\filter\Date as BaseDate;
 use Drupal\Component\Datetime\DateTimePlus;
 use Drupal\Core\Datetime\DateFormatterInterface;
+use Drupal\views\Plugin\views\query\Sql;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -55,6 +56,7 @@ class Date extends BaseDate {
    * {@inheritdoc}
    */
   protected function opBetween($field) {
+    assert($this->query instanceof Sql);
     $a = intval(strtotime($this->value['min'], 0));
     $b = intval(strtotime($this->value['max'], 0));
 
@@ -85,6 +87,7 @@ class Date extends BaseDate {
    * {@inheritdoc}
    */
   protected function opSimple($field) {
+    assert($this->query instanceof Sql);
     $value = intval(strtotime($this->value['value'], 0));
 
     if (!empty($this->value['type']) && $this->value['type'] == 'offset') {

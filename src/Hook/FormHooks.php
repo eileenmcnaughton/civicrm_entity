@@ -26,11 +26,9 @@ class FormHooks {
     $form_object = $form_state->getFormObject();
     if ($form_object instanceof CivicrmEntityForm) {
 
-      /**
-       * @var \Drupal\Core\Entity\Display\EntityFormDisplayInterface $form_display
-       */
       $storage = $form_state->getStorage();
       if (!empty($storage['form_display'])) {
+        /** @var \Drupal\Core\Entity\Display\EntityFormDisplayInterface $form_display */
         $form_display = $storage['form_display'];
         $entity = $form_object->getEntity();
 

@@ -252,7 +252,7 @@ class CivicrmEntitySettings extends ConfigFormBase {
     $this->routeBuilder->rebuild();
     $this->localActionManager->clearCachedDefinitions();
     $this->localTaskManager->clearCachedDefinitions();
-    $this->cacheRender->invalidateAll();
+    $this->cacheRender->deleteAll();
   }
 
 }

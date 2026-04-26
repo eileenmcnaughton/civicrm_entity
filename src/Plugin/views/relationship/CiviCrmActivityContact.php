@@ -6,6 +6,7 @@ use Drupal\views\Attribute\ViewsRelationship;
 use Drupal\views\ViewExecutable;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\views\Plugin\views\query\Sql;
 use Drupal\views\Plugin\views\relationship\RelationshipPluginBase;
 use Drupal\views\Views;
 
@@ -86,6 +87,7 @@ class CiviCrmActivityContact extends RelationshipPluginBase {
    * {@inheritdoc}
    */
   public function query() {
+    assert($this->query instanceof Sql);
     $this->ensureMyTable();
 
     $views_data = Views::viewsData()->get($this->table);

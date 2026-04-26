@@ -9,6 +9,7 @@ namespace Drupal\civicrm_entity\Plugin\views\field;
 
 use Drupal\views\Attribute\ViewsField;
 use Drupal\views\Plugin\views\field\FieldPluginBase;
+use Drupal\views\Plugin\views\query\Sql;
 use Drupal\views\ResultRow;
 use Drupal\Core\Form\FormStateInterface;
 
@@ -57,6 +58,7 @@ class CivicrmEntityDistance extends FieldPluginBase {
       // Create distance formula with proper table alias
       $formula = $this->getDistanceFormula($center_lat, $center_lon, $address_table);
       
+      assert($this->query instanceof Sql);
       // Add the field to the query
       $this->field_alias = $this->query->addField(NULL, $formula, 'distance_calculated');
       $this->addAdditionalFields();

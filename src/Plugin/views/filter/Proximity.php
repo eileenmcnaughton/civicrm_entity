@@ -6,6 +6,7 @@ use Drupal\views\Attribute\ViewsFilter;
 use Drupal\views\Plugin\views\filter\FilterPluginBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\civicrm_entity\CiviCrmApiInterface;
+use Drupal\views\Plugin\views\query\Sql;
 use Drupal\views\ViewExecutable;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
@@ -147,6 +148,7 @@ class Proximity extends FilterPluginBase {
    * {@inheritdoc}
    */
   public function query() {
+    assert($this->query instanceof Sql);
     // Make sure that postal code and distance are set before altering the
     // query.
     if ((!empty($this->value['value']) || !empty($this->value['city']) || !empty($this->value['state_province_id'])) && !empty($this->value['distance'])) {
@@ -172,6 +174,7 @@ class Proximity extends FilterPluginBase {
 
       $geocoded_address = $this->getGeocodedAddress($proximity_address);
 
+      // @phpstan-ignore property.notFound
       $this->view->proximity_center = [
         'latitude' => $geocoded_address['latitude'],
         'longitude' => $geocoded_address['longitude'],

@@ -5,6 +5,7 @@ namespace Drupal\civicrm_entity\Plugin\views\filter;
 use Drupal\Core\Database\Query\Condition;
 use Drupal\views\Attribute\ViewsFilter;
 use Drupal\views\Plugin\views\filter\NumericFilter;
+use Drupal\views\Plugin\views\query\Sql;
 use Drupal\views\Views;
 
 /**
@@ -40,7 +41,7 @@ class ActivityContactRecord extends NumericFilter {
    */
   public function query() {
     $this->ensureMyTable();
-
+    assert($this->query instanceof Sql);
     $civicrm_activity_contact_table = 'civicrm_activity_contact';
 
     $configuration = [

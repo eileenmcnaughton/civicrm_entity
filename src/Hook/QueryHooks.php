@@ -4,6 +4,7 @@ namespace Drupal\civicrm_entity\Hook;
 
 use Drupal\Core\Database\Database;
 use Drupal\Core\Database\Query\AlterableInterface;
+use Drupal\Core\Database\Query\SelectInterface;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\views\Plugin\views\query\QueryPluginBase;
 use Drupal\views\ViewExecutable;
@@ -151,6 +152,7 @@ class QueryHooks {
    */
   #[Hook('query_pathauto_bulk_update_alter')]
   public function queryPathautoBulkUpdateAlter(AlterableInterface $query): void {
+    assert($query instanceof SelectInterface);
     $tables = &$query->getTables();
 
     if (strpos($tables['base_table']['table'], 'civicrm_') !== FALSE) {
@@ -168,6 +170,7 @@ class QueryHooks {
    */
   #[Hook('query_pathauto_bulk_delete_alter')]
   public function queryPathautoBulkDeleteAlter(AlterableInterface $query): void {
+    assert($query instanceof SelectInterface);
     $tables = &$query->getTables();
 
     if (strpos($tables['base_table']['table'], 'civicrm_') !== FALSE) {

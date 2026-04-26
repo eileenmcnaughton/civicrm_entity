@@ -6,6 +6,7 @@ use Drupal\views\Attribute\ViewsField;
 use Drupal\views\Plugin\views\field\EntityField;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
+use Drupal\views\Plugin\views\query\Sql;
 use Drupal\views\ResultRow;
 use Drupal\views\ViewExecutable;
 use Drupal\Core\Entity\EntityInterface;
@@ -112,7 +113,7 @@ class CustomEntityField extends EntityField {
    */
   public function clickSort($order) {
     $this->ensureMyTable();
-
+    assert($this->query instanceof Sql);
     if ($this->fieldMetadata && $this->fieldMetadata['column_name']) {
       $this->query->addOrderBy(NULL, NULL, $order, $this->tableAlias . '.' . $this->fieldMetadata['column_name']);
     }
@@ -162,6 +163,7 @@ class CustomEntityField extends EntityField {
       $entity = $this->createEntity($entity);
 
       if (isset($this->aliases['id']) && isset($values->{$this->aliases['id']})) {
+        // @phpstan-ignore property.notFound
         $values->delta = $this->getDelta($values->{$this->aliases['id']});
       }
 
@@ -201,7 +203,9 @@ class CustomEntityField extends EntityField {
     if ($this->limit_values) {
       $row = $this->view->result[$this->view->row_index];
 
+      // @phpstan-ignore property.notFound
       if (!$this->options['group_rows'] && isset($all_values[$row->delta]) && is_numeric($row->delta)) {
+        // @phpstan-ignore property.notFound
         return [$all_values[$row->delta]];
       }
     }
