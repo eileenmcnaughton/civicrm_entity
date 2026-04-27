@@ -17,7 +17,7 @@ abstract class KernelHandlerTestBase extends ViewsKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'system',
     'user',
     'civicrm',
@@ -33,6 +33,8 @@ abstract class KernelHandlerTestBase extends ViewsKernelTestBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @phpstan-ignore phpunit.callParent
    */
   protected function setUp($import_test_views = TRUE) : void {
     KernelTestBase::setUp();
@@ -59,6 +61,7 @@ abstract class KernelHandlerTestBase extends ViewsKernelTestBase {
    */
   protected function tearDown() : void {
     $this->tearDownCivicrm();
+    parent::tearDown();
   }
 
 }

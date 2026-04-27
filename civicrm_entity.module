@@ -14,6 +14,7 @@ use Drupal\civicrm_entity\Hook\QueryHooks;
 use Drupal\civicrm_entity\Hook\RulesHooks;
 use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Core\Database\Query\AlterableInterface;
+use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
@@ -469,7 +470,7 @@ function civicrm_entity_civicrm_merge($mode, &$sqls, $mainId = NULL, $otherId = 
               // Update new contact.
               // Target Contact.
               try {
-                if (!($entityRecord instanceof \Drupal\Core\Entity\ContentEntityBase)) {
+                if (!($entityRecord instanceof ContentEntityBase)) {
                   continue;
                 }
                 $entityRecord->set($field, $mainId);

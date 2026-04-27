@@ -33,7 +33,7 @@ final class CivicrmContactUserRelationshipTest extends CivicrmEntityTestBase {
    */
   public function setUp(): void {
     if ($this->toString() === 'testWithSeperateDatabase' && empty(getenv('SIMPLETEST_CIVICRM_DB'))) {
-      $this->markTestSkipped("Cannot run {$this->getName()} without specifying SIMPLETEST_CIVICRM_DB as a seperate database.");
+      $this->markTestSkipped("Cannot run {$this->toString()} without specifying SIMPLETEST_CIVICRM_DB as a seperate database.");
     }
     parent::setUp();
 
