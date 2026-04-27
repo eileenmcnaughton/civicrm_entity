@@ -8,7 +8,6 @@ use Drupal\views\Plugin\views\argument\Date as BaseDate;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\views\Plugin\views\query\Sql;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Argument handler for CiviCRM dates.
@@ -28,20 +27,6 @@ class Date extends BaseDate {
   public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match, DateFormatterInterface $date_formatter, TimeInterface $time) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $route_match, $date_formatter, $time);
     $this->argFormat = 'Y-m-d h:i:s';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('current_route_match'),
-      $container->get('date.formatter'),
-      $container->get('datetime.time'),
-    );
   }
 
   /**

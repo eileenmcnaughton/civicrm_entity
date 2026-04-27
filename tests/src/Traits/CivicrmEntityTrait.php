@@ -101,7 +101,6 @@ trait CivicrmEntityTrait {
       }
     }
     $civicrm_test_conn->query('SET FOREIGN_KEY_CHECKS = 1;')->execute();
-    parent::tearDown();
   }
 
 }
