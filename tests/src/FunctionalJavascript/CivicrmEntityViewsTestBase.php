@@ -101,7 +101,6 @@ abstract class CivicrmEntityViewsTestBase extends CivicrmEntityTestBase {
     \Drupal::configFactory()
       ->getEditable('views.settings')
       ->set('ui.always_live_preview', FALSE)
-      ->set('ui.show.advanced_column', TRUE)
       ->save();
 
     $date_format = DateFormat::load('medium');
