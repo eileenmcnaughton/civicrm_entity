@@ -1,0 +1,148 @@
+
+stages:
+  - lint
+  - test
+
+# =============================================================================
+# Drupal Coding Standards (PHPCS)
+# Equivalent to .github/workflows/phpcs.yml
+# =============================================================================
+phpcs:
+  stage: lint
+  image: php:8.3-cli
+  allow_failure: true
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  cache:
+    key: "phpcs-$CI_COMMIT_REF_SLUG"
+    paths:
+      - .composer-cache/
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq git unzip
+    - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    - composer config --global cache-files-dir "$CI_PROJECT_DIR/.composer-cache"
+    - composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+    - composer global require dealerdirect/phpcodesniffer-composer-installer drupal/coder
+    - export PATH="$PATH:$(composer global config bin-dir --absolute)"
+  script:
+    # GitLab uses job exit code for pass/fail; phpcs exits non-zero on violations.
+    - phpcs -q --report=full
+
+# =============================================================================
+# Integration Tests (PHPUnit)
+# Equivalent to .github/workflows/main.yml
+# =============================================================================
+phpunit:
+  stage: test
+  image: php:${PHP}-cli
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "4.0.x" && $CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+    - if: '$CI_PIPELINE_SOURCE == "trigger"'
+  parallel:
+    matrix:
+      - PHP: "8.1"
+        DRUPAL: "10.3.*"
+        CIVICRM: "5.75.*"
+        CHROMEDRIVER_VERSION: "133.0.6943.126"
+      - PHP: "8.3"
+        DRUPAL: "10.4.*"
+        CIVICRM: "5.81.*"
+        CHROMEDRIVER_VERSION: "133.0.6943.126"
+      - PHP: "8.3"
+        DRUPAL: "11.1.*"
+        CIVICRM: "5.81.*"
+        CHROMEDRIVER_VERSION: "133.0.6943.126"
+      - PHP: "8.4"
+        DRUPAL: "^11.3"
+        CIVICRM: "^6.0"
+        CHROMEDRIVER_VERSION: "latest"
+  services:
+    - name: mysql:8.0
+      alias: mysql
+  variables:
+    MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    MYSQL_DATABASE: "db"
+    COMPOSER_MEMORY_LIMIT: "-1"
+    SIMPLETEST_BASE_URL: "http://127.0.0.1:8080"
+    SIMPLETEST_DB: "mysql://root:@mysql/db"
+    SIMPLETEST_CIVICRM_DB: "mysql://root:@mysql/db_civicrm"
+    SYMFONY_DEPRECATIONS_HELPER: "disabled"
+    MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","goog:chromeOptions":{"args":["--disable-gpu", "--no-sandbox", "--headless"]}}, "http://127.0.0.1:9515"]'
+    BROWSERTEST_OUTPUT_DIRECTORY: "$CI_PROJECT_DIR/browser-output"
+  cache:
+    key: "phpunit-${PHP}-${DRUPAL}-composer"
+    paths:
+      - .composer-cache/
+  before_script:
+    - |
+      apt-get update -qq
+      apt-get install -y -qq git unzip curl default-mysql-client \
+        libpng-dev libxml2-dev libzip-dev libicu-dev libjpeg-dev libwebp-dev libfreetype6-dev libglib2.0-0 libnss3-dev
+    - |
+      docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype
+      docker-php-ext-install pdo pdo_mysql bcmath soap intl gd exif zip mysqli
+    - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    - composer config --global cache-files-dir "$CI_PROJECT_DIR/.composer-cache"
+    - mysql --skip-ssl -uroot -hmysql -e 'CREATE DATABASE IF NOT EXISTS db_civicrm;'
+    - |
+      composer create-project drupal/recommended-project:"$DRUPAL" ~/drupal --no-interaction --no-install
+      cd ~/drupal
+      composer config extra.enable-patching true
+      composer config extra.compile-mode all
+      composer config minimum-stability dev
+      composer config prefer-stable true
+      composer config preferred-install dist
+      composer config allow-plugins.civicrm/composer-compile-plugin true
+      composer config allow-plugins.civicrm/composer-downloads-plugin true
+      composer config allow-plugins.civicrm/civicrm-asset-plugin true
+      composer config allow-plugins.cweagans/composer-patches true
+      composer config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+      composer config allow-plugins.tbachert/spi true
+      composer config audit.block-insecure false
+      composer config repositories.0 composer https://packages.drupal.org/8
+      composer config repositories.1 path "$CI_PROJECT_DIR"
+      composer install --no-interaction
+      COMPOSER_MEMORY_LIMIT=-1 composer require "drupal/core-dev:$DRUPAL" "composer/composer:2.8.6" sebastian/diff
+    - |
+      cd ~/drupal
+      COMPOSER_MEMORY_LIMIT=-1 composer require \
+        composer/installers:'^1.0' \
+        civicrm/civicrm-asset-plugin:'~1.1' \
+        "civicrm/civicrm-core:$CIVICRM" \
+        "civicrm/civicrm-packages:$CIVICRM" \
+        "civicrm/civicrm-drupal-8:$CIVICRM" \
+        -W
+    - |
+      cd ~/drupal
+      COMPOSER_MEMORY_LIMIT=-1 composer require drupal/civicrm_entity "*@dev"
+      COMPOSER_MEMORY_LIMIT=-1 composer require drupal/fullcalendar_view
+    - |
+      if [ "$CHROMEDRIVER_VERSION" = "latest" ]; then
+        apt-get install -y -qq chromium chromium-driver
+      else
+        apt-get install -y -qq libu2f-udev
+        curl -L -o /tmp/chrome.deb \
+          "https://mirror.cs.uchicago.edu/google-chrome/pool/main/g/google-chrome-stable/google-chrome-stable_133.0.6943.126-1_amd64.deb"
+        dpkg -i /tmp/chrome.deb || apt-get install -f -y
+        curl -L -o /tmp/chromedriver.zip \
+          "https://storage.googleapis.com/chrome-for-testing-public/$CHROMEDRIVER_VERSION/linux64/chromedriver-linux64.zip" \
+          || curl -L -o /tmp/chromedriver.zip \
+          "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip"
+        unzip -o /tmp/chromedriver.zip '*/chromedriver' -d /tmp/
+        find /tmp -name chromedriver -exec mv {} /usr/local/bin/chromedriver \;
+        chmod +x /usr/local/bin/chromedriver
+      fi
+      chromedriver --version
+      chromedriver --port=9515 &
+    - php -S 127.0.0.1:8080 -t ~/drupal/web 2> /dev/null &
+  script:
+    - mkdir -p "$BROWSERTEST_OUTPUT_DIRECTORY"
+    - cd ~/drupal/web
+    - ../vendor/bin/phpunit -c core modules/contrib/civicrm_entity
+  artifacts:
+    when: always
+    paths:
+      - browser-output/
+    expire_in: 1 week
