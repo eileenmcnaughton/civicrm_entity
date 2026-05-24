@@ -32,8 +32,7 @@ final class ActivityFullcalendarViewTest extends CivicrmEntityTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
-  ];
+  protected static $modules = [];
 
   /**
    * {@inheritdoc}
