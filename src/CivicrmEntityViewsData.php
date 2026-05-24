@@ -811,16 +811,21 @@ class CivicrmEntityViewsData extends EntityViewsData {
             'options callback' => "{$class_name}::buildOptions",
             'options arguments' => $field_metadata['name'],
           ];
-          $multi_type_fields = ['Multi-Select', 'CheckBox', 'Autocomplete-Select'];
+          $multi_type_fields = [
+            'Multi-Select',
+            'CheckBox',
+            'Autocomplete-Select',
+          ];
           if (in_array($field_metadata['html_type'], $multi_type_fields)) {
-            // Check if the field type is in the list of multi-type fields,  
+            // Check if the field type is in the list of multi-type fields,
             // such as multiple select options.
             if ($field_metadata['html_type'] == 'Autocomplete-Select') {
-              // If the field type is 'Autocomplete-Select', set the 'multi' filter.  
-              // Based on the 'serialize' attribute (whether multi-select is enabled).
+              // If the field type is 'Autocomplete-Select', set 'multi' filter.
+              // Base it on whether the serialize attribute is enabled.
               $filter['multi'] = $field_metadata['serialize'];
-            } else {
-              // For other types, assume it's a multi-select field
+            }
+            else {
+              // For other types, assume it's a multi-select field.
               $filter['multi'] = TRUE;
             }
           }

@@ -2,6 +2,7 @@
 
 namespace Drupal\civicrm_entity\Entity;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\civicrm_entity\Plugin\Field\ActivityEndDateFieldItemList;
 use Drupal\civicrm_entity\Plugin\Field\BundleFieldItemList;
 use Drupal\civicrm_entity\SupportedEntities;
@@ -199,7 +200,10 @@ class CivicrmEntity extends ContentEntityBase {
         $field_label = $definition->getLabel();
         $message = $civicrm_violation['message'] ?? '';
         // Create a TranslatableMarkup object to safely handle the replacement.
-        $translated_message = new \Drupal\Core\StringTranslation\TranslatableMarkup($message, [':' . $civicrm_field => $field_label]);
+        // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
+        $translated_message = new TranslatableMarkup($message, [
+          ':' . $civicrm_field => $field_label,
+        ]);
         $violation = new ConstraintViolation(
           $translated_message,
           $translated_message,

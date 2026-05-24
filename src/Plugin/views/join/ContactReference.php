@@ -70,7 +70,8 @@ class ContactReference extends JoinPluginBase implements ContainerFactoryPluginI
 
     $this->civicrmApi->civicrmInitialize();
 
-    $condition = "CAST($left_field AS BINARY) RLIKE BINARY CONCAT('" . \CRM_Core_DAO::VALUE_SEPARATOR . "', " . "$table[alias].$this->field" . ", '" . \CRM_Core_DAO::VALUE_SEPARATOR . "')";
+    $sep = \CRM_Core_DAO::VALUE_SEPARATOR;
+    $condition = "CAST($left_field AS BINARY) RLIKE BINARY CONCAT('$sep', $table[alias].$this->field, '$sep')";
 
     $arguments = [];
 
