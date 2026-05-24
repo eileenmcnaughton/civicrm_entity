@@ -6,13 +6,9 @@ use Drupal\views\Attribute\ViewsField;
 use Drupal\views\Plugin\views\field\EntityField;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
-use Drupal\views\ResultRow;
 use Drupal\views\ViewExecutable;
-use Drupal\Core\Entity\EntityInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
-use Drupal\Core\Render\BubbleableMetadata;
-use Drupal\Core\Render\Element;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 
@@ -149,120 +145,6 @@ class CustomEntityField extends EntityField {
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public function getItems(ResultRow $values) {
-    $display = [
-      'type' => $this->options['type'],
-      'settings' => $this->options['settings'],
-      'label' => 'hidden',
-    ];
-
-    if (($entity = $this->getEntity($values)) && isset($entity->{$this->definition['field_name']})) {
-      $entity = $this->createEntity($entity);
-
-      if (isset($this->aliases['id']) && isset($values->{$this->aliases['id']})) {
-        $values->delta = $this->getDelta($values->{$this->aliases['id']});
-      }
-
-      $build_list = $entity->{$this->definition['field_name']}->view($display);
-    }
-    else {
-      $build_list = NULL;
-    }
-
-    if (!$build_list) {
-      return [];
-    }
-
-    if ($this->options['field_api_classes']) {
-      return [['rendered' => $this->renderer->render($build_list)]];
-    }
-
-    $items = [];
-    $bubbleable = BubbleableMetadata::createFromRenderArray($build_list);
-    foreach (Element::children($build_list) as $delta) {
-      BubbleableMetadata::createFromRenderArray($build_list[$delta])
-        ->merge($bubbleable)
-        ->applyTo($build_list[$delta]);
-      $items[$delta] = [
-        'rendered' => $build_list[$delta],
-        'raw' => $build_list['#items'][$delta],
-      ];
-    }
-
-    return $this->prepareItemsByDelta($items);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function prepareItemsByDelta(array $all_values) {
-    if ($this->limit_values) {
-      $row = $this->view->result[$this->view->row_index];
-
-      if (!$this->options['group_rows'] && isset($all_values[$row->delta]) && is_numeric($row->delta)) {
-        return [$all_values[$row->delta]];
-      }
-    }
-
-    return parent::prepareItemsByDelta($all_values);
-  }
-
-  /**
-   * Populate the entity from CiviCRM API.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity to be processed.
-   *
-   * @return null|\Drupal\Core\Entity\FieldableEntityInterface
-   *   Returns the processed entity.
-   */
-  protected function createEntity(EntityInterface $entity) {
-    $processed_entity = clone $entity;
-
-    try {
-      $result = $this->civicrmApi->get('CustomValue', [
-        'sequential' => 1,
-        'return' => [$this->definition['field_name']],
-        'entity_id' => $entity->id(),
-        'entity_table' => $entity->getEntityTypeId(),
-      ]);
-
-      if (!empty($result)) {
-        $result = reset($result);
-        $result = array_filter($result, function ($key) {
-          return is_int($key);
-        }, ARRAY_FILTER_USE_KEY);
-
-        if (!empty($result)) {
-          if (isset($result[0]) && is_array($result[0])) {
-            $result = reset($result);
-          }
-
-          $this->customValues = $result;
-          $field_definition = $this->getFieldDefinition();
-
-          $processed_entity->{$this->definition['field_name']} = array_map(function ($value) use ($field_definition) {
-            return $this->getItemValue($value, $field_definition);
-          }, $result);
-        }
-      }
-      elseif ($this->getFieldDefinition()->getType() == 'boolean') {
-        // CiviCRM API3 will return no result when quering a custom
-        // field row that has no values. In this case we want to set
-        // the field to NULL otherwise it defaults to false.
-        $processed_entity->{$this->definition['field_name']} = NULL;
-      }
-    }
-    catch (\CiviCRM_API3_Exception $e) {
-      // Don't do anything.
-    }
-
-    return $processed_entity;
-  }
-
-  /**
    * Process each value depending on the set definition type.
    *
    * @param mixed $value
@@ -297,23 +179,6 @@ class CustomEntityField extends EntityField {
     }
 
     return $value;
-  }
-
-  /**
-   * Guess the delta based on the custom values.
-   *
-   * @param int $id
-   *   The ID of the custom value.
-   *
-   * @return int
-   *   The guessed delta.
-   */
-  protected function getDelta($id) {
-    if ($this->customValues) {
-      return array_search($id, array_keys($this->customValues));
-    }
-
-    return 0;
   }
 
   /**
