@@ -414,7 +414,13 @@ function civicrm_entity_field_default_views_data(FieldStorageConfigInterface $fi
   // Determine the label to use for the field. We don't have a label available
   // at the field level, so we just go through all fields and take the one
   // which is used the most frequently.
-  [$label, $all_labels] = \Drupal::service('entity_field.manager')->getFieldLabels($entity_type_id, $field_name);
+  $entity_field_manager = \Drupal::service('entity_field.manager');
+  if (version_compare(\Drupal::VERSION, '11.2.0', '>=') && method_exists($entity_field_manager, 'getFieldLabels')) {
+    [$label, $all_labels] = $entity_field_manager->getFieldLabels($entity_type_id, $field_name);
+  }
+  else {
+    [$label, $all_labels] = views_entity_field_label($entity_type_id, $field_name);
+  }
 
   // Expose data for the field as a whole.
   foreach ($field_tables as $type => $table_info) {

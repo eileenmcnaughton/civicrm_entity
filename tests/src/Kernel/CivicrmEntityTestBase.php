@@ -68,9 +68,12 @@ abstract class CivicrmEntityTestBase extends KernelTestBase implements ServiceMo
    */
   protected function mockCiviCrmApi(ContainerBuilder $container) {
     $civicrm_api_mock = $this->prophesize(CiviCrmApiInterface::class);
+    // @phpstan-ignore-next-line
     $civicrm_api_mock->civicrmInitialize()->willReturn();
+    // @phpstan-ignore-next-line
     $civicrm_api_mock->getCustomFieldMetadata(Argument::any())->willReturn();
 
+    // @phpstan-ignore-next-line
     $civicrm_api_mock->get('event', [
       'id' => [
         'IN' => [1],
@@ -78,6 +81,7 @@ abstract class CivicrmEntityTestBase extends KernelTestBase implements ServiceMo
       'return' => array_keys($this->sampleEventsGetFields()),
       'options' => ['limit' => 0],
     ])->willReturn($this->sampleEventsData());
+    // @phpstan-ignore-next-line
     $civicrm_api_mock->get('contact', [
       'id' => [
         'IN' => [10],
@@ -86,13 +90,20 @@ abstract class CivicrmEntityTestBase extends KernelTestBase implements ServiceMo
       'options' => ['limit' => 0],
     ])->willReturn($this->sampleContactData());
 
+    // @phpstan-ignore-next-line
     $civicrm_api_mock->getFields('event')->willReturn($this->sampleEventsGetFields());
+    // @phpstan-ignore-next-line
     $civicrm_api_mock->getFields('event', 'create')->willReturn($this->sampleEventsGetFields());
+    // @phpstan-ignore-next-line
     $civicrm_api_mock->getFields('contact')->willReturn($this->sampleContactGetFields());
+    // @phpstan-ignore-next-line
     $civicrm_api_mock->getFields('contact', 'create')->willReturn($this->sampleContactGetFields());
+    // @phpstan-ignore-next-line
     $civicrm_api_mock->getFields('address')->willReturn($this->sampleAddressGetFields());
+    // @phpstan-ignore-next-line
     $civicrm_api_mock->getFields('address', 'create')->willReturn($this->sampleAddressGetFields());
 
+    // @phpstan-ignore-next-line
     $civicrm_api_mock->getFields(Argument::type('string'), 'create')->willReturn([
       'id' => [
         'name' => 'id',
@@ -103,19 +114,24 @@ abstract class CivicrmEntityTestBase extends KernelTestBase implements ServiceMo
       ],
     ]);
 
+    // @phpstan-ignore-next-line
     $civicrm_api_mock->save('event', Argument::type('array'))->willReturn(TRUE);
+    // @phpstan-ignore-next-line
     $civicrm_api_mock->delete('event', Argument::type('array'))->willReturn(TRUE);
 
+    // @phpstan-ignore-next-line
     $civicrm_api_mock->getOptions('activity', 'activity_type_id')->willReturn([
       'Foo' => 'Foo',
       'Bar' => 'Bar',
     ]);
+    // @phpstan-ignore-next-line
     $civicrm_api_mock->getOptions('event', 'event_type_id')->willReturn([
       'Baz' => 'Baz',
       'Zoo' => 'Zoo',
       'Conference' => 'Conference',
     ]);
 
+    // @phpstan-ignore-next-line
     $civicrm_api_mock->get('entity', Argument::type('array'))->willReturn([
       'Event',
       'Activity',

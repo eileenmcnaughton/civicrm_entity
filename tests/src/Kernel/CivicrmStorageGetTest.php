@@ -91,6 +91,7 @@ class CivicrmStorageGetTest extends CivicrmEntityTestBase {
   public function testDatetimeTimezone(array $original_datetimes, array $expected_utc_datetime, $timezone) {
     date_default_timezone_set($timezone);
     $civicrm_api_mock = $this->prophesize(CiviCrmApiInterface::class);
+    // @phpstan-ignore-next-line
     $civicrm_api_mock->get('event', [
       'id' => 1,
       'return' => array_keys($this->sampleEventsGetFields()),

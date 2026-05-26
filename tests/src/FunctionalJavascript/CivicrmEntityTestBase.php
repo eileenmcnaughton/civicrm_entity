@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace Drupal\Tests\civicrm_entity\FunctionalJavascript;
 
 use Drupal\Core\Url;
+use Drupal\FunctionalJavascriptTests\JSWebAssert;
 use Drupal\Tests\civicrm\FunctionalJavascript\CiviCrmTestBase;
 
 /**
  * Base class for CiviCRM Entity tests.
+ *
+ * @method JSWebAssert assertSession(?string $name = NULL)
  */
 abstract class CivicrmEntityTestBase extends CiviCrmTestBase {
 

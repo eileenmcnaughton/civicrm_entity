@@ -58,7 +58,7 @@ class ActivityEndDateFieldItemList extends FieldItemList {
     assert($entity instanceof CivicrmEntity);
     // Since we're calculating a difference in times, we can use UTC.
     $activity_date_time = new \DateTime($entity->get('activity_date_time')->value, new \DateTimeZone('UTC'));
-    // @phpstan-ignore property.notFound
+    // @phpstan-ignore-next-line
     $new_end_date = new \DateTime($this->get($delta)->value, new \DateTimeZone('UTC'));
     $diff = $new_end_date->getTimestamp() - $activity_date_time->getTimestamp();
 
