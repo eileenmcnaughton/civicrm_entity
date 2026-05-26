@@ -419,6 +419,7 @@ function civicrm_entity_field_default_views_data(FieldStorageConfigInterface $fi
     [$label, $all_labels] = $entity_field_manager->getFieldLabels($entity_type_id, $field_name);
   }
   else {
+    // @phpstan-ignore-next-line
     [$label, $all_labels] = views_entity_field_label($entity_type_id, $field_name);
   }
 
