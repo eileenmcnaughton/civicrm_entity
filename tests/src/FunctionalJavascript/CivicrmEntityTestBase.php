@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Drupal\Tests\civicrm_entity\FunctionalJavascript;
 
 use Drupal\Core\Url;
-use Drupal\FunctionalJavascriptTests\JSWebAssert;
 use Drupal\Tests\civicrm\FunctionalJavascript\CiviCrmTestBase;
 
 /**
