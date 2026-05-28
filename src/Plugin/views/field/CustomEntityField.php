@@ -223,7 +223,7 @@ class CustomEntityField extends EntityField {
    *   Returns the processed entity.
    */
   protected function createEntity(EntityInterface $entity) {
-    $processed_entity = clone $entity;
+    $processed_entity = $entity;
 
     try {
       $result = $this->civicrmApi->get('CustomValue', [
