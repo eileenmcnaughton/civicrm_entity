@@ -549,10 +549,12 @@ class CiviEntityStorage extends SqlContentEntityStorage {
    *   defaults to FALSE.
    * @param bool $load_from_revision
    *   Boolean to load from revision.
+   * @param array &$translations
+   *   List of translations, keyed on the entity ID.
    *
    * @throws \Drupal\Core\Entity\Sql\SqlContentEntityStorageException
    */
-  protected function loadFromDedicatedTables(array &$values, $load_from_revision = FALSE) {
+  protected function loadFromDedicatedTables(array &$values, $load_from_revision = FALSE, &$translations = []) {
     if (empty($values)) {
       return;
     }
