@@ -187,6 +187,9 @@ class CiviCrmApi implements CiviCrmApiInterface {
     [, $id] = $field_name;
 
     try {
+      if (!is_int($id)) {
+        return FALSE;
+      }
       $values = $this->get('CustomField', ['id' => $id, 'is_active' => 1]);
       $values = reset($values);
 
