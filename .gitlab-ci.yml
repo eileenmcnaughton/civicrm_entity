@@ -9,7 +9,7 @@ stages:
 # =============================================================================
 phpcs:
   stage: lint
-  image: php:8.3-cli
+  image: php:8.5-cli
   allow_failure: true
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
@@ -42,24 +42,12 @@ phpunit:
     - if: '$CI_PIPELINE_SOURCE == "trigger"'
   parallel:
     matrix:
-      - PHP: "8.1"
-        DRUPAL: "10.3.*"
-        CIVICRM: "5.75.*"
-        CHROMEDRIVER_VERSION: "133.0.6943.126"
-      - PHP: "8.3"
-        DRUPAL: "10.4.*"
-        CIVICRM: "5.81.*"
-        CHROMEDRIVER_VERSION: "133.0.6943.126"
-      - PHP: "8.3"
-        DRUPAL: "11.1.*"
-        CIVICRM: "5.81.*"
-        CHROMEDRIVER_VERSION: "133.0.6943.126"
-      - PHP: "8.4"
+      - PHP: "8.5"
         DRUPAL: "^11.3"
         CIVICRM: "^6.0"
         CHROMEDRIVER_VERSION: "133.0.6943.126"
   services:
-    - name: mysql:8.0
+    - name: mysql:8.4
       alias: mysql
   variables:
     MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
