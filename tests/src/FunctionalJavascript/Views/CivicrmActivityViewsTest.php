@@ -8,6 +8,8 @@ use Drupal\Tests\civicrm_entity\FunctionalJavascript\CivicrmEntityViewsTestBase;
 
 /**
  * Tests for CiviCRM Activity Views.
+ *
+ * @group civicrm_entity
  */
 final class CivicrmActivityViewsTest extends CivicrmEntityViewsTestBase {
 

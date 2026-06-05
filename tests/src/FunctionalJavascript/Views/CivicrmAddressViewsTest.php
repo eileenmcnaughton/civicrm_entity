@@ -8,6 +8,8 @@ use Drupal\Tests\civicrm_entity\FunctionalJavascript\CivicrmEntityViewsTestBase;
 
 /**
  * Tests for CiviCRM Address Views.
+ *
+ * @group civicrm_entity
  */
 final class CivicrmAddressViewsTest extends CivicrmEntityViewsTestBase {
 

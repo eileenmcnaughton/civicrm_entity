@@ -12,6 +12,7 @@ use Drupal\Tests\civicrm_entity\FunctionalJavascript\CivicrmEntityTestBase;
  * Test of Full Calendar Activity Views.
  *
  * @requires module fullcalendar_view
+ * @group civicrm_entity
  */
 final class ActivityFullcalendarViewTest extends CivicrmEntityTestBase {
 

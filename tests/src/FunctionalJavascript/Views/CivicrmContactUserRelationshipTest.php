@@ -9,6 +9,8 @@ use Drupal\Tests\civicrm_entity\FunctionalJavascript\CivicrmEntityTestBase;
 
 /**
  * Tests for CiviCRM Contact to User Views Relationships.
+ *
+ * @group civicrm_entity
  */
 final class CivicrmContactUserRelationshipTest extends CivicrmEntityTestBase {
 
