@@ -14,12 +14,6 @@ services:
     tags:
       - { name: backend_overridable }
 
-  civicrm_entity.field_ui_route_subscriber:
-    class: Drupal\civicrm_entity\Routing\RouteSubscriber
-    arguments: [ '@entity_type.manager', '@module_handler' ]
-    tags:
-      - { name: event_subscriber }
-
   civicrm_entity.contact_checksum_access_checker:
     class: Drupal\civicrm_entity\Access\ContactChecksumCheckAccess
     autowire: true
@@ -31,10 +25,6 @@ services:
     class: Drupal\civicrm_entity\EventSubscriber\SearchApiSubscriber
     tags:
       - { name: event_subscriber }
-
-  Drupal\civicrm_entity\Hook\EntityAlterHooks:
-    class: Drupal\civicrm_entity\Hook\EntityAlterHooks
-    autowire: true
 
   Drupal\civicrm_entity\Hook\EntityHooks:
     class: Drupal\civicrm_entity\Hook\EntityHooks

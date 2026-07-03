@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\civicrm_entity\Controller;
+namespace Drupal\civicrm_entity_bundles\Controller;
 
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;

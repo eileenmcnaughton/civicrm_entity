@@ -4,7 +4,6 @@ namespace Drupal\civicrm_entity\Entity;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\civicrm_entity\Plugin\Field\ActivityEndDateFieldItemList;
-use Drupal\civicrm_entity\Plugin\Field\BundleFieldItemList;
 use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -142,20 +141,6 @@ class CivicrmEntity extends ContentEntityBase {
           }
         }
       }
-    }
-
-    // Placing the bundle field here is a bit of a hack work around.
-    // \Drupal\Core\Entity\ContentEntityStorageBase::initFieldValues will apply
-    // default values to all empty fields. The computed bundle field will
-    // provide a default value as well, for its related CiviCRM Entity field.
-    // By placing this field last, we avoid conflict on setting of the default
-    // value.
-    if ($entity_type->hasKey('bundle')) {
-      $fields[$entity_type->getKey('bundle')] = BaseFieldDefinition::create('string')
-        ->setLabel($entity_type->getBundleLabel())
-        ->setRequired(TRUE)
-        ->setReadOnly(TRUE)
-        ->setClass(BundleFieldItemList::class);
     }
 
     // Provide a computed base field that takes the activity start time and

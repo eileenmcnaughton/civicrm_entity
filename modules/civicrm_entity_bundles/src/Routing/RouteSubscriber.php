@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\civicrm_entity\Routing;
+namespace Drupal\civicrm_entity_bundles\Routing;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
@@ -93,13 +93,9 @@ final class RouteSubscriber extends RouteSubscriberBase {
       ];
 
       if ($has_layout_builder) {
-        // @todo we should iterate over the section storage definitions.
-        //   that means we'd need to conditionally inject the manage service.
-        // @see \Drupal\layout_builder\Plugin\SectionStorage\DefaultsSectionStorage::buildRoutes
         $field_ui_routes["layout_builder.defaults.$entity_type_id.view"] = [
           'bundle' => $entity_type_id,
         ];
-        // @see \Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage::buildRoutes
         $field_ui_routes["layout_builder.overrides.$entity_type_id.view"] = [
           'bundle' => $entity_type_id,
         ];

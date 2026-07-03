@@ -1,0 +1,14 @@
+services:
+  Drupal\civicrm_entity_bundles\Hook\BundleHooks:
+    class: Drupal\civicrm_entity_bundles\Hook\BundleHooks
+    autowire: true
+
+  Drupal\civicrm_entity_bundles\Hook\SectionStorageHooks:
+    class: Drupal\civicrm_entity_bundles\Hook\SectionStorageHooks
+    autowire: true
+
+  civicrm_entity_bundles.route_subscriber:
+    class: Drupal\civicrm_entity_bundles\Routing\RouteSubscriber
+    arguments: ['@entity_type.manager', '@module_handler']
+    tags:
+      - { name: event_subscriber }

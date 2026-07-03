@@ -17,13 +17,9 @@ use Drupal\Core\Entity\ContentEntityDeleteForm;
 use Drupal\Core\Entity\ContentEntityType;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface;
-use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Field\Entity\BaseFieldOverride;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\field\Entity\FieldConfig;
-use Drupal\field\FieldConfigInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 
 /**
@@ -151,103 +147,8 @@ class EntityHooks {
         $entity_type_info['handlers']['inline_form'] = '\Drupal\inline_entity_form\Form\EntityInlineForm';
       }
 
-      // If this entity has bundle support, we define the bundle field as
-      // "bundle" and will use the "bundle property" as the field to fetch field
-      // options from CiviCRM with.
-      //
-      // @see civicrm_entity_entity_bundle_info()
-      // @see \Drupal\civicrm_entity\Entity\CivicrmEntity::baseFieldDefinitions()
-      if (!empty($civicrm_entity_info['bundle property'])) {
-        $entity_type_info['entity_keys']['bundle'] = 'bundle';
-        $entity_type_info['civicrm_bundle_property'] = $civicrm_entity_info['bundle property'];
-        if (isset($entity_type_info['links']['add-form'])) {
-          // For entities with bundles that are exposed, add the `bundle` key to
-          // the add-form route. In CiviCrmEntityRouteProvider::getAddFormRoute
-          // we default the value, so that it isn't actually required in the
-          // URL.
-          $entity_type_info['links']['add-form'] = sprintf('%s/{%s}', $entity_type_info['links']['add-form'], $entity_type_info['entity_keys']['bundle']);
-        }
-      }
-
       $entity_types[$entity_type_id] = new ContentEntityType($entity_type_info);
     }
-  }
-
-  /**
-   * Implements hook_entity_bundle_info().
-   */
-  #[Hook('entity_bundle_info')]
-  public function entityBundleInfo(): array {
-    $transliteration = \Drupal::transliteration();
-
-    $bundles = [];
-    $entity_types_with_bundles = array_filter(SupportedEntities::getInfo(), static function (array $civicrm_entity_info) {
-      return !empty($civicrm_entity_info['bundle property']);
-    });
-    foreach ($entity_types_with_bundles as $entity_type_id => $civicrm_entity_info) {
-      // We keep a bundle that is the same as the entity type ID. This allows us
-      // to create fields as if this entity has no bundles.
-      $bundles[$entity_type_id] = [
-        $entity_type_id => [
-          'label' => $civicrm_entity_info['civicrm entity label'],
-        ],
-      ];
-      $options = $this->civicrmApi->getOptions($civicrm_entity_info['civicrm entity name'], $civicrm_entity_info['bundle property']);
-      foreach ($options as $option) {
-        $machine_name = SupportedEntities::optionToMachineName($option, $transliteration);
-        $bundles[$entity_type_id][$machine_name]['label'] = $option;
-      }
-    }
-    return $bundles;
-  }
-
-  /**
-   * Implements hook_entity_bundle_field_info().
-   *
-   * This ensures CiviCRM Entity entity types have their field config instances
-   * across all bundles. It's a copy of the Field module's logic, but clones
-   * field config definitions.
-   *
-   * @see field_entity_bundle_field_info()
-   */
-  #[Hook('entity_bundle_field_info')]
-  public function entityBundleFieldInfo(EntityTypeInterface $entity_type, $bundle, array $base_field_definitions): array {
-    $result = [];
-    if ($entity_type->get('civicrm_entity_ui_exposed') && $entity_type->hasKey('bundle')) {
-      // Query by filtering on the ID as this is more efficient than filtering
-      // on the entity_type property directly.
-      $ids = $this->entityTypeManager
-        ->getStorage('field_config')
-        ->getQuery()
-        ->condition('id', $entity_type->id() . '.', 'STARTS_WITH')
-        ->accessCheck(FALSE)
-        ->execute();
-      // Fetch all fields and key them by field name.
-      $field_configs = FieldConfig::loadMultiple($ids);
-
-      // Clone the field configs, so that we can modify them and change the
-      // target bundle type without manipulating the statically cached entries
-      // in the entity storage;.
-      $cloned_field_configs = array_map(static function (FieldConfigInterface $field) use ($bundle) {
-        $cloned = clone $field;
-        $cloned->set('bundle', $bundle);
-        return $cloned;
-      }, $field_configs);
-      foreach ($cloned_field_configs as $field_instance) {
-        $result[$field_instance->getName()] = $field_instance;
-      }
-    }
-    // Ensure all fields have a definition.
-    if ($entity_type->get('civicrm_entity_ui_exposed') && $entity_type->hasKey('bundle')) {
-      foreach ($base_field_definitions as $field_name => $definition) {
-        if (isset($result[$field_name]) || isset($definition) || empty($bundle)) {
-          continue;
-        }
-        $field = BaseFieldOverride::createFromBaseFieldDefinition($base_field_definitions[$field_name], $bundle);
-        $result[$field_name] = $field;
-      }
-    }
-    return $result;
   }
 
   /**

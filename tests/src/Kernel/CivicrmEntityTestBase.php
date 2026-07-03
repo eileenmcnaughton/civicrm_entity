@@ -24,6 +24,7 @@ abstract class CivicrmEntityTestBase extends KernelTestBase implements ServiceMo
     'user',
     'civicrm',
     'civicrm_entity',
+    'civicrm_entity_bundles',
     'field',
     'filter',
     'text',

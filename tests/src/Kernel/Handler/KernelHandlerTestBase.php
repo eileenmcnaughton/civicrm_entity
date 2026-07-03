@@ -22,6 +22,7 @@ abstract class KernelHandlerTestBase extends ViewsKernelTestBase {
     'user',
     'civicrm',
     'civicrm_entity',
+    'civicrm_entity_bundles',
     'field',
     'filter',
     'text',

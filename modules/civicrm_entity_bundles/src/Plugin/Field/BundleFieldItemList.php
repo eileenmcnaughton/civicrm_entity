@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\civicrm_entity\Plugin\Field;
+namespace Drupal\civicrm_entity_bundles\Plugin\Field;
 
 use Drupal\civicrm_entity\Entity\CivicrmEntity;
 use Drupal\civicrm_entity\SupportedEntities;

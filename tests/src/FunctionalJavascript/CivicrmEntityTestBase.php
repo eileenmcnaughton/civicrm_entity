@@ -19,6 +19,7 @@ abstract class CivicrmEntityTestBase extends CiviCrmTestBase {
    */
   protected static $modules = [
     'civicrm_entity',
+    'civicrm_entity_bundles',
   ];
 
   /**

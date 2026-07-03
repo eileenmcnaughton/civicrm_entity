@@ -1,0 +1,13 @@
+<?php
+
+/**
+ * @file
+ * Install functions for CiviCRM Entity Bundles.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function civicrm_entity_bundles_install() {
+  drupal_flush_all_caches();
+}
