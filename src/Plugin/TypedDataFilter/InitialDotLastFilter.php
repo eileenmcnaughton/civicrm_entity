@@ -11,11 +11,6 @@ use Drupal\typed_data\DataFilterBase;
 
 /**
  * A data filter providing a default value if no value is set.
- *
- * @DataFilter(
- *   id = "initialdotlast",
- *   label = @Translation("Drupal Username : initial.lastname."),
- * )
  */
 #[DataFilter(
   id: "initialdotlast",

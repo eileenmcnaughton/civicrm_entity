@@ -8,14 +8,9 @@ use Drupal\views\ResultRow;
 use Drupal\views\ViewExecutable;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\civicrm_entity\CiviCrmApiInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Display file link base on CiviCRM.
- *
- * @ingroup views_field_handlers
- *
- * @ViewsField("civicrm_entity_activity_attachments")
  */
 #[ViewsField("civicrm_entity_activity_attachments")]
 class ActivityAttachments extends FieldPluginBase {
@@ -72,18 +67,6 @@ class ActivityAttachments extends FieldPluginBase {
     }
 
     return NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('civicrm_entity.api')
-    );
   }
 
 }

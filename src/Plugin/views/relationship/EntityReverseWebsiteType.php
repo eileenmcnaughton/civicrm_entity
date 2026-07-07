@@ -12,10 +12,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Reverse CiviCRM entity reference types for website.
- *
- * @ingroup views_relationship_handlers
- *
- * @ViewsRelationship("civicrm_entity_reverse_website_type")
  */
 #[ViewsRelationship("civicrm_entity_reverse_website_type")]
 class EntityReverseWebsiteType extends EntityReverse {

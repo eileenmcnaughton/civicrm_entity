@@ -11,10 +11,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * An "Contact reference" handler to include CiviCRM API.
- *
- * @ingroup views_filter_handlers
- *
- * @ViewsFilter("civicrm_entity_contact_reference")
  */
 #[ViewsFilter("civicrm_entity_contact_reference")]
 class ContactReference extends InOperator {

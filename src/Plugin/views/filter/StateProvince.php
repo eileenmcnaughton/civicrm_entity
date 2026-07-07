@@ -7,12 +7,9 @@ use Drupal\Component\Utility\Html;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\options\Plugin\views\filter\ListField;
 use Drupal\views\Attribute\ViewsFilter;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Filter handler for proximity.
- *
- * @ViewsFilter("civicrm_entity_civicrm_address_state_province")
  */
 #[ViewsFilter("civicrm_entity_civicrm_address_state_province")]
 class StateProvince extends ListField {
@@ -32,18 +29,6 @@ class StateProvince extends ListField {
     $this->civicrmApi = $civicrm_api;
 
     $this->civicrmApi->civicrmInitialize();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('civicrm_entity.api')
-    );
   }
 
   /**

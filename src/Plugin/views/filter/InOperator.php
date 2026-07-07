@@ -10,14 +10,9 @@ use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\Plugin\views\filter\InOperator as BaseInOperator;
 use Drupal\views\Plugin\views\query\Sql;
 use Drupal\views\ViewExecutable;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * An "In" handler to include CiviCRM API.
- *
- * @ingroup views_filter_handlers
- *
- * @ViewsFilter("civicrm_entity_in_operator")
  */
 #[ViewsFilter("civicrm_entity_in_operator")]
 class InOperator extends BaseInOperator {
@@ -51,19 +46,6 @@ class InOperator extends BaseInOperator {
   public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
     parent::init($view, $display, $options);
     $this->civicrmApi->civicrmInitialize();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('civicrm_entity.api'),
-      $container->get('database')
-    );
   }
 
   /**

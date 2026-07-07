@@ -12,10 +12,6 @@ use Drupal\views\Views;
 
 /**
  * Reverse CiviCRM entity reference locations.
- *
- * @ingroup views_relationship_handlers
- *
- * @ViewsRelationship("civicrm_entity_activity_contact")
  */
 #[ViewsRelationship("civicrm_entity_activity_contact")]
 class CiviCrmActivityContact extends RelationshipPluginBase {

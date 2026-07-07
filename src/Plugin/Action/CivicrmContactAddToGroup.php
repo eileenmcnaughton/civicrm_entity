@@ -10,18 +10,10 @@ use Drupal\Core\Plugin\PluginFormInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\civicrm_entity\CiviCrmApi;
+use Drupal\civicrm_entity\CiviCrmApiInterface;
 
 /**
  * Action to add CiviCRM Contact to a CiviCRM group.
- *
- * @Action(
- *   id = "civicrm_contact_add_to_group",
- *   label = @Translation("Add Contact to Group"),
- *   type = "civicrm_contact",
- *   confirm = TRUE,
- * )
  */
 #[Action(
   id: 'civicrm_contact_add_to_group',
@@ -33,7 +25,7 @@ class CivicrmContactAddToGroup extends ViewsBulkOperationsActionBase implements 
   /**
    * The CiviCRM API service.
    *
-   * @var \Drupal\civicrm_entity\CiviCrmApi
+   * @var \Drupal\civicrm_entity\CiviCrmApiInterface
    */
   protected $civicrmApi;
 
@@ -46,35 +38,12 @@ class CivicrmContactAddToGroup extends ViewsBulkOperationsActionBase implements 
    *   The plugin id.
    * @param mixed $plugin_definition
    *   The plugin definition.
-   * @param \Drupal\civicrm_entity\CiviCrmApi $civicrm_entity_api
+   * @param \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_entity_api
    *   The CiviCRM API service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, CiviCrmApi $civicrm_entity_api) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, CiviCrmApiInterface $civicrm_entity_api) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->civicrmApi = $civicrm_entity_api;
-  }
-
-  /**
-   * Create method.
-   *
-   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
-   *   The container.
-   * @param array $configuration
-   *   The configuration.
-   * @param string $plugin_id
-   *   The plugin id.
-   * @param mixed $plugin_definition
-   *   The plugin definition.
-   *
-   * @return static
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('civicrm_entity.api')
-    );
   }
 
   /**

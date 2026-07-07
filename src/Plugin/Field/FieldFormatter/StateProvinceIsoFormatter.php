@@ -12,14 +12,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * The 'civicrm_entity_state_province_iso_formatter' formatter.
- *
- * @FieldFormatter(
- *   id = "civicrm_entity_state_province_iso",
- *   label = @Translation("State province ISO"),
- *   field_types = {
- *     "list_integer"
- *   }
- * )
  */
 #[FieldFormatter(
   id: "civicrm_entity_state_province_iso",

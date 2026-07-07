@@ -11,14 +11,6 @@ use Drupal\user\Entity\User;
 
 /**
  * Plugin implementation of the 'civicrm_entity_contact_reference' formatter.
- *
- * @FieldFormatter(
- *   id = "civicrm_entity_contact_reference",
- *   label = @Translation("CiviCRM custom contact reference field"),
- *   field_types = {
- *     "entity_reference",
- *   }
- * )
  */
 #[FieldFormatter(
   id: "civicrm_entity_contact_reference",

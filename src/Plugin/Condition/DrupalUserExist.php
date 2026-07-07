@@ -6,7 +6,6 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\rules\Context\ContextDefinition;
 use Drupal\rules\Core\Attribute\Condition;
 use Drupal\rules\Core\RulesConditionBase;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\civicrm_entity\CiviCrmApiInterface;
 use Drupal\user\Entity\User;
@@ -14,19 +13,6 @@ use Drupal\civicrm_entity\Entity\CivicrmEntity;
 
 /**
  * Provides a 'Drupal linked User exists' condition.
- *
- * @Condition(
- *   id = "civicrm_entity_drupal_user_exists",
- *   label = @Translation("CiviCRM Contact linked User exists"),
- *   category = @Translation("CiviCRM"),
- *   context_definitions = {
- *     "civicrm_contact" = @ContextDefinition("entity:civicrm_contact",
- *        label = @Translation("CiviCRM contact entity"),
- *        description = @Translation("The CiviCRM contact entity."),
- *        required = TRUE
- *      )
- *   }
- * )
  */
 #[Condition(
   id: "civicrm_entity_drupal_user_exists",
@@ -65,18 +51,6 @@ class DrupalUserExist extends RulesConditionBase implements ContainerFactoryPlug
   public function __construct(array $configuration, $plugin_id, $plugin_definition, CiviCrmApiInterface $civicrm_api) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->civicrmApi = $civicrm_api;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('civicrm_entity.api')
-    );
   }
 
   /**

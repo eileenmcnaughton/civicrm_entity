@@ -17,11 +17,16 @@ use Drupal\Core\Utility\Error;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\field\FieldStorageConfigInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Defines entity class for external CiviCRM entities.
  */
-class CiviEntityStorage extends SqlContentEntityStorage {
+class CiviEntityStorage extends SqlContentEntityStorage implements LoggerAwareInterface {
+
+  use LoggerAwareTrait;
 
   /**
    * The CiviCRM API.
@@ -45,11 +50,13 @@ class CiviEntityStorage extends SqlContentEntityStorage {
   protected $entityFieldManager;
 
   /**
-   * The Logger.
-   *
-   * @var \Psr\Log\LoggerInterface
+   * {@inheritdoc}
    */
-  protected $logger;
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+    $instance = parent::createInstance($container, $entity_type);
+    $instance->setLogger($container->get('logger.channel.civicrm_entity'));
+    return $instance;
+  }
 
   /**
    * Gets the CiviCRM API.
@@ -75,19 +82,6 @@ class CiviEntityStorage extends SqlContentEntityStorage {
       $this->configFactory = \Drupal::configFactory();
     }
     return $this->configFactory;
-  }
-
-  /**
-   * Gets the config factory.
-   *
-   * @return \Psr\Log\LoggerInterface
-   *   The logger channel.
-   */
-  private function getLogger() {
-    if (!$this->logger) {
-      $this->logger = \Drupal::logger('civicrm_entity');
-    }
-    return $this->logger;
   }
 
   /**
@@ -224,7 +218,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
         }
       }
       catch (\Exception $e) {
-        Error::logException($this->getLogger(), $e);
+        Error::logException($this->logger, $e);
       }
     }
 

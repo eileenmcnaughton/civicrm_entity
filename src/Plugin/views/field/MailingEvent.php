@@ -2,15 +2,14 @@
 
 namespace Drupal\civicrm_entity\Plugin\views\field;
 
+use Drupal\civicrm_entity\CiviCrmApiInterface;
+use Drupal\Core\Database\Connection;
 use Drupal\views\Attribute\ViewsField;
 use Drupal\views\Plugin\views\field\NumericField;
 use Drupal\views\ResultRow;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Class for MailingJobOpened.
- *
- * @ViewsField("civicrm_entity_mailing_event")
  */
 #[ViewsField("civicrm_entity_mailing_event")]
 class MailingEvent extends NumericField {
@@ -25,19 +24,28 @@ class MailingEvent extends NumericField {
   /**
    * The CiviCRM API.
    *
-   * @var \Drupal\civicrm_entity\CiviCrmApi
+   * @var \Drupal\civicrm_entity\CiviCrmApiInterface
    */
   protected $civicrmApi;
 
   /**
-   * {@inheritdoc}
+   * Constructs a MailingEvent object.
+   *
+   * @param array $configuration
+   *   The plugin configuration.
+   * @param string $plugin_id
+   *   The plugin ID.
+   * @param array $plugin_definition
+   *   The plugin definition.
+   * @param \Drupal\civicrm_entity\CiviCrmApiInterface $civicrm_api
+   *   The CiviCRM API bridge.
+   * @param \Drupal\Core\Database\Connection $connection
+   *   The database connection.
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
-    $instance->civicrmApi = $container->get('civicrm_entity.api');
-    $instance->database = $container->get('database');
-
-    return $instance;
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, CiviCrmApiInterface $civicrm_api, Connection $connection) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->civicrmApi = $civicrm_api;
+    $this->database = $connection;
   }
 
   /**

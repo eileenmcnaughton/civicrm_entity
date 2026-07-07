@@ -8,15 +8,10 @@ use Drupal\views\ResultRow;
 use Drupal\views\ViewExecutable;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\civicrm_entity\CiviCrmApiInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Component\Utility\UrlHelper;
 
 /**
  * Display file link base on CiviCRM.
- *
- * @ingroup views_field_handlers
- *
- * @ViewsField("civicrm_entity_custom_file")
  */
 #[ViewsField("civicrm_entity_custom_file")]
 class CustomFile extends FieldPluginBase {
@@ -83,18 +78,6 @@ class CustomFile extends FieldPluginBase {
     }
 
     return NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('civicrm_entity.api')
-    );
   }
 
 }

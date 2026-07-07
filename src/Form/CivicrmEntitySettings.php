@@ -6,6 +6,7 @@ use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\TypedConfigManagerInterface;
+use Drupal\Core\DependencyInjection\AutowireTrait;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -14,12 +15,14 @@ use Drupal\Core\Menu\LocalTaskManager;
 use Drupal\Core\Menu\MenuLinkManagerInterface;
 use Drupal\Core\Routing\RouteBuilderInterface;
 use Drupal\filter\FilterFormatInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
  * Form for CiviCRM entity settings.
  */
 class CivicrmEntitySettings extends ConfigFormBase {
+
+  use AutowireTrait;
 
   /**
    * The entity type manager.
@@ -83,7 +86,16 @@ class CivicrmEntitySettings extends ConfigFormBase {
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache_render
    *   The render cache manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $typedConfigManager, EntityTypeManagerInterface $entity_type_manager, RouteBuilderInterface $route_builder, LocalActionManager $local_action_manager, LocalTaskManager $local_task_manager, MenuLinkManagerInterface $menu_link_manager, CacheBackendInterface $cache_render) {
+  public function __construct(
+    ConfigFactoryInterface $config_factory,
+    TypedConfigManagerInterface $typedConfigManager,
+    EntityTypeManagerInterface $entity_type_manager,
+    RouteBuilderInterface $route_builder,
+    #[Autowire(service: 'plugin.manager.menu.local_action')] LocalActionManager $local_action_manager,
+    #[Autowire(service: 'plugin.manager.menu.local_task')] LocalTaskManager $local_task_manager,
+    MenuLinkManagerInterface $menu_link_manager,
+    #[Autowire(service: 'cache.render')] CacheBackendInterface $cache_render,
+  ) {
     parent::__construct($config_factory, $typedConfigManager);
     $this->entityTypeManager = $entity_type_manager;
     $this->routeBuilder = $route_builder;
@@ -91,22 +103,6 @@ class CivicrmEntitySettings extends ConfigFormBase {
     $this->localTaskManager = $local_task_manager;
     $this->menuLinkManager = $menu_link_manager;
     $this->cacheRender = $cache_render;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('config.factory'),
-      $container->get('config.typed'),
-      $container->get('entity_type.manager'),
-      $container->get('router.builder'),
-      $container->get('plugin.manager.menu.local_action'),
-      $container->get('plugin.manager.menu.local_task'),
-      $container->get('plugin.manager.menu.link'),
-      $container->get('cache.render')
-    );
   }
 
   /**

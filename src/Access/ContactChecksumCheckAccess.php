@@ -5,18 +5,19 @@ namespace Drupal\civicrm_entity\Access;
 use Civi\Api4\Contact;
 use Drupal\civicrm_entity\CiviCrmApiInterface;
 use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Logger\LoggerChannelTrait;
 use Drupal\Core\Routing\Access\AccessInterface;
 use Drupal\Core\Session\AccountInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Route;
 
 /**
  * Checks access for displaying views using the ContactChecksum plugin.
  */
-class ContactChecksumCheckAccess implements AccessInterface {
+class ContactChecksumCheckAccess implements AccessInterface, LoggerAwareInterface {
 
-  use LoggerChannelTrait;
+  use LoggerAwareTrait;
 
   /**
    * The request stack.
@@ -61,7 +62,7 @@ class ContactChecksumCheckAccess implements AccessInterface {
 
     $access_by_role = !empty(array_intersect(array_filter($options['role']), $account->getRoles()));
     if ($access_by_role) {
-      $this->getlogger('ContactChecksumCheckAccess')->info('Access by role');
+      $this->logger->info('Access by role');
       return AccessResult::allowed();
     }
     $request = $this->requestStack->getCurrentRequest();
@@ -70,7 +71,7 @@ class ContactChecksumCheckAccess implements AccessInterface {
     $checksum = $request->query->get('cs');
 
     if (empty($cid1) || empty($checksum)) {
-      $this->getlogger('ContactChecksumCheckAccess')->info('No cid1 or cs param');
+      $this->logger->info('No cid1 or cs param');
       return AccessResult::forbidden();
     }
 

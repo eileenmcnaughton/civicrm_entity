@@ -9,6 +9,6 @@ services:
 
   civicrm_entity_bundles.route_subscriber:
     class: Drupal\civicrm_entity_bundles\Routing\RouteSubscriber
-    arguments: ['@entity_type.manager', '@module_handler']
+    autowire: true
     tags:
       - { name: event_subscriber }

@@ -19,10 +19,6 @@ use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 
 /**
  * A field that displays entity field data for custom fields.
- *
- * @ingroup views_field_handlers
- *
- * @ViewsField("civicrm_entity_custom_field")
  */
 #[ViewsField("civicrm_entity_custom_field")]
 class CustomEntityField extends EntityField {

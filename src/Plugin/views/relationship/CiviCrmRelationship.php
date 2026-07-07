@@ -8,10 +8,6 @@ use Drupal\views\Attribute\ViewsRelationship;
 
 /**
  * Relationship for referencing civicrm_contact and civicrm_relationship.
- *
- * @ingroup views_relationship_handlers
- *
- * @ViewsRelationship("civicrm_entity_civicrm_relationship")
  */
 #[ViewsRelationship("civicrm_entity_civicrm_relationship")]
 class CiviCrmRelationship extends CivicrmEntityReverse {

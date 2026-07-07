@@ -8,10 +8,6 @@ use Drupal\views\Plugin\views\relationship\EntityReverse as CoreEntityReverse;
 
 /**
  * A relationship handlers which reverse CiviCRM entity references.
- *
- * @ingroup views_relationship_handlers
- *
- * @ViewsRelationship("civicrm_entity_reverse")
  */
 #[ViewsRelationship("civicrm_entity_reverse")]
 class EntityReverse extends CoreEntityReverse {

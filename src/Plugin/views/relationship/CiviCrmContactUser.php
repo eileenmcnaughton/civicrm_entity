@@ -5,17 +5,17 @@ namespace Drupal\civicrm_entity\Plugin\views\relationship;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Utility\Error;
 use Drupal\views\Attribute\ViewsRelationship;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Relationship for referencing civicrm_contact and user.
- *
- * @ingroup views_relationship_handlers
- *
- * @ViewsRelationship("civicrm_entity_civicrm_contact_user")
  */
 #[ViewsRelationship("civicrm_entity_civicrm_contact_user")]
-class CiviCrmContactUser extends CiviCrmBridgeRelationshipBase {
+class CiviCrmContactUser extends CiviCrmBridgeRelationshipBase implements LoggerAwareInterface {
+
+  use LoggerAwareTrait;
 
   /**
    * The CiviCRM API.
@@ -25,19 +25,12 @@ class CiviCrmContactUser extends CiviCrmBridgeRelationshipBase {
   protected $civicrmApi;
 
   /**
-   * The Logger.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected $logger;
-
-  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
     $instance->civicrmApi = $container->get('civicrm_entity.api');
-    $instance->logger = $container->get('logger.factory')->get('civicrm_entity');
+    $instance->setLogger($container->get('logger.channel.civicrm_entity'));
     return $instance;
   }
 

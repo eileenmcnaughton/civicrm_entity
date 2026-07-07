@@ -7,14 +7,9 @@ use Drupal\views\Plugin\views\filter\Date as BaseDate;
 use Drupal\Component\Datetime\DateTimePlus;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\views\Plugin\views\query\Sql;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * An "Date" handler to include CiviCRM API.
- *
- * @ingroup views_filter_handlers
- *
- * @ViewsFilter("civicrm_entity_date")
  */
 #[ViewsFilter("civicrm_entity_date")]
 class Date extends BaseDate {
@@ -38,18 +33,6 @@ class Date extends BaseDate {
   public function __construct(array $configuration, $plugin_id, $plugin_definition, DateFormatterInterface $date_formatter) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->dateFormatter = $date_formatter;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('date.formatter')
-    );
   }
 
   /**

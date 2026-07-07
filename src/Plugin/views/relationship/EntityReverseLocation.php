@@ -12,10 +12,6 @@ use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Reverse CiviCRM entity reference locations.
- *
- * @ingroup views_relationship_handlers
- *
- * @ViewsRelationship("civicrm_entity_reverse_location")
  */
 #[ViewsRelationship("civicrm_entity_reverse_location")]
 class EntityReverseLocation extends EntityReverse {

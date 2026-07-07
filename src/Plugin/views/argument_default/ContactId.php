@@ -7,19 +7,13 @@ use Drupal\Core\Cache\CacheableDependencyInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\views\Attribute\ViewsArgumentDefault;
 use Drupal\views\Plugin\views\argument_default\ArgumentDefaultPluginBase;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Session\AccountProxy;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\civicrm_entity\CiviCrmApiInterface;
 
 /**
  * Default argument plugin to get the current user's civicrm contact ID.
  *
  * This plugin actually has no options so it does not need to do a great deal.
- *
- * @ViewsArgumentDefault(
- *   id = "current_user_contact_id",
- *   title = @Translation("Contact ID from logged in user")
- * )
  */
 #[ViewsArgumentDefault(
   id: 'current_user_contact_id',
@@ -30,7 +24,7 @@ class ContactId extends ArgumentDefaultPluginBase implements CacheableDependency
   /**
    * Drupal\Core\Session\AccountProxy definition.
    *
-   * @var \Drupal\Core\Session\AccountProxy
+   * @var \Drupal\Core\Session\AccountInterface
    */
   protected $currentUser;
 
@@ -50,24 +44,15 @@ class ContactId extends ArgumentDefaultPluginBase implements CacheableDependency
    *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Session\AccountProxy $currentUser
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
    * @param \Drupal\civicrm_entity\CiviCrmApiInterface $civicrmApi
    *   The CiviCRM Api.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, AccountProxy $currentUser, CiviCrmApiInterface $civicrmApi) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, AccountInterface $currentUser, CiviCrmApiInterface $civicrmApi) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->currentUser = $currentUser;
     $this->civicrmApi = $civicrmApi;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static($configuration, $plugin_id, $plugin_definition,
-      $container->get('current_user'),
-      $container->get('civicrm_entity.api'));
   }
 
   /**

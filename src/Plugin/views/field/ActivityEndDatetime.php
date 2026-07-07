@@ -7,10 +7,6 @@ use Drupal\views\Plugin\views\field\EntityField;
 
 /**
  * Display an activities computed end date.
- *
- * @ingroup views_field_handlers
- *
- * @ViewsField("civicrm_entity_activity_end_datetime")
  */
 #[ViewsField("civicrm_entity_activity_end_datetime")]
 class ActivityEndDatetime extends EntityField {

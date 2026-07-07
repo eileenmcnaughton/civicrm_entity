@@ -9,11 +9,6 @@ use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Default argument plugin to get the current user's civicrm contact subtype.
- *
- * @ViewsArgumentDefault(
- *   id = "current_user_contact_subtype",
- *   title = @Translation("Contact subtype from logged in user")
- * )
  */
 #[ViewsArgumentDefault(
   id: 'current_user_contact_subtype',

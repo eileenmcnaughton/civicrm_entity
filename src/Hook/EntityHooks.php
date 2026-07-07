@@ -21,11 +21,15 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 
 /**
  * Hook implementations for entities.
  */
-class EntityHooks {
+class EntityHooks implements LoggerAwareInterface {
+
+  use LoggerAwareTrait;
 
   /**
    * Constructor for EntityHooks.
@@ -55,7 +59,7 @@ class EntityHooks {
       $civicrm_entity_name = $civicrm_entity_info['civicrm entity name'];
 
       if (empty($civicrm_entity_info['label property'])) {
-        \Drupal::logger('civicrm_entity')->debug(sprintf('Missing label property: %s', $entity_type_id));
+        $this->logger->debug(sprintf('Missing label property: %s', $entity_type_id));
         continue;
       }
 

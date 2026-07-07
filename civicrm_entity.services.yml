@@ -1,7 +1,14 @@
 services:
+  _defaults:
+    autoconfigure: true
+
+  logger.channel.civicrm_entity:
+    parent: logger.channel_base
+    arguments: ['civicrm_entity']
+
   civicrm_entity.api:
     class: 'Drupal\civicrm_entity\CiviCrmApi'
-    arguments: ['@civicrm']
+    autowire: true
 
   Drupal\civicrm_entity\CiviCrmApiInterface: '@civicrm_entity.api'
 
@@ -10,21 +17,18 @@ services:
 
   entity.query.civicrm_entity:
     class: '\Drupal\civicrm_entity\Entity\Query\CiviCRM\QueryFactory'
-    arguments: ['@civicrm_entity.api']
+    autowire: true
     tags:
       - { name: backend_overridable }
 
   civicrm_entity.contact_checksum_access_checker:
     class: Drupal\civicrm_entity\Access\ContactChecksumCheckAccess
     autowire: true
-    arguments: ['@request_stack', '@civicrm_entity.api']
     tags:
       - {name: access_check, applies_to: _civicrm_entity_checksum_access_check }
 
   civicrm_entity.search_api:
     class: Drupal\civicrm_entity\EventSubscriber\SearchApiSubscriber
-    tags:
-      - { name: event_subscriber }
 
   Drupal\civicrm_entity\Hook\EntityHooks:
     class: Drupal\civicrm_entity\Hook\EntityHooks

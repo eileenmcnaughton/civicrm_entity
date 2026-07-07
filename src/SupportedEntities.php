@@ -17,9 +17,9 @@ use Drupal\Core\Language\LanguageInterface;
  * Entities could just define the `civicrm_entity` key to define their support
  * and what CiviCRM entity they map to.
  *
- * Ported for now and used in civicrm_entity_entity_type_build()
+ * Ported for now and used in \Drupal\civicrm_entity\Hook\EntityHooks::entityTypeBuild()
  *
- * @see civicrm_entity_entity_type_build()
+ * @see \Drupal\civicrm_entity\Hook\EntityHooks::entityTypeBuild()
  */
 final class SupportedEntities {
 

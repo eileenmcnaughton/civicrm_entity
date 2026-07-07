@@ -4,21 +4,23 @@ namespace Drupal\civicrm_entity\Form;
 
 use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Core\DependencyInjection\AutowireTrait;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Entity\Display\EntityFormDisplayInterface;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Routing\RouteProvider;
+use Drupal\Core\Routing\RouteProviderInterface;
 use Drupal\Core\Session\AccountInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
 /**
  * Form object for CiviCRM Entities.
  */
 class CivicrmEntityForm extends ContentEntityForm {
+
+  use AutowireTrait;
 
   /**
    * The Current User object.
@@ -30,7 +32,7 @@ class CivicrmEntityForm extends ContentEntityForm {
   /**
    * The route provider.
    *
-   * @var \Drupal\Core\Routing\RouteProvider
+   * @var \Drupal\Core\Routing\RouteProviderInterface
    */
   protected $routeProvider;
 
@@ -45,26 +47,13 @@ class CivicrmEntityForm extends ContentEntityForm {
    *   The time service.
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The current user.
-   * @param \Drupal\Core\Routing\RouteProvider $route_provider
+   * @param \Drupal\Core\Routing\RouteProviderInterface $route_provider
    *   The route provider.
    */
-  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, AccountInterface $current_user, RouteProvider $route_provider) {
+  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, AccountInterface $current_user, RouteProviderInterface $route_provider) {
     parent::__construct($entity_repository, $entity_type_bundle_info, $time);
     $this->currentUser = $current_user;
     $this->routeProvider = $route_provider;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('entity.repository'),
-      $container->get('entity_type.bundle.info'),
-      $container->get('datetime.time'),
-      $container->get('current_user'),
-      $container->get('router.route_provider')
-    );
   }
 
   /**

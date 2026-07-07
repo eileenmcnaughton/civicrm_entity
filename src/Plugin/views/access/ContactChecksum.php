@@ -13,14 +13,6 @@ use Symfony\Component\Routing\Route;
 
 /**
  * Access plugin that provides role-based access control.
- *
- * @ingroup views_access_plugins
- *
- * @ViewsAccess(
- *   id = "civicrm_entity_contact_checksum",
- *   title = @Translation("CiviCRM Entity: Contact Checksum"),
- *   help = @Translation("Access will be granted if the contact checksum validates against contact cid1")
- * )
  */
 #[ViewsAccess(
   id: 'civicrm_entity_contact_checksum',

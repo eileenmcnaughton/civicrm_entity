@@ -3,6 +3,7 @@
 namespace Drupal\civicrm_entity;
 
 use Drupal\civicrm\Civicrm;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
  * CiviCRM API implementation.
@@ -22,7 +23,7 @@ class CiviCrmApi implements CiviCrmApiInterface {
    * @param \Drupal\civicrm\Civicrm $civicrm
    *   The CiviCRM service.
    */
-  public function __construct(Civicrm $civicrm) {
+  public function __construct(#[Autowire(service: 'civicrm')] Civicrm $civicrm) {
     $this->civicrm = $civicrm;
   }
 

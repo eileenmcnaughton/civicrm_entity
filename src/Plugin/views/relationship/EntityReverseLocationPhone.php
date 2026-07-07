@@ -9,10 +9,6 @@ use Drupal\views\ViewExecutable;
 
 /**
  * Reverse CiviCRM entity reference locations for phone.
- *
- * @ingroup views_relationship_handlers
- *
- * @ViewsRelationship("civicrm_entity_reverse_location_phone")
  */
 #[ViewsRelationship("civicrm_entity_reverse_location_phone")]
 class EntityReverseLocationPhone extends EntityReverseLocation {

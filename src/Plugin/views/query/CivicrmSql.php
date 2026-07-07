@@ -14,14 +14,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Views query plugin for a CiviCRM Entity SQL query.
- *
- * @ingroup views_query_plugins
- *
- * @ViewsQuery(
- *   id = "civicrm_views_query",
- *   title = @Translation("CiviCRM SQL Query"),
- *   help = @Translation("Query will be generated and run using the Drupal database API against the CiviCRM database.")
- * )
  */
 #[ViewsQuery(
   id: 'civicrm_views_query',

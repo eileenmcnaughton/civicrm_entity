@@ -8,17 +8,20 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\civicrm_entity\CiviCrmApiInterface;
 use Drupal\views\Plugin\views\query\Sql;
 use Drupal\views\ViewExecutable;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\Core\Database\Query\Condition;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
  * Filter handler for proximity.
- *
- * @ViewsFilter("civicrm_entity_civicrm_address_proximity")
  */
 #[ViewsFilter("civicrm_entity_civicrm_address_proximity")]
-class Proximity extends FilterPluginBase {
+class Proximity extends FilterPluginBase implements LoggerAwareInterface {
+
+  use LoggerAwareTrait;
 
   /**
    * The CiviCRM API.
@@ -30,24 +33,13 @@ class Proximity extends FilterPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, CiviCrmApiInterface $civicrm_api) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, CiviCrmApiInterface $civicrm_api, #[Autowire(service: 'logger.channel.civicrm_entity')] LoggerInterface $logger) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->civicrmApi = $civicrm_api;
+    $this->setLogger($logger);
 
     $this->alwaysMultiple = TRUE;
     $this->no_operator = TRUE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('civicrm_entity.api')
-    );
   }
 
   /**
@@ -314,7 +306,7 @@ class Proximity extends FilterPluginBase {
       ];
     }
     catch (\Exception $e) {
-      \Drupal::logger('civicrm_entity')->error('Error getting proximity values: @error', ['@error' => $e->getMessage()]);
+      $this->logger->error('Error getting proximity values: @error', ['@error' => $e->getMessage()]);
       return [];
     }
   }

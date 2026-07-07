@@ -6,73 +6,15 @@
  */
 
 use Drupal\civicrm_entity\CiviEntityStorage;
-use Drupal\civicrm_entity\Hook\EntityHooks;
-use Drupal\civicrm_entity\Hook\FormHooks;
-use Drupal\civicrm_entity\Hook\QueryHooks;
-use Drupal\civicrm_entity\Hook\RulesHooks;
-use Drupal\civicrm_entity\Hook\ThemeHooks;
 use Drupal\civicrm_entity\SupportedEntities;
-use Drupal\Core\Database\Query\AlterableInterface;
 use Drupal\Core\Entity\ContentEntityBase;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
-use Drupal\Core\Hook\Attribute\LegacyModuleImplementsAlter;
-use Drupal\views\ViewExecutable;
-use Drupal\views\Plugin\views\query\QueryPluginBase;
-use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Hook\Attribute\LegacyHook;
 use Drupal\Core\Render\Markup;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\FieldStorageConfigInterface;
-
-/**
- * Implements hook_theme().
- */
-#[LegacyHook]
-function civicrm_entity_theme() {
-  return [
-    'civicrm_entity_entity_form' => [
-      'render element' => 'form',
-    ],
-    'civicrm_entity' => [
-      'render element' => 'elements',
-    ],
-  ];
-}
-
-/**
- * Implements hook_entity_type_build().
- *
- * Populates supported CiviCRM Entity definitions.
- */
-#[LegacyHook]
-function civicrm_entity_entity_type_build(array &$entity_types) {
-  \Drupal::service(EntityHooks::class)->entityTypeBuild($entity_types);
-}
-
-/**
- * Implements hook_form_alter().
- */
-#[LegacyHook]
-function civicrm_entity_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
-  \Drupal::service(FormHooks::class)->formAlter($form, $form_state, $form_id);
-}
-
-/**
- * Implements hook_module_implements_alter().
- */
-#[LegacyModuleImplementsAlter]
-function civicrm_entity_module_implements_alter(&$implementations, $hook) {
-  switch ($hook) {
-    case 'form_alter':
-      $group = $implementations['civicrm_entity'];
-      unset($implementations['civicrm_entity']);
-      $implementations['civicrm_entity'] = $group;
-      break;
-  }
-}
 
 /**
  * Implements callback_allowed_values_function().
@@ -95,22 +37,6 @@ function civicrm_entity_pseudoconstant_options(FieldStorageDefinitionInterface $
   $entity_type = \Drupal::entityTypeManager()->getDefinition($definition->getTargetEntityTypeId());
   $options = $civicrm_api->getOptions($entity_type->get('civicrm_entity'), $definition->getName());
   return $options;
-}
-
-/**
- * Implements hook_preprocess().
- */
-#[LegacyHook]
-function template_preprocess_civicrm_entity(&$variables) {
-  \Drupal::service(ThemeHooks::class)->preprocessCivicrmEntity($variables);
-}
-
-/**
- * Implements hook_theme_suggestions_HOOK_alter().
- */
-#[LegacyHook]
-function civicrm_entity_theme_suggestions_civicrm_entity_alter(array &$suggestions, array $variables) {
-  \Drupal::service(ThemeHooks::class)->themeSuggestionsCivicrmEntityAlter($suggestions, $variables);
 }
 
 /**
@@ -325,42 +251,6 @@ function _civicrm_entity_post_invoke($op, CiviEntityStorage $storage, EntityInte
 }
 
 /**
- * Implements hook_views_query_alter().
- */
-#[LegacyHook]
-function civicrm_entity_views_query_alter(ViewExecutable $view, QueryPluginBase $query) {
-  \Drupal::service(QueryHooks::class)->viewsQueryAlter($view, $query);
-}
-
-/**
- * Implements hook_theme_registry_alter().
- */
-#[LegacyHook]
-function civicrm_entity_theme_registry_alter(&$theme_registry) {
-  \Drupal::service(ThemeHooks::class)->themeRegistryAlter($theme_registry);
-}
-
-/**
- * Implements hook_rebuild().
- *
- * This resets the field storage and entity type definitions for civicrm_entity
- * according to the active definitions to avoid mismatches since the definitions
- * are not necessary to be updated.
- */
-#[LegacyHook]
-function civicrm_entity_rebuild() {
-  \Drupal::service(EntityHooks::class)->rebuild();
-}
-
-/**
- * Implements hook_rules_action_info_alter().
- */
-#[LegacyHook]
-function civicrm_entity_rules_action_info_alter(&$rules_actions) {
-  \Drupal::service(RulesHooks::class)->rulesActionInfoAlter($rules_actions);
-}
-
-/**
  * Implements hook_civicrm_merge().
  */
 function civicrm_entity_civicrm_merge($mode, &$sqls, $mainId = NULL, $otherId = NULL, $tables = NULL) {
@@ -404,33 +294,17 @@ function civicrm_entity_civicrm_merge($mode, &$sqls, $mainId = NULL, $otherId = 
                 $entityRecord->save();
               }
               catch (\Exception $e) {
-                \Drupal::logger('civicrm_entity')->error($e->getMessage());
+                \Drupal::service('logger.channel.civicrm_entity')->error($e->getMessage());
               }
             }
           }
         }
         catch (\Exception $e) {
-          \Drupal::logger('civicrm_entity')->error($e->getMessage());
+          \Drupal::service('logger.channel.civicrm_entity')->error($e->getMessage());
         }
       }
     }
   }
-}
-
-/**
- * Implements hook_query_TAG_alter().
- */
-#[LegacyHook]
-function civicrm_entity_query_pathauto_bulk_update_alter(AlterableInterface $query) {
-  \Drupal::service(QueryHooks::class)->queryPathautoBulkUpdateAlter($query);
-}
-
-/**
- * Implements hook_query_TAG_alter().
- */
-#[LegacyHook]
-function civicrm_entity_query_pathauto_bulk_delete_alter(AlterableInterface $query) {
-  \Drupal::service(QueryHooks::class)->queryPathautoBulkDeleteAlter($query);
 }
 
 /**

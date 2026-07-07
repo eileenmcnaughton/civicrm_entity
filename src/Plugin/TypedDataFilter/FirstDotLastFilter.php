@@ -11,11 +11,6 @@ use Drupal\typed_data\DataFilterBase;
 
 /**
  * A data filter which changes a string to upper case.
- *
- * @DataFilter(
- *   id = "firstdotlast",
- *   label = @Translation("Format username : firstname.lastname"),
- * )
  */
 #[DataFilter(
   id: "firstdotlast",

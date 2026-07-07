@@ -10,8 +10,6 @@ use Drupal\views\Views;
 
 /**
  * Filter handler for activity source contact.
- *
- * @ViewsFilter("civicrm_entity_civicrm_activity_contact_record")
  */
 #[ViewsFilter("civicrm_entity_civicrm_activity_contact_record")]
 class ActivityContactRecord extends NumericFilter {

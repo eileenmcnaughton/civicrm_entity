@@ -14,16 +14,6 @@ use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Plugin implementation of the 'civicrm_entity_custom_multi_value' formatter.
- *
- * @FieldFormatter(
- *   id = "civicrm_entity_custom_multi_value",
- *   label = @Translation("CiviCRM custom multivalue field"),
- *   field_types = {
- *     "list_integer",
- *     "list_float",
- *     "list_string",
- *   }
- * )
  */
 #[FieldFormatter(
   id: "civicrm_entity_custom_multi_value",

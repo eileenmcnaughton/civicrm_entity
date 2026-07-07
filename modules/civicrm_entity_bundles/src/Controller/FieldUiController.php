@@ -2,16 +2,18 @@
 
 namespace Drupal\civicrm_entity_bundles\Controller;
 
+use Drupal\Core\DependencyInjection\AutowireTrait;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\field_ui\FieldConfigListBuilder;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * A Field UI controller.
  */
 final class FieldUiController implements ContainerInjectionInterface {
+
+  use AutowireTrait;
 
   /**
    * The entity type manager.
@@ -38,16 +40,6 @@ final class FieldUiController implements ContainerInjectionInterface {
   public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityTypeBundleInfo = $entity_type_bundle_info;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new self(
-      $container->get('entity_type.manager'),
-      $container->get('entity_type.bundle.info')
-    );
   }
 
   /**

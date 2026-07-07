@@ -10,8 +10,6 @@ use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Field handler to display calculated distance from proximity filter.
- *
- * @ViewsField("civicrm_entity_distance")
  */
 #[ViewsField("civicrm_entity_distance")]
 class CivicrmEntityDistance extends FieldPluginBase {

@@ -11,10 +11,6 @@ use Drupal\views\Plugin\views\query\Sql;
 
 /**
  * Argument handler for CiviCRM dates.
- *
- * @ingroup views_argument_handlers
- *
- * @ViewsArgument("civicrm_entity_date")
  */
 #[ViewsArgument(
   id: 'civicrm_entity_date'

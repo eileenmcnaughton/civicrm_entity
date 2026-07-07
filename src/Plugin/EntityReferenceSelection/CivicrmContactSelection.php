@@ -11,14 +11,6 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  *
  * This is because `display_name` does not work on LIKE queries, but the
  * `=` condition is treated as one.
- *
- * @EntityReferenceSelection(
- *   id = "default:civicrm_contact",
- *   label = @Translation("CiviCRM Contact selection"),
- *   entity_types = {"civicrm_contact"},
- *   group = "default",
- *   weight = 1
- * )
  */
 #[EntityReferenceSelection(
   id: "default:civicrm_contact",

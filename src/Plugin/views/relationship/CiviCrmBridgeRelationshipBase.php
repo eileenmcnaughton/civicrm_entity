@@ -18,10 +18,6 @@ use Drupal\views\Views;
  *   original table.
  * - second field: The field in the 'civicrm_uf_match' table to match against
  *   the base table.
- *
- * @ingroup views_relationship_handlers
- *
- * @ViewsRelationship("civicrm_entity_civicrm_bridge")
  */
 #[ViewsRelationship("civicrm_entity_civicrm_bridge")]
 class CiviCrmBridgeRelationshipBase extends RelationshipPluginBase {

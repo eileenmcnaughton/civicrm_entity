@@ -7,13 +7,9 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\views\Attribute\ViewsJoin;
 use Drupal\views\Plugin\views\join\JoinPluginBase;
 use Drupal\views\Plugin\views\query\Sql;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Join handler for relationships for "Contact Reference" data type.
- *
- * @ingroup views_join_handlers
- * @ViewsJoin("civicrm_entity_contact_reference")
  */
 #[ViewsJoin("civicrm_entity_contact_reference")]
 class ContactReference extends JoinPluginBase implements ContainerFactoryPluginInterface {
@@ -31,18 +27,6 @@ class ContactReference extends JoinPluginBase implements ContainerFactoryPluginI
   public function __construct(array $configuration, $plugin_id, array $plugin_definition, CiviCrmApiInterface $civicrm_api) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->civicrmApi = $civicrm_api;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('civicrm_entity.api')
-    );
   }
 
   /**

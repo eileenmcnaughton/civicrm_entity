@@ -21,7 +21,7 @@ use Symfony\Component\Validator\ConstraintViolation;
  * multiple entity types that use one single class, without creating redundant
  * class files and annotations.
  *
- * @see civicrm_entity_entity_type_build().
+ * @see \Drupal\civicrm_entity\Hook\EntityHooks::entityTypeBuild()
  */
 class CivicrmEntity extends ContentEntityBase {
 

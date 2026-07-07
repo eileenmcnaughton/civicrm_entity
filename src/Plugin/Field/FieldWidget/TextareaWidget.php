@@ -11,14 +11,6 @@ use Drupal\text\Plugin\Field\FieldWidget\TextareaWidget as CoreTextareaWidget;
 
 /**
  * Plugin implementation of the 'text_textarea' widget.
- *
- * @FieldWidget(
- *   id = "civicrm_entity_textarea",
- *   label = @Translation("Text area (multiple rows, default CiviCRM format)"),
- *   field_types = {
- *     "text_long"
- *   }
- * )
  */
 #[FieldWidget(
   id: "civicrm_entity_textarea",

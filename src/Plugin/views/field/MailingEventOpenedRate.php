@@ -8,8 +8,6 @@ use Drupal\views\ResultRow;
 
 /**
  * Class for MailingEventOpenedRate.
- *
- * @ViewsField("civicrm_entity_mailing_event_opened_rate")
  */
 #[ViewsField("civicrm_entity_mailing_event_opened_rate")]
 class MailingEventOpenedRate extends MailingEvent {

@@ -2,14 +2,14 @@
 
 namespace Drupal\civicrm_entity\Plugin\views\sort;
 
+use Drupal\views\Attribute\ViewsSort;
 use Drupal\views\Plugin\views\query\Sql;
 use Drupal\views\Plugin\views\sort\SortPluginBase;
 
 /**
  * Sort handler for distance calculations.
- *
- * @ViewsSort("civicrm_entity_distance_sort")
  */
+#[ViewsSort("civicrm_entity_distance_sort")]
 class CivicrmEntityDistanceSort extends SortPluginBase {
 
   /**

@@ -9,28 +9,9 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\rules\Context\ContextDefinition;
 use Drupal\rules\Core\Attribute\RulesAction;
 use Drupal\rules\Core\RulesActionBase;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a 'Load Linked User' action.
- *
- * @RulesAction(
- *   id = "civicrm_entity_load_linked_user",
- *   label = @Translation("Load Linked User"),
- *   category = @Translation("CiviCRM"),
- *   context_definitions = {
- *     "contact_id" = @ContextDefinition("integer",
- *       label = @Translation("Contact ID"),
- *       description = @Translation("The numeric contact id."),
- *       required = TRUE
- *     ),
- *   },
- *   provides = {
- *     "user_fetched" = @ContextDefinition("entity:user",
- *       label = @Translation("Fetched user")
- *     ),
- *   }
- * )
  */
 #[RulesAction(
   id: "civicrm_entity_load_linked_user",
@@ -85,19 +66,6 @@ class LoadLinkedUser extends RulesActionBase implements ContainerFactoryPluginIn
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->entityTypeManager = $entity_type_manager;
     $this->civicrmApi = $civicrm_api;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('entity_type.manager'),
-      $container->get('civicrm_entity.api')
-    );
   }
 
   /**
