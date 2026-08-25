@@ -1,0 +1,7 @@
+services:
+  _defaults:
+    autoconfigure: true
+    autowire: true
+
+  Drupal\civicrm_entity_ds\Hook\BundleHooks:
+    class: Drupal\civicrm_entity_ds\Hook\BundleHooks

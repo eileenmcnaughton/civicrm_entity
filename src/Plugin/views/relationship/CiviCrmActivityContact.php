@@ -8,13 +8,28 @@ use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\views\Plugin\views\query\Sql;
 use Drupal\views\Plugin\views\relationship\RelationshipPluginBase;
+use Drupal\views\Plugin\ViewsPluginManager;
 use Drupal\views\Views;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
  * Reverse CiviCRM entity reference locations.
  */
 #[ViewsRelationship("civicrm_entity_activity_contact")]
 class CiviCrmActivityContact extends RelationshipPluginBase {
+
+  /**
+   * Constructs an activity contact relationship.
+   */
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    #[Autowire(service: 'plugin.manager.views.join')]
+    protected ViewsPluginManager $joinPluginManager,
+  ) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+  }
 
   /**
    * The mapping explicitly set for the record types.
@@ -108,7 +123,7 @@ class CiviCrmActivityContact extends RelationshipPluginBase {
       $first['extra_operator'] = 'OR';
     }
 
-    $first_join = Views::pluginManager('join')->createInstance('standard', $first);
+    $first_join = $this->joinPluginManager->createInstance('standard', $first);
     $first_alias = $this->query->addTable('civicrm_activity_contact', $this->relationship, $first_join);
 
     // Relate the first join to the base table defined.
@@ -124,7 +139,7 @@ class CiviCrmActivityContact extends RelationshipPluginBase {
       $second['type'] = 'INNER';
     }
 
-    $second_join = Views::pluginManager('join')->createInstance('standard', $second);
+    $second_join = $this->joinPluginManager->createInstance('standard', $second);
     $second_join->adjusted = TRUE;
 
     $alias = $this->definition['base'] . '_civicrm_activity_contact';

@@ -1,0 +1,8 @@
+name: 'CiviCRM Entity Display Suite'
+type: module
+description: 'Provides Display Suite integration for bundled CiviCRM entities.'
+package: CiviCRM
+core_version_requirement: ^11.3
+dependencies:
+  - civicrm_entity:civicrm_entity_bundles
+  - ds:ds

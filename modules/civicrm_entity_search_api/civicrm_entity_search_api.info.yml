@@ -1,0 +1,8 @@
+name: 'CiviCRM Entity Search API'
+type: module
+description: 'Provides Search API datasource integration for CiviCRM entities.'
+package: CiviCRM
+core_version_requirement: ^11.3
+dependencies:
+  - civicrm_entity:civicrm_entity
+  - search_api:search_api

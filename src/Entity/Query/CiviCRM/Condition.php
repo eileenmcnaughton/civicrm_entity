@@ -32,7 +32,6 @@ class Condition extends ConditionBase {
         $query_condition->compile($condition_container);
       }
       else {
-        // @phpstan-ignore method.notFound
         $condition_container->setParameter($condition['field'], $condition['value']);
       }
     }

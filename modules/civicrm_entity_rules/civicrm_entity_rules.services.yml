@@ -1,0 +1,6 @@
+services:
+  _defaults:
+    autoconfigure: true
+
+  Drupal\civicrm_entity_rules\Hook\RulesHooks:
+    class: Drupal\civicrm_entity_rules\Hook\RulesHooks

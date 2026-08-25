@@ -15,6 +15,7 @@ use Drupal\Core\Menu\LocalTaskManager;
 use Drupal\Core\Menu\MenuLinkManagerInterface;
 use Drupal\Core\Routing\RouteBuilderInterface;
 use Drupal\filter\FilterFormatInterface;
+use Drupal\filter\FilterFormatRepositoryInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
@@ -85,6 +86,8 @@ class CivicrmEntitySettings extends ConfigFormBase {
    *   The menu link manager.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache_render
    *   The render cache manager.
+   * @param \Drupal\filter\FilterFormatRepositoryInterface $filterFormatRepository
+   *   The filter format repository.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
@@ -95,6 +98,7 @@ class CivicrmEntitySettings extends ConfigFormBase {
     #[Autowire(service: 'plugin.manager.menu.local_task')] LocalTaskManager $local_task_manager,
     MenuLinkManagerInterface $menu_link_manager,
     #[Autowire(service: 'cache.render')] CacheBackendInterface $cache_render,
+    protected FilterFormatRepositoryInterface $filterFormatRepository,
   ) {
     parent::__construct($config_factory, $typedConfigManager);
     $this->entityTypeManager = $entity_type_manager;
@@ -126,14 +130,14 @@ class CivicrmEntitySettings extends ConfigFormBase {
     $form = parent::buildForm($form, $form_state);
     $config = $this->config('civicrm_entity.settings');
 
-    $formats = filter_formats();
+    $formats = $this->filterFormatRepository->getAllFormats();
     $form['filter_format'] = [
       '#type' => 'select',
       '#title' => $this->t('Text format'),
       '#options' => array_map(function (FilterFormatInterface $filter) {
         return $filter->label();
       }, $formats),
-      '#default_value' => $config->get('filter_format') ?: filter_fallback_format(),
+      '#default_value' => $config->get('filter_format') ?: $this->filterFormatRepository->getFallbackFormatId(),
       '#access' => count($formats) > 1 && $this->currentUser()->hasPermission('administer filters'),
       '#attributes' => ['class' => ['filter-list']],
     ];

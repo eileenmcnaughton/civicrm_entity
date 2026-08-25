@@ -52,7 +52,7 @@ abstract class KernelHandlerTestBase extends ViewsKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function bootEnvironment() {
+  protected function bootEnvironment(): void {
     parent::bootEnvironment();
     $this->bootEnvironmentCivicrm();
   }

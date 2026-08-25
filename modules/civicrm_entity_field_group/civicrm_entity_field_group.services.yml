@@ -1,0 +1,18 @@
+services:
+  _defaults:
+    autoconfigure: true
+    autowire: true
+
+  Drupal\civicrm_entity_field_group\Hook\BundleHooks:
+    class: Drupal\civicrm_entity_field_group\Hook\BundleHooks
+
+  Drupal\civicrm_entity_field_group\Hook\FormHooks:
+    class: Drupal\civicrm_entity_field_group\Hook\FormHooks
+
+  Drupal\civicrm_entity_field_group\Hook\ThemeHooks:
+    class: Drupal\civicrm_entity_field_group\Hook\ThemeHooks
+
+  civicrm_entity_field_group.route_subscriber:
+    class: Drupal\civicrm_entity_field_group\Routing\RouteSubscriber
+    tags:
+      - { name: event_subscriber }

@@ -6,9 +6,7 @@
  */
 
 use Drupal\civicrm_entity_bundles\Hook\BundleHooks;
-use Drupal\Core\Entity\Display\EntityDisplayInterface;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Hook\Attribute\LegacyHook;
 
@@ -50,12 +48,4 @@ function civicrm_entity_bundles_entity_bundle_field_info(EntityTypeInterface $en
 #[LegacyHook]
 function civicrm_entity_bundles_entity_view_display_alter(EntityViewDisplayInterface $display, array $context) {
   \Drupal::service(BundleHooks::class)->entityViewDisplayAlter($display, $context);
-}
-
-/**
- * Implements hook_entity_view_alter().
- */
-#[LegacyHook]
-function civicrm_entity_bundles_entity_view_alter(array &$build, EntityInterface $entity, EntityDisplayInterface $display) {
-  \Drupal::service(BundleHooks::class)->entityViewAlter($build, $entity, $display);
 }

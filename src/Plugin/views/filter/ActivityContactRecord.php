@@ -4,15 +4,29 @@ namespace Drupal\civicrm_entity\Plugin\views\filter;
 
 use Drupal\Core\Database\Query\Condition;
 use Drupal\views\Attribute\ViewsFilter;
+use Drupal\views\Plugin\ViewsPluginManager;
 use Drupal\views\Plugin\views\filter\NumericFilter;
 use Drupal\views\Plugin\views\query\Sql;
-use Drupal\views\Views;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
  * Filter handler for activity source contact.
  */
 #[ViewsFilter("civicrm_entity_civicrm_activity_contact_record")]
 class ActivityContactRecord extends NumericFilter {
+
+  /**
+   * Constructs an activity contact record filter.
+   */
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    #[Autowire(service: 'plugin.manager.views.join')]
+    protected ViewsPluginManager $joinPluginManager,
+  ) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+  }
 
   /**
    * The mapping explicitly set for the record types.
@@ -28,7 +42,7 @@ class ActivityContactRecord extends NumericFilter {
    * ]);
    * @endcode
    */
-  private $recordTypeMapping = [
+  protected $recordTypeMapping = [
     'assignee_id' => 1,
     'source_contact_id' => 2,
     'target_id' => 3,
@@ -50,7 +64,7 @@ class ActivityContactRecord extends NumericFilter {
       'operator' => '=',
     ];
 
-    $join = Views::pluginManager('join')->createInstance('standard', $configuration);
+    $join = $this->joinPluginManager->createInstance('standard', $configuration);
 
     $civicrm_activity_contact_table_alias = $this->query->addRelationship($civicrm_activity_contact_table, $join, $this->tableAlias);
 

@@ -1,0 +1,6 @@
+services:
+  _defaults:
+    autoconfigure: true
+
+  civicrm_entity_search_api.subscriber:
+    class: Drupal\civicrm_entity_search_api\EventSubscriber\SearchApiSubscriber

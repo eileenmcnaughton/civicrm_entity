@@ -1,0 +1,8 @@
+name: 'CiviCRM Entity VBO'
+type: module
+description: 'Provides Views Bulk Operations actions for CiviCRM entities.'
+package: CiviCRM
+core_version_requirement: ^11.3
+dependencies:
+  - civicrm_entity:civicrm_entity
+  - views_bulk_operations:views_bulk_operations

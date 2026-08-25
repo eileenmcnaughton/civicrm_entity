@@ -14,9 +14,9 @@ final class CivicrmEntityServiceProvider implements ServiceModifierInterface {
    * {@inheritdoc}
    */
   public function alter(ContainerBuilder $container): void {
-    if ($container->hasDefinition('module_installer')) {
-      $definition = $container->getDefinition('module_installer');
-      $definition->setClass('Drupal\civicrm_entity\ModuleInstaller');
+    if ($container->hasDefinition('content_uninstall_validator')) {
+      $definition = $container->getDefinition('content_uninstall_validator');
+      $definition->setClass('Drupal\civicrm_entity\Entity\ContentUninstallValidator');
     }
   }
 

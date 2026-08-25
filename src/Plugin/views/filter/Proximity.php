@@ -166,7 +166,6 @@ class Proximity extends FilterPluginBase implements LoggerAwareInterface {
 
       $geocoded_address = $this->getGeocodedAddress($proximity_address);
 
-      // @phpstan-ignore property.notFound
       $this->view->proximity_center = [
         'latitude' => $geocoded_address['latitude'],
         'longitude' => $geocoded_address['longitude'],

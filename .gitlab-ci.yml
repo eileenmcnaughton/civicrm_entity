@@ -43,9 +43,14 @@ phpunit:
     - if: '$CI_PIPELINE_SOURCE == "trigger"'
   parallel:
     matrix:
-      - PHP: "8.5"
+      - PHP: "8.4"
         DRUPAL: "^11.3"
         CIVICRM: "^6.0"
+        INTEGRATIONS: "1"
+      - PHP: "8.5"
+        DRUPAL: "12.x-dev"
+        CIVICRM: "dev-master"
+        INTEGRATIONS: "0"
   services:
     - name: mysql:8.4
       alias: mysql
@@ -113,7 +118,7 @@ phpunit:
       composer config repositories.0 composer https://packages.drupal.org/8
       composer config repositories.1 path "$CI_PROJECT_DIR"
       composer install --no-interaction
-      COMPOSER_MEMORY_LIMIT=-1 composer require "drupal/core-dev:$DRUPAL" "composer/composer:2.8.6" sebastian/diff
+      COMPOSER_MEMORY_LIMIT=-1 composer require "drupal/core-dev:$DRUPAL" sebastian/diff
     - |
       cd ~/drupal
       COMPOSER_MEMORY_LIMIT=-1 composer require \
@@ -126,7 +131,17 @@ phpunit:
     - |
       cd ~/drupal
       COMPOSER_MEMORY_LIMIT=-1 composer require drupal/civicrm_entity "*@dev"
-      COMPOSER_MEMORY_LIMIT=-1 composer require drupal/fullcalendar_view
+      if [ "$INTEGRATIONS" = "1" ]; then
+        COMPOSER_MEMORY_LIMIT=-1 composer require \
+          drupal/ds:^3.37 \
+          drupal/field_group:^4.0 \
+          drupal/fullcalendar_view:^5.2 \
+          drupal/rules:^4.0 \
+          drupal/search_api:^1.41 \
+          drupal/typed_data:^2.1 \
+          drupal/views_bulk_operations:^4.4 \
+          -W
+      fi
     - php -S 127.0.0.1:8080 -t ~/drupal/web 2> /dev/null &
   script:
     - mkdir -p "$BROWSERTEST_OUTPUT_DIRECTORY"

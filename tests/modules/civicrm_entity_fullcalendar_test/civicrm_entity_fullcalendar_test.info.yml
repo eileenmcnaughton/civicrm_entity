@@ -3,7 +3,7 @@ type: module
 description: 'Test module for CiviCRM Entity and Fullcalendar View.'
 package: CiviCRM
 container_rebuild_required: true
-core_version_requirement: ^11.3 || ^12
+core_version_requirement: ^11.3
 dependencies:
   - drupal:datetime
   - drupal:taxonomy

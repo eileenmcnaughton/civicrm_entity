@@ -5,7 +5,7 @@ package: CiviCRM
 container_rebuild_required: true
 core_version_requirement: ^11.3 || ^12
 dependencies:
-  - civicrm
+  - civicrm:civicrm
   - drupal:datetime
   - drupal:filter
   - drupal:options

@@ -51,7 +51,7 @@ abstract class CivicrmEntityTestBase extends KernelTestBase implements ServiceMo
   /**
    * {@inheritdoc}
    */
-  protected function bootEnvironment() {
+  protected function bootEnvironment(): void {
     parent::bootEnvironment();
     $this->bootEnvironmentCivicrm();
   }

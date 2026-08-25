@@ -17,6 +17,7 @@ use Drupal\Core\Utility\Error;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\field\FieldStorageConfigInterface;
+use Drupal\filter\FilterFormatRepositoryInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -50,11 +51,21 @@ class CiviEntityStorage extends SqlContentEntityStorage implements LoggerAwareIn
   protected $entityFieldManager;
 
   /**
+   * The filter format repository.
+   *
+   * @var \Drupal\filter\FilterFormatRepositoryInterface
+   */
+  protected $filterFormatRepository;
+
+  /**
    * {@inheritdoc}
    */
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
     $instance = parent::createInstance($container, $entity_type);
     $instance->setLogger($container->get('logger.channel.civicrm_entity'));
+    $instance->civicrmApi = $container->get('civicrm_entity.api');
+    $instance->configFactory = $container->get('config.factory');
+    $instance->filterFormatRepository = $container->get(FilterFormatRepositoryInterface::class);
     return $instance;
   }
 
@@ -65,9 +76,6 @@ class CiviEntityStorage extends SqlContentEntityStorage implements LoggerAwareIn
    *   The CiviCRM APi.
    */
   private function getCiviCrmApi() {
-    if (!$this->civicrmApi) {
-      $this->civicrmApi = \Drupal::service('civicrm_entity.api');
-    }
     return $this->civicrmApi;
   }
 
@@ -78,9 +86,6 @@ class CiviEntityStorage extends SqlContentEntityStorage implements LoggerAwareIn
    *   The configuration factory service.
    */
   private function getConfigFactory() {
-    if (!$this->configFactory) {
-      $this->configFactory = \Drupal::configFactory();
-    }
     return $this->configFactory;
   }
 
@@ -425,7 +430,8 @@ class CiviEntityStorage extends SqlContentEntityStorage implements LoggerAwareIn
 
       // Set a default format for text fields.
       if ($definition->getType() === 'text_long') {
-        $filter_format = $civicrm_entity_settings->get('filter_format') ?: filter_fallback_format();
+        $filter_format = $civicrm_entity_settings->get('filter_format')
+          ?: $this->filterFormatRepository->getFallbackFormatId();
 
         $item_values = $items->getValue();
         foreach ($item_values as $delta => $item) {

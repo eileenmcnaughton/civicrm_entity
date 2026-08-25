@@ -2,11 +2,11 @@ name: Integration Tests
 on:
   workflow_dispatch:
   push:
-    branches: [ 4.0.x ]
+    branches: [ 5.0.x ]
   pull_request:
     types: [assigned, opened, synchronize, reopened]
     branches:
-      - 4.0.x
+      - 5.0.x
 
 jobs:
   phpunit:
@@ -15,19 +15,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - drupal: '10.3.*'
-            civicrm: '5.75.*'
-            php: '8.1'
-          - drupal: '10.4.*'
-            civicrm: '5.81.*'
-            php: '8.3'
-          - drupal: '^11.1'
-            civicrm: '5.81.*'
-            php: '8.3'
-          - drupal: '^11.1'
-            civicrm: '6.0.*'
+          - drupal: '^11.3'
+            civicrm: '^6.0'
             php: '8.4'
-            chromedriver: latest
+            integrations: true
+          - drupal: '12.x-dev'
+            civicrm: 'dev-master'
+            php: '8.5'
+            integrations: false
     name: Drupal ${{ matrix.drupal }} | CiviCRM ${{ matrix.civicrm }}
     services:
       mysql:
@@ -76,10 +71,12 @@ jobs:
           composer config allow-plugins.civicrm/civicrm-asset-plugin true
           composer config allow-plugins.cweagans/composer-patches true
           composer config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+          composer config allow-plugins.tbachert/spi true
+          composer config audit.block-insecure false
           composer config repositories.0 composer https://packages.drupal.org/8
           composer config repositories.1 path $GITHUB_WORKSPACE
           composer install --no-interaction
-          COMPOSER_MEMORY_LIMIT=-1 composer require drupal/core-dev-pinned:${{ matrix.drupal }} --no-suggest
+          COMPOSER_MEMORY_LIMIT=-1 composer require drupal/core-dev:${{ matrix.drupal }}
       - name: Install CiviCRM ${{ matrix.civicrm }}
         run: |
           cd ~/drupal
@@ -89,22 +86,19 @@ jobs:
           cd ~/drupal
           COMPOSER_MEMORY_LIMIT=-1 composer require drupal/civicrm_entity *@dev
       - name: Install integration test modules
+        if: ${{ matrix.integrations }}
         run: |
           cd ~/drupal
-          COMPOSER_MEMORY_LIMIT=-1 composer require drupal/fullcalendar_view
-      - name: Downgrade chrome
-        if: ${{ matrix.chromedriver == '' }}
-        run: |
-          curl -L -o chrome.deb http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_133.0.6943.126-1_amd64.deb
-          sudo apt-get install libu2f-udev
-          sudo dpkg -i chrome.deb
-          google-chrome-stable --version
+          COMPOSER_MEMORY_LIMIT=-1 composer require \
+            drupal/ds:^3.37 \
+            drupal/field_group:^4.0 \
+            drupal/fullcalendar_view:^5.2 \
+            drupal/rules:^4.0 \
+            drupal/search_api:^1.41 \
+            drupal/typed_data:^2.1 \
+            drupal/views_bulk_operations:^4.4 \
+            -W
       - uses: nanasess/setup-chromedriver@master
-        if: ${{ matrix.chromedriver == '' }}
-        with:
-          chromedriver-version: '133.0.6943.126'
-      - uses: nanasess/setup-chromedriver@master
-        if: ${{ matrix.chromedriver == 'latest' }}
       - name: Run chromedriver
         run: chromedriver --port=9515 &
       - name: Run php built-in server

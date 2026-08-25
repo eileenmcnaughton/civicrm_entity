@@ -3,13 +3,19 @@
     "type": "drupal-module",
     "description": "Expose CiviCRM entities as Drupal entities.",
     "homepage": "http://drupal.org/project/civicrm_entity",
-    "license": "GPL-2.0+",
+    "license": "GPL-2.0-or-later",
     "require": {
         "drupal/core": "^11.3 || ^12",
         "civicrm/civicrm-drupal-8": "*"
     },
-    "require-dev": {
-        "drupal/fullcalendar_view": "^5.2"
+    "suggest": {
+        "drupal/ds": "Required by the optional CiviCRM Entity Display Suite integration.",
+        "drupal/field_group": "Required by the optional CiviCRM Entity Field Group integration.",
+        "drupal/fullcalendar_view": "Required to run the optional Fullcalendar View integration tests on a supported Drupal version.",
+        "drupal/rules": "Required by the optional CiviCRM Entity Rules integration.",
+        "drupal/search_api": "Required by the optional CiviCRM Entity Search API integration.",
+        "drupal/typed_data": "Required by the optional CiviCRM Entity Rules integration.",
+        "drupal/views_bulk_operations": "Required by the optional CiviCRM Entity VBO integration."
     },
     "minimum-stability": "dev"
 }

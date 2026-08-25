@@ -5,10 +5,8 @@ namespace Drupal\civicrm_entity_bundles\Hook;
 use Drupal\civicrm_entity\CiviCrmApiInterface;
 use Drupal\civicrm_entity\SupportedEntities;
 use Drupal\civicrm_entity_bundles\Plugin\Field\BundleFieldItemList;
-use Drupal\Core\Entity\Display\EntityDisplayInterface;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
@@ -183,36 +181,6 @@ class BundleHooks {
           $display->setThirdPartySetting('layout_builder', $setting_key, $setting);
         }
       }
-      $ds_settings = $root_display->getThirdPartySettings('ds');
-      if (!empty($ds_settings) && is_array($ds_settings)) {
-        foreach ($ds_settings as $setting_key => $setting) {
-          $display->setThirdPartySetting('ds', $setting_key, $setting);
-        }
-      }
-    }
-  }
-
-  /**
-   * Implements hook_entity_view_alter().
-   *
-   * Attaches field_group groups from the root bundle display context.
-   */
-  #[Hook('entity_view_alter')]
-  public function entityViewAlter(array &$build, EntityInterface $entity, EntityDisplayInterface $display): void {
-    $entity_type = $entity->getEntityType();
-    if ($entity_type->get('civicrm_entity') && $entity_type->hasKey('bundle') && $this->moduleHandler->moduleExists('field_group')) {
-      $entity_display_repository = $this->entityDisplayRepository;
-      $entity_view_mode_ids = array_keys($entity_display_repository->getViewModeOptions($entity_type->id()));
-
-      $context = [
-        'entity_type' => $display->getTargetEntityTypeId(),
-        'bundle' => $entity_type->id(),
-        'entity' => $entity,
-        'display_context' => 'view',
-        'mode' => in_array($display->getMode(), $entity_view_mode_ids) ? $display->getMode() : $entity_display_repository::DEFAULT_DISPLAY_MODE,
-      ];
-
-      field_group_attach_groups($build, $context);
     }
   }
 

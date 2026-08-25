@@ -1,0 +1,8 @@
+name: 'CiviCRM Entity Field Group'
+type: module
+description: 'Provides Field Group integration for bundled CiviCRM entities.'
+package: CiviCRM
+core_version_requirement: ^11.3
+dependencies:
+  - civicrm_entity:civicrm_entity_bundles
+  - field_group:field_group

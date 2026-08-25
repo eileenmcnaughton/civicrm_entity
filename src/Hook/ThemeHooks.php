@@ -15,7 +15,7 @@ class ThemeHooks {
    * Implements hook_theme().
    */
   #[Hook('theme')]
-  function theme() {
+  public function theme() {
     return [
       'civicrm_entity_entity_form' => [
         'render element' => 'form',
@@ -62,14 +62,6 @@ class ThemeHooks {
   }
 
   /**
-   * Implements hook_theme_registry_alter().
-   */
-  #[Hook('theme_registry_alter')]
-  public function themeRegistryAlter(&$theme_registry) {
-    $theme_registry['civicrm_entity']['preprocess functions'][] = 'field_group_build_entity_groups';
-  }
-
-  /**
    * Helper to find the entity type from $variables['elements'].
    */
   protected function getEntityTyeFromElements($elements) {
@@ -87,6 +79,5 @@ class ThemeHooks {
 
     return NULL;
   }
-
 
 }

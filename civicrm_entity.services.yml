@@ -27,23 +27,12 @@ services:
     tags:
       - {name: access_check, applies_to: _civicrm_entity_checksum_access_check }
 
-  civicrm_entity.search_api:
-    class: Drupal\civicrm_entity\EventSubscriber\SearchApiSubscriber
-
   Drupal\civicrm_entity\Hook\EntityHooks:
     class: Drupal\civicrm_entity\Hook\EntityHooks
     autowire: true
 
-  Drupal\civicrm_entity\Hook\FormHooks:
-    class: Drupal\civicrm_entity\Hook\FormHooks
-    autowire: true
-
   Drupal\civicrm_entity\Hook\QueryHooks:
     class: Drupal\civicrm_entity\Hook\QueryHooks
-    autowire: true
-
-  Drupal\civicrm_entity\Hook\RulesHooks:
-    class: Drupal\civicrm_entity\Hook\RulesHooks
     autowire: true
 
   Drupal\civicrm_entity\Hook\ThemeHooks:

@@ -3,9 +3,11 @@
 namespace Drupal\civicrm_entity\Plugin\views\relationship;
 
 use Drupal\views\Attribute\ViewsRelationship;
+use Drupal\views\Plugin\ViewsPluginManager;
 use Drupal\views\Plugin\views\query\Sql;
 use Drupal\views\Plugin\views\relationship\RelationshipPluginBase;
 use Drupal\views\Views;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
  * Relationship for referencing two CiviCRM entities using a "bridge" table.
@@ -21,6 +23,19 @@ use Drupal\views\Views;
  */
 #[ViewsRelationship("civicrm_entity_civicrm_bridge")]
 class CiviCrmBridgeRelationshipBase extends RelationshipPluginBase {
+
+  /**
+   * Constructs a CiviCRM bridge relationship.
+   */
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    #[Autowire(service: 'plugin.manager.views.join')]
+    protected ViewsPluginManager $joinPluginManager,
+  ) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+  }
 
   /**
    * {@inheritdoc}
@@ -45,7 +60,7 @@ class CiviCrmBridgeRelationshipBase extends RelationshipPluginBase {
       $first['type'] = 'INNER';
     }
 
-    $first_join = Views::pluginManager('join')->createInstance('standard', $first);
+    $first_join = $this->joinPluginManager->createInstance('standard', $first);
     $first_alias = $this->query->addTable($this->definition['table'], $this->relationship, $first_join);
 
     $second = [
@@ -60,7 +75,7 @@ class CiviCrmBridgeRelationshipBase extends RelationshipPluginBase {
       $second['type'] = 'INNER';
     }
 
-    $second_join = Views::pluginManager('join')->createInstance('standard', $second);
+    $second_join = $this->joinPluginManager->createInstance('standard', $second);
     $second_join->adjusted = TRUE;
 
     $alias = $this->definition['base'] . '_' . $this->definition['table'];

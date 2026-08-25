@@ -1,6 +1,6 @@
-# CiviCRM Entity for Drupal 10
+# CiviCRM Entity for Drupal 11 and 12
 
-## Installing 4.0.0-alpha7 or later.
+## Installation
 
 This module is installable with normal Drupal composer install steps, `composer require drupal/civicrm_entity`.
     
@@ -15,6 +15,32 @@ For example:
        "civicrm/civicrm-packages": "^5.63",
        "civicrm/civicrm-drupal-8": "^5.63",
 ```
+
+## Optional integrations
+
+Integrations with contributed modules are isolated so CiviCRM Entity can be
+installed without loading classes from modules that are not present. Enable an
+integration module only when its dependency supports your Drupal core version:
+
+| Feature | Integration module | External dependency |
+| --- | --- | --- |
+| Views Bulk Operations actions | `civicrm_entity_vbo` | `views_bulk_operations` |
+| Rules actions and conditions | `civicrm_entity_rules` | `rules`, `typed_data` |
+| Search API datasource | `civicrm_entity_search_api` | `search_api` |
+| Field Group bundle support | `civicrm_entity_field_group` | `field_group` |
+| Display Suite bundle settings | `civicrm_entity_ds` | `ds` |
+
+The currently published releases of these dependencies support Drupal 11 but
+not Drupal 12. Their integration modules therefore remain Drupal 11-only until
+upstream Drupal 12 support is available.
+
+When an existing Drupal 11 site is updated, the corresponding integration
+submodule is enabled automatically if its external dependency is already
+enabled. New installations can enable the integrations they need explicitly.
+
+Fullcalendar View is a test-only integration and is likewise tested only on a
+supported Drupal core version.
+
 ## CiviCRM Entity Leaflet upgrade to Drupal 10
 
 In the 4.0.x version the civicrm_entity_leaflet module has been removed from the main module repo and put into its own module project http://drupal.org/project/civicrm_entity_leaflet
@@ -26,6 +52,7 @@ If upgrading from Drupal 9 to Drupal 10, simply include that module:
 
 8.x-3.x for Drupal 9 Known to work with CiviCRM 5.51+
 4.0.x for Drupal 10 Requires CiviCRM 5.60+
+5.0.x for Drupal 11.3+ and Drupal 12
 
 We do our best to support as many versions of CiviCRM Core as is feasible. 
 
@@ -41,7 +68,7 @@ For bug reports, support requests, or feature requests please create an issue in
 
 Primary development happens in the github repo: https://github.com/eileenmcnaughton/civicrm_entity
 
-Please make PRs against the 4.0.x branch first. Changes will be merged there, and then backported to the 8.x-3.x branch.
+Please make Drupal 11 and 12 compatibility changes against the 5.0.x branch.
 
 We do plan on shifting primary development to the drupal.org Gitlab infrastructure in time.
 
@@ -52,8 +79,8 @@ To get CiviCRM Entity github repo installed with composer the following steps wi
     
 1. Add the CiviCRM Entity repository to your composer.json:  
     `composer config repositories.civicrm_entity vcs https://github.com/eileenmcnaughton/civicrm_entity`
-2. Require CiviCRM Entity's `4.0.x` git branch:  
-    `composer require drupal/civicrm_entity:dev-4.0.x`
+2. Require CiviCRM Entity's `5.0.x` git branch:
+    `composer require drupal/civicrm_entity:dev-5.0.x`
 
 ## Get support now
 
