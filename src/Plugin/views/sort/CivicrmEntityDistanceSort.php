@@ -92,11 +92,17 @@ class CivicrmEntityDistanceSort extends SortPluginBase {
 
     $formula = "
       (ACOS(
-        COS(RADIANS({$address_table}.geo_code_1)) *
-        COS(RADIANS($center_lat)) *
-        COS(RADIANS({$address_table}.geo_code_2) - RADIANS($center_lon)) +
-        SIN(RADIANS({$address_table}.geo_code_1)) *
-        SIN(RADIANS($center_lat))
+        LEAST(
+          1.0,
+          GREATEST(
+            -1.0,
+            COS(RADIANS({$address_table}.geo_code_1)) *
+            COS(RADIANS($center_lat)) *
+            COS(RADIANS({$address_table}.geo_code_2) - RADIANS($center_lon)) +
+            SIN(RADIANS({$address_table}.geo_code_1)) *
+            SIN(RADIANS($center_lat))
+          )
+        )
       ) * $earth_radius)
     ";
 
