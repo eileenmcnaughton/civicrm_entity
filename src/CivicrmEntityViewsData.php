@@ -802,7 +802,7 @@ class CivicrmEntityViewsData extends EntityViewsData {
 
       case \CRM_Utils_Type::T_DATE:
       case \CRM_Utils_Type::T_TIMESTAMP:
-        return ['id' => 'civicrm_entity_date'];
+        return ['id' => 'civicrm_entity_date', 'allow empty' => TRUE];
 
       case 'pseudoconstant':
         if ($class_name = SupportedEntities::getEntityTypeDaoClass($field_metadata['entity_type'])) {
