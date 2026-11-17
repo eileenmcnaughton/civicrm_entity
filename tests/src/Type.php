@@ -289,7 +289,7 @@ class CRM_Utils_Type {
           return trim($data);
         }
 
-        if (CRM_Utils_Rule::validContact($data)) {
+        if (CRM_Utils_Rule::positiveInteger($data)) {
           return (int) $data;
         }
         break;
@@ -444,7 +444,7 @@ class CRM_Utils_Type {
           return trim($data);
         }
 
-        if (CRM_Utils_Rule::validContact($data)) {
+        if (CRM_Utils_Rule::positiveInteger($data)) {
           return $data;
         }
         break;
