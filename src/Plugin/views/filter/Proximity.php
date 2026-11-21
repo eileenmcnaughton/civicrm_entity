@@ -212,11 +212,17 @@ class Proximity extends FilterPluginBase {
 
       $expression = "
         ACOS(
-          COS(RADIANS({$this->tableAlias}.geo_code_1)) *
-          COS(RADIANS({$geocoded_address['latitude']})) *
-          COS(RADIANS({$this->tableAlias}.geo_code_2) - RADIANS({$geocoded_address['longitude']})) +
-          SIN(RADIANS({$this->tableAlias}.geo_code_1)) *
-          SIN(RADIANS({$geocoded_address['latitude']}))
+          LEAST(
+            1.0,
+            GREATEST(
+              -1.0,
+              COS(RADIANS({$this->tableAlias}.geo_code_1)) *
+              COS(RADIANS({$geocoded_address['latitude']})) *
+              COS(RADIANS({$this->tableAlias}.geo_code_2) - RADIANS({$geocoded_address['longitude']})) +
+              SIN(RADIANS({$this->tableAlias}.geo_code_1)) *
+              SIN(RADIANS({$geocoded_address['latitude']}))
+            )
+          )
         ) * 6378137
       ";
 
