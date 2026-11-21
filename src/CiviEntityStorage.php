@@ -456,6 +456,7 @@ class CiviEntityStorage extends SqlContentEntityStorage {
           else {
             $datetime_format = $definition->getSetting('datetime_type') === DateTimeItem::DATETIME_TYPE_DATE ? DateTimeItemInterface::DATE_STORAGE_FORMAT : DateTimeItemInterface::DATETIME_STORAGE_FORMAT;
             $default_timezone = $definition->getSetting('datetime_type') === DateTimeItem::DATETIME_TYPE_DATE ? DateTimeItemInterface::STORAGE_TIMEZONE : \Drupal::config('system.date')->get('timezone.default') ?? date_default_timezone_get();
+            $item_values[$delta]['original_value'] = $item[$main_property_name];
             $datetime_value = (new \DateTime($item[$main_property_name], new \DateTimeZone($default_timezone)))->setTimezone(new \DateTimeZone('UTC'))->format($datetime_format);
             $item_values[$delta][$main_property_name] = $datetime_value;
           }
